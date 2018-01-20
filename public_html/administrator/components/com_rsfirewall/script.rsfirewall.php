@@ -39,6 +39,17 @@ class com_rsfirewallInstallerScript
 		if ($extension_id = $db->loadResult()) {
 			$plg_installer->uninstall('plugin', $extension_id);
 		}
+		
+		$query->clear();
+		$query->select($db->qn('extension_id'))
+			  ->from($db->qn('#__extensions'))
+			  ->where($db->qn('element').'='.$db->q('rsfirewall'))
+			  ->where($db->qn('folder').'='.$db->q('installer'))
+			  ->where($db->qn('type').'='.$db->q('plugin'));
+		$db->setQuery($query);
+		if ($extension_id = $db->loadResult()) {
+			$plg_installer->uninstall('plugin', $extension_id);
+		}
 
 		$query->clear();
 		$query->select($db->qn('extension_id'))
@@ -147,6 +158,7 @@ class com_rsfirewallInstallerScript
 		$this->showInstallMessage($messages);
 		
 		if ($type != 'update') {
+			$this->removeSignatures();
 			return true;
 		}
 		
@@ -612,6 +624,27 @@ class com_rsfirewallInstallerScript
 			$db->setQuery('ALTER TABLE #__rsfirewall_offenders CHANGE `ip` `ip` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL');
 			$db->execute();
 		}
+		
+		$this->removeSignatures();
+	}
+	
+	protected function removeSignatures()
+	{
+		// There you go hosting providers, scan this.
+		jimport('joomla.filesystem.file');
+
+		$files = array(
+			JPATH_ADMINISTRATOR.'/components/com_rsfirewall/sql/mysql/signatures.data.sql',
+			JPATH_ADMINISTRATOR.'/components/com_rsfirewall/sql/sqlazure/signatures.data.sql'
+		);
+
+		foreach ($files as $file)
+		{
+			if (file_exists($file))
+			{
+				JFile::delete($file);
+			}
+		}
 	}
 	
 	protected function runSQL($source, $file) {
@@ -628,7 +661,15 @@ class com_rsfirewallInstallerScript
 		if (file_exists($sqlfile)) {
 			$buffer = file_get_contents($sqlfile);
 			if ($buffer !== false) {
-				$queries = JInstallerHelper::splitSql($buffer);
+				if (is_callable(array($db, 'splitSql')))
+				{
+					$queries = $db->splitSql($buffer);
+				}
+				else
+				{
+					$queries = JInstallerHelper::splitSql($buffer);
+				}
+				
 				foreach ($queries as $query) {
 					$query = trim($query);
 					if ($query != '' && $query{0} != '#') {
@@ -711,68 +752,46 @@ class com_rsfirewallInstallerScript
 	color: #fff;
 	padding: 3px;
 }
-
-#installer-left {
-	float: left;
-	width: 230px;
-	padding: 5px;
-}
-
-#installer-right {
-	float: left;
-}
-
-.com-rsfirewall-button {
-	display: inline-block;
-	background: #459300 url(components/com_rsfirewall/assets/images/bg-button-green.gif) top left repeat-x !important;
-	border: 1px solid #459300 !important;
-	padding: 2px;
-	color: #fff !important;
-	cursor: pointer;
-	margin: 0;
-	-webkit-border-radius: 5px;
-     -moz-border-radius: 5px;
-          border-radius: 5px;
-}
 </style>
-	<div id="installer-left">
-		<img src="components/com_rsfirewall/assets/images/rsfirewall-box.jpg" alt="RSFirewall! Box" />
+	<div class="row-fluid">
+		<div class="span2">
+			<img src="components/com_rsfirewall/assets/images/rsfirewall-box.png" alt="RSFirewall! Box" />
+		</div>
+		<div class="span10">
+			<p>System Plugin ...
+				<?php if ($messages['plg_rsfirewall']) { ?>
+				<b class="install-ok">Installed</b>
+				<?php } else { ?>
+				<b class="install-not-ok">Error installing!</b>
+				<?php } ?>
+			</p>
+			<p>Installer Plugin ...
+				<?php if ($messages['plg_installer']) { ?>
+				<b class="install-ok">Installed</b>
+				<?php } else { ?>
+				<b class="install-not-ok">Error installing!</b>
+				<?php } ?>
+			</p>
+			<p>RSFirewall! Control Panel Module ...
+				<?php if ($messages['mod_rsfirewall']) { ?>
+				<b class="install-ok">Installed</b>
+				<?php } else { ?>
+				<b class="install-not-ok">Error installing!</b>
+				<?php } ?>
+			</p>
+			<h2>Changelog v2.11.11</h2>
+			<ul class="version-history">
+				<li><span class="version-new">New</span> Joomla! 3.8.3 hashes.</li>
+				<li><span class="version-fixed">Fix</span> In some cases the File Manager could not list folders and files.</li>
+				<li><span class="version-fixed">Fix</span> Some filenames with UTF-8 characters were incorrectly seen as threats.</li>
+			</ul>
+			<p>
+			<a class="btn btn-primary btn-large" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>
+			<a class="btn" href="https://www.rsjoomla.com/support/documentation/rsfirewall-user-guide.html" target="_blank">Read the RSFirewall! User Guide</a>
+			<a class="btn" href="https://www.rsjoomla.com/support.html" target="_blank">Get Support!</a>
+			</p>
+		</div>
 	</div>
-	<div id="installer-right">
-		<p>System Plugin ...
-			<?php if ($messages['plg_rsfirewall']) { ?>
-			<b class="install-ok">Installed</b>
-			<?php } else { ?>
-			<b class="install-not-ok">Error installing!</b>
-			<?php } ?>
-		</p>
-		<p>Installer Plugin ...
-			<?php if ($messages['plg_installer']) { ?>
-			<b class="install-ok">Installed</b>
-			<?php } else { ?>
-			<b class="install-not-ok">Error installing!</b>
-			<?php } ?>
-		</p>
-		<p>RSFirewall! Control Panel Module ...
-			<?php if ($messages['mod_rsfirewall']) { ?>
-			<b class="install-ok">Installed</b>
-			<?php } else { ?>
-			<b class="install-not-ok">Error installing!</b>
-			<?php } ?>
-		</p>
-		<h2>Changelog v2.11.8</h2>
-		<ul class="version-history">
-			<li><span class="version-upgraded">Upg</span> No longer recommending disable_functions to include phpinfo and show_source.</li>
-			<li><span class="version-upgraded">Upg</span> System Check now recommends expose_php to be Off.</li>
-			<li><span class="version-upgraded">Upg</span> Some more explanations in the 'Server Configuration' area.</li>
-			<li><span class="version-fixed">Fix</span> 'Log all blocked events' would not take the 'Mozilla' User Agent into account.</li>
-			<li><span class="version-fixed">Fix</span> The #__rsfirewall_offenders table was not being pruned causing this table to reach a large size.</li>
-		</ul>
-		<a class="com-rsfirewall-button" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>
-		<a class="com-rsfirewall-button" href="https://www.rsjoomla.com/support/documentation/rsfirewall-user-guide.html" target="_blank">Read the RSFirewall! User Guide</a>
-		<a class="com-rsfirewall-button" href="https://www.rsjoomla.com/support.html" target="_blank">Get Support!</a>
-	</div>
-	<div style="clear: both;"></div>
 		<?php
 	}
 }

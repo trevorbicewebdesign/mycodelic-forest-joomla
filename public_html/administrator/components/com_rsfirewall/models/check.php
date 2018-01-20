@@ -12,6 +12,7 @@ class RsfirewallModelCheck extends JModelLegacy
 {
 	const DS = DIRECTORY_SEPARATOR;
 	const HASHES_DIR = '/components/com_rsfirewall/assets/hashes/';
+	const SIGS_DIR = '/components/com_rsfirewall/assets/sigs/';
 	const DICTIONARY = '/components/com_rsfirewall/assets/dictionary/passwords.txt';
 	const CHUNK_SIZE = 2048;
 
@@ -62,7 +63,7 @@ class RsfirewallModelCheck extends JModelLegacy
 		$cache->setCaching($caching);
 
 		try {
-			$response = $cache->call(array('RsfirewallModelCheck', 'connectCache'), $url);
+			$response = $cache->get(array('RsfirewallModelCheck', 'connectCache'), array($url));
 		} catch (Exception $e) {
 			$this->setError($e->getMessage());
 			return false;
@@ -73,7 +74,7 @@ class RsfirewallModelCheck extends JModelLegacy
 
 	public static function connectCache($url) {
 		$http = JHttpFactory::getHttp();
-		$response = $http->get($url, null, 30);
+		$response = $http->get($url, array(), 30);
 
 		return $response;
 	}
@@ -230,7 +231,7 @@ class RsfirewallModelCheck extends JModelLegacy
 	}
 
 	public function buildConfiguration($overwrite=null) {
-		$data = JArrayHelper::fromObject(new JConfig());
+		$data = get_object_vars(new JConfig());
 		if (is_array($overwrite)) {
 			foreach ($overwrite as $key => $value) {
 				if (isset($data[$key]))
@@ -927,7 +928,212 @@ class RsfirewallModelCheck extends JModelLegacy
 			  ->where($db->qn('type').'='.$db->q('ignore'));
 		$db->setQuery($query);
 
-		return $db->loadObjectList('file');
+		$results = $db->loadObjectList('file');
+		
+		$ignored = array(
+			'administrator/language/en-GB/en-GB.com_associations.ini',
+			'administrator/language/en-GB/en-GB.com_associations.sys.ini',
+			'administrator/language/en-GB/en-GB.com_banners.ini',
+			'administrator/language/en-GB/en-GB.com_banners.sys.ini',
+			'administrator/language/en-GB/en-GB.com_contact.ini',
+			'administrator/language/en-GB/en-GB.com_contact.sys.ini',
+			'administrator/language/en-GB/en-GB.com_contenthistory.ini',
+			'administrator/language/en-GB/en-GB.com_contenthistory.sys.ini',
+			'administrator/language/en-GB/en-GB.com_fields.ini',
+			'administrator/language/en-GB/en-GB.com_fields.sys.ini',
+			'administrator/language/en-GB/en-GB.com_finder.ini',
+			'administrator/language/en-GB/en-GB.com_finder.sys.ini',
+			'administrator/language/en-GB/en-GB.com_newsfeeds.ini',
+			'administrator/language/en-GB/en-GB.com_newsfeeds.sys.ini',
+			'administrator/language/en-GB/en-GB.com_search.ini',
+			'administrator/language/en-GB/en-GB.com_search.sys.ini',
+			'administrator/language/en-GB/en-GB.mod_feed.ini',
+			'administrator/language/en-GB/en-GB.mod_feed.sys.ini',
+			'administrator/language/en-GB/en-GB.mod_latest.ini',
+			'administrator/language/en-GB/en-GB.mod_latest.sys.ini',
+			'administrator/language/en-GB/en-GB.mod_logged.ini',
+			'administrator/language/en-GB/en-GB.mod_logged.sys.ini',
+			'administrator/language/en-GB/en-GB.mod_multilangstatus.ini',
+			'administrator/language/en-GB/en-GB.mod_multilangstatus.sys.ini',
+			'administrator/language/en-GB/en-GB.mod_popular.ini',
+			'administrator/language/en-GB/en-GB.mod_popular.sys.ini',
+			'administrator/language/en-GB/en-GB.mod_sampledata.ini',
+			'administrator/language/en-GB/en-GB.mod_sampledata.sys.ini',
+			'administrator/language/en-GB/en-GB.mod_version.ini',
+			'administrator/language/en-GB/en-GB.mod_version.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_authentication_cookie.ini',
+			'administrator/language/en-GB/en-GB.plg_authentication_cookie.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_authentication_gmail.ini',
+			'administrator/language/en-GB/en-GB.plg_authentication_gmail.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_authentication_ldap.ini',
+			'administrator/language/en-GB/en-GB.plg_authentication_ldap.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_contact.ini',
+			'administrator/language/en-GB/en-GB.plg_content_contact.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_emailcloak.ini',
+			'administrator/language/en-GB/en-GB.plg_content_emailcloak.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_finder.ini',
+			'administrator/language/en-GB/en-GB.plg_content_finder.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_joomla.ini',
+			'administrator/language/en-GB/en-GB.plg_content_joomla.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_loadmodule.ini',
+			'administrator/language/en-GB/en-GB.plg_content_loadmodule.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_pagebreak.ini',
+			'administrator/language/en-GB/en-GB.plg_content_pagebreak.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_pagenavigation.ini',
+			'administrator/language/en-GB/en-GB.plg_content_pagenavigation.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_content_vote.ini',
+			'administrator/language/en-GB/en-GB.plg_content_vote.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_article.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_article.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_contact.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_contact.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_fields.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_fields.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_image.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_image.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_menu.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_menu.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_module.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_module.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_pagebreak.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_pagebreak.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_readmore.ini',
+			'administrator/language/en-GB/en-GB.plg_editors-xtd_readmore.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_editors_tinymce.ini',
+			'administrator/language/en-GB/en-GB.plg_editors_tinymce.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_calendar.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_calendar.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_checkboxes.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_checkboxes.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_color.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_color.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_editor.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_editor.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_imagelist.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_imagelist.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_integer.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_integer.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_list.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_list.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_media.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_media.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_radio.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_radio.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_sql.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_sql.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_text.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_text.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_textarea.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_textarea.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_url.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_url.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_user.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_user.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_usergrouplist.ini',
+			'administrator/language/en-GB/en-GB.plg_fields_usergrouplist.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_categories.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_categories.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_contacts.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_contacts.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_content.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_content.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_newsfeeds.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_newsfeeds.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_tags.ini',
+			'administrator/language/en-GB/en-GB.plg_finder_tags.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_sampledata_blog.ini',
+			'administrator/language/en-GB/en-GB.plg_sampledata_blog.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_search_categories.ini',
+			'administrator/language/en-GB/en-GB.plg_search_categories.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_search_contacts.ini',
+			'administrator/language/en-GB/en-GB.plg_search_contacts.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_search_content.ini',
+			'administrator/language/en-GB/en-GB.plg_search_content.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_search_newsfeeds.ini',
+			'administrator/language/en-GB/en-GB.plg_search_newsfeeds.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_search_tags.ini',
+			'administrator/language/en-GB/en-GB.plg_search_tags.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_debug.ini',
+			'administrator/language/en-GB/en-GB.plg_system_debug.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_fields.ini',
+			'administrator/language/en-GB/en-GB.plg_system_fields.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_highlight.ini',
+			'administrator/language/en-GB/en-GB.plg_system_highlight.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_languagecode.ini',
+			'administrator/language/en-GB/en-GB.plg_system_languagecode.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_p3p.ini',
+			'administrator/language/en-GB/en-GB.plg_system_p3p.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_sef.ini',
+			'administrator/language/en-GB/en-GB.plg_system_sef.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_stats.ini',
+			'administrator/language/en-GB/en-GB.plg_system_stats.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_system_updatenotification.ini',
+			'administrator/language/en-GB/en-GB.plg_system_updatenotification.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_twofactorauth_totp.ini',
+			'administrator/language/en-GB/en-GB.plg_twofactorauth_totp.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_twofactorauth_yubikey.ini',
+			'administrator/language/en-GB/en-GB.plg_twofactorauth_yubikey.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_user_contactcreator.ini',
+			'administrator/language/en-GB/en-GB.plg_user_contactcreator.sys.ini',
+			'administrator/language/en-GB/en-GB.plg_user_profile.ini',
+			'administrator/language/en-GB/en-GB.plg_user_profile.sys.ini',
+			'language/en-GB/en-GB.com_contact.ini',
+			'language/en-GB/en-GB.com_finder.ini',
+			'language/en-GB/en-GB.com_newsfeeds.ini',
+			'language/en-GB/en-GB.com_search.ini',
+			'language/en-GB/en-GB.mod_articles_archive.ini',
+			'language/en-GB/en-GB.mod_articles_archive.sys.ini',
+			'language/en-GB/en-GB.mod_articles_categories.ini',
+			'language/en-GB/en-GB.mod_articles_categories.sys.ini',
+			'language/en-GB/en-GB.mod_articles_category.ini',
+			'language/en-GB/en-GB.mod_articles_category.sys.ini',
+			'language/en-GB/en-GB.mod_articles_latest.ini',
+			'language/en-GB/en-GB.mod_articles_latest.sys.ini',
+			'language/en-GB/en-GB.mod_articles_news.ini',
+			'language/en-GB/en-GB.mod_articles_news.sys.ini',
+			'language/en-GB/en-GB.mod_articles_popular.ini',
+			'language/en-GB/en-GB.mod_articles_popular.sys.ini',
+			'language/en-GB/en-GB.mod_banners.ini',
+			'language/en-GB/en-GB.mod_banners.sys.ini',
+			'language/en-GB/en-GB.mod_feed.ini',
+			'language/en-GB/en-GB.mod_feed.sys.ini',
+			'language/en-GB/en-GB.mod_finder.ini',
+			'language/en-GB/en-GB.mod_finder.sys.ini',
+			'language/en-GB/en-GB.mod_footer.ini',
+			'language/en-GB/en-GB.mod_footer.sys.ini',
+			'language/en-GB/en-GB.mod_random_image.ini',
+			'language/en-GB/en-GB.mod_random_image.sys.ini',
+			'language/en-GB/en-GB.mod_related_items.ini',
+			'language/en-GB/en-GB.mod_related_items.sys.ini',
+			'language/en-GB/en-GB.mod_search.ini',
+			'language/en-GB/en-GB.mod_search.sys.ini',
+			'language/en-GB/en-GB.mod_stats.ini',
+			'language/en-GB/en-GB.mod_stats.sys.ini',
+			'language/en-GB/en-GB.mod_tags_popular.ini',
+			'language/en-GB/en-GB.mod_tags_popular.sys.ini',
+			'language/en-GB/en-GB.mod_tags_similar.ini',
+			'language/en-GB/en-GB.mod_tags_similar.sys.ini',
+			'language/en-GB/en-GB.mod_users_latest.ini',
+			'language/en-GB/en-GB.mod_users_latest.sys.ini',
+			'language/en-GB/en-GB.mod_whosonline.ini',
+			'language/en-GB/en-GB.mod_whosonline.sys.ini',
+			'language/en-GB/en-GB.mod_wrapper.ini',
+			'language/en-GB/en-GB.mod_wrapper.sys.ini'
+		);
+		
+		foreach ($ignored as $file)
+		{
+			if (!file_exists(JPATH_SITE . '/' . $file))
+			{
+				$results[$file] = (object) array(
+					'file' => $file,
+					'hash' => '',
+					'flag' => 'M'
+				);
+			}
+		}
+		
+		return $results;
 	}
 
 	protected function _getIgnored() {
@@ -953,10 +1159,14 @@ class RsfirewallModelCheck extends JModelLegacy
 	protected function getOptionalFolders() {
 		return array(
 			/* administrator components */
+			'administrator/components/com_associations',
 			'administrator/components/com_banners',
 			'administrator/components/com_contact',
+			'administrator/components/com_contenthistory',
+			'administrator/components/com_fields',
 			'administrator/components/com_finder',
 			'administrator/components/com_newsfeeds',
+			'administrator/components/com_search',
 			'administrator/components/com_weblinks',
 
 			/* administrator modules */
@@ -967,6 +1177,8 @@ class RsfirewallModelCheck extends JModelLegacy
 			'administrator/modules/mod_popular',
 			'administrator/modules/mod_status',
 			'administrator/modules/mod_submenu',
+			'administrator/modules/mod_sampledata',
+			'administrator/modules/mod_stats_admin',
 			'administrator/modules/mod_title',
 			'administrator/modules/mod_multilangstatus',
 			'administrator/modules/mod_version',
@@ -979,15 +1191,27 @@ class RsfirewallModelCheck extends JModelLegacy
 			/* components */
 			'components/com_banners',
 			'components/com_contact',
+			'components/com_contenthistory',
+			'components/com_fields',
 			'components/com_finder',
 			'components/com_newsfeeds',
+			'components/com_search',
 			'components/com_weblinks',
 
+			/* media */
+			'media/editors/tinymce',
+			'media/com_finder',
+			'media/mod_sampledata',
 			'images/sampledata',
 
 			/* modules */
+			'modules/mod_articles_archive',
+			'modules/mod_articles_categories',
+			'modules/mod_articles_category',
 			'modules/mod_articles_popular',
+			'modules/mod_articles_latest',
 			'modules/mod_articles_news',
+			'modules/mod_banners',
 			'modules/mod_random_image',
 			'modules/mod_related_items',
 			'modules/mod_search',
@@ -995,7 +1219,74 @@ class RsfirewallModelCheck extends JModelLegacy
 			'modules/mod_weblinks',
 			'modules/mod_whosonline',
 			'modules/mod_wrapper',
+			'modules/mod_feed',
 			'modules/mod_finder',
+			'modules/mod_footer',
+			'modules/mod_tags_popular',
+			'modules/mod_tags_similar',
+			'modules/mod_users_latest',
+
+			/* plugins */
+			'plugins/content/contact',
+			'plugins/content/emailcloak',
+			'plugins/content/fields',
+			'plugins/content/finder',
+			'plugins/content/joomla',
+			'plugins/content/loadmodule',
+			'plugins/content/pagebreak',
+			'plugins/content/pagenavigation',
+			'plugins/content/vote',
+			'plugins/authentication/cookie',
+			'plugins/authentication/gmail',
+			'plugins/authentication/ldap',
+			'plugins/captcha/recaptcha',
+			'plugins/editors/tinymce',
+			'plugins/editors-xtd/article',
+			'plugins/editors-xtd/contact',
+			'plugins/editors-xtd/fields',
+			'plugins/editors-xtd/image',
+			'plugins/editors-xtd/menu',
+			'plugins/editors-xtd/module',
+			'plugins/editors-xtd/pagebreak',
+			'plugins/editors-xtd/readmore',
+			'plugins/fields/calendar',
+			'plugins/fields/checkboxes',
+			'plugins/fields/color',
+			'plugins/fields/editor',
+			'plugins/fields/imagelist',
+			'plugins/fields/integer',
+			'plugins/fields/list',
+			'plugins/fields/media',
+			'plugins/fields/radio',
+			'plugins/fields/sql',
+			'plugins/fields/text',
+			'plugins/fields/textarea',
+			'plugins/fields/url',
+			'plugins/fields/user',
+			'plugins/fields/usergrouplist',
+			'plugins/finder/categories',
+			'plugins/finder/contacts',
+			'plugins/finder/content',
+			'plugins/finder/newsfeeds',
+			'plugins/finder/tags',
+			'plugins/sampledata/blog',
+			'plugins/search/categories',
+			'plugins/search/contacts',
+			'plugins/search/content',
+			'plugins/search/newsfeeds',
+			'plugins/search/tags',
+			'plugins/system/debug',
+			'plugins/system/fields',
+			'plugins/system/highlight',
+			'plugins/system/languagecode',
+			'plugins/system/p3p',
+			'plugins/system/sef',
+			'plugins/system/stats',
+			'plugins/system/updatenotification',
+			'plugins/twofactorauth/totp',
+			'plugins/twofactorauth/yubikey',
+			'plugins/user/contactcreator',
+			'plugins/user/profile',
 
 			/* templates */
 			'templates/atomic',
@@ -1178,7 +1469,8 @@ class RsfirewallModelCheck extends JModelLegacy
 		return $this->files;
 	}
 
-	public function _loadSignatures() {
+	public function _loadSignatures()
+	{
 		$db 	= $this->getDbo();
 		$query 	= $db->getQuery(true);
 
@@ -1186,7 +1478,26 @@ class RsfirewallModelCheck extends JModelLegacy
 			  ->from($db->qn('#__rsfirewall_signatures'));
 
 		$db->setQuery($query);
-		return $db->loadObjectList();
+		$signatures = $db->loadObjectList();
+		
+		// Load MD5 signatures
+		$file = JPATH_ADMINISTRATOR . self::SIGS_DIR . '/php.csv';
+		
+		if (file_exists($file) && is_readable($file))
+		{
+			$lines = file($file, FILE_IGNORE_NEW_LINES);
+			foreach ($lines as $line)
+			{
+				list($hash, $desc) = explode(',', $line);
+				$signatures[] = (object) array(
+					'signature' => $hash,
+					'type' 		=> 'md5',
+					'reason' 	=> $desc
+				);
+			}
+		}
+		
+		return $signatures;
 	}
 
 	protected function readableFilesize($bytes, $decimals = 2) {
@@ -1233,27 +1544,38 @@ class RsfirewallModelCheck extends JModelLegacy
 			$this->addLogEntry("[checkSignatures] Opening '$file' ({$this->readableFilesize($bytes)}) for reading.");
 
 			$contents = file_get_contents($file);
+			$md5 = md5($contents);
 		}
 		
-		$basename 	= basename($file);
+		$basename 	= $this->basename($file);
 		$dirname	= dirname($file);
 		$ds 		= $this->getDS();
 
-		foreach ($signatures as $signature) {
-			if (strpos($signature->type, 'regex') === 0 && $ext == 'php') {
+		foreach ($signatures as $signature)
+		{
+			if (strpos($signature->type, 'regex') === 0 && $ext == 'php')
+			{
 				$flags = str_replace('regex', '', $signature->type);
-				if (preg_match('#'.$signature->signature.'#'.$flags, $contents, $match)) {
-
+				if (preg_match('#'.$signature->signature.'#'.$flags, $contents, $match))
+				{
 					$this->addLogEntry("[checkSignatures] Malware found ({$signature->reason})");
-
 					return array('match' => $match[0], 'reason' => $signature->reason);
 				}
-			} elseif ($signature->type == 'filename') {
-				if (preg_match('#'.$signature->signature.'#i', $basename, $match)) {
-
+			}
+			elseif ($signature->type == 'filename')
+			{
+				if (preg_match('#'.$signature->signature.'#i', $basename, $match))
+				{
 					$this->addLogEntry("[checkSignatures] Malware found ({$signature->reason})");
-
 					return array('match' => $match[0], 'reason' => $signature->reason);
+				}
+			}
+			elseif ($signature->type == 'md5' && $ext == 'php')
+			{
+				if ($signature->signature === $md5)
+				{
+					$this->addLogEntry("[checkSignatures] Malware found ({$signature->reason})");
+					return array('match' => $signature->signature, 'reason' => $signature->reason);
 				}
 			}
 		}
@@ -1323,6 +1645,12 @@ class RsfirewallModelCheck extends JModelLegacy
 		$this->addLogEntry("[checkSignatures] File $basename appears to be clean. Moving on to next...");
 
 		return false;
+	}
+	
+	protected function basename($filename)
+	{
+		$parts = explode(DIRECTORY_SEPARATOR, $filename);
+		return end($parts);
 	}
 
 	public function getLastFile($root) {

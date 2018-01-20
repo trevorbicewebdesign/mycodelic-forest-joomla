@@ -1,5 +1,3 @@
-jQuery.noConflict();
-
 var RSFirewall = {};
 
 RSFirewall.$ = jQuery;

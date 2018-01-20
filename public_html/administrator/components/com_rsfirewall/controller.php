@@ -30,6 +30,7 @@ class RsfirewallController extends JControllerLegacy
 		} else {
 			// Load our own copy of jQuery
 			$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/jquery.js');
+			$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/jquery-noconflict.js');
 			
 			// Load our 2.5 stylesheet
 			$document->addStyleSheet(JUri::root(true).'/administrator/components/com_rsfirewall/assets/css/style25.css?v='.$version);
@@ -66,7 +67,7 @@ class RsfirewallController extends JControllerLegacy
 		$input = JFactory::getApplication()->input;
 		$cid   = $input->get('cid', '', 'array');
 		
-		JArrayHelper::toInteger($cid);
+		array_map('intval', $cid);
 		
 		if ($cid) {
 			$model = $this->getModel('rsfirewall');

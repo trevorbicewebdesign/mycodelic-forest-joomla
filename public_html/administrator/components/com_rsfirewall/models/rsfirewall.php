@@ -91,10 +91,10 @@ class RsfirewallModelRsfirewall extends JModelLegacy
        
         $date->modify('-30 days');
        
-        $query->select("COUNT('id') AS num, YEAR(date) AS y, LPAD(MONTH(date), 2, '0') AS m, LPAD(DAY(date), 2, '0') AS d, level")
+        $query->select("COUNT(`id`) AS num, YEAR(date) AS y, LPAD(MONTH(date), 2, '0') AS m, LPAD(DAY(date), 2, '0') AS d, level")
 			  ->from('#__rsfirewall_logs')
 			  ->where($db->qn('date').' > '.$db->q($date->format($format)))
-			  ->group('level, YEAR(date), MONTH(date), DAY(date)');
+			  ->group('level, y, m, d');
         $db->setQuery($query);
         $results = $db->loadObjectList();
        

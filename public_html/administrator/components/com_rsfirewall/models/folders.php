@@ -14,7 +14,7 @@ class RsfirewallModelFolders extends JModelLegacy
 	protected $path;
 	protected $input;
 
-	public function __construct() {		
+	public function __construct() {
 		$this->path  = JPATH_SITE;
 		$this->input = RSInput::create();
 		if (is_dir($this->input->get('folder', '', 'none'))) {
@@ -47,8 +47,13 @@ class RsfirewallModelFolders extends JModelLegacy
 	public function getFolders() {
 		$checkModel = $this->getInstance('Check', 'RsfirewallModel');
 		$path		= $this->getPath();
-		
-		$folders = $checkModel->getFolders($this->path, false, true, false);
+
+		// workaround to grab the correct root
+		if ($path == '') {
+			$path = '/';
+		}
+
+		$folders = $checkModel->getFolders($path, false, true, false);
 		return $this->getFoldersData($folders);
 	}
 	
@@ -69,8 +74,13 @@ class RsfirewallModelFolders extends JModelLegacy
 	public function getFiles() {
 		$checkModel = $this->getInstance('Check', 'RsfirewallModel');
 		$path		= $this->getPath();
-		
-		$files = $checkModel->getFiles($this->path, false, true, false);
+
+		// workaround to grab the correct root
+		if ($path == '') {
+			$path = '/';
+		}
+
+		$files = $checkModel->getFiles($path, false, true, false);
 		return $this->getFilesData($files);
 	}
 	

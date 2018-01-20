@@ -823,12 +823,12 @@ class plgSystemRSFirewall extends JPlugin
 				$cache->setCaching(true);
 
 				// Get the hostname address
-				$hostname 	= $cache->call(array('plgSystemRSFirewall', 'getHostByAddr'), $this->ip);
+				$hostname 	= $cache->get(array('plgSystemRSFirewall', 'getHostByAddr'), array($this->ip));
 				$isGoogle 	= substr($hostname, -14) == '.googlebot.com';
 				$isMSN 		= substr($hostname, -15) == '.search.msn.com';
 				// Check if it's a search engine domain
 				if ($isGoogle || $isMSN) {
-					$ip 	= $cache->call(array('plgSystemRSFirewall', 'getAddrByHost'), $hostname);
+					$ip 	= $cache->get(array('plgSystemRSFirewall', 'getAddrByHost'), array($hostname));
 					$result = $this->ip === $ip;
 				} else {
 					$result = false;
@@ -1152,7 +1152,7 @@ class plgSystemRSFirewall extends JPlugin
 						$cache->setCaching(true);
 						$cache->setLifeTime(1440);
 
-						if ($result = $cache->call(array('plgSystemRSFirewall', 'isSpam'), $this->ip)) {
+						if ($result = $cache->get(array('plgSystemRSFirewall', 'isSpam'), array($this->ip))) {
 							$this->logger->add('medium', 'DNSBL_LISTED', "({$result->dnsbl}) {$result->reason}");
 							$this->reason = JText::_('COM_RSFIREWALL_DNSBL_LISTED');
 							$this->showForbiddenMessage();

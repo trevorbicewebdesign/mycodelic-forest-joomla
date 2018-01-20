@@ -156,13 +156,13 @@ class RsfirewallModelDiff extends JModelLegacy
 		$cache->setCaching($caching);
 		$cache->setLifetime(300);
 
-		return $cache->call(array('RsfirewallModelDiff', 'connectCache'), $url);
+		return $cache->get(array('RsfirewallModelDiff', 'connectCache'), array($url));
 	}
 
 	public static function connectCache($url)
 	{
 		$http     = JHttpFactory::getHttp();
-		$response = $http->get($url, null, 30);
+		$response = $http->get($url, array(), 30);
 
 		return $response;
 	}

@@ -95,7 +95,7 @@ class RSFirewallConfig
 				
 				case 'array-int':
 					if (is_array($value)) {
-						JArrayHelper::toInteger($value);
+						array_map('intval', $value);
 						$value = implode("\n", $value);
 					}
 				break;

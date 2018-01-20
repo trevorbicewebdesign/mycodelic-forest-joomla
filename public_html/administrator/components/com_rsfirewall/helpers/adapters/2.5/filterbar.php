@@ -33,7 +33,7 @@ class RSFilterBar
 				<label class="filter-search-lbl" for="filter_search"><?php echo $this->search['label']; ?></label>
 				<input type="text" name="filter_search" id="filter_search" value="<?php echo $this->escape($this->search['value']); ?>" />
 				<button type="submit"><?php echo JText::_('JSEARCH_FILTER_SUBMIT'); ?></button>
-				<button type="button" onclick="document.id('filter_search').value='';this.form.submit();"><?php echo JText::_('JSEARCH_RESET'); ?></button>
+				<button type="button" onclick="document.getElementById('filter_search').value='';this.form.submit();"><?php echo JText::_('JSEARCH_RESET'); ?></button>
 			</div>
 			<?php } ?>
 			<?php if ($this->rightItems) { ?>

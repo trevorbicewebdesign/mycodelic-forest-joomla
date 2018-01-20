@@ -178,7 +178,7 @@ class RsfirewallModelConfiguration extends JModelAdmin
 			
 			// Connect to server
 			$http 		= JHttpFactory::getHttp();
-			$response 	= $http->get($url, null, 10);
+			$response 	= $http->get($url, array(), 10);
 			
 			// Check if request is successful
 			if ($response->code != 200) {

@@ -32,8 +32,8 @@ class RsfirewallControllerFeeds extends JControllerAdmin
 		$order = $this->input->post->get('order', array(), 'array');
 
 		// Sanitize the input
-		JArrayHelper::toInteger($pks);
-		JArrayHelper::toInteger($order);
+		array_map('intval', $pks);
+		array_map('intval', $order);
 
 		// Get the model
 		$model = $this->getModel();

@@ -152,7 +152,7 @@ class RSFirewallGoogleSafeBrowsing
 
 		$cache = JFactory::getCache('com_rsfirewall');
 		$cache->setCaching(true);
-		$request = $cache->call(array('RSFirewallGoogleSafeBrowsing', 'getGoogleResponse'));
+		$request = $cache->get(array('RSFirewallGoogleSafeBrowsing', 'getGoogleResponse'));
 
 		return $this->parseRequest($request);
 
