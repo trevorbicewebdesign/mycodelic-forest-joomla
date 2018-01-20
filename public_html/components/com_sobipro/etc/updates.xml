@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<updateslist>
+  <created>1510019678</created>
+  <createdby>
+    <id>43</id>
+    <name>Trevor Bice</name>
+  </createdby>
+  <repositories>
+    <sobipro-core>https://repository.sigsiu.net/repository.php</sobipro-core>
+  </repositories>
+  <updates>
+    <sobipro>
+      <name>SobiPro</name>
+      <type>Core</type>
+      <installed>1.4.3.5436</installed>
+      <current>1.4.3</current>
+      <update>false</update>
+      <repository>sobipro_core</repository>
+    </sobipro>
+  </updates>
+</updateslist>

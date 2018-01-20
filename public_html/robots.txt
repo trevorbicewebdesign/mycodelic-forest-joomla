@@ -1,0 +1,67 @@
+# If the Joomla site is installed within a folder such as at
+# e.g. www.example.com/joomla/ the robots.txt file MUST be
+# moved to the site root at e.g. www.example.com/robots.txt
+# AND the joomla folder name MUST be prefixed to the disallowed
+# path, e.g. the Disallow rule for the /administrator/ folder
+# MUST be changed to read Disallow: /joomla/administrator/
+#
+# For more information about the robots.txt standard, see:
+# http://www.robotstxt.org/orig.html
+#
+# For syntax checking, see:
+# http://www.sxw.org.uk/computing/robots/check.html
+
+User-agent: *
+Disallow: /administrator/
+Disallow: /cache/
+Disallow: /cli/
+Disallow: /components/
+Disallow: /images/
+Disallow: /includes/
+Disallow: /installation/
+Disallow: /language/
+Disallow: /libraries/
+Disallow: /logs/
+Disallow: /media/
+Disallow: /modules/
+Disallow: /plugins/
+Disallow: /templates/
+Disallow: /tmp/
+
+
+# JS/CSS
+Allow: /images/*.png$
+Allow: /images/*.jpg$
+Allow: /images/*.gif$
+
+Allow: /templates/*.png$
+Allow: /templates/*.jpg$
+
+Allow: /media/*.png$
+Allow: /media/*.jpg$
+Allow: /media/*.gif$
+
+Allow: /modules/*.png$
+Allow: /modules/*.jpg$
+Allow: /modules/*.gif$
+
+Allow: /plugins/*.png$
+Allow: /plugins/*.jpg$
+Allow: /plugins/*.gif$
+
+Allow: /templates/*.js$
+Allow: /templates/*.css$
+Allow: /plugins/*.js$
+Allow: /plugins/*.css$
+Allow: /modules/*.js$
+Allow: /modules/*.css$
+Allow: /components/*.js$
+Allow: /components/*.css$
+Allow: /includes/*.js$
+Allow: /includes/*.css$
+Allow: /libraries/*.js$
+Allow: /libraries/*.css$
+Allow: /cache/*.js$
+Allow: /cache/*.css$
+Allow: /media/*.js$
+Allow: /media/*.css$

@@ -1,4 +1,4 @@
 *.lck
-/configuration.php
-/Joomla_3.6.5-Stable-Full_Package.zip
-/site-mycodelicforest.org-20160323-222433.zip
+/public_html/configuration.php
+/public_html/Joomla_3.6.5-Stable-Full_Package.zip
+/public_html/site-mycodelicforest.org-20160323-222433.zip

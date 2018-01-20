@@ -1,0 +1,157 @@
+<config>
+	<fieldset name="company-information" label="Company Information" description=""> 
+	
+		<field 
+			name			= "company_name" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= "input-xxlarge input-large-text"
+			label		= "Company Name" 
+			description	= "BLACKSUN_CLIENT_NAME_DESC" 
+			/>
+		<field 
+			name			= "company_email" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Primary Email" 
+			description	= "" 
+			/>			
+		<field 
+			name			= "company_address_1" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Address 1" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "company_address_2" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Address 2" 
+			description	= "" 
+			/>
+		<field 
+			name			= "company_city" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "City" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "company_state" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "State" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "company_zip" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Zip" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "company_phone" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Phone" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "company_mobil" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Phone (Cell)" 
+			description	= "" 
+			/>	
+			
+	</fieldset>	
+	
+	<fieldset name="configuration" label="Configuration" description=""> 
+		<field 
+			name			= "date_format" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Date Format" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "email_from" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "From Email" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "email_reply" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Reply Email" 
+			description	= "" 
+			/>	
+		<field 
+			name			= "storage_path" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Storage Path" 
+			description	= "" 
+			/>		
+		
+		
+		
+	</fieldset>
+	<fieldset name="notifications" label="Notifications" description=""> 
+		<field 
+			name			= "notification_days" 
+			type			= "text" 
+			default		= ""
+			readonly		= "" 
+			class		= ""
+			label		= "Days Notificaiton" 
+			description	= "" 
+			/>	
+	
+	</fieldset>	
+	<fieldset
+		name="permissions"
+		label="JCONFIG_PERMISSIONS_LABEL"
+		description="JCONFIG_PERMISSIONS_DESC"
+		>
+
+		<field
+			name="rules"
+			type="rules"
+			label="JCONFIG_PERMISSIONS_LABEL"
+			filter="rules"
+			validate="rules"
+			component="com_ccinvoices"
+			section="component">
+		</field>
+	</fieldset>
+</config>

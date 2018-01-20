@@ -1,0 +1,239 @@
+.view-registration #tbw-pagetop,
+.homepage #tbw-pagetop {
+  
+  background: #1c4565;
+  
+  background: -moz-linear-gradient(top, #1c4565 0%, #216185 25%, #3d7e9c 50%, #add5dd 75%, #f2f9f1 100%);
+  
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #1c4565), color-stop(25%, #216185), color-stop(50%, #3d7e9c), color-stop(75%, #add5dd), color-stop(100%, #f2f9f1));
+  
+  background: -webkit-linear-gradient(top, #1c4565 0%, #216185 25%, #3d7e9c 50%, #add5dd 75%, #f2f9f1 100%);
+  
+  background: -o-linear-gradient(top, #1c4565 0%, #216185 25%, #3d7e9c 50%, #add5dd 75%, #f2f9f1 100%);
+  
+  background: -ms-linear-gradient(top, #1c4565 0%, #216185 25%, #3d7e9c 50%, #add5dd 75%, #f2f9f1 100%);
+  
+  background: linear-gradient(to bottom, #1c4565 0%, #216185 25%, #3d7e9c 50%, #add5dd 75%, #f2f9f1 100%);
+  
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#1c4565', endColorstr='#f2f9f1', GradientType=0);
+  
+  height: 500px;
+  overflow: hidden;
+  z-index: 2;
+}
+@media screen and (max-width: 992px) {
+  .view-registration #tbw-pagetop,
+  .homepage #tbw-pagetop {
+    height: 450px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .view-registration #tbw-pagetop,
+  .homepage #tbw-pagetop {
+    height: 450px;
+  }
+}
+@media screen and (max-width: 480px) {
+  .view-registration #tbw-pagetop,
+  .homepage #tbw-pagetop {
+    height: 350px;
+  }
+}
+.view-registration #tbw-pagetop .th-box,
+.homepage #tbw-pagetop .th-box {
+  background: none !important;
+}
+.view-registration #tbw-pagetop .slideshow,
+.homepage #tbw-pagetop .slideshow {
+  text-align: center;
+  border: 3px solid #FFFFFF;
+  border-radius: 100%;
+  width: 100%;
+  height: 960px;
+}
+@media screen and (max-width: 992px) {
+  .view-registration #tbw-pagetop .slideshow,
+  .homepage #tbw-pagetop .slideshow {
+    height: 768px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .view-registration #tbw-pagetop .slideshow,
+  .homepage #tbw-pagetop .slideshow {
+    height: 620px;
+  }
+}
+@media screen and (max-width: 480px) {
+  .view-registration #tbw-pagetop .slideshow,
+  .homepage #tbw-pagetop .slideshow {
+    height: 480px;
+  }
+}
+.view-registration #tbw-pagetop .slideshow img,
+.homepage #tbw-pagetop .slideshow img {
+  max-width: 25%;
+}
+.view-registration #tbw-pagetop h1,
+.homepage #tbw-pagetop h1 {
+  color: #FFFFFF;
+  font-size: 5vw;
+  font-family: 'Poiret One', cursive;
+}
+.view-registration .pagetop-wrapper2,
+.homepage .pagetop-wrapper2 {
+  max-height: 550px;
+}
+.view-registration .pagemiddle-wrapper,
+.homepage .pagemiddle-wrapper {
+  background: #4f3c30;
+}
+.view-registration .mountains,
+.homepage .mountains {
+  margin-top: -94px;
+  z-index: 2;
+  position: relative;
+}
+.view-registration .mountains img,
+.homepage .mountains img {
+  width: 100%;
+  height: auto;
+}
+.view-registration #tbw-pagemiddle,
+.homepage #tbw-pagemiddle {
+  background: url(../../../templates/source3/images/main-bkgrnd.jpg) no-repeat 50% -5px;
+  background-size: 100%	auto;
+  padding-top: 0px;
+  z-index: 2;
+}
+.view-registration #tbw-pagemiddle h3,
+.homepage #tbw-pagemiddle h3 {
+  text-transform: uppercase;
+  font-size: 24px;
+  padding-bottom: 20px;
+  font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+}
+.view-registration #tbw-pagemiddle #t3-mainbody,
+.homepage #tbw-pagemiddle #t3-mainbody {
+  background: none;
+}
+.view-registration #tbw-pagemiddle #t3-mainbody .th-box-wrapper,
+.homepage #tbw-pagemiddle #t3-mainbody .th-box-wrapper {
+  background: url(../../../templates/source3/images/home-center-circle.png) no-repeat 50% 0px;
+  background-size: 100%	auto;
+  color: #FFFFFF;
+  padding-left: 50%;
+  box-sizing: border-box;
+  padding-top: 60px;
+  padding-bottom: 180px;
+  text-align: right;
+  font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+  font-weight: 300;
+}
+@media screen and (max-width: 992px) {
+  .view-registration #tbw-pagemiddle #t3-mainbody .th-box-wrapper,
+  .homepage #tbw-pagemiddle #t3-mainbody .th-box-wrapper {
+    font-size: 14px;
+    padding-left: 35%;
+  }
+}
+@media screen and (max-width: 768px) {
+  .view-registration #tbw-pagemiddle #t3-mainbody .th-box-wrapper,
+  .homepage #tbw-pagemiddle #t3-mainbody .th-box-wrapper {
+    font-size: 12px;
+    background: none;
+    padding-top: 0px;
+    padding-left: 0%;
+    text-align: left;
+  }
+}
+.view-registration #tbw-pagemiddle #t3-mainbody .th-box-wrapper .custom,
+.homepage #tbw-pagemiddle #t3-mainbody .th-box-wrapper .custom {
+  border-right: 3px solid #FFFFFF;
+  padding-right: 20px;
+}
+@media screen and (max-width: 768px) {
+  .view-registration #tbw-pagemiddle #t3-mainbody .th-box-wrapper .custom,
+  .homepage #tbw-pagemiddle #t3-mainbody .th-box-wrapper .custom {
+    border-right: 0px;
+  }
+}
+.view-registration #tbw-pagebottom,
+.homepage #tbw-pagebottom {
+  margin-top: -120px;
+  background: #FFFFFF;
+}
+div[class*="col-"] div[class*="col-"] {
+  padding-left: 0px;
+}
+#tbw-pagetop {
+  color: #ffffff;
+}
+#tbw-pagemiddle {
+  background: transparent;
+}
+.container {
+  max-width: 100%;
+}
+#tbw-pagetop .container .container,
+#tbw-pagemiddle .container .container {
+  padding: 0px;
+}
+#tbw-pagebottom {
+  padding-bottom: 50px;
+  background: transparent;
+  color: #a0a0a0;
+  font-family: 'Source Sans Pro', sans-serif;
+}
+#tbw-pagebottom h3 {
+  color: #ffffff;
+}
+#tbw-pagebottom > .tbw-container {
+  background: #FFFFFF;
+}
+#tbw-pagebottom .t3-copyright,
+#tbw-pagebottom .th-box .th-box-wrapper,
+#tbw-pagebottom .th-box {
+  background: none;
+}
+.tbw-top_drawer {
+  position: absolute;
+  width: 100%;
+  font-size: 12px;
+  text-align: right;
+  overflow: hidden;
+  z-index: 1031;
+}
+.tbw-top_drawer .container .t3-spotlight > div {
+  float: right;
+}
+.tbw-top_drawer .container .t3-module {
+  margin: 0px;
+  display: inline-block;
+}
+@media screen and (max-width: 768px) {
+  .tbw-top_drawer .container .t3-module {
+    background: #969696;
+    position: relative;
+  }
+}
+.tbw-top_drawer .container .t3-module .module-ct {
+  padding: 0px;
+}
+@media screen and (max-width: 768px) {
+  .tbw-top_drawer {
+    background: #969696;
+    position: relative;
+  }
+}
+.tbw-page_title {
+  background: #999999;
+}
+.tbw-page_title .container {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.tbw-page_title .container .tbw-box {
+  margin-left: 15px;
+  margin-right: 15px;
+  text-align: right;
+}

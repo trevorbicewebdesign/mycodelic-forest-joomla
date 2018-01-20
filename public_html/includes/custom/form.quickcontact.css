@@ -1,0 +1,10 @@
+@charset "utf-8";
+/* CSS Document */
+.quickcontact table {
+	width:100%;	
+}
+.quickcontact input[type=text],
+.quickcontact textarea {
+	width:100%;
+}
+

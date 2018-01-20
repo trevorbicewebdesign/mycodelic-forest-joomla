@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="system" method="upgrade">
+	<name>TBWorks - FontAwesome</name>
+	<author>Trevor Bice Webdesign</author>
+	<creationDate>June 2013</creationDate>
+	<copyright>Copyright (C)2013 Trevor bice Webdesign. All rights reserved.</copyright>
+	<license>The MIT License (MIT)</license>
+	<authorEmail>trevorbicewebdesign@gmail.com</authorEmail>
+	<authorUrl>webdesign.trevorbice.com</authorUrl>
+	<version>1.1</version>
+	<description>
+		<![CDATA[
+		<link rel="stylesheet" href="../plugins/system/fontawesome/assets/admin.css" type="text/css" />
+		<div id="extension-description">
+		<h1>FontAwesome for Joomla</h1>
+		<p>Font Awesome gives you scalable vector icons that can instantly be customized — size, color, drop shadow, and anything that can be done with the power of CSS.
+		</p>
+		<hr/>
+		<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+				<td valign="top">
+					Brought to Joomla by:<br/>
+					<a href="http://webdesign.trevorbice.com/" target="_blank">
+					<img src="../media/tbworks/images/tbwebdesignlogo.png"/>
+					</a>
+				</td>
+				<td>
+				</td>
+			</tr>
+		</table>
+		</div>
+		]]>
+	</description>
+	<languages folder="administrator/language/en-GB">
+		<language tag="en-GB">en-GB.plg_system_fontawesome.ini</language>
+	</languages>	
+	<media folder="media" destination="tbworks">
+		<folder>css</folder>
+		<folder>images</folder>
+	</media>
+	<files>
+		<filename plugin="fontawesome">fontawesome.php</filename>
+		<filename>index.html</filename>
+		<folder>assets</folder>
+	</files>
+	<config>
+        <fields name="params">
+            <fieldset name="basic">
+				<field name="rumid" type="text" label="PT_RUMID_LABEL" description="PT_RUMID_DESC" />
+			</fieldset>
+		</fields>
+	</config>
+</extension>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assets>
+	<scripts>
+	</scripts>
+	
+	<stylesheets>
+		<file>css/social-media-counter.css</file>
+		<file>fonts/font-awesome/css/font-awesome.min.css</file>
+		<file>fonts/icomoon/icomoon.css</file>
+		<file>//fonts.googleapis.com/css?family=Roboto+Condensed:300italic,400italic,700italic,400,300,700</file>		
+	</stylesheets>
+	
+</assets>

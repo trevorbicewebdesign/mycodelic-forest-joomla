@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="system">
+	<name>Test Mode Plugin</name>
+	<author>Trevor Bice Webdesign</author>
+	<creationDate>April 2009</creationDate>
+	<copyright>Copyright (C)2013 Trevor bice Webdesign. All rights reserved.</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail>trevorbicewebdesign@gmail.com</authorEmail>
+	<authorUrl>webdesign.trevorbice.com</authorUrl>
+	<version>2.0.0</version>
+	<description>
+		<![CDATA[<link rel="stylesheet" href="../plugins/system/testmode/assets/admin.css" type="text/css" />
+			<div id="extension-description">
+			<h1>Testmode - Plugin</h1>
+			<p>System plugin for Testmode</p>
+			<ul class="checkbox">
+		
+			
+			<hr/>
+			<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+			<td valign="top">
+			Brought to you by:<br/>
+			<a href="http://webdesign.trevorbice.com/" target="_blank">
+			<img src="../media/tbworks/images/tbwebdesignlogo.png"/>
+			</a>
+			</td>
+			<td>
+			</td>
+			</tr>
+			</table>
+			
+		</div>]]>
+	</description>
+	<media folder="media" destination="tbworks">
+		<folder>css</folder>
+		<folder>images</folder>
+	</media>
+	<files>
+		<filename plugin="testmode">testmode.php</filename>
+		<folder>assets</folder>
+		<filename>index.html</filename>
+	</files>
+</extension>
