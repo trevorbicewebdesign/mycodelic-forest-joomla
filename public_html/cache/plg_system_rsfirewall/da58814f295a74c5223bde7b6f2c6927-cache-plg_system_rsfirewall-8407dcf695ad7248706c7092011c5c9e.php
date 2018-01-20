@@ -1,1 +1,0 @@
-<?php die("Access Denied"); ?>#x#a:2:{s:6:"result";s:52:"c-3217e555.017-145-73746f24.cust.bredbandsbolaget.se";s:6:"output";s:0:"";}

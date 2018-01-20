@@ -1,1 +1,0 @@
-<?php die("Access Denied"); ?>#x#a:2:{s:6:"result";s:30:"static-181-143-8-34.une.net.co";s:6:"output";s:0:"";}
