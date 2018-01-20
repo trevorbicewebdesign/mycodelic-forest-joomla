@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -42,6 +42,7 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 	 *
 	 * @param unknown_type $action
 	 * @param unknown_type $value
+	 *
 	 * @return unknown
 	 */
 	public function mustCreatePageId($action = 'get', $value = false)
@@ -54,24 +55,41 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 		return self::$_mustCreate;
 	}
 
-	public function createPageId($sefUrl, $nonSefUrl)
+	/**
+	 * Create a shurl either for an internal URL, or an external URL.
+	 * If external, a fully qualified URL must be supplied, and non non-sef is needed.
+	 *
+	 * @param string $targetUrl
+	 * @param string $targetUrl
+	 *
+	 * @return mixed|string
+	 */
+	public function createPageId($sefUrl, $targetUrl)
 	{
 		$shURL = '';
-
-		if (!$this->_mustCreatePageid($nonSefUrl))
+		$isInternal = wbStartsWith($targetUrl, 'index.php?option');
+		if ($isInternal && !$this->_mustCreatePageid($targetUrl))
 		{
 			return $shURL;
 		}
 
 		jimport('joomla.utilities.string');
-		$sefUrl = JString::ltrim($sefUrl, '/');
+		$targetUrl = JString::ltrim($targetUrl, '/');
 
 		try
 		{
-			if (!empty($sefUrl))
+			if ($isInternal && !empty($targetUrl))
 			{
 				// check that we don't already have a shURL for the same SEF url, even if non-sef differ
-				$result = (int) ShlDbHelper::count('#__sh404sef_urls', '*', $this->_db->quoteName('oldurl') . ' = ? and ' . $this->_db->quoteName('newurl') . ' <> ?', array($sefUrl, ''));
+				$result = (int) ShlDbHelper::count(
+					'#__sh404sef_urls',
+					'*',
+					$this->_db->quoteName('oldurl') . ' = ? and ' . $this->_db->quoteName('newurl') . ' <> ?',
+					array(
+						$targetUrl,
+						''
+					)
+				);
 
 				if (!empty($result) && $result > 1)
 				{
@@ -81,7 +99,14 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 			}
 
 			// check this nonsef url does not already have a shURL
-			$existingShurl = ShlDbHelper::selectResult('#__sh404sef_pageids', 'pageid', array('newurl' => $nonSefUrl));
+			$existingShurl = ShlDbHelper::selectResult(
+				'#__sh404sef_pageids',
+				'pageid',
+				array(
+					'newurl' => $targetUrl
+				)
+			);
+
 			// there already is a shurl for the same non-sef
 			if (!empty($existingShurl))
 			{
@@ -92,18 +117,31 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 			$shURL = $this->_buildPageId();
 			if (!empty($shURL))
 			{
-
 				// insert in db
-				ShlDbHelper::insert('#__sh404sef_pageids', array('newurl' => $nonSefUrl, 'pageid' => $shURL, 'type' => Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID, 'hits' => 0));
+				ShlDbHelper::insert(
+					'#__sh404sef_pageids',
+					array(
+						'newurl' => $targetUrl,
+						'pageid' => $shURL,
+						'type'   => $isInternal ? Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID : Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID_EXTERNAL,
+						'hits'   => 0
+					)
+				);
 			}
 		}
 		catch (Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
+			$shURL = '';
 		}
 		// don't need to add the pageid to cache, won't be needed when building up the page,
 		//only when decoding incoming url
 		return $shURL;
+	}
+
+	public function checkRedirect($shurl)
+	{
+
 	}
 
 	/**
@@ -512,7 +550,17 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 				// previous shurl check
 				if (!$doneShurl)
 				{
-					$isShurl = (int) ShlDbHelper::count('#__sh404sef_pageids', '*', array('pageid' => $shURL, 'type' => Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID));
+					$isShurl = (int) ShlDbHelper::count(
+						'#__sh404sef_pageids',
+						'*',
+						$this->_db->quoteName('pageid') . ' = ? and (' . $this->_db->quoteName('type') . ' = ? or ' . $this->_db->quoteName('type') . ' = ?)',
+						array(
+							$shURL,
+							Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID,
+							Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID_EXTERNAL
+						)
+					);
+
 					if (!empty($isShurl))
 					{
 						// there is already a shurl like that
@@ -536,7 +584,13 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 				// alias collision check
 				if (!$doneAlias)
 				{
-					$isAlias = (int) ShlDbHelper::count('#__sh404sef_aliases', '*', array('alias' => $shURL, 'type' => Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS));
+					$isAlias = (int) ShlDbHelper::count(
+						'#__sh404sef_aliases',
+						'*',
+						'alias = ? and (type = ? or type = ?)',
+						array(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS, Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_WILDCARD)
+					//array('alias' => $shURL, 'type' => Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS)
+					);
 					if (!empty($isAlias))
 					{
 						// there is already an alias like that

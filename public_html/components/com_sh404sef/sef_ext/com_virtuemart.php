@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  *
  */
 
@@ -422,7 +422,7 @@ else
 				if (empty($title) && count($originalVars) == 2 && !empty($originalVars['Itemid']) && !empty($originalVars['option']))
 				{
 					$menuItem = JFactory::getApplication()->getMenu()->getItem($originalVars['Itemid']);
-					if (!empty($menuItem) && !Sh404sefHelperLanguage::isHomepageMenuItem($item))
+					if (!empty($menuItem) && !Sh404sefHelperLanguage::isHomepageMenuItem($menuItem))
 					{
 						$cartRoute = ($shouldInsertCat ? $menuItem->route : $menuItem->alias);
 						!empty($cartRoute) ? array_unshift($title, $cartRoute) : null;

@@ -3,14 +3,14 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
-defined('_JEXEC') or die('Direct Access to this location is not allowed.');
+defined('_JEXEC') or die('');
 
 // Mighty Touch and JomSocial use same component name (com_community)
 // check if JomSocial is installed before using this code
@@ -54,7 +54,10 @@ $shLangIso = '';
 $title = array();
 $shItemidString = '';
 $dosef = shInitializePlugin($lang, $shLangName, $shLangIso, $option);
-if ($dosef == false) return;
+if ($dosef == false)
+{
+	return;
+}
 // ------------------  standard plugin initialize function - don't change ---------------------------
 
 // do something about that Itemid thing
@@ -285,7 +288,6 @@ if (!function_exists('shGetJSGroupCategoryTitle'))
 {
 	function shGetJSGroupCategoryTitle($id, $option, $shLangName)
 	{
-
 		static $cats = null;
 
 		$sefConfig = &Sh404sefFactory::getConfig();
@@ -293,8 +295,10 @@ if (!function_exists('shGetJSGroupCategoryTitle'))
 		{
 			try
 			{
-				$cats = ShlDbHelper::selectObjectList('#__community_groups_category', array('id', 'name')
-					, $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0, $lines = 0, $key = 'id');
+				$cats = ShlDbHelper::selectObjectList(
+					'#__community_groups_category', array('id', 'name')
+					, $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0, $lines = 0, $key = 'id'
+				);
 			}
 			catch (Exception $e)
 			{
@@ -310,11 +314,46 @@ if (!function_exists('shGetJSGroupCategoryTitle'))
 	}
 }
 
+if (!function_exists('shGetJSEventTitle'))
+{
+	function shGetJSEventTitle($id)
+	{
+		static $events = array();
+
+		if (empty($id))
+		{
+			return '';
+		}
+
+		$sefConfig = Sh404sefFactory::getConfig();
+		if (empty($events[$id]))
+		{
+			try
+			{
+				$eventTitle = ShlDbHelper::selectResult(
+					'#__community_events',
+					array('title'),
+					array('id' => $id)
+				);
+			}
+			catch (Exception $e)
+			{
+				ShlSystem_Log::error('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, $e->getMessage());
+				$events[$id] = '';
+			}
+		}
+		$slug = empty($eventTitle) ? '' : $eventTitle;
+		$prefix = empty($slug) || $sefConfig->shJSInsertGroupCategoryId ? $id : '';
+		$events[$id] = $prefix . (empty($slug) || empty($prefix)? '' : $sefConfig->replacement) . $slug;
+
+		return $events[$id];
+	}
+}
+
 if (!function_exists('shGetJSEventsCategoryTitle'))
 {
 	function shGetJSEventsCategoryTitle($id, $option, $shLangName)
 	{
-
 		static $cats = null;
 
 		$sefConfig = &Sh404sefFactory::getConfig();
@@ -322,15 +361,16 @@ if (!function_exists('shGetJSEventsCategoryTitle'))
 		{
 			try
 			{
-				$cats = ShlDbHelper::selectObjectList('#__community_events_category', array('id', 'name')
-					, $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0, $lines = 0, $key = 'id');
+				$cats = ShlDbHelper::selectObjectList(
+					'#__community_events_category', array('id', 'name')
+					, $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0, $lines = 0, $key = 'id'
+				);
 			}
 			catch (Exception $e)
 			{
 				ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 				$cats = array();
 			}
-
 		}
 		$slug = empty($cats[$id]) ? '' : $cats[$id]->name;
 		$prefix = empty($slug) || $sefConfig->shJSInsertGroupCategoryId ? $id : '';
@@ -501,8 +541,10 @@ if (!function_exists('shGetJSVideoCategoryTitle'))
 		{
 			try
 			{
-				$cats = ShlDbHelper::selectObjectList('#__community_videos_category', array('id', 'name')
-					, $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0, $lines = 0, $key = 'id');
+				$cats = ShlDbHelper::selectObjectList(
+					'#__community_videos_category', array('id', 'name')
+					, $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0, $lines = 0, $key = 'id'
+				);
 			}
 			catch (Exception $e)
 			{
@@ -547,7 +589,6 @@ if (!function_exists('shGetJSVideoTitle'))
 		}
 
 		return $title;
-
 	}
 }
 
@@ -600,6 +641,7 @@ if (!function_exists('shMustInsertJSName'))
 $view = isset($view) ? $view : null;
 $task = isset($task) ? $task : null;
 $userid = isset($userid) ? $userid : null;
+$eventid = isset($eventid) ? $eventid : null;
 
 // insert component name from menu
 $shJSName = shGetComponentPrefix($option);
@@ -790,6 +832,16 @@ switch ($view)
 				$title[] = $slug;
 			}
 		}
+		if (!empty($eventid) && (empty($task) || 'viewevent' == $task))
+		{
+			$title[] = 'viewevent';
+			$eventTitle = shGetJSEventTitle($eventid);
+			if (!empty($eventTitle))
+			{
+				$title[] = $eventTitle;
+				shRemoveFromGETVarsList('eventid');
+			}
+		}
 		if (empty($task))
 		{
 			$title[] = '/';
@@ -925,7 +977,6 @@ switch ($task)
 			default:
 				$title[] = $task;
 				break;
-
 		}
 		break;
 	case 'editDetails':
@@ -1024,7 +1075,10 @@ switch ($task)
 		$title[] = $task;
 		break;
 	case 'viewevent':
-		$title[] = $task;
+		if (empty($eventid) || 'events' != $view)
+		{
+			$title[] = $task;
+		}
 		break;
 
 	// searching
@@ -1071,7 +1125,16 @@ switch ($task)
 	default:
 		if (!empty($task))
 		{
-			$title[] = $task;
+			if (
+				empty($view)
+				||
+				'display' != $task
+				||
+				(!empty($view) && 'display' == $task && !in_array($view, array('photos', 'videos', 'groups', 'events')))
+			)
+			{
+				$title[] = $task;
+			}
 		}
 }
 
@@ -1115,9 +1178,11 @@ if (isset($limitstart))
 // ------------------  standard plugin finalize function - don't change ---------------------------
 if ($dosef)
 {
-	$string = shFinalizePlugin($string, $title, $shAppendString, $shItemidString,
+	$string = shFinalizePlugin(
+		$string, $title, $shAppendString, $shItemidString,
 		(isset($limit) ? @$limit : null), (isset($limitstart) ? @$limitstart : null),
-		(isset($shLangName) ? @$shLangName : null));
+		(isset($shLangName) ? @$shLangName : null)
+	);
 }
 // ------------------  standard plugin finalize function - don't change ---------------------------
 

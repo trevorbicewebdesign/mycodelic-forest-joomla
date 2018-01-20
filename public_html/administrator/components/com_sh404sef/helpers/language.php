@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -461,7 +461,6 @@ class Sh404sefHelperLanguage
 		// set new cookie, both in browser and in internal application vars
 		$app = JFactory::getApplication();
 		$app->input->cookie->set($cookieName, $languageCode, $cookieTime, $cookiePath, $cookieDomain, false, true);
-		JRequest::setVar($cookieName, $languageCode, 'cookie');
 		// as Joomla languagefilter also sets this cookie disregarding the path,domain and duration parameters, we must set it twice
 		if (version_compare(JVERSION, '3.3', '<'))
 		{

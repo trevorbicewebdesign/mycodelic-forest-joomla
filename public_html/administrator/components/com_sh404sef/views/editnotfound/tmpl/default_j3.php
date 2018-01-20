@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -27,19 +27,23 @@ if (!defined('_JEXEC'))
 				echo JText::_('COM_SH404SEF_NOT_FOUND_ENTER_REDIRECT_FOR') . ' ' . ShlHtmlBs_Helper::label($title, 'info', $dismiss = false, 'label-large') ;
 				?>
 			</div>
-			<div class="shmodal-toolbar-buttons" id="shmodal-toolbar-buttons">
-				<button class="btn btn-primary" type="button" onclick="Joomla.submitform('save', document.adminForm);">
-					<i class="icon-apply icon-white"> </i>
-					<?php echo JText::_('JSAVE'); ?>
-				</button>
-				<button class="btn" type="button" onclick="<?php echo JRequest::getBool('refresh', 0)
-					? 'window.parent.location.href=window.parent.location.href;' : '';
-				?>  window.parent.shlBootstrap.closeModal();">
+            <div class="shmodal-toolbar-buttons" id="shmodal-toolbar-buttons">
+                <button class="btn btn-primary" id="shmodal-save-button" type="button">
+                    <i class="icon-publish icon-white"> </i>
+					<?php echo JText::_('JSAVE'); ?></button>
+                <button class="btn" type="button" id="shmodal-close"
+                        onclick="window.parent.location.href=window.parent.location.href;">
+					<?php echo JText::_('JTOOLBAR_CLOSE'); ?>
+                </button>
+                <button class="btn" type="button" id="shmodal-cancel"
+                        onclick="window.parent.shlBootstrap.closeModal();">
 					<?php echo JText::_('JCANCEL'); ?>
-				</button>
-			</div>
+                </button>
+            </div>
 		</div>
 	</div>
+
+    <div id="shmodal-message-block" class="shmodal-message-block"></div>
 
 	<div class="shmodal-content wbl-theme-default" id="shmodal-content">
 
@@ -63,10 +67,9 @@ if (!defined('_JEXEC'))
 				<div>
 					<input type="hidden" name="id" value="<?php echo $this->url->get('id'); ?>"/>
 					<input type="hidden" name="c" value="editnotfound"/>
-					<input type="hidden" name="view" value="editnotfound"/>
 					<input type="hidden" name="option" value="com_sh404sef"/>
-					<input type="hidden" name="task" value=""/>
-					<input type="hidden" name="tmpl" value="component"/>
+					<input type="hidden" name="task" value="save"/>
+					<input type="hidden" name="format" value="raw"/>
 					<?php echo JHTML::_('form.token'); ?>
 				</div>
 			</div>

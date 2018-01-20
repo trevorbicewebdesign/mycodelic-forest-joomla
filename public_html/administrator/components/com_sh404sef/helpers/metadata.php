@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -15,6 +15,9 @@ defined('_JEXEC') or die();
 
 class Sh404sefHelperMetadata
 {
+	private static $autoDesc         = '';
+	private static $filteredAutoDesc = '';
+
 	public static function shouldInsertMeta($input = null, $categories = array())
 	{
 		$input = empty($input) ? JFactory::getApplication()->input : $input;
@@ -36,7 +39,7 @@ class Sh404sefHelperMetadata
 		{
 			case 'com_content':
 				// only display if on an article page
-				$shouldInsertMeta = ($view == 'article' || $view == 'featured') && empty($printing);
+				$shouldInsertMeta = ($view == 'article' || $view == 'category' || $view == 'categories' || $view == 'featured') && empty($printing);
 				// check category
 				if ($shouldInsertMeta)
 				{
@@ -66,7 +69,7 @@ class Sh404sefHelperMetadata
 				}
 				break;
 			case 'com_k2':
-				$shouldInsertMeta = $view == 'item';
+				$shouldInsertMeta = in_array($view, array('item', 'itemlist', 'latest'));
 				break;
 			default:
 				$shouldInsertMeta = true;
@@ -97,6 +100,7 @@ class Sh404sefHelperMetadata
 	 * in their "raw" form
 	 *
 	 * @param string $nonSef
+	 *
 	 * @return mixed
 	 * @see Sh404sefHelperMetadata::getFinalizedCustomMetaData
 	 *
@@ -150,8 +154,9 @@ class Sh404sefHelperMetadata
 	 * Compute and return metadata, in their final usable form, ready to insert in page
 	 * ie: tags or quotes removed for instance
 	 *
-	 * @param object $rawMetaData
+	 * @param object  $rawMetaData
 	 * @param boolean $isHome
+	 *
 	 * @return mixed|null|void
 	 */
 	public static function getFinalizedCustomMetaData($rawMetaData = null, $isHome = null)
@@ -200,6 +205,89 @@ class Sh404sefHelperMetadata
 		return $metaData;
 	}
 
+	public static function buildAutoDescription($context, $content, $params, $page)
+	{
+		switch ($context)
+		{
+			case 'com_content.article':
+				self::$autoDesc = self::buildDescription($content);
+				break;
+			case 'com_content.categories':
+				break;
+		}
+
+		/**
+		 * Filter automatically computed description.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\metadata
+		 * @var auto_fallback_description
+		 * @since   4.10.2
+		 *
+		 * @param string    $context The context from onPrepareContent.
+		 * @param string    $content The raw text from onPrepareContent.
+		 * @param JRegistry $params The params object from onPrepareContent
+		 * @param int       $page The page number, as obtained from onPrepareContent.
+		 *
+		 * @return array
+		 */
+		self::$filteredAutoDesc = ShlHook::filter(
+			'auto_fallback_description',
+			self::$autoDesc,
+			$context,
+			$content,
+			$params,
+			$page
+		);
+	}
+
+	/**
+	 * Compute  a fallback description from a piece of HTML.
+	 *
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	private static function buildDescription($content)
+	{
+		$expressions = array(
+			'/<script\s[^>]*>.*<\/script>/uUis',
+			'#{\s*jumi[^}]+}#uUi',
+			'#{\s*wbamp[^}]+}#uUi',
+			'#{\s*sh404sef_[^}]*}#us',
+			'#{\s*module[^}]*}#iuUs',
+			'#{\s*snippet[^}]*}#iuUs',
+			'#{\s*tip[^}]*}#iuUs',
+			'#{\s*rsform[^}]*}#iuUs',
+			'#{\s*phocagallery[^}]*}#iuUs',
+			'#{(.*?)}(.*?){/(.*?)}#us',
+			'#\[(.*?)\](.*?)\[/(.*?)\]#us',
+		);
+		foreach($expressions as $expression)
+		{
+			$content = preg_replace($expression, '', $content);
+		}
+
+		$content = strip_tags($content);
+		$content = preg_replace("#[\s\n\r\t]+#us", ' ', $content);
+		$content = str_replace(
+			array('&nbsp;', '"'),
+			array(' ', '\''),
+			$content
+		);
+		$content = html_entity_decode($content, ENT_COMPAT, 'UTF-8');
+		$content = trim($content);
+
+		$description = JHtml::_('string.abridge', $content, 160, 160);
+
+		return $description;
+	}
+
+	public static function getAutoDescription()
+	{
+		return self::$filteredAutoDesc;
+	}
+
 	/**
 	 * Insert metadata into document
 	 * Only "common" metadata is handled here.
@@ -238,6 +326,18 @@ class Sh404sefHelperMetadata
 		{
 			$pageInfo->pageDescription = $metaData->pageDescription;
 			$document->setDescription($pageInfo->pageDescription);
+		}
+
+		// auto description
+		$pageInfo->pageDescription = $document->getDescription();
+		if ($config->autoBuildDescription && empty($pageInfo->pageDescription))
+		{
+			$fallbackDescription = self::getAutoDescription();
+			if (!empty($fallbackDescription))
+			{
+				$pageInfo->pageDescription = $fallbackDescription;
+				$document->setDescription($fallbackDescription);
+			}
 		}
 
 		if (!empty($metaData->pageKeywords))

@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -146,8 +146,8 @@ class Sh404sefHelperHtmlBase
 		// build up list from scratch
 		$data = array();
 		$data[] = array('id' => 'ga:pageviews', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_PAGEVIEWS'));
-		$data[] = array('id' => 'ga:visits', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_VISITS'));
-		$data[] = array('id' => 'ga:visitors', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_VISITORS'));
+		$data[] = array('id' => 'ga:sessions', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_VISITS'));
+		$data[] = array('id' => 'ga:users', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_VISITORS'));
 
 		// use helper to build html
 		$list = self::buildSelectList($data, $current, $name, $autoSubmit, $addSelectAll, $selectAllTitle, $customSubmit);

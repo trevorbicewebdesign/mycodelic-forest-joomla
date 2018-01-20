@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -32,11 +32,12 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 		$model->updateContext($this->_context . '.' . $this->getLayout());
 
 		// get url id
-		$cid = JRequest::getVar('cid', array(0), 'default', 'array');
-		$cid = intval($cid[0]);
+		$app = JFactory::getApplication();
+		$cid = $app->input->getArray(array('cid' => 'int'));
+		$cid = wbArrayGet($cid, array('cid', 0), 0);
 
 		// get home page flag, and make sure id is 0 if editing home data
-		$home = JRequest::getInt('home');
+		$home = JFactory::getApplication()->input->getInt('home');
 		if ($home == 1)
 		{
 			$cid = 0;
@@ -44,7 +45,7 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 		$this->home = $home;
 
 		// optional starting pane in case of tabbed edition
-		$startOffset = JRequest::getInt('startOffset', 0);
+		$startOffset = JFactory::getApplication()->input->getInt('startOffset', 0);
 		$this->startOffset = $startOffset;
 
 		// read url data from model
@@ -97,6 +98,18 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 		}
 		$this->aliases = $aliases;
 
+		// v 4.12: canonical are now handled as aliases
+		$sourceUrl = $home == 1 ? '/' : $newUrl;
+		$this->canonical = ShlDbHelper::selectResult(
+			'#__sh404sef_aliases',
+			'newurl',
+			'target_type = ' . Sh404sefModelRedirector::TARGET_TYPE_CANONICAL . ' and (alias = ? or alias = ?) and (state = 1)',
+			array(
+				$sourceUrl,
+				$oldUrl
+			)
+		);
+
 		// now read pageid for this url, using pageid model
 		$pageidModel = ShlMvcModel_Base::getInstance('pageids', 'Sh404sefModel');
 		$pageids = $pageidModel->getList((object) array('newurl' => $url->get('newurl')), $returnZeroElement = true);
@@ -123,45 +136,35 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 			$title = $url->get('id') ? JText::_('COM_SH404SEF_EDIT_URL_TITLE') : JText::_('COM_SH404SEF_ADD_URL_TITLE');
 		}
 
-		if (version_compare(JVERSION, '3.0', 'ge'))
-		{
-			// add modal css and js
-			ShlHtmlBs_helper::addBootstrapCss(JFactory::getDocument());
-			ShlHtmlBs_helper::addBootstrapJs(JFactory::getDocument());
+		// add modal css and js
+		$document = JFactory::getDocument();
+		ShlHtml_Manager::getInstance($document)
+		               ->addAssets($document)
+		               ->addSpinnerAssets($document);
+		ShlHtmlBs_helper::addBootstrapCss(JFactory::getDocument());
+		ShlHtmlBs_helper::addBootstrapJs(JFactory::getDocument());
 
-			// add title
-			JToolbarHelper::title('sh404SEF: ' . $title);
+		// add title
+		JToolbarHelper::title('sh404SEF: ' . $title);
 
-			// prepare layouts objects, to be used by sub-layouts
-			$this->layoutRenderer = array();
-			$this->layoutRenderer['custom'] = new ShlMvcLayout_File('com_sh404sef.form.fields.custom', sh404SEF_LAYOUTS);
-			$this->layoutRenderer['shlegend'] = new ShlMvcLayout_File('com_sh404sef.configuration.fields.legend', sh404SEF_LAYOUTS);
-			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/configuration.css');
-			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/j3_list.css');
+		// prepare layouts objects, to be used by sub-layouts
+		$this->layoutRenderer = array();
+		$this->layoutRenderer['custom'] = new ShlMvcLayout_File('com_sh404sef.form.fields.custom', sh404SEF_LAYOUTS);
+		$this->layoutRenderer['shlegend'] = new ShlMvcLayout_File('com_sh404sef.configuration.fields.legend', sh404SEF_LAYOUTS);
+		JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/configuration.css');
+		JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/j3_list.css');
 
-			// add tooltips
-			// @TODO replace with a viable jQuery equivalent
-			JHTML::_('behavior.tooltip');
+		// add tooltips
+		// @TODO replace with a viable jQuery equivalent
+		JHTML::_('behavior.tooltip');
 
-			// insert bootstrap theme
-			ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
-		}
-		else
-		{
-			// build the toolbar
-			$toolBar = $this->_makeToolbar();
-			$this->toolbar = $toolBar;
-			$this->toolbarTitle = Sh404sefHelperGeneral::makeToolbarTitle($title, $icon = 'sh404sef', $class = 'sh404sef-toolbar-title');
-
-			// add tooltips
-			JHTML::_('behavior.tooltip');
-
-			// link to  custom javascript
-			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/' . $this->joomlaVersionPrefix . '_edit.js');
-		}
+		// insert bootstrap theme
+		ShlHtml_Manager::getInstance()->addAssets($document);
 
 		// add link to css
 		JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/' . $this->joomlaVersionPrefix . '_editurl.css');
+
+		JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/shajax_modal_form.js');
 
 		// now display normally
 		parent::display($this->joomlaVersionPrefix);

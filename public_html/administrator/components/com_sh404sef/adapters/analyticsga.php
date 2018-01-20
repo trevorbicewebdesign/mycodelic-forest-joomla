@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -26,6 +26,7 @@ jimport('joomla.application.application');
  */
 class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 {
+
 	protected $_endPoint = 'https://www.googleapis.com/analytics/v2.4/';
 
 	/**
@@ -34,17 +35,17 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 	 */
 	public function getSnippet()
 	{
+
 		// should we insert tracking code snippet ?
 		if (!$this->_shouldInsertSnippet())
 		{
 			return '';
 		}
 
-		//$config->analyticsType = 'uga';
 		switch (Sh404sefFactory::getConfig()->analyticsEdition)
 		{
 			case 'uga':
-				$snippet = $this->_getSnippetUga();
+				$snippet = $this->_getSnippetUga() . "\n";
 				break;
 			case 'gtm':
 				$snippet = $this->_getSnippetGtm();
@@ -54,7 +55,7 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 				break;
 		}
 
-		return $snippet . "\n";
+		return $snippet;
 	}
 
 	/**
@@ -63,6 +64,7 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 	 */
 	protected function _getSnippetUga()
 	{
+
 		// get config
 		$config = Sh404sefFactory::getConfig();
 		$pageInfo = Sh404sefFactory::getPageInfo();
@@ -73,10 +75,28 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		$displayData = array();
 		$displayData['tracking_code'] = trim($config->analyticsUgaId);
 		$displayData['custom_domain'] = 'auto';
+		$displayData['options'] = array();
 		$displayData['custom_url'] = $customUrl;
 		$displayData['anonymize'] = !empty($config->analyticsEnableAnonymization);
 		$displayData['enable_display_features'] = !empty($config->analyticsEnableDisplayFeatures);
 		$displayData['enable_enhanced_link_attr'] = !empty($config->analyticsEnableEnhancedLinkAttr);
+
+		/**
+		 * Filter the list of variables passed to the Universal Analytics JLayout.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\analytics
+		 * @var sh404sef_universal_analytics_data
+		 * @since   4.11
+		 *
+		 * @param array $displayData Associative array of analytics vars.
+		 *
+		 * @return array
+		 */
+		$displayData = ShlHook::filter(
+			'sh404sef_universal_analytics_data',
+			$displayData
+		);
 
 		$snippet = ShlMvcLayout_Helper::render('com_sh404sef.analytics.snippet_uga', $displayData);
 
@@ -89,6 +109,7 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 	 */
 	protected function _getSnippetGtm()
 	{
+
 		// get config
 		$config = Sh404sefFactory::getConfig();
 
@@ -96,7 +117,10 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		$displayData['tracking_code'] = trim($config->analyticsGtmId);
 
 		// finalize snippet : add user tracking code
-		$snippet = ShlMvcLayout_Helper::render('com_sh404sef.analytics.snippet_gtm', $displayData);
+		$snippet = array(
+			'body' => ShlMvcLayout_Helper::render('com_sh404sef.analytics.snippet_gtm_body', $displayData),
+			'head' => ShlMvcLayout_Helper::render('com_sh404sef.analytics.snippet_gtm_head', $displayData)
+		);
 
 		return $snippet;
 	}
@@ -213,6 +237,7 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 	 */
 	protected function _prepareFilters()
 	{
+
 		// array to hold various filters
 		$filters = array();
 
@@ -225,8 +250,10 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		if (version_compare(JVERSION, '3.0', 'ge'))
 		{
 			$select = '<div class="btn-group">';
-			$select .= Sh404sefHelperHtml::buildSelectList($this->_accounts, $this->_options['accountId'], 'accountId', $autoSubmit = false,
-				$addSelectAll = false, $selectAllTitle = '', $customSubmit);
+			$select .= Sh404sefHelperHtml::buildSelectList(
+				$this->_accounts, $this->_options['accountId'], 'accountId', $autoSubmit = false,
+				$addSelectAll = false, $selectAllTitle = '', $customSubmit
+			);
 			$select .= '</div>';
 			$filters[] = $select;
 
@@ -249,14 +276,18 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 				// select groupBy (day, week, month)
 				$select = '<div class="btn-group">';
 				$select .= '<label for="groupBy">' . JText::_('COM_SH404SEF_ANALYTICS_GROUP_BY') . '</label>';
-				$select .= Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList($this->_options['groupBy'], 'groupBy', $autoSubmit = false,
-					$addSelectAll = false, $selectAllTitle = '', $customSubmit);
+				$select .= Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList(
+					$this->_options['groupBy'], 'groupBy', $autoSubmit = false,
+					$addSelectAll = false, $selectAllTitle = '', $customSubmit
+				);
 				$select .= '</div>';
 				$filters[] = $select;
 
 				// add a click to update link
-				$filters[] = '<div class="row-fluid center analytics-filters-wrapper">' . ShlHtmlBs_Helper::button(JText::_('COM_SH404SEF_CHECK_ANALYTICS'), 'primary', '', 'javascript: shSetupAnalytics({forced:1'
-					. ($allFilters ? '' : ',showFilters:\'no\'') . '});') . '</div>';
+				$filters[] = '<div class="row-fluid center analytics-filters-wrapper">' . ShlHtmlBs_Helper::button(
+						JText::_('COM_SH404SEF_CHECK_ANALYTICS'), 'primary', '', 'javascript: shSetupAnalytics({forced:1'
+						                                        . ($allFilters ? '' : ',showFilters:\'no\'') . '});'
+					) . '</div>';
 			}
 			else
 			{
@@ -267,8 +298,10 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		}
 		else
 		{
-			$select = Sh404sefHelperHtml::buildSelectList($this->_accounts, $this->_options['accountId'], 'accountId', $autoSubmit = false,
-				$addSelectAll = false, $selectAllTitle = '', $customSubmit);
+			$select = Sh404sefHelperHtml::buildSelectList(
+				$this->_accounts, $this->_options['accountId'], 'accountId', $autoSubmit = false,
+				$addSelectAll = false, $selectAllTitle = '', $customSubmit
+			);
 			$filters[] = JText::_('COM_SH404SEF_ANALYTICS_ACCOUNT') . ':&nbsp;' . $select;
 
 			// dashboard only has account selection, no room for anything else
@@ -284,8 +317,10 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 				$filters[] = '&nbsp;' . JText::_('COM_SH404SEF_ANALYTICS_END_DATE') . ':&nbsp;' . $select;
 
 				// select groupBy (day, week, month)
-				$select = Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList($this->_options['groupBy'], 'groupBy', $autoSubmit = false,
-					$addSelectAll = false, $selectAllTitle = '', $customSubmit);
+				$select = Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList(
+					$this->_options['groupBy'], 'groupBy', $autoSubmit = false,
+					$addSelectAll = false, $selectAllTitle = '', $customSubmit
+				);
 				$filters[] = '&nbsp;' . JText::_('COM_SH404SEF_ANALYTICS_GROUP_BY') . ':&nbsp;' . $select;
 
 				// add a click to update link
@@ -299,6 +334,7 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 					. $this->_options['startDate'] . '&nbsp;&nbsp;>>&nbsp;&nbsp;' . $this->_options['endDate'] . '</div>';
 			}
 		}
+
 		// use layout to render
 		return $filters;
 	}

@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier 2017
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.632
- * @date                2017-06-01
+ * @version     0.3.1.659
+ * @date                2017-12-22
  */
 
 // no direct access
@@ -149,5 +149,27 @@ class ShlSystem_Http
 		}
 
 		die($msg);
+	}
+
+	/**
+	 * Perform a server-side 301 redirect to the target URL.
+	 *
+	 * @param string $target
+	 */
+	public static function redirectPermanent($target)
+	{
+		@ob_end_clean();
+		if (headers_sent())
+		{
+			echo '<html><head><meta http-equiv="content-type" content="text/html; charset="UTF-8"'
+				. '" /><script>document.location.href=\'' . $target . '\';</script></head><body></body></html>';
+		}
+		else
+		{
+			header('Cache-Control: no-cache'); // prevent Firefox5+ and IE9+ to consider this a cacheable redirect
+			header('HTTP/1.1 301 Moved Permanently');
+			header('Location: ' . $target);
+		}
+		exit();
 	}
 }

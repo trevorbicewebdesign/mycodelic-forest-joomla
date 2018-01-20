@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -24,23 +24,23 @@ defined('_JEXEC') or die('');
  */
 ?>
 <!-- sh404SEF Twitter cards -->
-<meta name="twitter:card" content="<?php echo $displayData['card_type']; ?>" />
-<?php if (!empty($displayData['site_account'])) : ?>
-<meta name="twitter:site" content="<?php echo $displayData['site_account']; ?>" />
+<meta name="twitter:card" content="<?php echo $this->getAsAttr('card_type'); ?>" />
+<?php if ($this->hasDisplayData('site_account')) : ?>
+<meta name="twitter:site" content="<?php echo $this->getAsAttr('site_account'); ?>" />
 <?php endif; ?>
-<?php if (!empty($displayData['creator'])) : ?>
-<meta name="twitter:creator" content="<?php echo $displayData['creator']; ?>" />
+<?php if ($this->hasDisplayData('creator')) : ?>
+<meta name="twitter:creator" content="<?php echo $this->getAsAttr('creator'); ?>" />
 <?php endif; ?>
-<?php if (!empty($displayData['title'])) : ?>
-<meta name="twitter:title" content="<?php echo $displayData['title']; ?>" />
+<?php if ($this->hasDisplayData('title')) : ?>
+<meta name="twitter:title" content="<?php echo $this->getAsAttr('title'); ?>" />
 <?php endif; ?>
-<?php if (!empty($displayData['description'])) : ?>
-<meta name="twitter:description" content="<?php echo $displayData['description']; ?>" />
+<?php if ($this->hasDisplayData('description')) : ?>
+<meta name="twitter:description" content="<?php echo $this->getAsAttr('description'); ?>" />
 <?php endif; ?>
-<?php if (!empty($displayData['url'])) : ?>
+<?php if ($this->hasDisplayData('url')) : ?>
 <meta name="twitter:url" content="<?php echo $this->escape($displayData['url']); ?>" />
 <?php endif; ?>
-<?php if (!empty($displayData['image'])) : ?>
+<?php if ($this->hasDisplayData('image')) : ?>
 <meta name="twitter:image" content="<?php echo ShlSystem_Route::absolutify($displayData['image'], true); ?>" />
 <?php endif; ?>
 <!-- sh404SEF Twitter cards - end -->

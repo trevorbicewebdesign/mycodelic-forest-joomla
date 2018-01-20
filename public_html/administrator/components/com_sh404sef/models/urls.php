@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -30,6 +30,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 	 * either all automatic, or according to current
 	 * sef url list page select options as stored in
 	 * in session
+	 *
 	 * @param unknown_type $type
 	 */
 	public function purge($type = 'auto')
@@ -307,6 +308,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 		$simpleUrlList = $this->_getOption('simpleUrlList', $options, false);
 		$requestedUrlFilter = $this->_getOption('requestedUrlFilter', $options, 'url');
 		$hide404Urls = $this->_getOption('hide404Urls', $options, false);
+		$includeExtShurls = $this->_getOption('include_ext_shurls', $options, false);
 
 		if ($simpleUrlList)
 		{
@@ -329,7 +331,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 			if (!$slowServer && !empty($filters->search_pageid))
 			{
 				$searchId = $this->_cleanForQuery($filters->search_pageid);
-				$where[] = '(LOWER(p.pageid)  LIKE \'%' . $searchId . '%\' AND p.type=' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID) . ')';
+				$where[] = '(LOWER(p.pageid)  LIKE \'%' . $searchId . '%\' AND ( p.type=' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID) . ' or p.type = ' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID_EXTERNAL) . '))';
 			}
 		}
 		else
@@ -372,8 +374,16 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 		{  // V 1.2.4.q added search URL feature
 			jimport('joomla.utilities.string');
 			$searchTerm = $this->_cleanForQuery(JString::strtolower($filters->search_all));
-			$where[] = " (LOWER(u1.oldurl)  LIKE '%" . $searchTerm . "%' OR "
-				. "LOWER(u1.newurl)  LIKE '%" . $searchTerm . "%')";
+			$whereTerm = " (LOWER(u1.oldurl) LIKE '%" . $searchTerm . "%' OR "
+				. "LOWER(u1.newurl) LIKE '%" . $searchTerm . "%'";
+			if($includeExtShurls)
+			{
+				$whereTerm .= " or LOWER(p.newurl) LIKE '%" . $searchTerm . "%')";
+			}
+			else {
+				$whereTerm .= ')';
+			}
+			$where[] = $whereTerm;
 		}
 
 		// components check
@@ -525,7 +535,11 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 		}
 
 		// used by shURLs view
-		if ($hide404Urls)
+		if ($hide404Urls && $includeExtShurls)
+		{
+			$where[] = "(u1.oldurl <> '' or p.type = " . Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID_EXTERNAL . ')';
+		}
+		else if ($hide404Urls)
 		{
 			$where[] = "u1.oldurl <> ''";
 		}
@@ -622,7 +636,8 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 		if (!empty($filters->search_pageid))
 		{
 			$searchId = $this->_cleanForQuery($filters->search_pageid);
-			$where[] = '(LOWER(pageid)  LIKE \'%' . $searchId . '%\' AND pageidtype=' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID) . ')';
+			$where[] = '(LOWER(pageid)  LIKE \'%' . $searchId . '%\' AND (pageidtype=' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID)
+			           . ' or pageidtype=' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_PAGEID_EXTERNAL) . '))';
 		}
 
 		// with or without duplicates ?
@@ -770,7 +785,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 			, array('name' => 'filter_hit_type', 'html_name' => 'filter_hit_type', 'default' => 0, 'type' => 'int')
 			// requested or not
 			, array('name' => 'filter_requested_urls', 'html_name' => 'filter_requested_urls', 'default' => 0, 'type' => 'int')
-		    // filter by time of last hit
+			// filter by time of last hit
 			, array('name' => 'filter_last_hit', 'html_name' => 'filter_last_hit', 'default' => 0, 'type' => 'int')
 
 		);

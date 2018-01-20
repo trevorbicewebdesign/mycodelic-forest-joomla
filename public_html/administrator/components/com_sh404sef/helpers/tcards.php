@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -26,6 +26,7 @@ class Sh404sefHelperTcards
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
 		$pageInfo = Sh404sefFactory::getPageInfo();
+		$document = JFactory::getDocument();
 
 		if (empty($sefConfig->shMetaManagementActivated) || !isset($sefConfig) || empty($pageInfo->currentNonSefUrl)
 			|| (!empty($pageInfo->httpStatus) && $pageInfo->httpStatus == 404)
@@ -64,11 +65,12 @@ class Sh404sefHelperTcards
 			: $customData->twittercards_creator_account;
 
 		// title
-		$displayData['title'] = $pageInfo->pageTitle;
+		$displayData['title'] = empty($pageInfo->pageTitle) ? $document->getTitle() : $pageInfo->pageTitle;
 
 		// description: Twitter requires a title and description. If no description has been found at this stage
 		// meaning not even a sitewide one, we use the page title, which would always exists
-		$displayData['description'] = empty($pageInfo->pageDescription) ? $pageInfo->pageTitle : $pageInfo->pageDescription;
+		$displayData['description'] = empty($pageInfo->pageDescription) ? $document->getDescription() : $pageInfo->pageDescription;
+		$displayData['description'] = empty($displayData['description']) ? $displayData['title'] : $displayData['description'];
 
 		// insert url. If any, we insert the canonical url rather than current, to consolidate
 		$displayData['url'] = empty($pageInfo->pageCanonicalUrl) ? $pageInfo->currentSefUrl : $pageInfo->pageCanonicalUrl;
@@ -77,10 +79,21 @@ class Sh404sefHelperTcards
 		// image : we share with OpenGraph image
 		$displayData['image'] = empty($customData->og_image) ? $sefConfig->ogImage : $customData->og_image;
 
+		/**
+		 * Filter the list of Twitter cards as computed by sh404SEF.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\seo
+		 * @var sh404sef_tcards_tags
+		 * @since   1.9.2
+		 *
+		 * @param array $displayData Associative array of Twitter cards related data.
+		 *
+		 * @return array
+		 */
 		$displayData = ShlHook::filter(
 			'sh404sef_tcards_tags',
-			$displayData,
-			array()
+			$displayData
 		);
 
 		$twitterCardsData = ShlMvcLayout_Helper::render('com_sh404sef.social.twitter_cards', $displayData);

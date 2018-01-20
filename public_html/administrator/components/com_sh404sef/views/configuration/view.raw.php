@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -48,7 +48,7 @@ class Sh404sefViewConfiguration extends ShlMvcView_Base
 		// prepare elements of respn
 		$this->taskexecuted = $this->getLayout();
 		$errors = $this->getError();
-		$task = JRequest::getCmd('task');
+		$task = JFactory::getApplication()->input->getCmd('task');
 		switch ($task)
 		{
 			case 'apply':
@@ -101,7 +101,7 @@ class Sh404sefViewConfiguration extends ShlMvcView_Base
 		$this->sefConfig = $sefConfig;
 
 		$messages = JFactory::getApplication()->getMessageQueue();
-		$noMsg = JRequest::getInt('noMsg', 0);
+		$noMsg = JFactory::getApplication()->input->getInt('noMsg', 0);
 		$this->error = array();
 		// push any message
 		if (is_array($messages) && !empty($messages))

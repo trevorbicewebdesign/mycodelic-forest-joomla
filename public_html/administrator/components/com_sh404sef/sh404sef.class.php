@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -438,6 +438,7 @@ function shComputeItemidString($nonSefUrl, &$title, $shLangName)
 	$sefConfig = &shRouter::shGetConfig();
 	$shItemidString = '';
 	$shHomePageFlag = shIsHomepage($nonSefUrl);
+	$app = JFactory::getApplication();
 
 	if (!$shHomePageFlag)
 	{
@@ -447,7 +448,7 @@ function shComputeItemidString($nonSefUrl, &$title, $shLangName)
 		{
 			// if no Itemid in non-sef URL
 			// V 1.2.4.t moved back here
-			$shCurrentItemid = JRequest::getInt('Itemid');
+			$shCurrentItemid = $app->input->getInt('Itemid');
 			if ($sefConfig->shInsertGlobalItemidIfNone && !empty($shCurrentItemid))
 			{
 				$nonSefUrl .= '&Itemid=' . $shCurrentItemid;; // append current Itemid
@@ -686,7 +687,7 @@ function shGetDefaultDisplayNum($menuItemid, $url, $fromSession = false, $includ
 	{
 
 		// itemid, try read params from the menu item
-		$menu = JFactory::getApplication()->getMenu();
+		$menu = $app->getMenu();
 		$menuItem = $menu->getItem($menuItemid); // load menu item from DB
 		if (empty($menuItem))
 		{
@@ -696,7 +697,7 @@ function shGetDefaultDisplayNum($menuItemid, $url, $fromSession = false, $includ
 		jimport('joomla.html.parameter');
 
 		// Load the parameters. Merge Global and Menu Item params into new object
-		$currentOption = JRequest::getCmd('option');
+		$currentOption = $app->input->getCmd('option');
 		$params = new JRegistry($menuItem->params); // get params from menu item
 		if (!empty($currentOption))
 		{
@@ -2296,9 +2297,7 @@ function shRemoveSlugs($vars, $removeWhat = true)
 
 function shNormalizeNonSefUri(&$uri, $menu = null, $removeSlugs = true)
 {
-	// put back a J!1.5 non-sef url to J! 1.0.x format
 	// Get the route
-	$route = $uri->getPath();
 	//Get the query vars
 	$vars = $uri->getQuery(true);
 	// fix some problems in incoming URLs
@@ -2310,8 +2309,13 @@ function shNormalizeNonSefUri(&$uri, $menu = null, $removeSlugs = true)
 	}
 
 	// fix urls obtained through a single Itemid, in menus : url is option=com_xxx&Itemid=yy
+	$cleanedVars = $vars;
 	$urlLang = $uri->getVar('lang', '');
-	if ((count($vars) == 2 && $uri->getVar('Itemid')) || (count($vars) == 3 && $uri->getVar('Itemid') && $uri->getVar('lang')))
+	$limit = wbArrayGet($vars, 'limit', null);
+	$limitstart = wbArrayGet($vars, 'limitstart', null);
+	unset($cleanedVars['limit']);
+	unset($cleanedVars['limitstart']);
+	if ((count($cleanedVars) == 2 && $uri->getVar('Itemid')) || (count($cleanedVars) == 3 && $uri->getVar('Itemid') && $uri->getVar('lang')))
 	{
 		if (empty($menu))
 		{
@@ -2337,6 +2341,14 @@ function shNormalizeNonSefUri(&$uri, $menu = null, $removeSlugs = true)
 			if (!empty($urlLang))
 			{
 				$vars['lang'] = $urlLang;
+			}
+			if (!is_null($limit))
+			{
+				$vars['limit'] = $limit;
+			}
+			if (!is_null($limitstart))
+			{
+				$vars['limitstart'] = $limitstart;
 			}
 		}
 	}

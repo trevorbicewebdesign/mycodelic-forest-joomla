@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 defined('_JEXEC') or die('Direct Access to this location is not allowed.');
@@ -76,14 +76,21 @@ function plgSh404sefofflinecode()
 	}
 
 	// need to render offline screen
+	$document = JFactory::getDocument();
 	if ($disallowAdminAccess)
 	{
 		// admins not allowed, use our own
 		// simplified template. Most likely being hacked so
 		// close doors as much as possible
-		$template = '';
-		$file = 'sh404sef_offline_template.php';
-		$directory = JPATH_ROOT . '/plugins/sh404sefcore';
+		$directory = JPATH_ROOT . '/plugins/sh404sefcore/sh404sefofflinecode/layouts';
+		$data = ShlMvcLayout_Helper::render(
+			'sh404sefofflinecode.offline_template',
+			array(
+				'direction' => $document->getDirection(),
+				'language' => $document->getLanguage()
+			),
+			$directory
+		);
 	}
 	else
 	{
@@ -92,12 +99,9 @@ function plgSh404sefofflinecode()
 		$template = $app->getTemplate();
 		$file = 'offline.php';
 		$directory = JPATH_THEMES;
+		$params = array('template' => $template, 'file' => $file, 'directory' => $directory);
+		$data = $document->render($app->getCfg('caching'), $params);
 	}
-
-	$params = array('template' => $template, 'file' => $file, 'directory' => $directory);
-
-	$document = JFactory::getDocument();
-	$data = $document->render($app->getCfg('caching'), $params);
 
 	// header : service unavailable
 	JResponse::setHeader('HTTP/1.0 503', true);
@@ -114,5 +118,4 @@ function plgSh404sefofflinecode()
 
 	// and terminate
 	$app->close();
-
 }

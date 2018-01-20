@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -35,8 +35,21 @@ class Sh404sefHelperGeneral
 	const COM_sh404SEF_URLTYPE_AUTO = 0;
 	const COM_sh404SEF_URLTYPE_CUSTOM = 1;
 
+	/*
+	 * @deprecated Use Sh404sefTableAliases::URLTYPE_ALIAS instead.
+	 */
 	const COM_SH404SEF_URLTYPE_ALIAS = 0;
+	/*
+	 * @deprecated Use Sh404sefTableAliases::URLTYPE_ALIAS_WILDCARD instead.
+	 */
+	const COM_SH404SEF_URLTYPE_ALIAS_WILDCARD = 1;
+	/*
+	 * @deprecated Use Sh404sefTableAliases::URLTYPE_ALIAS_CUSTOM instead.
+	 */
+	const COM_SH404SEF_URLTYPE_ALIAS_CUSTOM = 2;
+
 	const COM_SH404SEF_URLTYPE_PAGEID = 1;
+	const COM_SH404SEF_URLTYPE_PAGEID_EXTERNAL = 2;
 
 	const COM_SH404SEF_ALL_TITLE = 0;
 	const COM_SH404SEF_ONLY_TITLE = 1;
@@ -94,8 +107,10 @@ class Sh404sefHelperGeneral
 	 * Load components
 	 *
 	 * @access  public
+	 *
 	 * @param array exclude an array of component to exclude from result
-	 * @return  array
+	 *
+	 * @return  array|bool
 	 */
 	public static function getComponentsList($exclude = array())
 	{
@@ -107,9 +122,11 @@ class Sh404sefHelperGeneral
 
 			// exclude some and ourselves
 			$exclude = array_merge(
-				array('com_sh404sef', 'com_joomfish', 'com_falang', 'com_joomsef', 'com_acesef', 'com_admin', 'com_cache', 'com_categories',
-				      'com_checkin', 'com_cpanel', 'com_installer', 'com_languages', 'com_media', 'com_menus', 'com_messages', 'com_modules',
-				      'com_plugins', 'com_templates', 'com_config', 'com_redirect'), $exclude
+				array(
+					'com_sh404sef', 'com_joomfish', 'com_falang', 'com_joomsef', 'com_acesef', 'com_admin', 'com_cache', 'com_categories',
+					'com_checkin', 'com_cpanel', 'com_installer', 'com_languages', 'com_media', 'com_menus', 'com_messages', 'com_modules',
+					'com_plugins', 'com_templates', 'com_config', 'com_redirect'
+				), $exclude
 			);
 
 			$where = $db->quoteName('type') . ' = ? and ' . $db->quoteName('enabled') . ' = ? and ' . $db->quoteName('element') . ' <> ? ' . ' and '
@@ -233,8 +250,6 @@ class Sh404sefHelperGeneral
 		$base = '<?xml version="1.0" encoding="UTF-8" ?><item id="shajax-response"></item>';
 		$xml = new SimpleXMLElement($base);
 
-		$status = '_';
-		$message = '_';
 		$messagecode = '_';
 		$taskexecuted = '_';
 
@@ -289,7 +304,7 @@ class Sh404sefHelperGeneral
 		$xml->addChild('taskexecuted', $taskexecuted);
 
 		// output resulting text, no need for a layout file I think
-		$output = $xml->asXml();
+		$output = $xml->asXML();
 
 		return $output;
 	}
@@ -297,8 +312,8 @@ class Sh404sefHelperGeneral
 	/**
 	 * Calculate MD5 of a set of data
 	 *
-	 * @param array $dataSet the data, as an array of objects or arrays
-	 * @param array $columns , hold the names of the object properties to be used in calculation
+	 * @param array   $dataSet the data, as an array of objects or arrays
+	 * @param array   $columns , hold the names of the object properties to be used in calculation
 	 * @param boolean $asObject if true, dataSet is an array of objects, else an array of array
 	 */
 	public static function getDataMD5($dataSet, $columns, $asObject = true)
@@ -331,14 +346,16 @@ class Sh404sefHelperGeneral
 	 */
 	public static function getExportHeaders($type = null)
 	{
-		static $_headers = array('aliases' => '"Nbr","Alias","Sef url","Non sef url","Type","Hits"',
-		                         'urls' => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Canonical","Referrer type","Src id"',
-		                         'metas' => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Canonical"',
-		                         'pageids' => '"Nbr","pageId","Sef url","Non sef url","Type","Hits"',
-		                         'view404' => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Referrer type"'
-		                         // legacy files
-		                         , 'sh404sefurls' => '"id","Count","Rank","SEF URL","non-SEF URL","Date added"',
-		                         'sh404sefmetas' => '"id","newurl","metadesc","metakey","metatitle","metalang","metarobots"');
+		static $_headers = array(
+			'aliases'        => '"Nbr","Alias","Sef url","Non sef url","Type","Hits","Target type","Ordering", "State"',
+			'urls'           => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Canonical","Referrer type","Src id"',
+			'metas'          => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Canonical"',
+			'pageids'        => '"Nbr","pageId","Sef url","Non sef url","Type","Hits"',
+			'view404'        => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Referrer type"'
+			// legacy files
+			, 'sh404sefurls' => '"id","Count","Rank","SEF URL","non-SEF URL","Date added"',
+			'sh404sefmetas'  => '"id","newurl","metadesc","metakey","metatitle","metalang","metarobots"'
+		);
 
 		if (is_null($type))
 		{
@@ -434,16 +451,22 @@ class Sh404sefHelperGeneral
 	 * Returns the sh404SEF SEF url for a give non-sef url,
 	 * creating it on the fly if not already in the database
 	 *
-	 * @param string $nonSefUrl non-sef url, starting with index.php?...
+	 * @param string  $nonSefUrl non-sef url, starting with index.php?...
 	 * @param boolean $fullyQualified if true, return a fully qualified url, including protocol and host
 	 * @param boolean $xhtml
-	 * @param  $ssl
+	 * @param         $ssl
 	 */
 	public static function getSefFromNonSef($nonSefUrl, $fullyQualified = true, $xhtml = false, $ssl = null)
 	{
 		if (!defined('SH404SEF_IS_RUNNING'))
 		{
 			return false;
+		}
+
+		if (ShlSystem_Route::isFullyQUalified($nonSefUrl))
+		{
+			// we can only sef-y non-sef urls.
+			return $nonSefUrl;
 		}
 
 		$pageInfo = Sh404sefFactory::getPageInfo();
@@ -458,6 +481,7 @@ class Sh404sefHelperGeneral
 
 		$route = shSefRelToAbs($nonSefUrl, $shLanguageParam = '', $newUri, $originalUri);
 		$route = ltrim(wbLTrim($route, $pageInfo->getDefaultFrontLiveSite()), '/');
+		$route = wbLTrim($route, 'administrator');
 		$route = $route == '/' ? '' : $route;
 
 		// find path
@@ -506,6 +530,7 @@ class Sh404sefHelperGeneral
 	 *
 	 * @param string $component name of component for which the model should be initialized
 	 * @param string $path path to a folder where config xml file can be found
+	 *
 	 * @return ConfigModelComponent
 	 */
 	public static function getComConfigComponentModel($component = 'com_sh404sef', $path = '')
@@ -515,8 +540,10 @@ class Sh404sefHelperGeneral
 			if (file_exists(JPATH_ROOT . '/administrator/components/com_config/model/component.php'))
 			{
 				// post J! 3.2
-				$files = array(JPATH_ROOT . '/components/com_config/model/cms.php', JPATH_ROOT . '/components/com_config/model/form.php',
-				               JPATH_ROOT . '/administrator/components/com_config/model/component.php');
+				$files = array(
+					JPATH_ROOT . '/components/com_config/model/cms.php', JPATH_ROOT . '/components/com_config/model/form.php',
+					JPATH_ROOT . '/administrator/components/com_config/model/component.php'
+				);
 			}
 			else
 			{
@@ -574,10 +601,12 @@ class Sh404sefHelperGeneral
 	/**
 	 * Fetch a private or protected property from an object
 	 *
-	 * @param string $className
-	 * @param string $propertyName
-	 * @param object $instance
+	 * @param string  $className
+	 * @param string  $propertyName
+	 * @param object  $instance
 	 * @param boolean $static
+	 *
+	 * @deprecated Use wbGetProtectedProperty
 	 *
 	 * @return mixed property value, or null
 	 */

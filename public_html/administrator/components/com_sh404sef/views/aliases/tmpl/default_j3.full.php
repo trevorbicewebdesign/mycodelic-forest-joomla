@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -15,6 +15,8 @@ if (!defined('_JEXEC')) die('Direct Access to this location is not allowed.');
 
 jimport('joomla.html.html.bootstrap');
 JHtml::_('formbehavior.chosen', 'select');
+$saveOrderingUrl = 'index.php?option=com_sh404sef&c=aliases&task=saveOrderAjax&tmpl=component';
+JHtml::_('sortablelist.sortable', 'aliasList', 'adminForm', strtolower($this->options->filter_order_Dir), $saveOrderingUrl);
 
 $sticky = Sh404sefHelperHtml::setFixedTemplate();
 
@@ -48,7 +50,7 @@ if($sticky) :?>
 </div>
 <?php endif; ?>
 
-<div class="shl-main-list-wrapper span12  <?php if($sticky) echo ' shl-main-list-wrapper-padding'; ?>">
+<div class="shl-main-list-wrapper span12 shl-no-margin-left <?php if($sticky) echo ' shl-main-list-wrapper-padding'; ?>">
 
 	<?php if($sticky):?>
 	<div class="span2 shl-hidden-low-width"></div>
@@ -59,9 +61,12 @@ if($sticky) :?>
 	?>
 
 	<div id="sh-message-box"></div>
-    <table class="table table-striped table-bordered shl-main-list-wrapper">
+    <table class="table table-striped table-bordered shl-main-list-wrapper" id="aliasList">
       <thead>
         <tr>
+            <th class="shl-list-id nowrap center hidden-phone">
+		        <?php echo JHtml::_('searchtools.sort', '', 'ordering', $this->options->filter_order_Dir, $this->options->filter_order, null, 'asc', 'JGRID_HEADING_ORDERING', 'icon-menu-2'); ?>
+            </th>
           <th class="shl-list-id">&nbsp;
           </th>
 
@@ -69,11 +74,13 @@ if($sticky) :?>
             <input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this);" />
           </th>
 	        <th class="shl-list-hits">
-		        <?php echo JHTML::_('grid.sort', JText::_( 'COM_SH404SEF_HITS'), 'hits', $this->options->filter_order_Dir, $this->options->filter_order); ?>
+		        <?php echo JText::_( 'COM_SH404SEF_HITS'); ?>
 	        </th>
-
+            <th class="shl-list-hits">
+		        <?php echo JText::_( 'COM_SH404SEF_ALIAS_TARGET_TYPE_TITLE'); ?>
+            </th>
           <th class="shl-list-sef">
-            <?php echo JHTML::_('grid.sort', JText::_( 'COM_SH404SEF_ALIAS'), 'oldurl', $this->options->filter_order_Dir, $this->options->filter_order); ?>
+            <?php echo JText::_( 'COM_SH404SEF_ALIAS'); ?>
           </th>
 
 	        <th class="shl-list-hits"><?php echo JText::_('COM_SH404SEF_HIT_DETAILS'); ?>
@@ -87,7 +94,7 @@ if($sticky) :?>
       </thead>
       <tfoot>
         <tr>
-          <td colspan="6">
+          <td colspan="8">
             <?php echo '<div id="shl-bottom-pagination-container">' . $this->pagination->getListFooter() . '</div>'; ?>
           </td>
         </tr>
@@ -105,6 +112,13 @@ if($sticky) :?>
 
         <tr>
 
+            <td class="shl-list-id">
+            <span class="sortable-handler">
+				<span class="icon-menu" aria-hidden="true"></span>
+            </span>
+            <input type="text" style="display:none" name="order[]" size="5" value="<?php echo $alias->ordering; ?>" class="width-20 text-area-order" />
+            </td>
+
           <td class="shl-list-id">
             <?php echo $this->pagination->getRowOffset( $i ); ?>
           </td>
@@ -117,15 +131,19 @@ if($sticky) :?>
 		        <?php echo empty($alias->hits) ? '&nbsp;' : ShlSystem_Strings::formatIntForTitle($alias->hits); ?>
 	        </td>
 
+            <td class="shl-list-check">
+		        <?php echo Sh404sefModelRedirector::TARGET_TYPE_REDIRECT == $alias->target_type ? JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_REDIRECT_SHORT') : JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_CANONICAL_SHORT'); ?>
+            </td>
+
           <td class="shl-list-sef">
             <?php
             $params = array();
-            $linkData = array( 'c' => 'editalias', 'task' => 'edit', 'view' => 'editurl', 'startOffset' => '2','cid[]' => $alias->id, 'tmpl' => 'component');
+            $linkData = array( 'c' => 'editalias', 'task' => 'edit', 'view' => 'editalias', 'cid[]' => $alias->id, 'tmpl' => 'component');
             $targetUrl = Sh404sefHelperUrl::buildUrl($linkData);
             $params['linkTitle'] = JText::_('COM_SH404SEF_MODIFY_ALIAS_TITLE'). ' ' . $this->escape($alias->oldurl);
             $params['linkTitle'] = Sh404sefHelperHtml::abridge($params['linkTitle'], 'editurl');
              $modalTitle = '';
-            $name = '-editurl-' . $alias->id;
+            $name = '-editalias-' . $alias->id;
             $params['linkClass'] = 'shl-list-sef';
             $params['linkType'] = 'a';
             echo ShlHtmlModal_helper::modalLink($name, $alias->alias, $targetUrl, $sizes['editurl']['x'], Sh404sefFactory::getPConfig()->windowSizes['editurl']['y'], $top = 0, $left = 0, $onClose = '', $modalTitle, $params);
@@ -148,18 +166,28 @@ if($sticky) :?>
           <td class="shl-list-sef">
             <?php
             echo $this->escape( $alias->newurl);
-            $sefConfig = & Sh404sefFactory::getConfig();
-            if (!empty( $alias->oldurl)) {
-              echo '<br/><span class="muted">(' . $this->escape( $alias->oldurl) . ')</span>';
-              $link = JURI::root() . ltrim( $sefConfig->shRewriteStrings[$sefConfig->shRewriteMode], '/') . $alias->oldurl;
-            } else {
-              echo '<br /><span class="muted">(-)</span>';
-              $link = JURI::root() . $alias->newurl;
+            if(
+	            Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS == $alias->type
+                ||
+	            Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_WILDCARD == $alias->type
+            )
+            {
+	            $sefConfig = &Sh404sefFactory::getConfig();
+	            if (!empty($alias->oldurl))
+	            {
+		            echo '<br/><span class="muted">(' . $this->escape($alias->oldurl) . ')</span>';
+		            $link = JURI::root() . ltrim($sefConfig->shRewriteStrings[$sefConfig->shRewriteMode], '/') . $alias->oldurl;
+	            }
+	            else
+	            {
+		            echo '<br /><span class="muted">(-)</span>';
+		            $link = JURI::root() . $alias->newurl;
+	            }
+	            // small preview icon
+	            echo '&nbsp;<a href="' . $this->escape($link) . '" target="_blank" title="' . JText::_('COM_SH404SEF_PREVIEW') . ' ' . $this->escape($alias->oldurl) . '">';
+	            echo '<img src=\'components/com_sh404sef/assets/images/external-black.png\' border=\'0\' alt=\'' . JText::_('COM_SH404SEF_PREVIEW') . '\' />';
+	            echo '</a>';
             }
-            // small preview icon
-            echo '&nbsp;<a href="' . $this->escape($link) . '" target="_blank" title="' . JText::_('COM_SH404SEF_PREVIEW') . ' ' . $this->escape($alias->oldurl) . '">';
-            echo '<img src=\'components/com_sh404sef/assets/images/external-black.png\' border=\'0\' alt=\''.JText::_('COM_SH404SEF_PREVIEW').'\' />';
-            echo '</a>';
             ?>
 
           </td>
@@ -171,7 +199,7 @@ if($sticky) :?>
     } else {
       ?>
         <tr>
-          <td class="center shl-middle" colspan="6">
+          <td class="center shl-middle" colspan="8">
             <?php echo JText::_( 'COM_SH404SEF_NO_ALIASES' ); ?>
           </td>
         </tr>

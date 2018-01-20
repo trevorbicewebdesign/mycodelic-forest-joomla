@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier 2017
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.632
- * @date        2017-06-01
+ * @version     0.3.1.659
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -263,7 +263,7 @@ class ShlHtmlContentRemoteimage_Parser
 					{
 						$data = $this->stream->read($this->readInt($this->stream->read(2)) - 2);
 
-						$stream = new Stream;
+						$stream = new ShlHtmlContentRemoteimage_Stream;
 						$stream->write($data);
 
 						if ($stream->read(4) === 'Exif')
@@ -340,7 +340,7 @@ class ShlHtmlContentRemoteimage_Parser
 	 */
 	protected function parseSizeForTiff()
 	{
-		$exif = new ExifParser($this->stream);
+		$exif = new ShlHtmlContentRemoteimage_ExifParser($this->stream);
 
 		if ($exif->isRotated())
 		{

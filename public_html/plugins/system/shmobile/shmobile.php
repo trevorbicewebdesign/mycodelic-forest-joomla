@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // no direct access
@@ -55,7 +55,7 @@ class plgSystemShmobile extends JPlugin
 		// look first for a query var
 		if (is_null($isMobile))
 		{
-			$queryVar = JRequest::getString('sh404sef_override_mobile_detection', '', 'GET');
+			$queryVar = $app->input->getString('sh404sef_override_mobile_detection', '', 'GET');
 			switch ($queryVar)
 			{
 				case 'force_desktop':
@@ -84,7 +84,7 @@ class plgSystemShmobile extends JPlugin
 		{
 
 			// search Joomla! cookie vars
-			$cookieFlag = JRequest::getString('sh404sef_override_mobile_detection', null, 'cookie');
+			$cookieFlag = $app->input->getString('sh404sef_override_mobile_detection', null, 'cookie');
 			switch ($cookieFlag)
 			{
 				case 'force_desktop':

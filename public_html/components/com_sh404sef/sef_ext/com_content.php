@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 defined('_JEXEC') or die('Direct Access to this location is not allowed.');
 
@@ -37,32 +37,33 @@ $database = ShlDbHelper::getDb();
 // retrieve section id to know whether this static or not
 $shHomePageFlag = false;
 
-$shHomePageFlag = ! $shHomePageFlag ? shIsHomepage($string) : $shHomePageFlag;
+$shHomePageFlag = !$shHomePageFlag ? shIsHomepage($string) : $shHomePageFlag;
 
-if (! $shHomePageFlag)
+if (!$shHomePageFlag)
 { // we may have found that this is homepage, so we msut return an empty string
-  // do something about that Itemid thing
-	if (! preg_match('/Itemid=[0-9]+/iu', $string))
+	// do something about that Itemid thing
+	if (!preg_match('/Itemid=[0-9]+/iu', $string))
 	{ // if no Itemid in non-sef URL
-	  // V 1.2.4.t moved back here
-		if ($sefConfig->shInsertGlobalItemidIfNone && ! empty($shCurrentItemid))
+		// V 1.2.4.t moved back here
+		if ($sefConfig->shInsertGlobalItemidIfNone && !empty($shCurrentItemid))
 		{
-			$string .= '&Itemid=' . $shCurrentItemid;
-			; // append current Itemid
+			$string .= '&Itemid=' . $shCurrentItemid;; // append current Itemid
 			$Itemid = $shCurrentItemid;
 			shAddToGETVarsList('Itemid', $Itemid); // V 1.2.4.m
 		}
 
 		if ($sefConfig->shInsertTitleIfNoItemid)
 		{
-			$title[] = $sefConfig->shDefaultMenuItemName ? $sefConfig->shDefaultMenuItemName : getMenuTitle($option, (isset($view) ? $view : null),
-					$shCurrentItemid, null, $shLangName);
+			$title[] = $sefConfig->shDefaultMenuItemName ? $sefConfig->shDefaultMenuItemName : getMenuTitle(
+				$option, (isset($view) ? $view : null),
+				$shCurrentItemid, null, $shLangName
+			);
 		}
 		$shItemidString = '';
-		if ($sefConfig->shAlwaysInsertItemid && (! empty($Itemid) || ! empty($shCurrentItemid)))
+		if ($sefConfig->shAlwaysInsertItemid && (!empty($Itemid) || !empty($shCurrentItemid)))
 		{
 			$shItemidString = JText::_('COM_SH404SEF_ALWAYS_INSERT_ITEMID_PREFIX') . $sefConfig->replacement .
-					 (empty($Itemid) ? $shCurrentItemid : $Itemid);
+				(empty($Itemid) ? $shCurrentItemid : $Itemid);
 		}
 	}
 	else
@@ -73,28 +74,40 @@ if (! $shHomePageFlag)
 			// global $Itemid; V 1.2.4.g we want the string option, not current
 			// page !
 			if ($sefConfig->shDefaultMenuItemName)
-				$title[] = $sefConfig->shDefaultMenuItemName; // V 1.2.4.q added
-					                                              // force language
+			{
+				$title[] = $sefConfig->shDefaultMenuItemName;
+			} // V 1.2.4.q added
+			// force language
 			elseif ($menuTitle = getMenuTitle($option, (isset($view) ? $view : null), $Itemid, '', $shLangName))
 			{
 				if ($menuTitle != '/')
+				{
 					$title[] = $menuTitle;
+				}
 			}
 		}
 	}
-	// V 1.2.4.m
-	shRemoveFromGETVarsList('option');
-	shRemoveFromGETVarsList('lang');
-	if (! empty($Itemid))
-		shRemoveFromGETVarsList('Itemid');
-	if (! empty($limit))
-		shRemoveFromGETVarsList('limit');
-	if (isset($limitstart))
-		shRemoveFromGETVarsList('limitstart');
 
 	$view = isset($view) ? $view : null;
 	$layout = isset($layout) ? $layout : null;
 	$task = isset($task) ? $task : null;
+
+	// V 1.2.4.m
+	shRemoveFromGETVarsList('option');
+	shRemoveFromGETVarsList('lang');
+	if (!empty($Itemid))
+	{
+		shRemoveFromGETVarsList('Itemid');
+	}
+
+	if (!empty($limit))
+	{
+		shRemoveFromGETVarsList('limit');
+	}
+	if (isset($limitstart))
+	{
+		shRemoveFromGETVarsList('limitstart');
+	}
 	switch ($view)
 	{
 		case 'archivecategory':
@@ -106,9 +119,9 @@ if (! $shHomePageFlag)
 			if ($layout == 'edit' && empty($a_id))
 			{ // submit new article
 				$title[] = 'f'; // must differentiate view=form urls from
-				                // task=article.edit or article add, otherwise,
-				                // joomla loops
-				if (! empty($catid))
+				// task=article.edit or article add, otherwise,
+				// joomla loops
+				if (!empty($catid))
 				{
 					$title[] = $catid;
 				}
@@ -120,24 +133,26 @@ if (! $shHomePageFlag)
 			}
 			break;
 		default:
-			if (sh404SEF_PDF_DIR && $view == 'article' && ! empty($format) && $format == 'pdf')
+			if (sh404SEF_PDF_DIR && $view == 'article' && !empty($format) && $format == 'pdf')
 			{
 				$title[] = sh404SEF_PDF_DIR; // insert pdf directory
 				shMustCreatePageId('set', true);
 			}
 
 			// V 1.2.4.j 2007/04/11 : numerical ID, on some categories only
-			if ($sefConfig->shInsertNumericalId && isset($sefConfig->shInsertNumericalIdCatList) && ! empty($id) && ($view == 'article'))
+			if ($sefConfig->shInsertNumericalId && isset($sefConfig->shInsertNumericalIdCatList) && !empty($id) && ($view == 'article'))
 			{
 				try
 				{
-					$contentElement = ShlDbHelper::selectObject('#__content', array(
-							'id',
-							'catid',
-							'created'
+					$contentElement = ShlDbHelper::selectObject(
+						'#__content', array(
+						'id',
+						'catid',
+						'created'
 					), array(
 							'id' => $id
-					));
+						)
+					);
 				}
 				catch (Exception $e)
 				{
@@ -154,17 +169,19 @@ if (! $shHomePageFlag)
 					}
 				}
 			}
-			else if (! empty($id) && $view == 'article' && $sefConfig->insertDate && isset($sefConfig->insertDateCatList))
+			else if (!empty($id) && $view == 'article' && $sefConfig->insertDate && isset($sefConfig->insertDateCatList))
 			{
 				try
 				{
-					$contentElement = ShlDbHelper::selectObject('#__content', array(
-							'id',
-							'catid',
-							'created'
+					$contentElement = ShlDbHelper::selectObject(
+						'#__content', array(
+						'id',
+						'catid',
+						'created'
 					), array(
 							'id' => $id
-					));
+						)
+					);
 					if ($contentElement)
 					{
 						$foundCat = array_search($contentElement->catid, $sefConfig->insertDateCatList);
@@ -184,7 +201,7 @@ if (! $shHomePageFlag)
 			}
 
 			// editing content
-			if (! empty($a_id) && empty($view))
+			if (!empty($a_id) && empty($view))
 			{
 				// front end editing
 				$dosef = false;
@@ -193,7 +210,7 @@ if (! $shHomePageFlag)
 			{
 				if (empty($a_id))
 				{ // submit new article
-					if (! empty($catid))
+					if (!empty($catid))
 					{
 						$title[] = $catid;
 					}
@@ -205,12 +222,14 @@ if (! $shHomePageFlag)
 					$dosef = false;
 				}
 			}
-			else if (empty($layout) || (! empty($layout) && $layout != 'edit'))
+			else if (empty($layout) || (!empty($layout) && $layout != 'edit'))
 			{
-				$contentTitle = sef_404::getContentSlugsArray((isset($view) ? $view : null), (isset($id) ? $id : null),
-						(isset($layout) ? $layout : null), (isset($Itemid) ? $Itemid : null), $shLangName);
+				$contentTitle = sef_404::getContentSlugsArray(
+					(isset($view) ? $view : null), (isset($id) ? $id : null),
+					(isset($layout) ? $layout : null), (isset($Itemid) ? $Itemid : null), $shLangName
+				);
 				// recognize home page even for feed version
-				if (! empty($contentTitle) && ! empty($format) && $format == 'feed')
+				if (!empty($contentTitle) && !empty($format) && $format == 'feed')
 				{
 					$baseUrl = Sh404sefHelperUrl::clearUrlVar($string, 'format');
 					$baseUrl = Sh404sefHelperUrl::clearUrlVar($baseUrl, 'type');
@@ -220,7 +239,7 @@ if (! $shHomePageFlag)
 					}
 				}
 
-				if (! empty($title))
+				if (!empty($title))
 				{
 					$title = array_merge($title, $contentTitle);
 				}
@@ -228,17 +247,17 @@ if (! $shHomePageFlag)
 				{
 					$title = $contentTitle;
 				}
-				if (! empty($format) && $format == 'feed')
+				if (!empty($format) && $format == 'feed')
 				{
 					$title[] = $format;
-					if (! empty($type) && $format != $type)
+					if (!empty($type) && $format != $type)
 					{
 						$title[] = $type;
 					}
 					// prevent addition of .html suffix
 					$title[] = '/';
 				}
-				if (! empty($print))
+				if (!empty($print))
 				{
 					$title[] = JText::_('Print');
 				}
@@ -255,26 +274,42 @@ if (! $shHomePageFlag)
 	// V 1.2.4.q
 	shRemoveFromGETVarsList('view');
 	if (isset($id))
+	{
 		shRemoveFromGETVarsList('id');
+	}
 	if (isset($layout))
+	{
 		shRemoveFromGETVarsList('layout');
-		// only remove format variable if forma tis html. In all other
-		// situations, leave it there as some
-		// system plugins may cause pdf and rss to break if they call
-		// JFactory::getDocument() in the onAfterInitialize event handler
-		// because at this time SEF url are not decoded yet.
-	if (isset($format) && (! sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR || (sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR && $format == 'html')))
+	}
+	// only remove format variable if forma tis html. In all other
+	// situations, leave it there as some
+	// system plugins may cause pdf and rss to break if they call
+	// JFactory::getDocument() in the onAfterInitialize event handler
+	// because at this time SEF url are not decoded yet.
+	if (isset($format) && (!sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR || (sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR && $format == 'html')))
+	{
 		shRemoveFromGETVarsList('format');
+	}
 	if (isset($type))
+	{
 		shRemoveFromGETVarsList('type');
-	if (! empty($catid))
-		shRemoveFromGETVarsList('catid'); // V 1.2.4.m
+	}
+	if (!empty($catid))
+	{
+		shRemoveFromGETVarsList('catid');
+	} // V 1.2.4.m
 	if (isset($showall))
+	{
 		shRemoveFromGETVarsList('showall');
+	}
 	if (empty($page)) // remove page if not set or 0
+	{
 		shRemoveFromGETVarsList('page');
+	}
 	if (isset($print))
+	{
 		shRemoveFromGETVarsList('print');
+	}
 	if (isset($tmpl) && $tmpl == 'component')
 	{
 		shRemoveFromGETVarsList('tmpl');
@@ -283,14 +318,18 @@ if (! $shHomePageFlag)
 	// ------------------ standard plugin finalize function - don't change ---------------------------
 	if ($dosef)
 	{
-		$string = shFinalizePlugin($string, $title, $shAppendString, $shItemidString, (isset($limit) ? $limit : null),
-				(isset($limitstart) ? $limitstart : null), (isset($shLangName) ? $shLangName : null), (isset($showall) ? $showall : null));
+		$string = shFinalizePlugin(
+			$string, $title, $shAppendString, $shItemidString, (isset($limit) ? $limit : null),
+			(isset($limitstart) ? $limitstart : null), (isset($shLangName) ? $shLangName : null), (isset($showall) ? $showall : null)
+		);
 	}
 	// ------------------ standard plugin finalize function - don't change ---------------------------
 }
 else
 { // this is multipage homepage
 	$title[] = '/';
-	$string = sef_404::sefGetLocation($string, $title, null, (isset($limit) ? $limit : null), (isset($limitstart) ? $limitstart : null),
-			(isset($shLangName) ? $shLangName : null), (isset($showall) ? $showall : null));
+	$string = sef_404::sefGetLocation(
+		$string, $title, null, (isset($limit) ? $limit : null), (isset($limitstart) ? $limitstart : null),
+		(isset($shLangName) ? $shLangName : null), (isset($showall) ? $showall : null)
+	);
 }

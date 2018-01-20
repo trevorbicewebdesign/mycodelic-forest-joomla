@@ -2,11 +2,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // get Google Analytics queue
@@ -34,7 +34,6 @@ _sh404sefSocialTrack.setup = function () {
             : "sh404SEF_social_tracker";
 
         // enable tracking, either sync. or async.
-        _sh404sefSocialTrack.setupFBTracking();
         _sh404sefSocialTrack.setupTweeterTracking();
     }
 };
@@ -42,65 +41,9 @@ _sh404sefSocialTrack.setup = function () {
 /*
  * Facebook tracking : Call directly if SDK loaded synchroneously or assign to
  * window.fbAsyncInit if using asynchronous loading
+ *
+ * @deprecated Facebook retired this API 02/2018
  */
-
-_sh404sefSocialTrack.setupFBTracking = function () {
-
-    try {
-        if (FB && FB.Event && FB.Event.subscribe) {
-            if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.classic) {
-                FB.Event.subscribe('edge.create', function (targetUrl) {
-                    _gaq.push([ '_trackEvent', _sh404sefSocialTrack.trackerName + '_facebook', 'like', targetUrl, 1, true ]);
-                    // Google tracking
-                    if (_sh404sefSocialTrack.options.enableGoogleTracking) {
-                        _gaq.push([ '_trackSocial', 'facebook', 'like', targetUrl ]);
-                    }
-                });
-                FB.Event.subscribe('edge.remove', function (targetUrl) {
-                    _gaq.push([ '_trackEvent', _sh404sefSocialTrack.trackerName + '_facebook', 'unlike', targetUrl, 1, true ]);
-                    // Google tracking
-                    if (_sh404sefSocialTrack.options.enableGoogleTracking) {
-                        _gaq.push([ '_trackSocial', 'facebook', 'unlike', targetUrl ]);
-                    }
-                });
-                FB.Event.subscribe('message.send', function (targetUrl) {
-                    _gaq.push([ '_trackEvent', _sh404sefSocialTrack.trackerName + '_facebook', 'send', targetUrl, 1, true ]);
-                    // Google tracking
-                    if (_sh404sefSocialTrack.options.enableGoogleTracking) {
-                        _gaq.push([ '_trackSocial', 'facebook', 'send', targetUrl ]);
-                    }
-                });
-            }
-            if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
-                FB.Event.subscribe('edge.create', function (targetUrl) {
-                    ga('send', 'event', _sh404sefSocialTrack.trackerName + '_facebook', 'like', targetUrl, 1);
-                    // Google tracking
-                    if (_sh404sefSocialTrack.options.enableGoogleTracking) {
-                        ga('send', 'social', 'facebook', 'like', targetUrl);
-                    }
-                });
-                FB.Event.subscribe('edge.remove', function (targetUrl) {
-                    ga('send', 'event', _sh404sefSocialTrack.trackerName + '_facebook', 'unlike', targetUrl, 1);
-                    // Google tracking
-                    if (_sh404sefSocialTrack.options.enableGoogleTracking) {
-                        ga('send', 'social', 'facebook', 'unlike', targetUrl);
-                    }
-                });
-                FB.Event.subscribe('message.send', function (targetUrl) {
-                    ga('send', 'event', _sh404sefSocialTrack.trackerName + '_facebook', 'send', targetUrl, 1);
-                    // Google tracking
-                    if (_sh404sefSocialTrack.options.enableGoogleTracking) {
-                        ga('send', 'social', 'facebook', 'send', targetUrl);
-                    }
-                });
-            }
-
-
-        }
-    } catch (e) {
-        console.log(e.message);
-    }
-};
 
 // Tweeter tracking
 _sh404sefSocialTrack.setupTweeterTracking = function () {

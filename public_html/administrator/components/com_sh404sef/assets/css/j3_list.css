@@ -2,11 +2,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 .table td.shl-left {
     text-align: left;
@@ -55,8 +55,11 @@
     margin-top: 1em;
 }
 
-div.shl-main-list-wrapper .span10.shl-no-margin-left {
+div.shl-main-list-wrapper.shl-no-margin-left {
     margin-left: 0 !important;
+}
+div.shl-main-list-wrapper .span10.shl-no-margin-left {
+    margin-left: 20px;
 }
 
 .table.shl-main-list-wrapper td {
@@ -294,8 +297,12 @@ div#sh-progress-cpprogress {
 }
 
 /** modals **/
-.shmodal-content {
+.shmodal-message-block, .shmodal-content {
     padding-top: 70px;
+}
+
+.shmodal-message-block + .shmodal-content {
+    padding-top: 0;
 }
 
 div.shmodal-toolbar {
@@ -748,4 +755,9 @@ div.sh404sef-footer-container {
     padding-top: 1.25em;
     font-weight: bold;
     color: #777777;
+}
+
+input[type=text].shurl_display {
+    margin-bottom: 0;
+    width: 100%;
 }

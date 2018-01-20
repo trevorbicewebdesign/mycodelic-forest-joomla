@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date  2017-06-01
+ * @version      4.13.1.3756
+ * @date  2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -37,7 +37,7 @@ class Sh404sefClassConfig
 	const COM_SH404SEF_KEYSTORE_KEY_404_ERROR_PAGE = 'com_sh404sef.errors.404';
 
 	/* string,  version number */
-	public $version = '4.9.2.3552';
+	public $version = '4.13.1.3756';
 	/* boolean, is 404 SEF enabled  */
 	public $Enabled = false;
 	/* char,  Character to use for url replacement */
@@ -134,7 +134,7 @@ class Sh404sefClassConfig
 	/* boolean, if true, non-sef URL like index.php?option=com_content&task=view&id=12&Itemid=2 will be 301-redirected to their sef equivalent */
 	public $shRedirectNonSefToSef = false;
 	/* boolean, if true, Joomla sef URL like /content/view/12/61 will be 301-redirected to their sef equivalent */
-	public $shRedirectJoomlaSefToSef = false;
+	public $shRedirectJoomlaSefToSef = true;
 	/* string, should be set to SSL secure URL of site if any used. No trailing / */
 	public $shConfig_live_secure_site = '';
 	/* boolean, if true, ed non-sef parameter will be interpreted as a iJoomla param in com_content plugin  */
@@ -616,6 +616,9 @@ class Sh404sefClassConfig
 	public $itemidOverridesValues             = array();
 
 	public $fbAppId = '';
+
+	// 4.11
+	public $autoBuildDescription = true;
 
 	// End of parameters
 
@@ -2092,7 +2095,7 @@ class Sh404sefClassConfig
 			{ // only need to modify custom params in back-end
 				$this->defaultParamList = '<?php
 			    // custom.sef.php : custom.configuration file for sh404SEF
-			    // 4.9.2.3552 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
+			    // 4.13.1.3756 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
 
 			    // DO NOT REMOVE THIS LINE :
 			    if (!defined(\'_JEXEC\')) die(\'Direct Access to this location is not allowed.\');
@@ -2238,8 +2241,10 @@ class Sh404sefClassConfig
 		}
 
 		// An array name with the names of the arrays that contain parameters for components
-		$comParams = array('nocache', 'skip', 'useJoomlaRouter', 'notTranslateURLList', 'notInsertIsoCodeList', 'shDoNotOverrideOwnSef',
-		                   'useJoomsefRouter', 'useAcesefRouter', 'compEnablePageId', 'defaultComponentStringList');
+		$comParams = array(
+			'nocache', 'skip', 'useJoomlaRouter', 'notTranslateURLList', 'notInsertIsoCodeList', 'shDoNotOverrideOwnSef',
+			'useJoomsefRouter', 'useAcesefRouter', 'compEnablePageId', 'defaultComponentStringList'
+		);
 
 		// Same thing for the language params
 		$languageParams = array('pageTexts', 'shLangTranslateList', 'shLangInsertCodeList');
@@ -2423,10 +2428,10 @@ class Sh404sefClassConfig
 	public function shCheckFilesAccess()
 	{
 		$files = array(
-			'administrator/components/com_sh404sef' => 'administrator/components/com_sh404sef',
+			'administrator/components/com_sh404sef'                => 'administrator/components/com_sh404sef',
 			'administrator/components/com_sh404sef/custom.sef.php' => 'administrator/components/com_sh404sef/index.html',
-			'administrator/components/com_sh404sef/security' => 'administrator/components/com_sh404sef/security/index.html',
-			'components/com_sh404sef/cache' => 'components/com_sh404sef/cache/index.html'
+			'administrator/components/com_sh404sef/security'       => 'administrator/components/com_sh404sef/security/index.html',
+			'components/com_sh404sef/cache'                        => 'components/com_sh404sef/cache/index.html'
 		);
 		$htmlStatus = array();
 		$boolStatus = array();

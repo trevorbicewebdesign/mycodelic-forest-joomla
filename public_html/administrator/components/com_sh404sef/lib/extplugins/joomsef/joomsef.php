@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Check to ensure this file is included in Joomla!
@@ -715,7 +715,7 @@ class JoomSEF
 
       // we found a matching domain
       if (!is_null($code)) {
-        JRequest::setVar('lang', $code);
+        //JRequest::setVar('lang', $code);
         $config =JFactory::getConfig();
         $config->set('joomsef.domain_lang', $code);
       }
@@ -776,7 +776,7 @@ class JoomSEF
 
       // Try to get language code from JF cookie
       if ($sefConfig->jfLangCookie) {
-        $jfCookie = JRequest::getVar('jfcookie', null, 'COOKIE');
+        //$jfCookie = JRequest::getVar('jfcookie', null, 'COOKIE');
         if( isset($jfCookie['lang']) ) {
           $cookieCode = $jfCookie['lang'];
         }
@@ -1009,7 +1009,7 @@ class JoomSEF
       else {
         $redir = true;
       }
-      JoomSEF::_determineLanguage(JRequest::getVar('lang'), $redir, $redir);
+      //JoomSEF::_determineLanguage(JRequest::getVar('lang'), $redir, $redir);
 
       $menu  =& JSite::getMenu(true);
 
@@ -1048,7 +1048,7 @@ class JoomSEF
       if ($db->loadResult()) {
         // ... and frontpage has meta tags
         // If JoomFish installed, get all the URLs for frontpage and try to find the correct language
-        $lang = JRequest::getVar('lang');
+        //$lang = JRequest::getVar('lang');
         $query = "SELECT * FROM `#__sefurls` WHERE (`sefurl` = '' OR `sefurl` = 'index.php') AND `trashed` = '0'";
         if (SEFTools::JoomFishInstalled() && !is_null($lang)) {
           $db->setQuery($query);

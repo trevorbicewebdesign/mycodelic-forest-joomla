@@ -3,16 +3,16 @@
 	method="upgrade">
 	<name>sh404sef - Offline code plugin</name>
 	<author>Yannick Gaultier</author>
-  <creationDate>2017-06-01</creationDate>
-  <copyright>(c) Yannick Gaultier - Weeblr llc - 2017</copyright>
+  <creationDate>2017-12-22</creationDate>
+  <copyright>(c) Yannick Gaultier - Weeblr llc - 2018</copyright>
   <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<authorEmail>contact@weeblr.com</authorEmail>
 	<authorUrl>https://weeblr.com</authorUrl>
-	<version>4.9.2.3552</version>
+	<version>4.13.1.3756</version>
 	<description>Render Joomla's offline page with the appropriate http	response code	</description>
 	<files>
 		<filename plugin="sh404sefofflinecode">sh404sefofflinecode.php</filename>
-		<filename>sh404sef_offline_template.php</filename>
+		<folder>layouts</folder>
 		<filename>index.html</filename>
 	</files>
 	<config>

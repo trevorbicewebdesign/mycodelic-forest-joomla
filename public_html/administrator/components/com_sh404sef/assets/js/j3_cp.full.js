@@ -2,11 +2,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date    2017-06-01
+ * @version     4.13.1.3756
+ * @date    2017-12-22
  */
 
 var shQuickControlNeedsUpdate = false;
@@ -126,14 +126,14 @@ function shSetupAnalytics(options) {
             visits: false,
             sources: false,
             global: false,
-            perf: true,
-            topsocialfb: false,
-            topsocialtweeter: false,
-            topsocialpinterest: false,
-            topsocialplusone: false,
-            topsocialplusonepage: false,
             top5urls: false,
-            top5referrers: false
+            top5referrers: false,
+            perf: true,
+            topsocialfb: true,
+            topsocialtweeter: true,
+            topsocialpinterest: true,
+            topsocialplusone: true,
+            topsocialplusonepage: true
         };
     } else {
         shAnalyticsCompletedRequestsList = {
@@ -157,7 +157,7 @@ function shSetupAnalytics(options) {
     _shPerformAnalyticsSubRequest('visits');
 
     if (shAnalyticsOptions.showFilters == 'yes') {
-        for (var i = 1; i < 11; i++) {
+        for (var i = 1; i < 6; i++) {
             setTimeout('shContinueAnalytics' + i + '();', 600 * i);
         }
     }
@@ -193,23 +193,23 @@ function shContinueAnalytics5() {
 
 function shContinueAnalytics6() {
 
-    _shPerformAnalyticsSubRequest('topsocialfb');
+    //_shPerformAnalyticsSubRequest('topsocialfb');
 }
 function shContinueAnalytics7() {
 
-    _shPerformAnalyticsSubRequest('topsocialtweeter');
+    //_shPerformAnalyticsSubRequest('topsocialtweeter');
 }
 function shContinueAnalytics8() {
 
-    _shPerformAnalyticsSubRequest('topsocialpinterest');
+    //_shPerformAnalyticsSubRequest('topsocialpinterest');
 }
 function shContinueAnalytics9() {
 
-    _shPerformAnalyticsSubRequest('topsocialplusone');
+    //_shPerformAnalyticsSubRequest('topsocialplusone');
 }
 function shContinueAnalytics10() {
 
-    _shPerformAnalyticsSubRequest('topsocialplusonepage');
+    //_shPerformAnalyticsSubRequest('topsocialplusonepage');
 }
 
 function _shPerformAnalyticsSubRequest(subrequestname) {

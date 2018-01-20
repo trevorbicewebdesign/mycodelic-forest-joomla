@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -77,7 +77,7 @@ Class Sh404sefControllerDefault extends Sh404sefClassBasecontroller
 		$this->_setDefaults();
 
 		// set the layout for info display
-		JRequest::setVar('layout', 'info');
+		JFactory::getApplication()->input->set('layout', 'info');
 
 		// default display
 		parent::display();
@@ -118,15 +118,17 @@ Class Sh404sefControllerDefault extends Sh404sefClassBasecontroller
 
 	private function _setDefaults()
 	{
-		$viewName = JRequest::getWord('view');
+		$app = JFactory::getApplication();
+
+		$viewName = $app->input->getWord('view');
 		if (empty($viewName))
 		{
-			JRequest::setVar('view', 'default');
+			$app->input->set('view', 'default');
 		}
-		$layout = JRequest::getWord('layout');
+		$layout = $app->input->getWord('layout');
 		if (empty($layout))
 		{
-			JRequest::setVar('layout', 'default');
+			$app->set('layout', 'default');
 		}
 	}
 }

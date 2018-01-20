@@ -1,7 +1,144 @@
                                sh404sef changelog                               
 
-                        (2017-06-01 14:22 - build #3552)                        
+                        (2017-12-22 19:30 - build #3756)                        
 
+
+
+--------------------------------------------------------------------------------
+ [ 2017-12-22 ] Version 4.13.1
+--------------------------------------------------------------------------------
+
+
+    [bug]    Home page meta data is correctly saved but an error message is
+             displayed
+    [bug]    If 301 redirect from Joomla SEF to sh404SEF is enabled, the 404
+             error page does not work.
+
+
+--------------------------------------------------------------------------------
+ [ 2017-12-20 ] Version 4.13.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Added a filter on the list of query variables to strip before
+             looking up custom meta data
+    [new]    Added back automatic redirect from Joomla standard SEF URLs to
+             sh404SEF SEF URLs
+
+    [chg]    Increased allowed meta description maximum length to 512
+             characters.
+    [chg]    Now handling spaces in aliases
+    [chg]    Removed analytics Facebook events tracking, API retired by
+             Facebook early 2018.
+    [chg]    Removed last instances of using JRequest deprecated Joomla class
+    [chg]    Adjusted import/export routines to new aliases format
+    [chg]    Added protection against entering aliases or redirects target
+             with spaces
+
+    [bug]    Reverted last version hiding limit and limistart in article view,
+             breaks some multipage articles URLs
+    [bug]    Fatal error when installing last version over a very old one
+    [bug]    Installation of last release may fail with Undefined class
+             constant 'COM_SH404SEF_URLTYPE_ALIAS_CUSTOM' message
+    [bug]    Installation of last release may fail on servers without UTF8 mb4
+             character set support.
+    [bug]    Enter a non-sef redirect URL for a 404 requests is broken since
+             last update
+    [bug]    Notice error when saving a SEF URL record
+
+
+--------------------------------------------------------------------------------
+ [ 2017-11-15 ] Version 4.12.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Aliases can now be re-ordered using drag-and-drop operations
+    [new]    URL aliases can now use wildcards, to redirect/canonicalize many
+             URLs in just one alias. Largely replaces .htaccess rules.
+    [new]    URL aliases can now redirect/canonicalize to external URLs (on
+             other sites)
+    [new]    URL aliases can now be either a redirect or replaced with a
+             rel=canonical link
+    [new]    URL shortener (shURL) now works with all URLs, internal or on
+             other sites
+
+    [chg]    Added a filter to change a page Itemid on the fly
+    [chg]    Do not hide limit and limitstart parameters on com_content
+             article view, some custom plugins do use them.
+    [chg]    Removed some leftover Joomla 2.x layouts
+    [chg]    Removed 'All' option from number of items per page select list -
+             close #480
+    [chg]    Increase database table size for short urls target to 1024
+    [chg]    Kunena: now prepending menu item title to URLs when empty
+    [chg]    Strip description of [xxx] tags from some extensions
+    [chg]    Strip description of common extensions tags: Regular Labs,
+             RsForms, PhocaGallery
+    [chg]    Auto-generated description: also remove wbamp meta tags, not
+             suitable for description
+    [chg]    Added a check on Twitter Cards description content, must not be
+             empty so fall back to page title if empty.
+
+    [bug]    Notice message on Virtuemart cart link (when creating them)
+    [bug]    Internal: function to get front end live site URL may not always
+             remove 'administrator' when called from admin
+    [bug]    Page title with double-quotes may break OGP and Twitter cards
+             data
+    [bug]    Meta description may be replaced by automatically generated one
+             when inserted in Joomla article publishing input field
+    [bug]    Internal requests not always properly recognized. Stop relying on
+             JUri::isInternal.
+    [bug]    Unreadable error message when trying to update without having
+             entered credentials
+
+
+--------------------------------------------------------------------------------
+ [ 2017-09-26 ] Version 4.11.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Automatically generate description meta for articles when
+             missing.
+    [new]    Allow emoji in custom title and description
+    [new]    Added support for AMP Analytics Client ID API
+    [new]    Added a filter to modify created URLs before they are stored into
+             the database.
+
+    [chg]    JomSocial URLs for individual events are now fully SEF, instead
+             of using event id
+    [chg]    When set to Use Joomla router, URLs are not parsed due to change
+             in J! 3.8
+    [chg]    Removed some possible duplicates on JomSocial URLs
+    [chg]    When building OGP/TCards tags, default to using document
+             description/title if not manually customized
+    [chg]    Now also insert Twitter Cards on com_content category and
+             categories pages
+
+
+--------------------------------------------------------------------------------
+ [ 2017-08-09 ] Version 4.10.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Offline code plugin now uses JLayouts, output can be overriden
+             from template
+
+    [chg]    When a component is using Joomla router.php, always remove the
+             'lang' query var from the resulting SEF URL - close #489
+    [chg]    Added a sh404sef_before_plugin_build filter before building URLs,
+             allow fixing non-sef URLs for wrong Itemid or more
+    [chg]    Adjusted Google Tag manager to latest insertion method - close
+             #497
+    [chg]    Added protection to breadcrumb structured data when Joomla
+             returns an empty id
+    [chg]    Now also insert Twitter Cards on K2 categories
+    [chg]    Added support for mijoSEF/JoomSEF importer automatic updates
+    [chg]    Added multiple filters to routing process
+    [chg]    Offline code plugin now displays information message when
+             "Disable admin login" is enabled
+
+    [bug]    Analytics results are not displayed (Google api change, around
+             mid-july 2017)
+    [bug]    Possible fatal error when reading a jpg remote file dimensions
 
 
 --------------------------------------------------------------------------------

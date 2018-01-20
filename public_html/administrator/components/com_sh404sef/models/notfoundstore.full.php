@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -116,9 +116,11 @@ class Sh404sefModelNotfoundstore
 				$updatedRecord['last_hit'] = ShlSystem_Date::getUTCNow();
 
 				// find if internal request
+				$isInternal = Sh404sefHelperUrl::IS_EXTERNAL;
 				$referrer = empty($_SERVER['HTTP_REFERER']) ? '' : $_SERVER['HTTP_REFERER'];
-				$isInternal = !empty($referrer) && JUri::isInternal($referrer);
-				$isInternal ? Sh404sefHelperUrl::IS_INTERNAL : Sh404sefHelperUrl::IS_EXTERNAL;
+				if(!empty($referrer)) {
+					$isInternal = Sh404sefHelperUrl::isInternal($referrer);
+				}
 
 				// get referrer and find if this is a local URL (but don't override a previous INTERNAL FLAG on that URL)
 				if (empty($updatedRecord['referrer_type'])

@@ -3,273 +3,331 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC')) die('Direct Access to this location is not allowed.');
+if (!defined('_JEXEC'))
+{
+	die('Direct Access to this location is not allowed.');
+}
 
-Class Sh404sefControllerPageids extends Sh404sefClassBasecontroller {
+Class Sh404sefControllerPageids extends Sh404sefClassBasecontroller
+{
 
-  protected $_context = 'com_sh404sef.pageids';
-  protected $_defaultModel = 'urls';
-  protected $_defaultView = 'pageids';
-  protected $_defaultController = 'pageids';
-  protected $_defaultTask = '';
-  protected $_defaultLayout = 'default';
+	protected $_context           = 'com_sh404sef.pageids';
+	protected $_defaultModel      = 'urls';
+	protected $_defaultView       = 'pageids';
+	protected $_defaultController = 'pageids';
+	protected $_defaultTask       = '';
+	protected $_defaultLayout     = 'default';
 
-  protected $_returnController = 'pageids';
-  protected $_returnTask = '';
-  protected $_returnView = 'pageids';
-  protected $_returnLayout = 'default';
+	protected $_returnController = 'pageids';
+	protected $_returnTask       = '';
+	protected $_returnView       = 'pageids';
+	protected $_returnLayout     = 'default';
 
-  /**
-   * Redirect to a confirmation page showing in
-   * a popup window
-   */
-  public function confirmdelete() {
+	/**
+	 * Creates an shURL from a user supplied long URL
+	 */
+	public function create()
+	{
+		// Check for request forgeries
+		JSession::checkToken() or jexit('Invalid Token');
 
-    // find and store edited item id
-    $cid = JRequest::getVar('cid', array(0), 'default', 'array');
+		$app = JFactory::getApplication();
 
-    // Set the view name and create the view object
-    $viewName = 'confirm';
-    $document =JFactory::getDocument();
-    $viewType = $document->getType();
-    $viewLayout = JRequest::getCmd( 'layout', $this->_defaultLayout );
+		$url = $app->input->getString('url');
 
-    $view = $this->getView( $viewName, $viewType, '', array( 'base_path'=>$this->basePath));
+		// validate
+		if (empty($url) || !ShlSystem_Route::isFullyQUalified($url))
+		{
+			$response = array(
+				'status'  => false,
+				'message' => JText::_('COM_SH404SEF_SHURL_ERROR_INVALID_URL'),
+				'shurl'   => ''
+			);
+			ShlSystem_Http::render(
+				200,
+				json_encode(
+					$response
+				),
+				'application/json'
+			);
+		}
 
-    // push url id(s) into the view
-    $view->cid = $cid;
+		// get a model and create the shURL
+		$model = ShlMvcModel_Base::getInstance('pageids', 'Sh404sefModel');
+		$shurl = $model->createPageId('', $url);
+		$fullShurl = Sh404sefFactory::getPageInfo()->getDefaultFrontLiveSite() . '/' . $shurl;
+		$response = array(
+			'status'     => !empty($shurl),
+			'shurl'      => $shurl,
+			'full_shurl' => $fullShurl
+		);
+		$response['message'] = empty($shurl) ?
+			JText::_('COM_SH404SEF_SHURL_ERROR_UNABLE_TO_CREATE_SHURL')
+			:
+			JText::_('COM_SH404SEF_SHURL_CREATED');
+		ShlSystem_Http::render(
+			200,
+			json_encode(
+				$response
+			),
+			'application/json'
+		);
+	}
 
-    // tell it what to display
-    $view->mainText = JText::sprintf( 'COM_SH404SEF_CONFIRM_PAGEID_DELETION', count($cid));
+	/**
+	 * Redirect to a confirmation page showing in
+	 * a popup window
+	 */
+	public function confirmdelete()
+	{
+		$app = JFactory::getApplication();
 
-    // and who's gonna handle the request
-    $view->actionController = $this->_defaultController;
+		// find and store edited item id
+		$cid = $app->input->getArray(
+			array('cid' => 'int')
+		);
 
-    // and then what to do
-    $view->task = 'confirmeddeletepageids';
+		// Set the view name and create the view object
+		$viewName = 'confirm';
+		$document = JFactory::getDocument();
+		$viewType = $document->getType();
+		$viewLayout = $app->input->getCmd('layout', $this->_defaultLayout);
 
-    // Get/Create the model
-    if ($model = $this->getModel( $this->_defaultModel, 'Sh404sefModel')) {
-      // store initial context in model
-      $model->setContext( $this->_context);
+		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
 
-      // Push the model into the view (as default)
-      $view->setModel($model, true);
+		// push url id(s) into the view
+		$view->cid = wbArrayGet($cid, 'cid', array());
 
-    }
+		// tell it what to display
+		$view->mainText = JText::sprintf('COM_SH404SEF_CONFIRM_PAGEID_DELETION', count($view->cid));
 
-    // Set the layout
-    $view->setLayout($viewLayout);
+		// and who's gonna handle the request
+		$view->actionController = $this->_defaultController;
 
-    // Display the view
-    $view->display();
+		// and then what to do
+		$view->task = 'confirmeddeletepageids';
 
-  }
+		// Get/Create the model
+		if ($model = $this->getModel($this->_defaultModel, 'Sh404sefModel'))
+		{
+			// store initial context in model
+			$model->setContext($this->_context);
 
-  /**
-   * Handles confirmation for "Purge urls" action
-   *
-   */
-  public function confirmpurge() {
+			// Push the model into the view (as default)
+			$view->setModel($model, true);
+		}
 
-    // use actual method shared with "purge selected" feature
-    $this->_doConfirmPurge( 'all');
+		// Set the layout
+		$view->setLayout($viewLayout);
 
-  }
+		// Display the view
+		$view->display();
+	}
 
-  /**
-   * Handles confirmation for "Purge selected urls" action
-   *
-   */
-  public function confirmpurgeselected() {
+	/**
+	 * Handles confirmation for "Purge urls" action
+	 *
+	 */
+	public function confirmpurge()
+	{
+		// use actual method shared with "purge selected" feature
+		$this->_doConfirmPurge('all');
+	}
 
-    // use actual method shared with "purge" feature
-    $this->_doConfirmPurge( 'selected');
+	/**
+	 * Handles confirmation for "Purge selected urls" action
+	 *
+	 */
+	public function confirmpurgeselected()
+	{
+		// use actual method shared with "purge" feature
+		$this->_doConfirmPurge('selected');
+	}
 
-  }
+	public function confirmeddeletepageids()
+	{
+		// Check for request forgeries
+		JSession::checkToken() or jexit('Invalid Token');
 
-  public function confirmeddeletepageids() {
+		// find and store edited item id
+		$cid = JFactory::getApplication()->input->getArray(array('cid' => 'int'));
+		$cid = wbArrayGet($cid, 'cid', array());
 
-    // Check for request forgeries
-    JSession::checkToken() or jexit( 'Invalid Token' );
+		// check invalid data
+		if (!is_array($cid) || count($cid) < 1 || $cid[0] == 0)
+		{
+			$this->setRedirect($this->_getDefaultRedirect(), JText::_('COM_SH404SEF_SELECT_ONE_PAGEID'));
+		}
 
-    // find and store edited item id
-    $cid = JRequest::getVar('cid', array(0), 'default', 'array');
+		// now perform pageid deletion
+		// get the model to do it, actually
+		// Get/Create the model
+		$error = '';
+		if ($model = $this->getModel('pageids', 'Sh404sefModel'))
+		{
+			// store initial context in model
+			$model->setContext($this->_context);
 
-    // check invalid data
-    if (!is_array( $cid ) || count( $cid ) < 1 || $cid[0] == 0) {
-      $this->setRedirect( $this->_getDefaultRedirect(), JText::_( 'COM_SH404SEF_SELECT_ONE_PAGEID'));
-    }
+			// call the delete method on our list
+			$model->deleteByIds($cid);
 
-    // now perform pageid deletion
-    // get the model to do it, actually
-    // Get/Create the model
-    $error = '';
-    if ($model = $this->getModel( 'pageids', 'Sh404sefModel')) {
-      // store initial context in model
-      $model->setContext( $this->_context);
+			// check errors and enqueue them for display if any
+			$error = $model->getError();
+			if (!empty($error))
+			{
+				$this->enqueuemessages($error, 'error');
 
-      // call the delete method on our list
-      $model->deleteByIds( $cid);
+				// clear success message, as we have just queued some error messages
+				$status = '';
+			}
+		}
 
-      // check errors and enqueue them for display if any
-      $error = $model->getError();
-      if (!empty($error)) {
-        $this->enqueuemessages( $error, 'error');
+		// V3: we redirect to the close page, as ajax is not used anymore to save
+		$failure = array('url' => 'index.php?option=com_sh404sef&c=pageids&view=confirm&layout=refresh&tmpl=component', 'message' => $error);
+		$success = array(
+			'url'     => 'index.php?option=com_sh404sef&c=pageids&view=confirm&layout=refresh&tmpl=component',
+			'message' => JText::_('COM_SH404SEF_OPERATION_COMPLETED')
+		);
+		if (!empty($error))
+		{
+			// Save failed, go back to the screen and display a notice.
+			$this->setRedirect(JRoute::_($failure['url'], false), $failure['message'], 'error');
+			return false;
+		}
 
-        // clear success message, as we have just queued some error messages
-        $status = '';
-      }
+		$this->setRedirect(JRoute::_($success['url'], false), $success['message'], 'message');
+		return true;
+	}
 
-    }
+	/**
+	 * Handles actions confirmed through the confirmation box
+	 */
+	public function confirmedpurgepageids()
+	{
+		// Check for request forgeries
+		JSession::checkToken() or jexit('Invalid Token');
 
-    if (version_compare(JVERSION, '3.0', 'ge'))
-    {
-    	// V3: we redirect to the close page, as ajax is not used anymore to save
-    	$failure = array('url' => 'index.php?option=com_sh404sef&c=pageids&view=confirm&layout=refresh&tmpl=component', 'message' => $error);
-    	$success = array('url' => 'index.php?option=com_sh404sef&c=pageids&view=confirm&layout=refresh&tmpl=component',
-    					'message' => JText::_('COM_SH404SEF_OPERATION_COMPLETED'));
-    	if (!empty($error))
-    	{
-    		// Save failed, go back to the screen and display a notice.
-    		$this->setRedirect(JRoute::_($failure['url'], false), $failure['message'], 'error');
-    		return false;
-    	}
+		// collect type of purge to make
+		$type = JFactory::getApplication()->input->getCmd('delete_type');
 
-    	$this->setRedirect(JRoute::_($success['url'], false), $success['message'], 'message');
-    	return true;
-    }
-    else
-    {
-    	// standard display
-    	$this->display();
-    }
+		switch ($type)
+		{
+			case 'all':
+				break;
+			case 'selected':
+				break;
+			default:
+				$this->setError('Invalid data');
+				return;
+				break;
+		}
 
-  }
+		// now perform meta data deletion
+		// get the model to do it, actually
+		// Get/Create the model
+		if ($model = $this->getModel('pageids', 'Sh404sefModel'))
+		{
+			// store initial context in model
+			$model->setContext('com_sh404sef.pageids.pageids.default');
 
-  /**
-   * Handles actions confirmed through the confirmation box
-   */
-  public function confirmedpurgepageids() {
+			// call the delete method on our list
+			$model->purgePageids($type);
 
-    // Check for request forgeries
-    JSession::checkToken() or jexit( 'Invalid Token' );
+			// check errors and enqueue them for display if any
+			$error = $model->getError();
+			if (!empty($error))
+			{
+				$this->setError($error);
+			}
+		}
+		// return result to caller
+		$this->display();
+	}
 
-    // collect type of purge to make
-    $type = JRequest::getCmd( 'delete_type');
+	public function import()
+	{
 
-    switch($type) {
-      case 'all':
-        break;
-      case 'selected':
-        break;
-      default:
-        $this->setError('Invalid data');
-        return;
-        break;
-    }
+	}
 
-    // now perform meta data deletion
-    // get the model to do it, actually
-    // Get/Create the model
-    if ($model = $this->getModel( 'pageids', 'Sh404sefModel')) {
-      // store initial context in model
-      $model->setContext( 'com_sh404sef.pageids.pageids.default');
+	public function export()
+	{
 
-      // call the delete method on our list
-      $model->purgePageids( $type);
+	}
 
-      // check errors and enqueue them for display if any
-      $error = $model->getError();
-      if (!empty($error)) {
-        $this->setError( $error);
-      }
+	/**
+	 * Redirect to a confirmation page showing in
+	 * a popup window
+	 */
+	private function _doConfirmPurge($type = 'allmeta')
+	{
+		// Set the view name and create the view object
+		$viewName = 'confirm';
+		$document = JFactory::getDocument();
+		$viewType = $document->getType();
+		$viewLayout = JFactory::getApplication()->input->getCmd('layout', $this->_defaultLayout);
 
-    }
-    // return result to caller
-    $this->display();
-  }
+		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
 
-  public function import() {
+		// and who's gonna handle the request
+		$view->actionController = $this->_defaultController;
 
-  }
+		// Get/Create the model
+		if ($model = $this->getModel('pageids', 'Sh404sefModel'))
+		{
+			// store context of the main url view in the model
+			$model->setContext('com_sh404sef.pageids.pageids.default');
 
-  public function export() {
+			// Push the model into the view (as default)
+			$view->setModel($model, true);
+		}
 
-  }
+		// tell it what to display
+		// we only purge automatic sef urls, count that
+		$numberOfPageids = $model->getPageIdsCount($type);
 
-  /**
-   * Redirect to a confirmation page showing in
-   * a popup window
-   */
-  private function _doConfirmPurge( $type = 'allmeta') {
+		// if nothing to do, say so and return to main page
+		if (empty($numberOfPageids))
+		{
+			$view->redirectTo = $this->_getDefaultRedirect();
+			$view->message = JText::_('COM_SH404SEF_NORECORDS');
+		}
+		else
+		{
 
-    // Set the view name and create the view object
-    $viewName = 'confirm';
-    $document =JFactory::getDocument();
-    $viewType = $document->getType();
-    $viewLayout = JRequest::getCmd( 'layout', $this->_defaultLayout );
+			// calculate the message and some hidden data to be passed
+			// through the confirmation box
+			switch ($type)
+			{
+				case 'selected':
+					$mainText = JText::sprintf('COM_SH404SEF_CONFIRM_PAGEID_DELETION', $numberOfPageids);
+					break;
+				case 'all':
+					$mainText = JText::sprintf('COM_SH404SEF_CONFIRM_PAGEID_DELETION', $numberOfPageids);
+				default:
+					break;
+			}
 
-    $view = $this->getView( $viewName, $viewType, '', array( 'base_path'=>$this->basePath));
+			// and then what to do
+			$view->task = 'confirmedpurgepageids';
+			$hiddenText = '<input type="hidden" name="delete_type" value="' . $type . '" />';
 
-    // and who's gonna handle the request
-    $view->actionController = $this->_defaultController;
+			// push that into the view
+			$view->mainText = $mainText;
+			$view->hiddenText = $hiddenText;
+		}
+		// Set the layout
+		$view->setLayout($viewLayout);
 
-    // Get/Create the model
-    if ($model = $this->getModel( 'pageids', 'Sh404sefModel')) {
-      // store context of the main url view in the model
-      $model->setContext( 'com_sh404sef.pageids.pageids.default');
-
-      // Push the model into the view (as default)
-      $view->setModel($model, true);
-
-    }
-
-    // tell it what to display
-    // we only purge automatic sef urls, count that
-    $numberOfPageids = $model->getPageIdsCount( $type);
-
-    // if nothing to do, say so and return to main page
-    if (empty( $numberOfPageids)) {
-      $view->redirectTo = $this->_getDefaultRedirect();
-      $view->message = JText::_('COM_SH404SEF_NORECORDS');
-    } else {
-
-      // calculate the message and some hidden data to be passed
-      // through the confirmation box
-      switch ($type) {
-        case 'selected':
-          $mainText  = JText::sprintf( 'COM_SH404SEF_CONFIRM_PAGEID_DELETION', $numberOfPageids);
-          break;
-        case 'all':
-          $mainText  = JText::sprintf( 'COM_SH404SEF_CONFIRM_PAGEID_DELETION', $numberOfPageids);
-        default:
-          break;
-      }
-
-      // and then what to do
-      $view->task = 'confirmedpurgepageids';
-      $hiddenText = '<input type="hidden" name="delete_type" value="' . $type . '" />';
-
-      // push that into the view
-      $view->mainText = $mainText;
-      $view->hiddenText = $hiddenText;
-    }
-    // Set the layout
-    $view->setLayout($viewLayout);
-
-    // Display the view
-    $view->display();
-
-  }
-
+		// Display the view
+		$view->display();
+	}
 
 }

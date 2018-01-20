@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -36,7 +36,7 @@ Class Sh404sefControllerAliases extends Sh404sefClassBasecontroller {
     // catch up any result message coming from an
     // ajax save for instance, and push that into
     // the application message queue
-    $messageCode = JRequest::getCmd( 'sh404sefMsg');
+    $messageCode = JFactory::getApplication()->input->getCmd( 'sh404sefMsg');
     if (!empty($messageCode)) {
       $msg = JText::_( $messageCode);
       if ($msg != $messageCode) {
@@ -48,14 +48,11 @@ Class Sh404sefControllerAliases extends Sh404sefClassBasecontroller {
       }
     }
 
-    // find and store edited item id
-    $cid = JRequest::getVar('cid', array(0), 'default', 'array');
-
     // Set the view name and create the view object
     $viewName = $this->_defaultView;
     $document =JFactory::getDocument();
     $viewType = $document->getType();
-    $viewLayout = JRequest::getCmd( 'layout', $this->_defaultLayout );
+    $viewLayout = JFactory::getApplication()->input->getCmd( 'layout', $this->_defaultLayout );
 
     $view = $this->getView( $viewName, $viewType, '', array( 'base_path'=>$this->basePath));
 
@@ -119,7 +116,7 @@ Class Sh404sefControllerAliases extends Sh404sefClassBasecontroller {
     JSession::checkToken() or jexit( 'Invalid Token' );
 
     // collect type of purge to make
-    $type = JRequest::getCmd( 'delete_type');
+    $type = JFactory::getApplication()->input->getCmd( 'delete_type');
 
     switch($type) {
       case 'auto':
@@ -164,7 +161,7 @@ Class Sh404sefControllerAliases extends Sh404sefClassBasecontroller {
     $viewName = 'confirm';
     $document =JFactory::getDocument();
     $viewType = $document->getType();
-    $viewLayout = JRequest::getCmd( 'layout', $this->_defaultLayout );
+    $viewLayout = JFactory::getApplication()->input->getCmd( 'layout', $this->_defaultLayout );
 
     $view = $this->getView( $viewName, $viewType, '', array( 'base_path'=>$this->basePath));
 

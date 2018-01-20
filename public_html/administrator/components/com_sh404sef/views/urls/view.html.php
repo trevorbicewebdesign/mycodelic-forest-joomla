@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -57,49 +57,28 @@ class Sh404sefViewUrlsBase extends ShlMvcView_Base
 		$options = $model->getDisplayOptions();
 		$this->options = $options;
 
-		if (version_compare(JVERSION, '3.0', 'ge'))
+		// add our own css
+		JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/' . $this->joomlaVersionPrefix . '_list.css');
+		if (Sh404sefHelperHtml::setFixedTemplate())
 		{
-			// add our own css
-			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/' . $this->joomlaVersionPrefix . '_list.css');
-			if (Sh404sefHelperHtml::setFixedTemplate())
-			{
-				JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/j3.js');
-			}
-
-			// add modal css and js
-			ShlHtmlBs_helper::addBootstrapCss(JFactory::getDocument());
-			ShlHtmlBs_helper::addBootstrapJs(JFactory::getDocument());
-
-			// variable for modal, not used in 3..x+
-			$params = array();
-
-			// add display filters
-			$this->_addFilters();
-
-			// render submenu sidebar
-			$this->sidebar = Sh404sefHelperHtml::renderSubmenu();
-
-			// insert bootstrap theme
-			ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
+			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/j3.js');
 		}
-		else
-		{
-			// add our own css
-			//JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/' . $this->joomlaVersionPrefix . '_urls.css');
-			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/list.css');
 
-			// link to  custom javascript
-			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/list.js');
+		// add modal css and js
+		ShlHtmlBs_helper::addBootstrapCss(JFactory::getDocument());
+		ShlHtmlBs_helper::addBootstrapJs(JFactory::getDocument());
 
-			// add behaviors and styles as needed
-			$modalSelector = 'a.modalediturl';
-			$js = '\\function(){window.parent.shAlreadySqueezed = false;if(window.parent.shReloadModal) {parent.window.location=\''
-				. $this->defaultRedirectUrl . '\';window.parent.shReloadModal=true}}';
-			$params = array('overlayOpacity' => 0, 'classWindow' => 'sh404sef-popup', 'classOverlay' => 'sh404sef-popup', 'onClose' => $js);
-			Sh404sefHelperHtml::modal($modalSelector, $params);
+		// variable for modal, not used in 3..x+
+		$params = array();
 
-			$this->optionsSelect = $this->_makeOptionsSelect($options);
-		}
+		// add display filters
+		$this->_addFilters();
+
+		// render submenu sidebar
+		$this->sidebar = Sh404sefHelperHtml::renderSubmenu();
+
+		// insert bootstrap theme
+		ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
 
 		// build the toolbar
 		$toolbarMethod = '_makeToolbar' . ucfirst($this->getLayout() . ucfirst($this->joomlaVersionPrefix));
@@ -147,8 +126,10 @@ class Sh404sefViewUrlsBase extends ShlMvcView_Base
 		$current = $options->filter_duplicate;
 		$name = 'filter_duplicate';
 		$selectAllTitle = JText::_('COM_SH404SEF_ALL_DUPLICATES');
-		$data = array(array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_DUPLICATES, 'title' => JText::_('COM_SH404SEF_ONLY_DUPLICATES')),
-		              array('id' => Sh404sefHelperGeneral::COM_SH404SEF_NO_DUPLICATES, 'title' => JText::_('COM_SH404SEF_ONLY_NO_DUPLICATES')));
+		$data = array(
+			array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_DUPLICATES, 'title' => JText::_('COM_SH404SEF_ONLY_DUPLICATES')),
+			array('id' => Sh404sefHelperGeneral::COM_SH404SEF_NO_DUPLICATES, 'title' => JText::_('COM_SH404SEF_ONLY_NO_DUPLICATES'))
+		);
 		$selects->filter_duplicate = Sh404sefHelperHtml::buildSelectList(
 			$data, $current, $name, $autoSubmit = true, $addSelectAll = true,
 			$selectAllTitle
@@ -158,8 +139,10 @@ class Sh404sefViewUrlsBase extends ShlMvcView_Base
 		$current = $options->filter_alias;
 		$name = 'filter_alias';
 		$selectAllTitle = JText::_('COM_SH404SEF_ALL_ALIASES');
-		$data = array(array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_ALIASES, 'title' => JText::_('COM_SH404SEF_ONLY_ALIASES')),
-		              array('id' => Sh404sefHelperGeneral::COM_SH404SEF_NO_ALIASES, 'title' => JText::_('COM_SH404SEF_ONLY_NO_ALIASES')));
+		$data = array(
+			array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_ALIASES, 'title' => JText::_('COM_SH404SEF_ONLY_ALIASES')),
+			array('id' => Sh404sefHelperGeneral::COM_SH404SEF_NO_ALIASES, 'title' => JText::_('COM_SH404SEF_ONLY_NO_ALIASES'))
+		);
 		$selects->filter_alias = Sh404sefHelperHtml::buildSelectList(
 			$data, $current, $name, $autoSubmit = true, $addSelectAll = true,
 			$selectAllTitle
@@ -169,8 +152,10 @@ class Sh404sefViewUrlsBase extends ShlMvcView_Base
 		$current = $options->filter_url_type;
 		$name = 'filter_url_type';
 		$selectAllTitle = JText::_('COM_SH404SEF_ALL_URL_TYPES');
-		$data = array(array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_CUSTOM, 'title' => JText::_('COM_SH404SEF_ONLY_CUSTOM')),
-		              array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_AUTO, 'title' => JText::_('COM_SH404SEF_ONLY_AUTO')));
+		$data = array(
+			array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_CUSTOM, 'title' => JText::_('COM_SH404SEF_ONLY_CUSTOM')),
+			array('id' => Sh404sefHelperGeneral::COM_SH404SEF_ONLY_AUTO, 'title' => JText::_('COM_SH404SEF_ONLY_AUTO'))
+		);
 		$selects->filter_url_type = Sh404sefHelperHtml::buildSelectList(
 			$data, $current, $name, $autoSubmit = true, $addSelectAll = true,
 			$selectAllTitle

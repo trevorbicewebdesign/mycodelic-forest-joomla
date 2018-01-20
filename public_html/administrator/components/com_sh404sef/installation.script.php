@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -30,6 +30,10 @@ class Com_Sh404sefInstallerScript
 	private $_errorPageCatId       = 0;
 	private $_shlibVersion         = '';
 	private $_skipInstall          = array();
+
+	private $hasUtf8mb4Support = false;
+	private $charset           = 'utf8';
+	private $collation         = 'utf8_general_ci';
 
 	public function preflight($route, $installer)
 	{
@@ -178,8 +182,8 @@ class Com_Sh404sefInstallerScript
 	 * in the /media directory
 	 *
 	 * @param string $extName the extension name
-	 * @param array $shConfig associative array of parameters of the extension, to be written to disk
-	 * @param array $pub , optional, only if module, an array of the menu item id where the module is published
+	 * @param array  $shConfig associative array of parameters of the extension, to be written to disk
+	 * @param array  $pub , optional, only if module, an array of the menu item id where the module is published
 	 *
 	 * @return boolean, true if no error
 	 */
@@ -885,8 +889,6 @@ class Com_Sh404sefInstallerScript
 		{
 			JFactory::getApplication()
 			        ->enqueuemessage('There was an error updating the 404 error page. You may have to set it up manually in sh404SEF configuration.');
-
-			return;
 		}
 
 		$status = $this->_updateAnalyticsAccount();
@@ -894,8 +896,6 @@ class Com_Sh404sefInstallerScript
 		{
 			JFactory::getApplication()
 			        ->enqueuemessage('There was an error updating the Google Analytics Web property ID. You may have to set it up manually in sh404SEF configuration.');
-
-			return;
 		}
 
 		$status = $this->_fixInvalidShurl();
@@ -903,8 +903,20 @@ class Com_Sh404sefInstallerScript
 		{
 			JFactory::getApplication()
 			        ->enqueuemessage('There was an error fixing some invalid shURLs in the database. Please check that no shURL is identical to one of your language codes ie /en, /fr, /de.');
+		}
 
-			return;
+		$status = $this->_transferCanonical();
+		if (!$status)
+		{
+			JFactory::getApplication()
+			        ->enqueuemessage('There was an error tranfering canonical links from the meta data table to the aliases table (new in version 4.12.0). Please take note of the full error message, double-check your canonicals, or try installing again.');
+		}
+
+		$status = $this->_reorderAliases();
+		if (!$status)
+		{
+			JFactory::getApplication()
+			        ->enqueuemessage('There was an error when re-ordering aliases in the database. This should not prevent normal operation, but please take note of the full error message and try installing again.');
 		}
 
 		// make sur permissions record are set straight
@@ -929,8 +941,6 @@ class Com_Sh404sefInstallerScript
 		{
 			JFactory::getApplication()
 			        ->enqueuemessage('There was an error transferring or updating settings. You may have to update sh404SEF or Joomla configuration manually');
-
-			return;
 		}
 
 		// message
@@ -947,7 +957,28 @@ class Com_Sh404sefInstallerScript
 		ob_start();
 		include sprintf($basePath, $languageCode);
 		$postInstallMessage = ob_get_clean();
-		JFactory::getApplication()->enqueueMessage( $postInstallMessage);
+		JFactory::getApplication()->enqueueMessage($postInstallMessage);
+	}
+
+	private function _determineUtf8mb4Support()
+	{
+		$db = JFactory::getDbo();
+		if (is_callable(array($db, 'hasUTF8mb4Support')))
+		{
+			if ($db->hasUTF8mb4Support())
+			{
+				$this->hasUtf8mb4Support = true;
+				$this->charset = 'utf8mb4';
+				$this->collation = 'utf8mb4_unicode_ci';
+			}
+		}
+		if (!$this->hasUtf8mb4Support)
+		{
+			JFactory::getApplication()->enqueueMessage(
+				'MYSQL server does not provide support for UTF8 MB4 character set. Database tables will not be using it.',
+				'warning'
+			);
+		}
 	}
 
 	private function updateSettings()
@@ -1255,8 +1286,7 @@ class Com_Sh404sefInstallerScript
 		}
 
 		$signature = array_reduce(
-			$plugins, function ($carry, $item)
-		{
+			$plugins, function ($carry, $item) {
 			return $carry . $item->element;
 		}
 		);
@@ -1292,8 +1322,8 @@ class Com_Sh404sefInstallerScript
 	 * (as saved upon uninstall)
 	 *
 	 * @param string $extName the module name, including mod_ if a module
-	 * @param array $shConfig an array holding the database columns of the extension
-	 * @param array $shPub , an array holding the publication information of the module (only for modules)
+	 * @param array  $shConfig an array holding the database columns of the extension
+	 * @param array  $shPub , an array holding the publication information of the module (only for modules)
 	 *
 	 * @return boolean, true if any stored parameters were found for this extension
 	 */
@@ -1577,6 +1607,119 @@ class Com_Sh404sefInstallerScript
 	}
 
 	/**
+	 * In 4.12.0, canoical are now a type of aliases, instead of being managed as meta data. We must transfer existing
+	 * canonical.
+	 *
+	 * @return bool
+	 */
+	private function _transferCanonical()
+	{
+		if (!class_exists('Sh404sefFactory'))
+		{
+			// sh404SEF not running, do nothing
+			// If user disabled sh404SEF system plugin
+			// we can't really detect that.
+			return true;
+		}
+
+		// at this stage, needs to load table object ourselves
+		include_once sh404SEF_ADMIN_ABS_PATH . 'tables/aliases.php';
+		// re-include php_shortcuts, in case of installing over an older version
+		// that may not have the latest version.
+		include SHLIB_ROOT_PATH . 'system/php_shortcuts.php';
+
+		try
+		{
+			// are there any canonical in the meta table?
+			$canonicals = ShlDbHelper::selectObjectList(
+				'#__sh404sef_metas',
+				'*',
+				'canonical != ""'
+			);
+
+			$db = JFactory::getDbo();
+
+			// process canonicals
+			if (!empty($canonicals))
+			{
+				$alias = array(
+					'target_type' => 1
+				);
+				$root = JUri::root();
+				foreach ($canonicals as $canonical)
+				{
+					// insert in aliases table
+					$alias['newurl'] = $canonical->canonical;
+					$alias['alias'] = Sh404sefHelperGeneral::getSefFromNonSef($canonical->newurl);
+					$alias['alias'] = wbLTrim($alias['alias'], $root);
+					$alias['alias'] = wbLTrim($alias['alias'], 'administrator/');
+					$alias['target_type'] = 1;
+					$aliasObject = new Sh404sefTableAliases($db);
+					$aliasObject->bind(
+						$alias
+					);
+					$aliasObject->store();
+
+					// delete original
+					ShlDbHelper::update(
+						'#__sh404sef_metas',
+						array(
+							'canonical' => ''
+						),
+						array(
+							'id' => $canonical->id
+						)
+					);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			$app = JFactory::getApplication();
+			$app->enqueueMessage('Error: ' . $e->getMessage());
+
+			return false;
+		}
+
+		return true;
+	}
+
+	private function _reorderAliases()
+	{
+		try
+		{
+			// are there any unordered aliases?
+			$unorderedAliasesCount = ShlDbHelper::count(
+				'#__sh404sef_aliases',
+				'id',
+				array(
+					'ordering' => 0
+				)
+			);
+
+			// if so, reorder them
+			if (!empty($unorderedAliasesCount))
+			{
+				include_once sh404SEF_ADMIN_ABS_PATH . 'tables/aliases.php';
+				$db = JFactory::getDbo();
+
+				// make sure aliases are properly ordered
+				$aliasesTable = new Sh404sefTableAliases($db);
+				$aliasesTable->reorder();
+			}
+		}
+		catch (Exception $e)
+		{
+			$app = JFactory::getApplication();
+			$app->enqueueMessage('Error: ' . $e->getMessage());
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Transfer to our keystore customized pages created by user, if any.
 	 * Prior to 4.7.0, error pages were stored in regular Joomla articles.
 	 *
@@ -1707,6 +1850,7 @@ class Com_Sh404sefInstallerScript
 	private function _createDBStructure()
 	{
 		// get a db instance
+		$this->_determineUtf8mb4Support();
 		$db = JFactory::getDBO();
 
 		$sqlQueries = array(
@@ -1731,9 +1875,9 @@ class Com_Sh404sefInstallerScript
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_metas` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
         `newurl` VARCHAR(255) NOT NULL DEFAULT '',
-        `metadesc` VARCHAR(255) DEFAULT '',
-        `metakey` VARCHAR(255) DEFAULT  '',
-        `metatitle` VARCHAR(255) DEFAULT '',
+        `metadesc` VARCHAR(512) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
+        `metakey` VARCHAR(255) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT  '',
+        `metatitle` VARCHAR(255) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
         `metalang` VARCHAR(30) DEFAULT '',
         `metarobots` VARCHAR(30) DEFAULT '',
         `canonical` VARCHAR(255) DEFAULT '',
@@ -1766,28 +1910,32 @@ class Com_Sh404sefInstallerScript
         `newurl` VARCHAR(255) NOT NULL DEFAULT '',
         `alias` VARCHAR(255) NOT NULL DEFAULT '',
         `type` TINYINT(3) NOT NULL DEFAULT '0',
+        `target_type` TINYINT(3) NOT NULL DEFAULT '0',
         `hits` INT(11) NOT NULL DEFAULT '0',
+        `state` TINYINT(3) NOT NULL DEFAULT 1,
+        `ordering` INT(11) NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`),
         KEY `newurl` (`newurl`),
         KEY `alias` (`alias`),
-        KEY `type` (`type`)
+        KEY `type` (`type`),
+        KEY `state` (`state`)
         ) DEFAULT CHARSET=utf8;",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_pageids` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `newurl` VARCHAR(255) NOT NULL DEFAULT '',
+        `newurl` VARCHAR(1024) NOT NULL DEFAULT '',
         `pageid` VARCHAR(255) NOT NULL DEFAULT '',
         `type` TINYINT(3) NOT NULL DEFAULT '0',
         `hits` INT(11) NOT NULL DEFAULT '0',
         PRIMARY KEY (`id`),
-        KEY `newurl` (`newurl`),
+        KEY `newurl` (`newurl` (190)),
         KEY `alias` (`pageid`),
         KEY `type` (`type`)
-        ) DEFAULT CHARSET=utf8;",
+        ) DEFAULT CHARSET=" . $this->charset . ";",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_shurls` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `url` VARCHAR(255) NOT NULL DEFAULT '',
+        `url` VARCHAR(1024) NOT NULL DEFAULT '',
         `target` VARCHAR(333) NOT NULL DEFAULT '',
         `target_domain` VARCHAR(191) NOT NULL DEFAULT '',
         `referrer` VARCHAR(191) NOT NULL DEFAULT '',
@@ -1797,12 +1945,12 @@ class Com_Sh404sefInstallerScript
         `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         `type` TINYINT(3) NOT NULL DEFAULT '0',
         PRIMARY KEY (`id`),
-        KEY `url` (`url`),
+        KEY `url` (`url` (190)),
         KEY `referrer` (`referrer`),
         KEY `user_agent` (`user_agent`),
         KEY `ip_address` (`ip_address`),
         KEY `type` (`type`)
-        ) DEFAULT CHARSET=utf8;",
+        ) DEFAULT CHARSET=" . $this->charset . ";",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_aliases` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -1821,7 +1969,7 @@ class Com_Sh404sefInstallerScript
         KEY `user_agent` (`user_agent`),
         KEY `ip_address` (`ip_address`),
         KEY `type` (`type`)
-        ) DEFAULT CHARSET=utf8;",
+        ) DEFAULT CHARSET=" . $this->charset . ";",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_404s` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -1840,7 +1988,7 @@ class Com_Sh404sefInstallerScript
         KEY `user_agent` (`user_agent`),
         KEY `ip_address` (`ip_address`),
         KEY `type` (`type`)
-        ) DEFAULT CHARSET=utf8;",
+        ) DEFAULT CHARSET=" . $this->charset . ";",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_urls_src` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -1854,19 +2002,19 @@ class Com_Sh404sefInstallerScript
         KEY `url` (`url`),
         KEY `routed_url` (`routed_url`),
         KEY `source_url` (`source_url`)
-        ) DEFAULT CHARSET=utf8;",
+        ) DEFAULT CHARSET=" . $this->charset . ";",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_keystore` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
 		`scope` VARCHAR(50) NOT NULL DEFAULT 'default',
-        `key` VARCHAR(255) NOT NULL DEFAULT '',
-        `value` MEDIUMTEXT NOT NULL,
+        `key` VARCHAR(191) NOT NULL DEFAULT '',
+        `value` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " NOT NULL,
         `user_id` INT NOT NULL DEFAULT 0,
         `format` TINYINT(3) NOT NULL DEFAULT 1,
         `modified_at` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         PRIMARY KEY (`id`),
         KEY `main` (`scope`,`key`)
-        ) ENGINE = InnoDB DEFAULT CHARSET=utf8;"
+        ) ENGINE = InnoDB DEFAULT CHARSET=" . $this->charset . ";"
 		);
 
 		foreach ($sqlQueries as $query)
@@ -1898,6 +2046,7 @@ class Com_Sh404sefInstallerScript
 	 */
 	private function _updateDBStructure()
 	{
+		$this->_determineUtf8mb4Support();
 		// get a db instance
 		$db = JFactory::getDBO();
 
@@ -2104,6 +2253,22 @@ class Com_Sh404sefInstallerScript
 			$subQueries['#__sh404sef_aliases'][] = "add `hits` int(11) NOT NULL DEFAULT '" . SH404SEF_OPTION_VALUE_NO . "'";
 		}
 
+		// 4.12
+		if (empty($columns['target_type']))
+		{
+			$subQueries['#__sh404sef_aliases'][] = "add `target_type` tinyint(3) NOT NULL DEFAULT '" . SH404SEF_OPTION_VALUE_NO . "'";
+			$subQueries['#__sh404sef_aliases'][] = "add index `target_type` (`target_type`)";
+		}
+		if (empty($columns['state']))
+		{
+			$subQueries['#__sh404sef_aliases'][] = "add `state` tinyint(3) NOT NULL DEFAULT 1";
+			$subQueries['#__sh404sef_aliases'][] = "add index `state` (`state`)";
+		}
+		if (empty($columns['ordering']))
+		{
+			$subQueries['#__sh404sef_aliases'][] = "add `ordering` int(11) NOT NULL DEFAULT 0";
+		}
+
 		// 4.7.0 new columns for URLs table
 		$subqueries['#__sh404sef_urls'] = array();
 		if (method_exists($db, 'getTableFields'))
@@ -2149,12 +2314,11 @@ class Com_Sh404sefInstallerScript
 			}
 			catch (Exception $e)
 			{
-				$app = JFactory::getApplication();
-				$app
-					->enqueueMessage(
-						'Error while upgrading the database : ' . $e->getMessage()
-						. '. Sh404SEF will probably not operate properly. Please uninstall it, then try again after checking your database server setup. Contact us in case this happens again.'
-					);
+				JFactory::getApplication()
+				        ->enqueueMessage(
+					        'Error while upgrading the database : ' . $e->getMessage()
+					        . '. Sh404SEF will probably not operate properly. Please uninstall it, then try again after checking your database server setup. Contact us in case this happens again.'
+				        );
 			}
 		}
 
@@ -2164,6 +2328,63 @@ class Com_Sh404sefInstallerScript
 			$subQueries['#__sh404sef_urls'][] = "add `last_hit` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00'";
 			$subQueries['#__sh404sef_urls'][] = "add index `last_hit` (`last_hit`)";
 		}
+
+		// 4.10.1 allow utf8mb4
+		if ($this->hasUtf8mb4Support && class_exists('Sh404sefFactory') && version_compare(Sh404sefFactory::getConfig()->version, '4.10.1', 'lt'))
+		{
+			// updating
+			$subQueries['#__sh404sef_metas'][] = 'modify `metatitle` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
+			$subQueries['#__sh404sef_metas'][] = 'modify `metadesc` varchar(512) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
+			$subQueries['#__sh404sef_metas'][] = 'modify `metakey` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
+		}
+
+		// 4.12.0 pageids/shurl allow external target, expand target URL column, but limit index
+		//	"CREATE TABLE IF NOT EXISTS `#__sh404sef_pageids` (
+		//`id` INT(11) NOT NULL AUTO_INCREMENT,
+		//   `newurl` VARCHAR(1024) NOT NULL DEFAULT '',
+		//   `pageid` VARCHAR(255) NOT NULL DEFAULT '',
+		//   `type` TINYINT(3) NOT NULL DEFAULT '0',
+		//   `hits` INT(11) NOT NULL DEFAULT '0',
+		//   PRIMARY KEY (`id`),
+		//   KEY `newurl` (`newurl` (190)),
+		//   KEY `alias` (`pageid`),
+		//   KEY `type` (`type`)
+		//   ) DEFAULT CHARSET=utf8;",
+		//
+		//		"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_shurls` (
+		//`id` INT(11) NOT NULL AUTO_INCREMENT,
+		//   `url` VARCHAR(1024) NOT NULL DEFAULT '',
+		//   `target` VARCHAR(333) NOT NULL DEFAULT '',
+		//   `target_domain` VARCHAR(191) NOT NULL DEFAULT '',
+		//   `referrer` VARCHAR(191) NOT NULL DEFAULT '',
+		//   `referrer_domain` VARCHAR(191) NOT NULL DEFAULT '',
+		//   `user_agent` VARCHAR(191) NOT NULL DEFAULT '',
+		//   `ip_address` VARCHAR(50) NOT NULL DEFAULT '',
+		//   `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+		//   `type` TINYINT(3) NOT NULL DEFAULT '0',
+		//   PRIMARY KEY (`id`),
+		//   KEY `url` (`url` (190)),
+		//   KEY `referrer` (`referrer`),
+		//   KEY `user_agent` (`user_agent`),
+		//   KEY `ip_address` (`ip_address`),
+		//   KEY `type` (`type`)
+		//   ) DEFAULT CHARSET=utf8;",
+
+		if ($this->hasUtf8mb4Support && class_exists('Sh404sefFactory') && version_compare(Sh404sefFactory::getConfig()->version, '4.12.0', 'lt'))
+		{
+			$subQueries['#__sh404sef_pageids'] = array();
+			$subQueries['#__sh404sef_pageids'][] = 'modify `newurl` varchar(1024)';
+			$subQueries['#__sh404sef_pageids'][] = 'DROP INDEX `newurl`';
+			$subQueries['#__sh404sef_pageids'][] = 'add index `newurl` (`newurl`(190))';
+
+			$subQueries['#__sh404sef_hits_shurls'] = array();
+			$subQueries['#__sh404sef_hits_shurls'][] = 'modify `url` varchar(1024)';
+			$subQueries['#__sh404sef_hits_shurls'][] = 'DROP INDEX `url`';
+			$subQueries['#__sh404sef_hits_shurls'][] = 'add index `url` (`url`(190))';
+		}
+
+		// 4.13.0: expanded max meta description length from 255 to 512 chars
+		$subQueries['#__sh404sef_metas'][] = 'modify `metadesc` varchar(512) CHARACTER SET ' . $this->charset . ' collate ' . $this->collation . '';
 
 		// apply changes
 		if (!empty($subQueries))
@@ -2190,12 +2411,11 @@ class Com_Sh404sefInstallerScript
 			}
 			catch (Exception $e)
 			{
-				$app = JFactory::getApplication();
-				$app
-					->enqueueMessage(
-						'Error while upgrading the database : ' . $e->getMessage()
-						. '. Sh404SEF will probably not operate properly. Please uninstall it, then try again after checking your database server setup. Contact us in case this happens again.'
-					);
+				JFactory::getApplication()
+				        ->enqueueMessage(
+					        'Error while upgrading the database : ' . $e->getMessage()
+					        . '. Sh404SEF will probably not operate properly. Please uninstall it, then try again after checking your database server setup. Contact us in case this happens again.'
+				        );
 			}
 		}
 	}

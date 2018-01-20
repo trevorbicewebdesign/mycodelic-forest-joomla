@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -51,8 +51,8 @@ Class Sh404sefClassBasewizcontroller extends Sh404sefClassBasecontroller {
     parent::__construct( $config);
 
     // attach appropriate adapter
-    $this->_opType = strtolower( JRequest::getCmd( 'optype'));  //ex : 'import'
-    $this->_opSubject = strtolower( JRequest::getCmd( 'opsubject'));  // ex:  pageids
+    $this->_opType = strtolower( JFactory::getApplication()->input->getCmd( 'optype'));  //ex : 'import'
+    $this->_opSubject = strtolower( JFactory::getApplication()->input->getCmd( 'opsubject'));  // ex:  pageids
 
     // update context
     $this->_context .= '.' . $this->_opType . '.' . $this->_opSubject;
@@ -84,7 +84,7 @@ Class Sh404sefClassBasewizcontroller extends Sh404sefClassBasecontroller {
     // catch up any result message coming from an
     // ajax save for instance, and push that into
     // the application message queue
-    $messageCode = JRequest::getCmd( 'sh404sefMsg');
+    $messageCode = JFactory::getApplication()->input->getCmd( 'sh404sefMsg');
     if (!empty($messageCode)) {
       $msg = JText::_( $messageCode);
       if ($msg != $messageCode) {
@@ -212,7 +212,7 @@ Class Sh404sefClassBasewizcontroller extends Sh404sefClassBasecontroller {
     // what is the step id to run depending on what button was pressed
     // ie : next = 3, previous = 1, terminate = 6
     foreach( $this->_adapter->_buttonsList as $button) {
-      $this->_adapter->_steps[$button] = JRequest::getInt( $button, $this->_adapter->_steps[$button]);
+      $this->_adapter->_steps[$button] = JFactory::getApplication()->input->getInt( $button, $this->_adapter->_steps[$button]);
     }
 
     // check request params

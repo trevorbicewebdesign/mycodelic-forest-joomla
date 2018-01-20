@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier 2017
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.632
- * @date                2017-06-01
+ * @version      0.3.1.659
+ * @date                2017-12-22
  */
 
 // no direct access
@@ -21,6 +21,10 @@ defined('_JEXEC') or die;
  */
 class ShlSystem_Strings
 {
+	const NONE = 'none';
+	const LOWERCASE = 'lowercase';
+	const UPPERCASE = 'uppercase';
+	const UCFIRST = 'ucfirst';
 
 	/**
 	 * Performs a preg_replace, wrapping it to catch errors
@@ -89,11 +93,13 @@ class ShlSystem_Strings
 	 * into an array, after trimming characters at both ends
 	 * Only non-empty cleaned items are added to the returned array
 	 *
-	 * @param $string
+	 * @param        $string
 	 * @param string $delimiter
+	 * @param string $caseHandling none | lowercase | uppercase | ufcirst
+	 *
 	 * @return array
 	 */
-	public static function stringToCleanedArray($string, $delimiter = ',')
+	public static function stringToCleanedArray($string, $delimiter = ',', $caseHandling = self::NONE)
 	{
 		$output = array();
 		$bits = explode($delimiter, $string);
@@ -104,7 +110,21 @@ class ShlSystem_Strings
 				$cleaned = JString::trim($bit);
 				if (!empty($cleaned))
 				{
-					$output[] = $cleaned;
+					switch ($caseHandling)
+					{
+						case self::LOWERCASE:
+							$output[] = JString::strtolower($cleaned);
+							break;
+						case self::UPPERCASE:
+							$output[] = JString::strtoupper($cleaned);
+							break;
+						case self::UCFIRST:
+							$output[] = JString::ucfirst($cleaned);
+							break;
+						default:
+							$output[] = $cleaned;
+							break;
+					}
 				}
 			}
 		}

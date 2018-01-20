@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // no direct access
@@ -263,13 +263,22 @@ class plgSystemSh404sef extends JPlugin
 		}
 
 		// should we spend time on this?
+		$config = Sh404sefFactory::getConfig();
 		if (is_object($row))
 		{
-			$row->text = $this->searchOGPImage($row->text, Sh404sefFactory::getConfig(), $context, $row);
+			$row->text = $this->searchOGPImage($row->text, $config, $context, $row);
+			if($config->autoBuildDescription)
+			{
+				Sh404sefHelperMetadata::buildAutoDescription($context, $row->text, $params, $page);
+			}
 		}
 		else
 		{
-			$row = $this->searchOGPImage($row, null, Sh404sefFactory::getConfig());;
+			$row = $this->searchOGPImage($row, null, $config);
+			if($config->autoBuildDescription)
+			{
+				Sh404sefHelperMetadata::buildAutoDescription($context, $row, $params, $page);
+			}
 		}
 
 		return true;
@@ -287,9 +296,10 @@ class plgSystemSh404sef extends JPlugin
 				if (version_compare(JVERSION, '3.0', 'ge'))
 				{
 					// are we on an edit page?
-					$option = JRequest::getCmd('option');
-					$view = JRequest::getCmd('view');
-					$layout = JRequest::getCmd('layout');
+					$app = JFactory::getApplication();
+					$option = $app->input->getCmd('option');
+					$view = $app->input->getCmd('view');
+					$layout = $app->input->getCmd('layout');
 					if ($layout == 'edit'
 						&& (($option == 'com_content' && $view == 'article') || ($option == 'com_categories' && $view == 'category')
 							|| ($option == 'com_contact' && $view == 'contact') || ($option == 'com_newsfeeds' && $view == 'newsfeed')

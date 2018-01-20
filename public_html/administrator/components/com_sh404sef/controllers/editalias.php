@@ -3,62 +3,76 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
+{
 	die('Direct Access to this location is not allowed.');
+}
 
 Class Sh404sefControllerEditalias extends Sh404sefClassBaseeditcontroller
 {
-	protected $_context = 'com_sh404sef.editalias';
+	protected $_context        = 'com_sh404sef.editalias';
 	protected $_editController = 'editalias';
-	protected $_editView = 'editalias';
-	protected $_editLayout = 'default';
-	protected $_defaultModel = 'editalias';
-	protected $_defaultView = 'editalias';
+	protected $_editView       = 'editalias';
+	protected $_editLayout     = 'default';
+	protected $_defaultModel   = 'editalias';
+	protected $_defaultView    = 'editalias';
 
 	protected $_returnController = 'aliases';
-	protected $_returnTask = '';
-	protected $_returnView = 'aliases';
-	protected $_returnLayout = 'default';
+	protected $_returnTask       = '';
+	protected $_returnView       = 'aliases';
+	protected $_returnLayout     = 'default';
 
-	/**
-	 * Handle creating aliases from the aliases
-	 * manager.
-	 */
-	public function newalias()
+	public function save()
 	{
-		// hide the main menu
-		JRequest::setVar('hidemainmenu', 1);
+		// Check for request forgeries
+		JSession::checkToken() or jexit('Invalid Token');
 
-		// find and store edited item id . should be 0, as this is a new url
-		$cid = JRequest::getVar('cid', array(0), 'default', 'array');
-		$this->_id = $cid[0];
+		$input = JFactory::getApplication()->input;
 
-		// need to get the view to push the url data into it
-		$viewName = JRequest::getWord('view');
-		if (empty($viewName))
+		// save incoming data
+		$this->_editData = $input->post->getArray();
+
+		// find and store edited item id
+		$this->_id = $input->getInt('id');
+
+		// perform saving of incoming data
+		$savedId = $this->_doSave($this->_editData);
+
+		if (empty($savedId))
 		{
-			JRequest::setVar('view', $this->_defaultView);
+			$response = array(
+				'status'  => false,
+				'message' => JText::sprintf('COM_SH404SEF_ALIAS_CREATE_SAVE_ERROR', $this->getError()),
+			);
+			ShlSystem_Http::render(
+				200,
+				json_encode(
+					$response
+				),
+				'application/json'
+			);
 		}
 
-		$document = JFactory::getDocument();
-
-		$viewType = $document->getType();
-		$viewName = JRequest::getCmd('view');
-		$this->_editView = $viewName;
-
-		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
-
-		// Call the base controller to do the rest
-		$this->display();
-
+		$response = array(
+			'status' => true,
+		);
+		$response['message'] = JText::_('COM_SH404SEF_ELEMENT_SAVED');
+		ShlSystem_Http::render(
+			200,
+			json_encode(
+				$response
+			),
+			'application/json'
+		);
+		return true;
 	}
 
 	/**
@@ -71,48 +85,24 @@ Class Sh404sefControllerEditalias extends Sh404sefClassBaseeditcontroller
 	 */
 	public function edit()
 	{
-		// hide the main menu
-		JRequest::setVar('hidemainmenu', 1);
-
-		// find and store edited item id
-		$cid = JRequest::getVar('cid', array(0), 'default', 'array');
-		$this->_id = $cid[0];
-
-		// find to which url this alias record belongs to
-		// get a model and ask for the matching URL record
-		$model = $this->getModel('aliases', 'Sh404sefModel');
-		$url = $model->getUrlByAliasId($this->_id);
-
-		// push that as a request var, so that we fake editing an url
-		if (!empty($url) && !empty($url->id))
-		{
-			$cid = array($url->id);
-		}
-		else
-		{
-			$cid = array(0);
-		}
-		Jrequest::setVar('cid', $cid);
-
-		// need to get the view to push the url data into it
-		$viewName = JRequest::getWord('view');
-		if (empty($viewName))
-		{
-			JRequest::setVar('view', $this->_defaultView);
-		}
-
+		$app = JFactory::getApplication();
 		$document = JFactory::getDocument();
 
+		// find and store edited item id
+		$cid = $app->input->getArray(array('cid' => 'int'));
+		$this->_id = wbArrayGet($cid, array('cid', 0), 0);
+
+		// need to get the view to push the url data into it
+		$viewName = $app->input->getCmd('view');
+		if (empty($viewName))
+		{
+			$app->input->set('view', $this->_defaultView);
+		}
+
 		$viewType = $document->getType();
-		$viewName = JRequest::getCmd('view');
 		$this->_editView = $viewName;
 
-		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
-
-		// now we can push the url into the view
-		$view->url = $url;
-		// will prevent user from editing the non-sef url
-		$view->noUrlEditing = true;
+		$this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
 
 		// Call the base controller to do the rest
 		$this->display();
@@ -125,13 +115,15 @@ Class Sh404sefControllerEditalias extends Sh404sefClassBaseeditcontroller
 	public function confirmdelete()
 	{
 		// find and store edited item id
-		$cid = JRequest::getVar('cid', array(0), 'default', 'array');
+		$app = JFactory::getApplication();
+		$cid = $app->input->getArray(array('cid' => 'int'));
+		$cid = wbArrayGet($cid, 'cid', array());
 
 		// Set the view name and create the view object
 		$viewName = 'confirm';
 		$document = JFactory::getDocument();
 		$viewType = $document->getType();
-		$viewLayout = JRequest::getCmd('layout', $this->_defaultLayout);
+		$viewLayout = JFactory::getApplication()->input->getCmd('layout', $this->_defaultLayout);
 
 		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
 
@@ -152,7 +144,6 @@ Class Sh404sefControllerEditalias extends Sh404sefClassBaseeditcontroller
 
 			// Push the model into the view (as default)
 			$view->setModel($model, true);
-
 		}
 
 		// Set the layout
@@ -168,7 +159,9 @@ Class Sh404sefControllerEditalias extends Sh404sefClassBaseeditcontroller
 		JSession::checkToken() or jexit('Invalid Token');
 
 		// find and store edited item id
-		$cid = JRequest::getVar('cid', array(0), 'default', 'array');
+		$app = JFactory::getApplication();
+		$cid = $app->input->getArray(array('cid' => 'int'));
+		$cid = wbArrayGet($cid, 'cid', array());
 
 		// check invalid data
 		if (!is_array($cid) || count($cid) < 1 || $cid[0] == 0)
@@ -196,30 +189,24 @@ Class Sh404sefControllerEditalias extends Sh404sefClassBaseeditcontroller
 			}
 		}
 
-		// in J3 no ajax, we have a "closing" layout
-		if (version_compare(JVERSION, '3.0.', 'ge'))
+		// V3: we redirect to the close page, as ajax is not used anymore to save
+		$failure = array(
+			'url'     => 'index.php?option=com_sh404sef&tmpl=component&c=editalias&view=editurl&layout=refresh&refreshafter=8000',
+			'message' => $model->getError()
+		);
+		$success = array(
+			'url'     => 'index.php?option=com_sh404sef&tmpl=component&c=editalias&view=editurl&layout=refresh',
+			'message' => JText::_('COM_SH404SEF_ELEMENT_DELETED')
+		);
+		if (!empty($errors))
 		{
-			// V3: we redirect to the close page, as ajax is not used anymore to save
-			$failure = array('url' => 'index.php?option=com_sh404sef&tmpl=component&c=editalias&view=editurl&layout=refresh&refreshafter=8000',
-				'message' => $model->getError());
-			$success = array('url' => 'index.php?option=com_sh404sef&tmpl=component&c=editalias&view=editurl&layout=refresh',
-				'message' => JText::_('COM_SH404SEF_ELEMENT_DELETED'));
-			if (!empty($errors))
-			{
-				// Save failed, go back to the screen and display a notice.
-				$this->setRedirect(JRoute::_($failure['url'], false), $failure['message'], 'error');
-				return false;
-			}
-
-			$this->setRedirect(JRoute::_($success['url'], false), $success['message'], 'message');
-			return true;
-		}
-		else
-		{
-			// send back response through default view
-			$this->display();
+			// Save failed, go back to the screen and display a notice.
+			$this->setRedirect(JRoute::_($failure['url'], false), $failure['message'], 'error');
+			return false;
 		}
 
+		$this->setRedirect(JRoute::_($success['url'], false), $success['message'], 'message');
+		return true;
 	}
 
 	/**

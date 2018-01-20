@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -31,7 +31,9 @@ Class Sh404sefControllerConfiguration extends ShlMvcController_Base
 		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 
 		// collect data
-		$data = JRequest::getVar('jform', array(), 'post', 'array');
+		//$data = JRequest::getVar('jform', array(), 'post', 'array');
+		$data = JFactory::getApplication()->input->post->getArray(array('jform' => 'raw'));
+		$data = wbArrayGet($data, 'jform', array());
 
 		$failure = array('url' => 'index.php?option=com_sh404sef&c=configuration&view=configuration&tmpl=component',
 			'message' => JText::sprintf('JERROR_SAVE_FAILED', $this->getError()));
@@ -62,10 +64,10 @@ Class Sh404sefControllerConfiguration extends ShlMvcController_Base
 			$params = Sh404sefHelperGeneral::getComponentParams($forceRead = true);
 
 			// set params from the form
-			$params->set('Enabled', JRequest::getInt('Enabled', 0));
-			$params->set('canReadRemoteConfig', JRequest::getInt('canReadRemoteConfig', 0));
-			$params->set('shRewriteMode', JRequest::getInt('shRewriteMode', 1));
-			$params->set('shSecEnableSecurity', JRequest::getInt('shSecEnableSecurity', 1));
+			$params->set('Enabled', JFactory::getApplication()->input->getInt('Enabled', 0));
+			$params->set('canReadRemoteConfig', JFactory::getApplication()->input->getInt('canReadRemoteConfig', 0));
+			$params->set('shRewriteMode', JFactory::getApplication()->input->getInt('shRewriteMode', 1));
+			$params->set('shSecEnableSecurity', JFactory::getApplication()->input->getInt('shSecEnableSecurity', 1));
 
 			// convert to json and store into db
 			$textParams = $params->toString();

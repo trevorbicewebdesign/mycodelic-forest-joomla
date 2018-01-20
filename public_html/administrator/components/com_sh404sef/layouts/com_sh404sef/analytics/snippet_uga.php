@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 /**
@@ -33,7 +33,7 @@ if (!defined('_JEXEC')) die('Direct Access to this location is not allowed.');
 <?php if(!empty($displayData['anonymize'])) : ?>
 	ga('set', 'anonymizeIp', true);
 <?php endif; ?>  
-	ga('create', '<?php echo $displayData['tracking_code']; ?>'<?php echo empty($displayData['custom_domain']) ? '' : ",'" . $displayData['custom_domain'] . "'" ?>);
+	ga('create', '<?php echo $displayData['tracking_code']; ?>'<?php echo empty($displayData['custom_domain']) ? '' : ",'" . $displayData['custom_domain'] . "'" ?><?php echo empty($displayData['options']) ? '' : ", " . json_encode($displayData['options']); ?>);
 <?php if(!empty($displayData['enable_display_features'])): ?>
 	ga('require', 'displayfeatures');
 <?php endif; ?>

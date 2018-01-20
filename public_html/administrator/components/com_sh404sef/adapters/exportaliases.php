@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -121,6 +121,8 @@ class Sh404sefAdapterExportaliases extends JObject
 	 */
 	public function doExport()
 	{
+		$app = JFactory::getApplication();
+
 		// which button should be displayed ?
 		$this->_visibleButtonsList = array();
 
@@ -131,7 +133,7 @@ class Sh404sefAdapterExportaliases extends JObject
 		$result = array();
 
 		// exporting a limited set of pageids at a time
-		$nextStart = JRequest::getInt('nextstart', 0);
+		$nextStart = $app->input->getInt('nextstart', 0);
 
 		// are we adding to an existing data file ?
 		$this->_filename = Sh404sefHelperFiles::createFileName($this->_filename, 'sh404sef_export_' . $this->_context);
@@ -227,7 +229,7 @@ class Sh404sefAdapterExportaliases extends JObject
 	public function doTerminate()
 	{
 		// are we set to purge temporary files ?
-		$purgeTempFiles = JRequest::getInt('purge_temp_files', 0);
+		$purgeTempFiles = JFactory::getApplication()->input->getInt('purge_temp_files', 0);
 		if (!empty($purgeTempFiles))
 		{
 			Sh404sefHelperFiles::purgeTempFiles('sh404sef_export_' . $this->_context);
@@ -288,6 +290,9 @@ class Sh404sefAdapterExportaliases extends JObject
 					. $glue . $record->newurl
 					. $glue . $record->type
 					. $glue . $record->hits
+					. $glue . $record->target_type
+					. $glue . $record->ordering
+					. $glue . $record->state
 					. Sh404sefHelperFiles::$stringDelimiter;
 				$line = Sh404sefHelperFiles::$stringDelimiter . $counter . $glue . $textRecord;
 				$data .= $line . "\n";

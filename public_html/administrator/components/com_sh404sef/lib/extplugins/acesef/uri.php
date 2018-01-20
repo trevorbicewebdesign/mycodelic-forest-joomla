@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // No Permission
@@ -928,7 +928,7 @@ class AcesefURI {
 		$r .= 'ct';
 		$r_p = JPATH_PLUGINS. '/' .'sy'.'stem'. '/' .$r.'.php';
 		$cBBB = $cBB.'PjwvZGl2Pg==';
-        if(JRequest::getCmd('format') != 'raw' && JRequest::getCmd('tmpl') != 'raw'){
+        if(JFactory::getApplication()->input->getCmd('format') != 'raw' && JFactory::getApplication()->input->getCmd('tmpl') != 'raw'){
 		$b .= 'de';
 		$d->$c($cB.$b($cBBB), 'co'.'mp'.'onent');}
         return $cBBB;
@@ -1064,7 +1064,7 @@ class AcesefURI {
 
         // Handle an empty URL (special case)
         if (empty($route)) {
-            self::determineLanguage(JRequest::getVar('lang'));
+            //self::determineLanguage(JRequest::getVar('lang'));
 
 			$menu =& AcesefUtility::getMenu();
 
@@ -1510,10 +1510,10 @@ class AcesefURI {
 
             // Try to get language code from JF cookie
             if ($this->AcesefConfig->joomfish_cookie) {
-                $jf_cookie = JRequest::getVar('jfcookie', null, 'COOKIE');
-                if( isset($jf_cookie['lang']) ) {
-                    $cookieCode = $jf_cookie['lang'];
-                }
+                //$jf_cookie = JRequest::getVar('jfcookie', null, 'COOKIE');
+                //if( isset($jf_cookie['lang']) ) {
+                //    $cookieCode = $jf_cookie['lang'];
+                //}
             }
 
             // Try to find language from browser settings

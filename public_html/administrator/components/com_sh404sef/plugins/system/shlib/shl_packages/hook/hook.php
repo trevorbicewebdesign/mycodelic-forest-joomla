@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier 2017
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.632
- * @date        2017-06-01
+ * @version      0.3.1.659
+ * @date        2017-12-22
  */
 
 defined('_JEXEC') or die;
@@ -63,11 +63,11 @@ class ShlHook
 	 *
 	 * @param string   $id Dot-joined unique identifier for the hook
 	 * @param Callable $callback Callback that was passed to add method
-	 * @param int      $priority Higher priorities are executed first
+	 * @param int      $priority Higher priorities are executed first. Default to 100.
 	 *
 	 * @return bool True if hook was added
 	 **/
-	public static function add($id, $callback, $priority = 0)
+	public static function add($id, $callback, $priority = 100)
 	{
 		$added = false;
 

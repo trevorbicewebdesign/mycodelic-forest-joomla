@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -280,10 +280,6 @@ class sef_404
 		$extPluginPath = $extPlugin->getSefPluginPath($vars);
 		$pluginType = $extPlugin->getPluginType();
 
-		// hooks
-		//$extPluginPath = ShlHook::filter('sh404sef_get_sef_plugin_path', $extPluginPath, $vars);
-		//$pluginType = ShlHook::filter('sh404sef_get_plugin_type', $pluginType, $vars);
-
 		// various ways to handle various SEF url plugins
 		switch ($pluginType)
 		{
@@ -305,6 +301,7 @@ class sef_404
 						{
 							case 'option':
 							case 'Itemid':
+							case 'lang':
 								shRemoveFromGETVarsList($k);
 								break;
 							default:
@@ -547,6 +544,21 @@ class sef_404
 		}
 
 		// hook
+		/**
+		 * Filter the SEF URL as built by the component-specific sh404SEF plugin.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\router
+		 * @var sh404sef_after_plugin_build
+		 * @since   4.9.2
+		 *
+		 * @param string $string The computed SEF URL.
+		 * @param array  $vars Associate array of query vars used to build the SEF.
+		 * @param int    $pluginType Plugin type: native sh404SEF, Joomsef, Acesef,...
+		 * @param string $extPluginPath The full path to the plugin used to build the URL.
+		 *
+		 * @return string
+		 */
 		$string = ShlHook::filter('sh404sef_after_plugin_build', $string, $vars, $pluginType, $extPluginPath);
 
 		return $string;
@@ -924,8 +936,15 @@ class sef_404
 						{
 							// shAddSefUrlToDBAndCache( $nonSefUrl, $finalSefUrl, ($isDuplicate ? $newMaxRank : 0), $nonSefUrlType);
 							$dateAdd = $nonSefUrlType == sh404SEF_URLTYPE_AUTO ? '0000-00-00' : date("Y-m-d");
-
-							ShlDbHelper::insert('#__sh404sef_urls', array('oldurl' => $finalSefUrl, 'newurl' => $nonSefUrl, 'rank' => ($isDuplicate ? $newMaxRank : 0), 'dateadd' => $dateAdd));
+							$rank = $isDuplicate ? $newMaxRank : 0;
+							$finalSefUrl = ShlHook::filter(
+								'sh404sef_url_before_create',
+								$finalSefUrl,
+								$nonSefUrl,
+								$rank,
+								$dateAdd
+							);
+							ShlDbHelper::insert('#__sh404sef_urls', array('oldurl' => $finalSefUrl, 'newurl' => $nonSefUrl, 'rank' => $rank, 'dateadd' => $dateAdd));
 
 							// store new sef/non-sef pair in memory cache
 							Sh404sefHelperCache::addSefUrlToCache($nonSefUrl, $finalSefUrl, $nonSefUrlType);
@@ -983,6 +1002,29 @@ class sef_404
 						else
 						{
 							// standard case: creation of a totally new sef/non-sef pair
+							/**
+							 * Filter the SEF URL as built by the component-specific sh404SEF plugin.
+							 *
+							 * @api
+							 * @package sh404SEF\filter\router
+							 * @var sh404sef_after_plugin_build
+							 * @since   4.9.2
+							 *
+							 * @param string $string The computed SEF URL.
+							 * @param array  $vars Associate array of query vars used to build the SEF.
+							 * @param int    $pluginType Plugin type: native sh404SEF, Joomsef, Acesef,...
+							 * @param string $extPluginPath The full path to the plugin used to build the URL.
+							 *
+							 * @return string
+							 */
+							$finalSefUrl = ShlHook::filter(
+								'sh404sef_url_before_create',
+								$finalSefUrl,
+								$nonSefUrl,
+								0,
+								'0000-00-00'
+							);
+
 							ShlDbHelper::insert('#__sh404sef_urls', array('oldurl' => $finalSefUrl, 'newurl' => $nonSefUrl, 'rank' => 0, 'dateadd' => '0000-00-00'));
 
 							// store new sef/non-sef pair in memory cache

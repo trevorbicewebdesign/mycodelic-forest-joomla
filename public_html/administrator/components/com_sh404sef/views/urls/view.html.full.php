@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -22,124 +22,6 @@ class Sh404sefViewUrls extends Sh404sefViewUrlsBase
 	{
 		// return set of select lists
 		return $this->_doMakeOptionsSelect($options);
-	}
-
-	/**
-	 * Create toolbar for default layout view
-	 *
-	 * @param midxed $params
-	 */
-	protected function _makeToolbarDefaultJ2($params = null)
-	{
-		// add title
-		$title = Sh404sefHelperGeneral::makeToolbarTitle(JText::_('COM_SH404SEF_SEF_URL_LIST'), $icon = 'sh404sef', $class = 'sh404sef-toolbar-title');
-		JFactory::getApplication()->JComponentTitle = $title;
-
-		// add "New url" button
-		$bar = JToolBar::getInstance('toolbar');
-		$bar->addButtonPath(JPATH_COMPONENT . '/' . 'classes');
-		$params['class'] = 'modalediturl';
-		$params['size'] = array('x' => 800, 'y' => 600);
-		$js = '\\function(){window.parent.shAlreadySqueezed = false;if(window.parent.shReloadModal) parent.window.location=\''
-			. $this->defaultRedirectUrl . '\';window.parent.shReloadModal=true}';
-		$params['onClose'] = $js;
-		$bar->appendButton('Shpopupbutton', 'new', JText::_('New'), "index.php?option=com_sh404sef&c=editurl&task=edit&tmpl=component", $params);
-
-		// add edit button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 800, 'y' => 600);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=editurl&task=edit&tmpl=component';
-		$bar
-			->appendButton('Shpopuptoolbarbutton', 'edit', $url, JText::_('Edit'), $msg = '', $task = 'edit', $list = true, $hidemenu = true, $params);
-
-		// add delete with duplicates button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 300);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=editurl&task=confirmdeletedeldup&tmpl=component';
-		$bar
-			->appendButton(
-				'Shpopuptoolbarbutton', 'deletedeldup', $url, JText::_('COM_SH404SEF_DELETE_URLS_WITH_DUP'),
-				$msg = JText::_('VALIDDELETEITEMS', true), $task = 'delete', $list = true, $hidemenu = true, $params
-			);
-
-		// add delete button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 300);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=editurl&task=confirmdelete&tmpl=component';
-		$bar
-			->appendButton(
-				'Shpopuptoolbarbutton', 'delete', $url, JText::_('Delete'), $msg = JText::_('VALIDDELETEITEMS', true), $task = 'delete',
-				$list = true, $hidemenu = true, $params
-			);
-
-		// separator
-		JToolBarHelper::divider();
-
-		// add import button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 380);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=import&opsubject=urls';
-		$bar
-			->appendButton(
-				'Shpopuptoolbarbutton', 'import', $url, JText::_('COM_SH404SEF_IMPORT_BUTTON'), $msg = '', $task = 'import',
-				$list = false, $hidemenu = true, $params
-			);
-
-		// add import button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 380);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=export&opsubject=urls';
-		$bar
-			->appendButton(
-				'Shpopuptoolbarbutton', 'export', $url, JText::_('COM_SH404SEF_EXPORT_BUTTON'), $msg = '', $task = 'export',
-				$list = false, $hidemenu = true, $params
-			);
-
-		// separator
-		JToolBarHelper::divider();
-
-		// add purge and purge selected  buttons
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 300);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=urls&task=confirmpurge&tmpl=component';
-		$bar
-			->appendButton(
-				'Shpopuptoolbarbutton', 'purge', $url, JText::_('COM_SH404SEF_PURGE'), $msg = JText::_('VALIDDELETEITEMS', true),
-				$task = 'purge', $list = false, $hidemenu = true, $params
-			);
-
-		// separator
-		JToolBarHelper::divider();
-
-		// edit home page button
-		$params['class'] = 'modalediturl';
-		$params['size'] = array('x' => 800, 'y' => 600);
-		$js = '\\function(){window.parent.shAlreadySqueezed = false;if(window.parent.shReloadModal) parent.window.location=\''
-			. $this->defaultRedirectUrl . '\';window.parent.shReloadModal=true}';
-		$params['onClose'] = $js;
-		$bar
-			->appendButton(
-				'Shpopupbutton', 'home', JText::_('COM_SH404SEF_HOME_PAGE_ICON'),
-				"index.php?option=com_sh404sef&c=editurl&task=edit&home=1&tmpl=component", $params
-			);
-
-		// separator
-		JToolBarHelper::divider();
-
-		// add modal handler for configuration
-		JHTML::_('behavior.modal');
-		$configbtn = '<a class="modal" href="index.php?option=com_sh404sef&tmpl=component&c=configuration&view=configuration&component=com_sh404sef&hidemainmenu=1" rel="{handler: \'iframe\', size: {x: window.getSize().x*0.90, y: window.getSize().y*0.90}, onClose: function() {}}"><span class="icon-32-options"></span>'
-			. JText::_('COM_SH404SEF_CONFIGURATION') . '</a>';
-		if (Sh404sefHelperAcl::userCan('sh404sef.view.configuration'))
-		{
-			$bar->appendButton('custom', $configbtn, 'sh-configbutton-button');
-		}
 	}
 
 	/**

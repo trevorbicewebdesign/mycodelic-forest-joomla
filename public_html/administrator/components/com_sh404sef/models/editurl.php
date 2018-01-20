@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -31,12 +31,13 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 	 * to also save metas and aliases
 	 *
 	 * @param array $dataArray an array holding data to save. If empty, $_POST is used
+	 *
 	 * @return integer id of created or updated record
 	 */
 	public function save($dataArray = null, $type = sh404SEF_URLTYPE_CUSTOM)
 	{
 		// use parent save method to save the url itself, from default values
-		$this->_data = is_null($dataArray) ? JRequest::get('post') : $dataArray;
+		$this->_data = is_null($dataArray) ? JFactory::getApplication()->input->post->getArray() : $dataArray;
 
 		// save the non-sef/sef pair data
 		$savedId = $this->_saveUrl($type);
@@ -64,6 +65,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 	 * passed as params
 	 *
 	 * @param array of integer $ids the list of url id to fetch
+	 *
 	 * @return array of objects as read from db
 	 */
 	public function getByIds($ids = array())
@@ -110,6 +112,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 	 * passed as params
 	 *
 	 * @param array of integer $ids the list of url id to delete
+	 *
 	 * @return boolean true if success
 	 */
 	public function deleteByIds($ids = array())
@@ -151,10 +154,11 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			}
 
 			// delete detailed stats
-			$urls404s = ShlDbHelper::selectColumn($this->_getTableName(), 'oldurl',
-				$this->_db->qn('id') . ' in (' . $whereIds . ') and ' . $this->_db->qn('newurl') . ' = ' . $this->_db->q(''));
+			$urls404s = ShlDbHelper::selectColumn(
+				$this->_getTableName(), 'oldurl',
+				$this->_db->qn('id') . ' in (' . $whereIds . ') and ' . $this->_db->qn('newurl') . ' = ' . $this->_db->q('')
+			);
 			ShlDbHelper::deleteIn('#__sh404sef_hits_404s', 'url', $urls404s);
-
 
 			// finally, we can simply delete from db by ids
 			ShlDbHelper::deleteIn('#__sh404sef_urls', 'id', $ids);
@@ -211,6 +215,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 	 * Also delete all duplicates
 	 *
 	 * @param array of integer $ids the list of url id to delete
+	 *
 	 * @return boolean true if success
 	 */
 	public function deleteByIdsWithDuplicates($ids = array())
@@ -263,6 +268,8 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 	 */
 	private function _saveUrl($type = sh404SEF_URLTYPE_AUTO)
 	{
+		$app = JFactory::getApplication();
+
 		// check for homepage handling
 		if (!empty($this->_data['newurl'])
 			&& ($this->_data['newurl'] == '/' || $this->_data['newurl'] == sh404SEF_HOMEPAGE_CODE)
@@ -278,7 +285,6 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 		$importing = isset($this->_data['rank']);
 
 		// get required tools
-		jimport('joomla.database.table');
 		$row = JTable::getInstance($this->_defaultTable, 'Sh404sefTable');
 
 		try
@@ -327,8 +333,8 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			$row->newurl = Sh404sefHelperUrl::sortUrl($row->newurl);
 
 			// retrieve previous values of sef and non sef urls
-			$previousSefUrl = JRequest::getVar('previousSefUrl', null, 'POST');
-			$previousNonSefUrl = JRequest::getVar('previousNonSefUrl', null, 'POST');
+			$previousSefUrl = $app->input->post->getString('previousSefUrl', null);
+			$previousNonSefUrl = $app->input->post->getStrig('previousNonSefUrl', null);
 
 			// if both were set, and nothing has changed, then nothing to do
 			if (!empty($previousSefUrl) && !empty($previousNonSefUrl)
@@ -536,11 +542,15 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 		$model = ShlMvcModel_Base::getInstance('metas', 'Sh404sefModel');
 
 		// buil an array with metas input
+		$canonical = $this->_data['canonical']; // v 4.12, do not store canonical in meta any longer
+		unset($this->_data['canonical']);
 		$this->_data['newurl'] = is_object($this->_url) ? $this->_url->newurl : $this->_data['newurl'];
 		$this->_data['id'] = $this->_data['meta_id'];
 
 		// ask model to save the data
 		$status = $model->save($this->_data);
+
+		$this->_data['canonical'] = $canonical;
 
 		if (!$status)
 		{
@@ -557,7 +567,8 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 	 */
 	private function _saveAliases()
 	{
-		if (!isset($this->_data['shAliasList']))
+		// from v 4.12, canonical are saved as alises
+		if (!isset($this->_data['shAliasList']) && !isset($this->_data['canonical']))
 		{
 			return true;
 		}
@@ -568,7 +579,14 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 		// ask it to save the data
 		$newUrl = is_object($this->_url) ? $this->_url->newurl : '';
 		$status = $model->saveFromInput($this->_data['shAliasList'], $newUrl);
+		if (!$status)
+		{
+			$this->setError($model->getError());
+		}
 
+		// save the canonical: if new/modified, add it. If empty, remove it
+		$sourceUrl = $this->_url->newurl == sh404SEF_HOMEPAGE_CODE ? '/' : $this->_url->newurl;
+		$status = $model->saveCanonical($this->_data['canonical'], $sourceUrl);
 		if (!$status)
 		{
 			$this->setError($model->getError());

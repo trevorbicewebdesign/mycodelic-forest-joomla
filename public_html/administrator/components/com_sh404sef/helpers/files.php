@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -66,7 +66,7 @@ class Sh404sefHelperFiles
 		}
 
 		// check if one was passed in query
-		$filename = base64_decode(JRequest::getString('filename'));
+		$filename = base64_decode(JFactory::getApplication()->input->getString('filename'));
 
 		if (empty($filename))
 		{
@@ -210,8 +210,9 @@ class Sh404sefHelperFiles
 	public static function numericalFileSize($filesize)
 	{
 		$filesize = trim($filesize);
-		$unit = strtolower($filesize[strlen($filesize) - 1]);
-		switch ($unit)
+		$unit = $filesize[strlen($filesize) - 1];
+		$filesize = wbRTrim($filesize, $unit);
+		switch (strtolower($unit))
 		{
 			// The 'G' modifier is available since PHP 5.1.0
 			case 'g':

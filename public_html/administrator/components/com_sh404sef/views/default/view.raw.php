@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date		2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -23,7 +23,7 @@ class Sh404sefViewDefault extends ShlMvcView_Base
 		// version prefix
 		$this->joomlaVersionPrefix = Sh404sefHelperGeneral::getJoomlaVersionPrefix();
 
-		$layout = JRequest::getCmd('layout', 'default');
+		$layout = JFactory::getApplication()->input->getCmd('layout', 'default');
 		switch ($layout)
 		{
 			case 'secstats':
@@ -66,7 +66,7 @@ class Sh404sefViewDefault extends ShlMvcView_Base
 		$error = $this->getError();
 		if (empty($error))
 		{
-			$noMsg = JRequest::getInt('noMsg', 0);
+			$noMsg = JFactory::getApplication()->input->getInt('noMsg', 0);
 			if (empty($noMsg))
 			{
 				$this->message = JText::_('COM_SH404SEF_ELEMENT_SAVED');
@@ -158,7 +158,7 @@ class Sh404sefViewDefault extends ShlMvcView_Base
 		$this->sefConfig = $sefConfig;
 
 		// do we force reading updates from server ?
-		$forced = JRequest::getInt('forced', 0);
+		$forced = JFactory::getApplication()->input->getInt('forced', 0);
 		$versionsInfo = Sh404sefHelperUpdates::getUpdatesInfos(!empty($forced));
 
 		// push security stats into view
@@ -168,7 +168,7 @@ class Sh404sefViewDefault extends ShlMvcView_Base
 		$error = $this->getError();
 		if (empty($error))
 		{
-			$noMsg = JRequest::getInt('noMsg', 0);
+			$noMsg = JFactory::getApplication()->input->getInt('noMsg', 0);
 			if (empty($noMsg))
 			{
 				$this->message = JText::_('COM_SH404SEF_ELEMENT_SAVED');

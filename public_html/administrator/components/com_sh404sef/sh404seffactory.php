@@ -3,16 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
+{
 	die('Direct Access to this location is not allowed.');
+}
 
 /**
  * A factory class to assist in handling our objects
@@ -43,6 +45,7 @@ abstract class Sh404sefFactory
 	 * public is used instead
 	 *
 	 * @param string $option the Joomla! component name. Should begin with "com_"
+	 *
 	 * @return object Sh404sefExtpluginBaseextplugin descendant
 	 */
 	public static function &getExtensionPlugin($option)
@@ -79,7 +82,6 @@ abstract class Sh404sefFactory
 				// else use generic plugin
 				$_plugins[$option] = new Sh404sefExtpluginDefault($option, $sefConfig);
 			}
-
 		}
 
 		// return cached plugin
@@ -166,5 +168,27 @@ abstract class Sh404sefFactory
 		}
 
 		return $_helper;
+	}
+
+	/**
+	 * Create and return an object holding a set of
+	 * data on the current request
+	 *
+	 * @param JUri $uri
+	 */
+	public static function &getRedirector($uri = null)
+	{
+		static $_instance = null;
+
+		if (is_null($_instance))
+		{
+			$_instance = new Sh404sefModelRedirector(
+				$uri,
+				self::getConfig(),
+				JFactory::getConfig()
+			);
+		}
+
+		return $_instance;
 	}
 }

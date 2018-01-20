@@ -52,7 +52,7 @@ class LiveUpdateController extends JoomlaCompatController
 		if($updateInfo->stability != 'stable') {
 			$skipNag = JRequest::getBool('skipnag', false);
 			if(!$skipNag) {
-				$this->setRedirect('index.php?option='.JRequest::getCmd('option','').'&view='.JRequest::getCmd('view','liveupdate').'&task=nagscreen');
+				$this->setRedirect('index.php?option='.JFactory::getApplication()->input->getCmd('option','').'&view='.JFactory::getApplication()->input->getCmd('view','liveupdate').'&task=nagscreen');
 				$this->redirect();
 			}
 		}
@@ -63,7 +63,7 @@ class LiveUpdateController extends JoomlaCompatController
 			$this->display();
 		} else {
 			// No FTP credentials required; proceed with the download
-			$this->setRedirect('index.php?option='.JRequest::getCmd('option','').'&view='.JRequest::getCmd('view','liveupdate').'&task=download');
+			$this->setRedirect('index.php?option='.JFactory::getApplication()->input->getCmd('option','').'&view='.JFactory::getApplication()->input->getCmd('view','liveupdate').'&task=download');
 			$this->redirect();
 		}
 	}
@@ -80,13 +80,13 @@ class LiveUpdateController extends JoomlaCompatController
 		if(!$result) {
 			// Download failed
 			$msg = JText::_('LIVEUPDATE_DOWNLOAD_FAILED') . (empty($errorMsg) ? '' : ' (' . $errorMsg . ')');
-			//$this->setRedirect('index.php?option='.JRequest::getCmd('option','').'&view='.JRequest::getCmd('view','liveupdate').'&task=overview', $msg, 'error');
+			//$this->setRedirect('index.php?option='.JFactory::getApplication()->input->getCmd('option','').'&view='.JFactory::getApplication()->input->getCmd('view','liveupdate').'&task=overview', $msg, 'error');
 			$this->setRedirect('index.php?option=com_sh404sef', $msg, 'error');
 		} else {
 			// Download successful. Let's extract the package.
-			$url = 'index.php?option='.JRequest::getCmd('option','').'&view='.JRequest::getCmd('view','liveupdate').'&task=extract';
-			$user = JRequest::getString('username', null, 'GET', JREQUEST_ALLOWRAW);
-			$pass = JRequest::getString('password', null, 'GET', JREQUEST_ALLOWRAW);
+			$url = 'index.php?option='.JFactory::getApplication()->input->getCmd('option','').'&view='.JFactory::getApplication()->input->getCmd('view','liveupdate').'&task=extract';
+			$user = JFactory::getApplication()->input->getString('username', null, 'GET', JREQUEST_ALLOWRAW);
+			$pass = JFactory::getApplication()->input->getString('password', null, 'GET', JREQUEST_ALLOWRAW);
 			if($user) {
 				$url .= '&username='.urlencode($user).'&password='.urlencode($pass);
 			}			
@@ -103,13 +103,13 @@ class LiveUpdateController extends JoomlaCompatController
 		if(!$result) {
 			// Download failed
 			$msg = JText::_('LIVEUPDATE_EXTRACT_FAILED');
-			//$this->setRedirect('index.php?option='.JRequest::getCmd('option','').'&view='.JRequest::getCmd('view','liveupdate').'&task=overview', $msg, 'error');
+			//$this->setRedirect('index.php?option='.JFactory::getApplication()->input->getCmd('option','').'&view='.JFactory::getApplication()->input->getCmd('view','liveupdate').'&task=overview', $msg, 'error');
 			$this->setRedirect('index.php?option=com_sh404sef', $msg, 'error');
 		} else {
 			// Extract successful. Let's install the package.
-			$url = 'index.php?option='.JRequest::getCmd('option','').'&view='.JRequest::getCmd('view','liveupdate').'&task=install';
-			$user = JRequest::getString('username', null, 'GET', JREQUEST_ALLOWRAW);
-			$pass = JRequest::getString('password', null, 'GET', JREQUEST_ALLOWRAW);
+			$url = 'index.php?option='.JFactory::getApplication()->input->getCmd('option','').'&view='.JFactory::getApplication()->input->getCmd('view','liveupdate').'&task=install';
+			$user = JFactory::getApplication()->input->getString('username', null, 'GET', JREQUEST_ALLOWRAW);
+			$pass = JFactory::getApplication()->input->getString('password', null, 'GET', JREQUEST_ALLOWRAW);
 			if($user) {
 				$url .= '&username='.urlencode($user).'&password='.urlencode($pass);
 			}
@@ -148,7 +148,7 @@ class LiveUpdateController extends JoomlaCompatController
 		if(!$result) {
 			// Installation failed
 			$model->cleanup();
-			//$this->setRedirect('index.php?option='.JRequest::getCmd('option','').'&view='.JRequest::getCmd('view','liveupdate').'&task=overview');
+			//$this->setRedirect('index.php?option='.JFactory::getApplication()->input->getCmd('option','').'&view='.JFactory::getApplication()->input->getCmd('view','liveupdate').'&task=overview');
 			$this->setRedirect('index.php?option=com_sh404sef');
 			$this->redirect();
 		} else {
@@ -179,7 +179,7 @@ class LiveUpdateController extends JoomlaCompatController
 	 */
 	public final function display($cachable = false, $urlparams = false)
 	{
-		$viewLayout	= JRequest::getCmd( 'layout', 'default' );
+		$viewLayout	= JFactory::getApplication()->input->getCmd( 'layout', 'default' );
 
 		$view = $this->getThisView();
 
@@ -249,8 +249,8 @@ class LiveUpdateController extends JoomlaCompatController
 	{
 		// Determine wether FTP credentials have been passed along with the current request
 		JLoader::import('joomla.client.helper');
-		$user = JRequest::getString('username', null, 'GET', JREQUEST_ALLOWRAW);
-		$pass = JRequest::getString('password', null, 'GET', JREQUEST_ALLOWRAW);
+		$user = JFactory::getApplication()->input->getString('username', null, 'GET', JREQUEST_ALLOWRAW);
+		$pass = JFactory::getApplication()->input->getString('password', null, 'GET', JREQUEST_ALLOWRAW);
 		if ($user != '' && $pass != '')
 		{
 			// Add credentials to the session

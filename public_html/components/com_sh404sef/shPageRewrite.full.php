@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -23,34 +23,40 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	/**
 	 * @param $title
+	 *
 	 * @return mixed|string
 	 *
 	 * @deprecated any time
 	 */
 	function shCleanUpTitle($title)
 	{
+
 		return Sh404sefHelperMetadata::cleanUpTitle($title);
 	}
 
 	/**
 	 * @param $title
+	 *
 	 * @return string
 	 *
 	 * @deprecated any time
 	 */
 	function shProtectPageTitle($title)
 	{
+
 		return Sh404sefHelperMetadata::protectPageTitle($title);
 	}
 
 	/**
 	 * @param $desc
+	 *
 	 * @return mixed
 	 *
 	 * @deprecated any time
 	 */
 	function shCleanUpDesc($desc)
 	{
+
 		return Sh404sefHelperMetadata::cleanUpDesc($desc);
 	}
 
@@ -59,6 +65,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 	 */
 	function shIncludeMetaPlugin()
 	{
+
 		Sh404sefHelperMetadata::includeMetaPlugin();
 	}
 
@@ -69,6 +76,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertCustomTagInBuffer($buffer, $tag, $where, $value, $firstOnly)
 	{
+
 		if (!$buffer || !$tag || !$value)
 		{
 			return $buffer;
@@ -101,11 +109,13 @@ if (defined('SH404SEF_IS_RUNNING'))
 				}
 				break;
 		}
+
 		return $result;
 	}
 
 	function shPregInsertCustomTagInBuffer($buffer, $tag, $where, $value, $firstOnly, $rawPattern = false)
 	{
+
 		if (!$buffer || !$tag || !$value)
 		{
 			return $buffer;
@@ -140,18 +150,21 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoMultipleH1ToH2Callback($matches)
 	{
+
 		static $firstH1 = true;
 		static $firstH1Closed = true;
 
-		if($firstH1)
+		if ($firstH1)
 		{
 			$firstH1 = false;
+
 			return $matches[0];
 		}
 
-		if($firstH1Closed && $matches[0] == '</h1')
+		if ($firstH1Closed && $matches[0] == '</h1')
 		{
 			$firstH1Closed = false;
+
 			return $matches[0];
 		}
 		$result = '<' . (empty($matches[1]) ? '' : '/') . 'h2';
@@ -161,6 +174,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoRedirectOutboundLinksCallback($matches)
 	{
+
 		if (count($matches) != 2)
 		{
 			return empty($matches) ? '' : $matches[0];
@@ -175,11 +189,13 @@ if (defined('SH404SEF_IS_RUNNING'))
 		{
 			$result = $matches[0];
 		}
+
 		return $result;
 	}
 
 	function shDoInsertOutboundLinksImageCallback($matches)
 	{
+
 		//if (count($matches) != 2 && count($matches) != 3) return empty($matches) ? '' : $matches[0];
 		$orig = $matches[0];
 		$bits = explode('href=', $orig);
@@ -190,6 +206,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		{
 			// this should not happen, but it happens (Fireboard)
 			$result = $matches[0];
+
 			return $result;
 		}
 		$link = explode($sep, $link);
@@ -227,11 +244,13 @@ if (defined('SH404SEF_IS_RUNNING'))
 		{
 			$result = $matches[0];
 		}
+
 		return $result;
 	}
 
 	function shDoTitleTags(&$buffer)
 	{
+
 		// Replace TITLE and DESCRIPTION and KEYWORDS
 		if (empty($buffer))
 		{
@@ -358,8 +377,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 			{
 				$buffer = ShlSystem_Strings::pr($canonicalPattern, '', $buffer);
 				$canonicalCount = 0;
-			}
-			// only one and J3: must be the one inserted by J3 SEF plugin
+			} // only one and J3: must be the one inserted by J3 SEF plugin
 			else if ($canonicalCount > 0 && Sh404sefFactory::getConfig()->removeOtherCanonicals && version_compare(JVERSION, '3.0', 'ge')
 				&& JFactory::getApplication()->input->getCmd('option') == 'com_content'
 			)
@@ -367,6 +385,14 @@ if (defined('SH404SEF_IS_RUNNING'))
 				// kill it, if asked to
 				$buffer = ShlSystem_Strings::pr($canonicalPattern, '', $buffer);
 				$canonicalCount = 0;
+			}
+
+			// do we have a canonical set by user with an alias?
+			$aliasCanonical = Sh404sefFactory::getRedirector()
+			                                 ->getAliasToExecute();
+			if (!empty($aliasCanonical))
+			{
+				$metadata->canonical = $aliasCanonical;
 			}
 
 			// always add a canonical on home page
@@ -484,6 +510,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoAnalytics(&$buffer)
 	{
+
 		// get sh404sef config
 		$config = Sh404sefFactory::getConfig();
 
@@ -511,12 +538,15 @@ if (defined('SH404SEF_IS_RUNNING'))
 		}
 		else
 		{
-			$buffer = shPregInsertCustomTagInBuffer($buffer, '<\s*body[^>]*>', 'after', $snippet, $firstOnly = 'first');
+			$buffer = shPregInsertCustomTagInBuffer($buffer, '<\s*body[^>]*>', 'after', "\n" . wbArrayGet($snippet, 'body'), $firstOnly = 'first');
+			// head, as high as possible
+			$buffer = shInsertCustomTagInBuffer($buffer, '</title>', 'after', "\n" . wbArrayGet($snippet, 'head'), $firstOnly = 'first');
 		}
 	}
 
 	function shDoSocialButtons(&$buffer)
 	{
+
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
 		$dispatcher = ShlSystem_factory::dispatcher();
@@ -530,6 +560,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoSocialAnalytics(&$buffer)
 	{
+
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
 
@@ -546,6 +577,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoShURL(&$buffer)
 	{
+
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
 
@@ -568,6 +600,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertOpenGraphData(&$buffer)
 	{
+
 		$tags = Sh404sefHelperOgp::buildOpenGraphTags();
 
 		// actually insert the tags
@@ -585,6 +618,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertGoogleAuthorshipData(&$buffer)
 	{
+
 		// quick check, do we have a createdBy field on the page?
 		if (strpos($buffer, '<dd class="createdby">') === false)
 		{
@@ -646,6 +680,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertGooglePublisherData(&$buffer)
 	{
+
 		// don't insert head link to publisher page if there's
 		// already a visible badge (see sh404sef core social plugin
 		if (strpos($buffer, 'rel=\'publisher\'') !== false)
@@ -696,6 +731,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function insertStructuredData(& $buffer)
 	{
+
 		$markup = Sh404sefHelperStructureddata::buildStructuredData();
 		if (!empty($markup))
 		{
@@ -705,6 +741,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertTwitterCardsData(&$buffer)
 	{
+
 		$twitterCardsData = Sh404sefHelperTcards::buildTwitterCardsTags();
 
 		// actually insert the tags
@@ -716,6 +753,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoHeadersChanges()
 	{
+
 		global $shCanonicalTag;
 
 		$sefConfig = Sh404sefFactory::getConfig();
@@ -741,6 +779,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shAddPaginationHeaderLinks(&$buffer)
 	{
+
 		$sefConfig = &Sh404sefFactory::getConfig();
 
 		if (!isset($sefConfig) || empty($sefConfig->shMetaManagementActivated) || empty($sefConfig->insertPaginationTags))
@@ -766,6 +805,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shFixHrefLang(&$buffer)
 	{
+
 		// if not home page
 		$pageInfo = Sh404sefFactory::getPageInfo();
 		if ($pageInfo->currentNonSefUrl != $pageInfo->homeLink)
@@ -778,7 +818,14 @@ if (defined('SH404SEF_IS_RUNNING'))
 			return;
 		}
 
-		$languageFilterParams = Sh404sefHelperGeneral::getExtensionParams('plg_language_filter', array('type' => 'plugin', 'element' => 'languagefilter', 'folder' => 'system', 'enabled' => 1));
+		$languageFilterParams = Sh404sefHelperGeneral::getExtensionParams(
+			'plg_language_filter', array(
+				                     'type'    => 'plugin',
+				                     'element' => 'languagefilter',
+				                     'folder'  => 'system',
+				                     'enabled' => 1
+			                     )
+		);
 		if ($languageFilterParams->get('alternate_meta'))
 		{
 			$languages = Sh404sefHelperLanguage::getActiveLanguages();

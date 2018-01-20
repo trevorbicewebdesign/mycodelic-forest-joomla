@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier 2017
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.632
- * @date        2017-06-01
+ * @version     0.3.1.659
+ * @date        2017-12-22
  */
 
 /** ensure this file is being included by a parent file */
@@ -43,7 +43,7 @@ class ShlMvcLayout_File extends ShlMvcLayout_Base
 	 * Method to instantiate the file-based layout.
 	 *
 	 * @param   string $layoutId Dot separated path to the layout file, relative to base path
-	 * @param   mixed $basePath Base path, or list of base paths to use when loading layout files
+	 * @param   mixed  $basePath Base path, or list of base paths to use when loading layout files
 	 *
 	 * @since   3.0
 	 */
@@ -64,7 +64,7 @@ class ShlMvcLayout_File extends ShlMvcLayout_Base
 	 */
 	public function render($displayData)
 	{
-		$layoutOutput = '';
+		$layoutOutput = parent::render($displayData);
 
 		// Check possible overrides, and build the full path to layout file
 		$path = $this->getPath();
@@ -77,6 +77,10 @@ class ShlMvcLayout_File extends ShlMvcLayout_Base
 			$layoutOutput = ob_get_contents();
 			ob_end_clean();
 		}
+
+		// apply a filter for 3rd-party content customization
+		$filterName = 'shlib_layout_' . str_replace('.', '_', $this->layoutId);
+		$layoutOutput = ShlHook::filter($filterName, $layoutOutput, $displayData);
 
 		return $layoutOutput;
 	}

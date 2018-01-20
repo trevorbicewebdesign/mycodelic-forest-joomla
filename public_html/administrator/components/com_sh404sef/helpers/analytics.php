@@ -3,15 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC')) die('Direct Access to this location is not allowed.');
+if (!defined('_JEXEC'))
+{
+	die('Direct Access to this location is not allowed.');
+}
 
 class Sh404sefHelperAnalytics
 {
@@ -68,7 +71,6 @@ class Sh404sefHelperAnalytics
 
 		// return response, either dummy or from cache
 		return $response;
-
 	}
 
 	public static function _doCheck()
@@ -116,9 +118,11 @@ class Sh404sefHelperAnalytics
 			$tmp = new Zendshl_Http_Client;
 
 			// set params
-			$tmp->setConfig(array(
-				'maxredirects' => 5,
-				'timeout' => 10));
+			$tmp->setConfig(
+				array(
+					'maxredirects' => 5,
+					'timeout' => 10)
+			);
 
 			if ($new)
 			{
@@ -190,20 +194,20 @@ class Sh404sefHelperAnalytics
 		$options = array();
 
 		// if showing filter, we're on the main analytics manager view
-		$options['showFilters'] = JRequest::getCmd('showFilters', 'yes');
+		$options['showFilters'] = JFactory::getApplication()->input->getCmd('showFilters', 'yes');
 
 		// use that in the context where display options are stored, to differentiate
 		// dashboard from analytics manager
 		$context = empty($context) ? 'sh404sef_analytics_' : $context;
 		$context .= '_' . ($options['showFilters'] == 'yes' ? 'manager' : 'dashboard');
 
-		$options['forced'] = JRequest::getInt('forced', 0);
-		$options['startDate'] = JRequest::getString('startDate', '');
-		$options['endDate'] = JRequest::getString('endDate', '');
-		$options['groupBy'] = JRequest::getString('groupBy', '');
-		$options['cpWidth'] = JRequest::getInt('cpWidth');
-		$options['report'] = JRequest::getCmd('report', 'dashboard');
-		$options['subrequest'] = JRequest::getCmd('subrequest', '');
+		$options['forced'] = JFactory::getApplication()->input->getInt('forced', 0);
+		$options['startDate'] = JFactory::getApplication()->input->getString('startDate', '');
+		$options['endDate'] = JFactory::getApplication()->input->getString('endDate', '');
+		$options['groupBy'] = JFactory::getApplication()->input->getString('groupBy', '');
+		$options['cpWidth'] = JFactory::getApplication()->input->getInt('cpWidth');
+		$options['report'] = JFactory::getApplication()->input->getCmd('report', 'dashboard');
+		$options['subrequest'] = JFactory::getApplication()->input->getCmd('subrequest', '');
 
 		// default max number of results
 		$options['max-results'] = '100';
@@ -257,11 +261,9 @@ class Sh404sefHelperAnalytics
 
 			// calculate groupBy options
 			$options['groupBy'] = self::_getDefaultGroupBy();
-
 		}
 
 		return $options;
-
 	}
 
 	protected static function _getDefaultGroupBy()
@@ -338,7 +340,7 @@ class Sh404sefHelperAnalytics
 	 * Format an array of date strings for display as abscise
 	 * of a graphic
 	 *
-	 * @param array of object $entries
+	 * @param       array of object $entries
 	 * @param array $options
 	 */
 	public static function formatAbciseDates($entries, $options)
@@ -415,11 +417,9 @@ class Sh404sefHelperAnalytics
 			case 12:
 				$m = JText::_('DECEMBER_SHORT');
 				break;
-
 		}
 
 		return $m;
-
 	}
 
 	protected static function _getWeekPeriodString($dimension)
@@ -442,7 +442,6 @@ class Sh404sefHelperAnalytics
 			{
 				$days += 7 * ($dimension['week'] - 1);
 			}
-
 		}
 		else
 		{
@@ -494,20 +493,39 @@ class Sh404sefHelperAnalytics
 		$dataType = $sefConfig->analyticsDashboardDataType;
 		$dataTypeString = str_replace('ga:', '', $dataType);
 
-		$label = JText::_('COM_SH404SEF_ANALYTICS_DATA_' . strtoupper($dataTypeString));
+		$label = self::getDataTypeTitleLabel($dataTypeString);
 
 		return $label;
+	}
+
+	public static function getDataTypeTitleLabel($dataType)
+	{
+		switch ($dataType)
+		{
+			case 'sessions':
+				$dataType = 'visits';
+				break;
+			case 'users':
+				$dataType = 'visitors';
+				break;
+		}
+
+		$title = JText::_('COM_SH404SEF_ANALYTICS_DATA_' . strtoupper($dataType));
+
+		return $title;
 	}
 
 	/**
 	 * Method to create a select list of possible analytics reports
 	 *
 	 * @access  public
+	 *
 	 * @param int ID of current item
 	 * @param string name of select list
 	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
 	 * @param boolean , if true, a line 'Select all' is inserted at the start of the list
 	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildAnalyticsReportSelectList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '', $customSubmit = '')
@@ -516,11 +534,11 @@ class Sh404sefHelperAnalytics
 		// available reports, should not be hardcoded though !
 		$data = array(
 			array('id' => 'dashboard', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_DASHBOARD'))
-		, array('id' => 'visits', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_VISITS'))
-		, array('id' => 'sources', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_SOURCES'))
-		, array('id' => 'keywords', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_KEYWORDS'))
-		, array('id' => 'urls', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_URLS'))
-		, array('id' => 'equipment', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_VISITORS_EQUIPMENT'))
+			, array('id' => 'visits', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_VISITS'))
+			, array('id' => 'sources', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_SOURCES'))
+			, array('id' => 'keywords', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_KEYWORDS'))
+			, array('id' => 'urls', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_URLS'))
+			, array('id' => 'equipment', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_VISITORS_EQUIPMENT'))
 		);
 
 		// use helper to build html
@@ -528,18 +546,19 @@ class Sh404sefHelperAnalytics
 
 		// return list
 		return $list;
-
 	}
 
 	/**
 	 * Method to create a select list of possible ways to group data on analytics reports
 	 *
 	 * @access  public
+	 *
 	 * @param int ID of current item
 	 * @param string name of select list
 	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
 	 * @param boolean , if true, a line 'Select all' is inserted at the start of the list
 	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildAnalyticsGroupBySelectList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '', $customSubmit = '')
@@ -548,8 +567,8 @@ class Sh404sefHelperAnalytics
 		// available reports, should not be hardcoded though !
 		$data = array(
 			array('id' => 'ga:year,ga:month,ga:week,ga:day', 'title' => JText::_('Day'))
-		, array('id' => 'ga:year,ga:month,ga:week', 'title' => JText::_('Week'))
-		, array('id' => 'ga:year,ga:month', 'title' => JText::_('Month'))
+			, array('id' => 'ga:year,ga:month,ga:week', 'title' => JText::_('Week'))
+			, array('id' => 'ga:year,ga:month', 'title' => JText::_('Month'))
 		);
 
 		// use helper to build html
@@ -557,7 +576,6 @@ class Sh404sefHelperAnalytics
 
 		// return list
 		return $list;
-
 	}
 
 	public static function createTempFile($basePath, $report)
@@ -572,7 +590,6 @@ class Sh404sefHelperAnalytics
 		$imageFileName = str_replace(DIRECTORY_SEPARATOR, '/', $basePath) . $timestamp . '.' . strtolower($report) . '.png';
 
 		return $imageFileName;
-
 	}
 
 	/**
@@ -621,6 +638,7 @@ class Sh404sefHelperAnalytics
 	 * Encode a time value, in seconds
 	 * to predefined numerical codes
 	 * using 6 bits (64 values)
+	 *
 	 * @param float $time
 	 */
 	public static function classifyTime($time)
@@ -770,9 +788,7 @@ class Sh404sefHelperAnalytics
 		}
 
 		return $time;
-
 	}
-
 
 	/**
 	 * Classify memory consumption into predefined

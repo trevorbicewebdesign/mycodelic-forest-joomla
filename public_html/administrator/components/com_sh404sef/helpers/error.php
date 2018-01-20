@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -53,9 +53,6 @@ class Sh404sefHelperError
 			foreach ($queryVars as $key => $value)
 			{
 				$app->input->set($key, $value);
-				// needed for extensions not reading $app->input
-				// but still JRequest (some plugins, at onAfterDispatch)
-				JRequest::setVar($key, $value);
 			}
 
 			// kill the document, avoid Joomla fatal error
@@ -177,8 +174,8 @@ class Sh404sefHelperError
 	 */
 	public static function setItemid($Itemid)
 	{
-
-		$menus = JFactory::getApplication()->getMenu();
+		$app = JFactory::getApplication();
+		$menus = $app->getMenu();
 		$menuItem = $menus->getItem($Itemid);
 		if (!empty($menuItem))
 		{
@@ -209,7 +206,7 @@ class Sh404sefHelperError
 			$menuItem->params->set('show_intro', 1);
 
 			// update global variables
-			JFactory::getApplication()->getParams()->set('pageclass_sfx', $menuItem->params->get('pageclass_sfx'));
+			$app->getParams()->set('pageclass_sfx', $menuItem->params->get('pageclass_sfx'));
 		}
 	}
 

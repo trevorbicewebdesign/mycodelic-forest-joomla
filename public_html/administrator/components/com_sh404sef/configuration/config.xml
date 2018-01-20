@@ -125,6 +125,11 @@
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
         </field>
+        <field menu="hide" name="shRedirectJoomlaSefToSef" type="radio" class="btn-group" default="1"
+               label="COM_SH404SEF_REDIRECT_JOOMLA_SEF_TO_SEF" description="COM_SH404SEF_TT_REDIRECT_JOOMLA_SEF_TO_SEF">
+            <option value="0">COM_SH404SEF_NO</option>
+            <option value="1">COM_SH404SEF_YES</option>
+        </field>
         <field menu="hide" name="shAutoRedirectWww" type="list" default="0" label="COM_SH404SEF_REDIRECT_WWW"
                description="COM_SH404SEF_TT_REDIRECT_WWW">
             <option value="0">COM_SH404SEF_WWW_DONT_ENFORCE</option>
@@ -837,6 +842,12 @@
             <option value="1">COM_SH404SEF_YES</option>
         </field>
 
+        <field menu="hide" name="autoBuildDescription" type="radio" class="btn-group" default="1"
+               label="COM_SH404SEF_AUTO_BUILD_SUBSCRIPTION" description="COM_SH404SEF_TT_AUTO_BUILD_SUBSCRIPTION">
+            <option value="0">COM_SH404SEF_NO</option>
+            <option value="1">COM_SH404SEF_YES</option>
+        </field>
+
         <field menu="hide" name="removeOtherCanonicals" type="radio" class="btn-group" default="1"
                label="COM_SH404SEF_REMOVE_OTHER_CANONICALS" description="COM_SH404SEF_TT_REMOVE_OTHER_CANONICALS">
             <option value="0">COM_SH404SEF_NO</option>
@@ -1268,8 +1279,8 @@
                label="COM_SH404SEF_ANALYTICS_DASHBOARD_DATA_TYPE"
                description="COM_SH404SEF_TT_ANALYTICS_DASHBOARD_DATA_TYPE">
             <option value="ga:pageviews">COM_SH404SEF_ANALYTICS_DATA_PAGEVIEWS</option>
-            <option value="ga:visits">COM_SH404SEF_ANALYTICS_REPORT_VISITS_ONLY</option>
-            <option value="ga:visitors">COM_SH404SEF_ANALYTICS_DATA_VISITORS</option>
+            <option value="ga:sessions">COM_SH404SEF_ANALYTICS_REPORT_VISITS_ONLY</option>
+            <option value="ga:users">COM_SH404SEF_ANALYTICS_DATA_VISITORS</option>
         </field>
 
         <field name="wbgaauth_auth_required" type="hidden" default="1"/>

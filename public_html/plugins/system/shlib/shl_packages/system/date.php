@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier 2017
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.632
- * @date				2017-06-01
+ * @version     0.3.1.659
+ * @date				2017-12-22
  */
 
 // no direct access
@@ -44,7 +44,7 @@ class ShlSystem_Date {
   static public function getTimezoneName() {
 
     if(empty(self::$_siteTimezoneName)) {
-      self::$_siteTimezoneName = date_default_timezone_get();
+	    self::$_siteTimezoneName = JFactory::getUser()->getParam('timezone', 'UTC');
     }
     return self::$_siteTimezoneName;
   }

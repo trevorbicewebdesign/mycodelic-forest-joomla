@@ -3,22 +3,25 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC')) die('Direct Access to this location is not allowed.');
+if (!defined('_JEXEC'))
+{
+	die('Direct Access to this location is not allowed.');
+}
 
 class Sh404sefModelEditalias extends Sh404sefClassBaseeditmodel
 {
 
-	protected $_context = 'sh404sef.editalias';
+	protected $_context      = 'sh404sef.editalias';
 	protected $_defaultTable = 'aliases';
-	protected $_alias = null;
+	protected $_alias        = null;
 
 	/**
 	 * Create or update a record to
@@ -34,7 +37,10 @@ class Sh404sefModelEditalias extends Sh404sefClassBaseeditmodel
 	public function save($dataArray = null)
 	{
 		// use parent save method to save the url itself, from default values
-		$this->_data = is_null($dataArray) ? JRequest::get('post') : $dataArray;
+		$this->_data = is_null($dataArray) ?
+			JFactory::getApplication()->input->post->getArray()
+			:
+			$dataArray;
 
 		// save the non-sef/sef pair data
 		$savedId = $this->_save();
@@ -54,18 +60,11 @@ class Sh404sefModelEditalias extends Sh404sefClassBaseeditmodel
 	 */
 	private function _save($type = Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS)
 	{
-		// check for bad data
-		if (empty($this->_data['newurl']))
-		{
-			return 0;
-		}
-
 		// get required tools
-		jimport('joomla.database.table');
 		$row = JTable::getInstance($this->_defaultTable, 'Sh404sefTable');
 
 		// let table save record
-		$row->save($this->_data['newurl']);
+		$row->save($this->_data);
 
 		// collect errors
 		$error = $row->getError();
@@ -142,10 +141,11 @@ class Sh404sefModelEditalias extends Sh404sefClassBaseeditmodel
 		try
 		{
 			// delete detailed stats
-			$aliases = ShlDbHelper::selectColumn($this->_getTableName(), 'alias',
-				$this->_db->qn('id') . ' in (' . ShlDbHelper::arrayToIntValList($ids) . ')');
+			$aliases = ShlDbHelper::selectColumn(
+				$this->_getTableName(), 'alias',
+				$this->_db->qn('id') . ' in (' . ShlDbHelper::arrayToIntValList($ids) . ')'
+			);
 			ShlDbHelper::deleteIn('#__sh404sef_hits_aliases', 'url', $aliases);
-
 
 			// delete aliases
 			ShlDbHelper::deleteIn($this->_getTableName(), 'id', $ids, ShlDbHelper::INTEGER);

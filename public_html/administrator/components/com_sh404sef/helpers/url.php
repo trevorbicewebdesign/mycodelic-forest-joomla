@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -35,7 +35,10 @@ class Sh404sefHelperUrl
 		{
 			foreach ($elements as $key => $value)
 			{
-				$url .= '&' . $key . '=' . $value;
+				if ('option' != $key)
+				{
+					$url .= '&' . $key . '=' . $value;
+				}
 			}
 		}
 
@@ -50,7 +53,23 @@ class Sh404sefHelperUrl
 
 	protected static function _getTrackingVars()
 	{
-		$trackingVars = Sh404sefFactory::getPConfig()->trackingVars;
+		/**
+		 * Filter the  list of query variables that should be stripped from requests before doing
+		 * comparison operations, to lookup custom meta data or similar.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\routing
+		 * @var sh404sef_tracking_vars_to_strip
+		 * @since   4.13.0
+		 *
+		 * @param array $varList The list of query variables to remove from query.
+		 *
+		 * @return array
+		 */
+		$trackingVars = ShlHook::filter(
+			'sh404sef_tracking_vars_to_strip',
+			Sh404sefFactory::getPConfig()->trackingVars
+		);
 
 		return $trackingVars;
 	}
@@ -556,7 +575,7 @@ class Sh404sefHelperUrl
 			// have a record for same sef/non-sef pair created on same page?
 			$found = ShlDbHelper::count(
 				'#__sh404sef_urls_src', 'id', array(
-					                      'url' => $data['url'],
+					                      'url'        => $data['url'],
 					                      'routed_url' => $data['routed_url'],
 					                      'source_url' => $data['source_url']
 				                      )
@@ -576,5 +595,35 @@ class Sh404sefHelperUrl
 				ShlDbHelper::insert('#__sh404sef_urls_src', $data);
 			}
 		}
+	}
+
+	/**
+	 * Similar to JUri::isInternal, but works also on SEF URLs. Only use the site scheme+host, not the base path.
+	 *
+	 * @param string | JUri $url
+	 *
+	 * @return int
+	 */
+	public static function isInternal($url)
+	{
+		static $siteHost = null;
+
+		if (is_null($siteHost))
+		{
+			$siteHost = JUri::getInstance()->toString(array('scheme', 'host', 'port'));
+			$siteHost = rtrim($siteHost, '/');
+		}
+
+		if (!$url instanceof JUri)
+		{
+			$url = new JUri($url);
+		}
+
+		$host = $url->toString(array('scheme', 'host', 'port'));
+		$host = rtrim($host, '/');
+
+		$isInternal = $host == $siteHost ? Sh404sefHelperUrl::IS_INTERNAL : Sh404sefHelperUrl::IS_EXTERNAL;
+
+		return $isInternal;
 	}
 }

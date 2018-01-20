@@ -4,11 +4,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 class Sh404sefConfiguration
 {
@@ -51,12 +51,12 @@ class Sh404sefConfiguration
 
 	private $_metaDataSpecs = array(
 		'metatitle' => array('maxCharacterSize' => 255, 'warningNumber' => 45, 'errorNumber' => 60, 'title' => 'PLG_SHLIB_CHAR_COUNTER'),
-		'metadesc' => array('maxCharacterSize' => 255, 'warningNumber' => 140, 'errorNumber' => 160, 'title' => 'PLG_SHLIB_CHAR_COUNTER'),
+		'metadesc' => array('maxCharacterSize' => 512, 'warningNumber' => 250, 'errorNumber' => 320, 'title' => 'PLG_SHLIB_CHAR_COUNTER'),
 		'metatitle-one-line' => array('maxCharacterSize' => 255, 'warningNumber' => 45, 'errorNumber' => 60, 'style' => 'shl-char-counter-one-line',
 			'title' => 'PLG_SHLIB_CHAR_COUNTER'),
 		'metatitle-joomla-be' => array('maxCharacterSize' => 255, 'warningNumber' => 45, 'errorNumber' => 60,
 			'style' => 'shl-char-counter-title-joomla-be', 'title' => 'PLG_SHLIB_CHAR_COUNTER'),
-		'metadesc-joomla-be' => array('maxCharacterSize' => 255, 'warningNumber' => 140, 'errorNumber' => 160,
+		'metadesc-joomla-be' => array('maxCharacterSize' => 512, 'warningNumber' => 250, 'errorNumber' => 320,
 			'style' => 'shl-char-counter-desc-joomla-be', 'title' => 'PLG_SHLIB_CHAR_COUNTER'));
 
 	/**

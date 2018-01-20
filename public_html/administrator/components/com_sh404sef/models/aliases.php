@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -20,6 +20,7 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 {
 	protected $_context      = 'sh404sef.aliases';
 	protected $_defaultTable = 'aliases';
+	protected $text_prefix   = 'COM_SH404SEF_ALIASES';
 
 	/**
 	 * Save a list of aliases as entered by user in backend to the database
@@ -29,15 +30,22 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 	 *
 	 * @return boolean true on success
 	 */
-	public function saveFromInput($aliasList, $nonSefUrl)
+	public function saveFromInput($aliasList, $nonSefUrl, $targetType = Sh404sefModelRedirector::TARGET_TYPE_REDIRECT)
 	{
 		// split aliases from raw input data into an array
-		$aliasList = explode("\n", $aliasList);
+		$aliasList = ShlSystem_Strings::stringToCleanedArray($aliasList, "\n");
 
 		try
 		{
 			// delete them all. We should do a transaction, but not worth it
-			ShlDbHelper::delete('#__sh404sef_aliases', array('newurl' => $nonSefUrl));
+			if (Sh404sefModelRedirector::TARGET_TYPE_CANONICAL != $targetType)
+			{
+				ShlDbHelper::delete('#__sh404sef_aliases', array('newurl' => $nonSefUrl));
+			}
+			else
+			{
+				ShlDbHelper::delete('#__sh404sef_aliases', array('alias' => $aliasList[0]));
+			}
 
 			// Write new aliases.
 			if (!empty($aliasList[0]))
@@ -55,7 +63,12 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 						// or same SEF url already exists
 						try
 						{
-							$count = ShlDbHelper::count('#__sh404sef_urls', 'id', 'oldurl = ? and newurl <> ?', array($alias, ''));
+							$count = 0;
+							// do we have the same SEF URL? not allowed for redirects, but ok for canonicals.
+							if (Sh404sefModelRedirector::TARGET_TYPE_CANONICAL != $targetType)
+							{
+								$count = ShlDbHelper::count('#__sh404sef_urls', 'id', 'oldurl = ? and newurl <> ?', array($alias, ''));
+							}
 
 							if (empty($count))
 							{
@@ -90,10 +103,15 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 						// if ok, insert into db
 						if (empty($count))
 						{
-							ShlDbHelper::insert(
-								'#__sh404sef_aliases',
-								array('newurl' => $nonSefUrl, 'alias' => $alias, 'type' => Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS)
+							$aliasObject = JTable::getInstance($this->_defaultTable, 'Sh404sefTable');
+							$aliasObject->bind(
+								array(
+									'newurl'      => $nonSefUrl,
+									'alias'       => $alias,
+									'target_type' => $targetType
+								)
 							);
+							$aliasObject->store();
 						}
 						else
 						{
@@ -112,6 +130,44 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 
 		// return true if no error
 		$error = $this->getError();
+
+		return empty($error);
+	}
+
+	/**
+	 * Saves (or delete) a canonical redirect. Used when editing a single URL in the admin.
+	 *
+	 * @param string $canonicalTarget
+	 * @param string $sourceUrl
+	 */
+	public function saveCanonical($canonicalTarget, $sourceUrl)
+	{
+		if (empty($sourceUrl))
+		{
+			return true;
+		}
+
+		if (empty($canonicalTarget))
+		{
+			ShlDbHelper::delete(
+				'#__sh404sef_aliases',
+				array(
+					'alias'       => $sourceUrl,
+					'target_type' => Sh404sefModelRedirector::TARGET_TYPE_CANONICAL
+				)
+			);
+
+			return true;
+		}
+
+		// insert or update
+		$this->saveFromInput(
+			$sourceUrl,
+			$canonicalTarget,
+			Sh404sefModelRedirector::TARGET_TYPE_CANONICAL
+		);
+		$error = $this->getError();
+
 		return empty($error);
 	}
 
@@ -161,6 +217,7 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		else
 		{
 			$this->setError('Invalid method call _purge' . $type);
+
 			return;
 		}
 
@@ -192,7 +249,12 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 				{
 					$numberOfUrls = ShlDbHelper::count(
 						$this->_getTableName(), '*',
-						array('type' => Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS)
+						'type = ? or type = ?',
+						array(
+							Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS,
+							Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_WILDCARD,
+							Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_CUSTOM
+						)
 					);
 				}
 				catch (Exception $e)
@@ -239,6 +301,7 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->setError('Internal database error # ' . $e->getMessage());
 		}
+
 		return $url;
 	}
 
@@ -258,8 +321,11 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		$options->filter_component = $this->_getState('filter_component');
 		// show all/only one language
 		$options->filter_language = $this->_getState('filter_language');
+		// alias type
+		$options->filter_target_type = $this->_getState('filter_target_type');
 		// requested/not requested
 		$options->filter_requested_urls = $this->_getState('filter_requested_urls');
+
 		// return cached instance
 		return $options;
 	}
@@ -290,7 +356,12 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		$filters = $this->getDisplayOptions();
 
 		// only aliases, no pageid
-		$where[] = 'a.type = ' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS);
+		$where[] = '(a.type = ' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS)
+			. ' or '
+			. 'a.type = ' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_WILDCARD)
+			. ' or '
+			. 'a.type = ' . $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_CUSTOM)
+			. ')';
 
 		// are we reading aliases for one specific url ?
 		$newurl = $this->_getOption('newurl', $options);
@@ -326,6 +397,11 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		if (!empty($filters->filter_language))
 		{
 			$where[] = "LOWER(a.newurl)  LIKE '%lang=" . $this->_cleanForQuery(Sh404sefHelperLanguage::getUrlCodeFromTag($filters->filter_language)) . "%'";
+		}
+
+		if ($filters->filter_target_type != 'all')
+		{
+			$where[] = 'a.target_type = ' . $this->_db->Quote($filters->filter_target_type);
 		}
 
 		if (!empty($filters->filter_requested_urls))
@@ -364,12 +440,8 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 
 	protected function _buildListOrderBy($options)
 	{
-		// get set of filters applied to the current view
-		$filters = $this->getDisplayOptions();
-
 		// build query fragment
-		$orderBy = ' order by ' . $filters->filter_order;
-		$orderBy .= ' ' . $filters->filter_order_Dir;
+		$orderBy = ' order by ordering asc';
 
 		return $orderBy;
 	}
@@ -391,13 +463,19 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		// as some default values are dynamic
 		$addedContextData = array(
 			// redefined default sort order
-			array('name' => 'filter_order', 'html_name' => 'filter_order', 'default' => 'alias', 'type' => 'string')
+			array('name' => 'filter_order', 'html_name' => 'filter_order', 'default' => 'ordering', 'type' => 'string')
 			// component used in url
-			, array('name' => 'filter_component', 'html_name' => 'filter_component', 'default' => '', 'type' => 'string')
+			,
+			array('name' => 'filter_component', 'html_name' => 'filter_component', 'default' => '', 'type' => 'string')
 			// show all/only one language
-			, array('name' => 'filter_language', 'html_name' => 'filter_language', 'default' => '', 'type' => 'string')
+			,
+			array('name' => 'filter_language', 'html_name' => 'filter_language', 'default' => '', 'type' => 'string')
+			// target type
+			,
+			array('name' => 'filter_target_type', 'html_name' => 'filter_target_type', 'default' => '', 'type' => 'string')
 			// requested/not requested
-			, array('name' => 'filter_requested_urls', 'html_name' => 'filter_requested_urls', 'default' => '', 'type' => 'string')
+			,
+			array('name' => 'filter_requested_urls', 'html_name' => 'filter_requested_urls', 'default' => '', 'type' => 'string')
 		);
 
 		return array_merge($contextData, $addedContextData);
@@ -410,8 +488,13 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 	private function _getPurgeQueryAuto()
 	{
 		// delete from database
-		$query = 'delete from ' . $this->_db->quoteName($this->_getTableName()) . ' where type = '
-			. $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS);
+		$query = 'delete from ' . $this->_db->quoteName($this->_getTableName())
+			. ' where type = '
+			. $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS)
+			. ' or type = '
+			. $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_WILDCARD)
+			. ' or type = '
+			. $this->_db->Quote(Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_CUSTOM);
 
 		return $query;
 	}

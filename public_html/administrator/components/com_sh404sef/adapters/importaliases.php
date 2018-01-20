@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -70,6 +70,10 @@ class Sh404sefAdapterImportaliases extends Sh404sefClassImportgeneric
 		}
 		$record['alias'] = $line[1];
 		$record['type'] = $line[4];
+		$record['hits'] = $line[5];
+		$record['target_type'] = $line[6];
+		$record['ordering'] = $line[7];
+		$record['state'] = $line[8];
 
 		// find if there is already same alias record for this non-sef url. If so
 		// we want the imported record to overwrite the existing one.

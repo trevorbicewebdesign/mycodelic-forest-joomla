@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -78,6 +78,7 @@ class Sh404sefHelperOgp
 		// get sh404sef config
 		$config = Sh404sefFactory::getConfig();
 		$pageInfo = Sh404sefFactory::getPageInfo();
+		$document = JFactory::getDocument();
 
 		if (empty($config->shMetaManagementActivated) || !isset($config) || empty($pageInfo->currentNonSefUrl)
 			|| (!empty($pageInfo->httpStatus) && $pageInfo->httpStatus == 404)
@@ -102,17 +103,14 @@ class Sh404sefHelperOgp
 		$displayData['locale'] = str_replace('-', '_', JFactory::getLanguage()->getTag());
 
 		// insert title
-		if (!empty($pageInfo->pageTitle))
-		{
-			$displayData['page_title'] = $pageInfo->pageTitle;
-		}
+		$displayData['page_title'] = empty($pageInfo->pageTitle) ? $document->getTitle() : $pageInfo->pageTitle;
 
 		// insert description
 		if ((($config->ogEnableDescription && $customData->og_enable_description == SH404SEF_OPTION_VALUE_USE_DEFAULT)
-				|| $customData->og_enable_description == SH404SEF_OPTION_VALUE_YES) && !empty($pageInfo->pageDescription)
+				|| $customData->og_enable_description == SH404SEF_OPTION_VALUE_YES)
 		)
 		{
-			$displayData['description'] = $pageInfo->pageDescription;
+			$displayData['description'] = empty($pageInfo->pageDescription) ? $document->getDescription() : $pageInfo->pageDescription;
 		}
 
 		// insert type
@@ -162,11 +160,6 @@ class Sh404sefHelperOgp
 			}
 		}
 
-		if (!empty($displayData))
-		{
-			 //$tags['ogNameSpace'] = 'xmlns:og="http://ogp.me/ns#"';
-		}
-
 		if ((!empty($config->fbAdminIds) && $customData->og_enable_fb_admin_ids == SH404SEF_OPTION_VALUE_USE_DEFAULT)
 			|| $customData->og_enable_fb_admin_ids == SH404SEF_OPTION_VALUE_YES
 		)
@@ -175,7 +168,6 @@ class Sh404sefHelperOgp
 			if ($customData->og_enable_fb_admin_ids != SH404SEF_OPTION_VALUE_NO && !empty($content))
 			{
 				$displayData['fb_admins'] = $content;
-				//$tags['fbNameSpace'] = 'xmlns:fb="https://www.facebook.com/2008/fbml"';
 			}
 		}
 
@@ -183,10 +175,21 @@ class Sh404sefHelperOgp
 		$appId = empty($config->fbAppId) ? Sh404sefFactory::getPConfig()->facebookDefaultAppId : $config->fbAppId;
 		$displayData['app_id'] = $appId;
 
+		/**
+		 * Filter the list of OGP tags as computed by sh404SEF.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\seo
+		 * @var sh404sef_ogp_tags
+		 * @since   1.9.2
+		 *
+		 * @param array $displayData Associative array of OGP related data.
+		 *
+		 * @return array
+		 */
 		$displayData = ShlHook::filter(
 			'sh404sef_ogp_tags',
-			$displayData,
-			array()
+			$displayData
 		);
 
 		$tags['openGraphData'] = ShlMvcLayout_Helper::render('com_sh404sef.social.ogp', $displayData);

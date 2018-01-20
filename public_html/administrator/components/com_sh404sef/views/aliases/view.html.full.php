@@ -3,16 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date		2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
+{
 	die('Direct Access to this location is not allowed.');
+}
 
 jimport('joomla.application.component.view');
 
@@ -26,13 +28,14 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 	{
 		// version prefix
 		$this->joomlaVersionPrefix = Sh404sefHelperGeneral::getJoomlaVersionPrefix();
-		$this->footerText = JText::sprintf('COM_SH404SEF_FOOTER_' . strtoupper(Sh404sefConfigurationEdition::$id),
-				Sh404sefFactory::getConfig()->version, Sh404sefConfigurationEdition::$name, date('Y'));
-		
+		$this->footerText = JText::sprintf(
+			'COM_SH404SEF_FOOTER_' . strtoupper(Sh404sefConfigurationEdition::$id),
+			Sh404sefFactory::getConfig()->version, Sh404sefConfigurationEdition::$name, date('Y')
+		);
 
 		// get model and update context with current
 		$model = $this->getModel();
-		$context = $model->setContext($this->_context . '.' . $this->getLayout());
+		$model->setContext($this->_context . '.' . $this->getLayout());
 
 		// read data from model
 		$list = $model->getList((object) array('layout' => $this->getLayout()));
@@ -43,52 +46,30 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$this->pagination = $model->getPagination();
 		$options = $model->getDisplayOptions();
 		$this->options = $options;
-		$this->helpMessage = JText::_('COM_SH404SEF_ALIASES_HELP_NEW_ALIAS');
+		$this->helpMessage = JText::_('COM_SH404SEF_ALIASES_HELP');
 
-		if (version_compare(JVERSION, '3.0', 'ge'))
+		// add our own css
+		JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/' . $this->joomlaVersionPrefix . '_list.css');
+		if (Sh404sefHelperHtml::setFixedTemplate())
 		{
-			$document = JFactory::getDocument();
-
-			// add our own css
-			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/' . $this->joomlaVersionPrefix . '_list.css');
-			if (Sh404sefHelperHtml::setFixedTemplate())
-			{
-				JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/j3.js');
-			}
-
-			// add modal css and js
-			ShlHtmlBs_helper::addBootstrapCss(JFactory::getDocument());
-			ShlHtmlBs_helper::addBootstrapJs(JFactory::getDocument());
-
-			// add display filters
-			$this->_addFilters();
-
-			// variable for modal, not used in 3..x+
-			$params = array();
-
-			// render submenu sidebar
-			$this->sidebar = Sh404sefHelperHtml::renderSubmenu();
-
-			// insert bootstrap theme
-			ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
+			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/j3.js');
 		}
-		else
-		{
-			// add link to css
-			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/list.css');
 
-			// link to  custom javascript
-			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/list.js');
+		// add modal css and js
+		ShlHtmlBs_helper::addBootstrapCss(JFactory::getDocument());
+		ShlHtmlBs_helper::addBootstrapJs(JFactory::getDocument());
 
-			// add behaviors and styles as needed
-			$modalSelector = 'a.modalediturl';
-			$js = '\\function(){window.parent.shAlreadySqueezed = false;if(window.parent.shReloadModal) {parent.window.location=\''
-				. $this->defaultRedirectUrl . '\';window.parent.shReloadModal=true}}';
-			$params = array('overlayOpacity' => 0, 'classWindow' => 'sh404sef-popup', 'classOverlay' => 'sh404sef-popup', 'onClose' => $js);
-			Sh404sefHelperHtml::modal($modalSelector, $params);
+		// add display filters
+		$this->_addFilters();
 
-			$this->optionsSelect = $this->_makeOptionsSelect($options);
-		}
+		// variable for modal, not used in 3..x+
+		$params = array();
+
+		// render submenu sidebar
+		$this->sidebar = Sh404sefHelperHtml::renderSubmenu();
+
+		// insert bootstrap theme
+		ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
 
 		// build the toolbar
 		$toolbarMethod = '_makeToolbar' . ucfirst($this->joomlaVersionPrefix);
@@ -99,88 +80,6 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 
 		// now display normally
 		parent::display($this->joomlaVersionPrefix);
-	}
-
-	/**
-	 * Create toolbar for default layout view
-	 *
-	 * @param midxed $params
-	 */
-	private function _makeToolbarJ2($params = null)
-	{
-		// Get the JComponent instance of JToolBar
-		$bar = JToolBar::getInstance('toolbar');
-
-		// add title
-		$title = Sh404sefHelperGeneral::makeToolbarTitle(JText::_('COM_SH404SEF_ALIASES_MANAGER'), $icon = 'sh404sef',
-			$class = 'sh404sef-toolbar-title');
-		JFactory::getApplication()->JComponentTitle = $title;
-
-		// add "New url" button
-		$bar->addButtonPath(JPATH_COMPONENT . '/' . 'classes');
-
-		// add edit button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 800, 'y' => 600);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editurl&startOffset=2';
-		$bar
-			->appendButton('Shpopuptoolbarbutton', 'edit', $url, JText::_('Edit'), $msg = '', $task = 'edit', $list = true, $hidemenu = true, $params);
-
-		// add delete button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 300);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=editalias&task=confirmdelete&tmpl=component';
-		$bar
-			->appendButton('Shpopuptoolbarbutton', 'delete', $url, JText::_('Delete'), $msg = JText::_('VALIDDELETEITEMS', true), $task = 'delete',
-				$list = true, $hidemenu = true, $params);
-
-		// separator
-		JToolBarHelper::divider();
-
-		// add import button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 400);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=import&opsubject=aliases';
-		$bar
-			->appendButton('Shpopuptoolbarbutton', 'import', $url, JText::_('COM_SH404SEF_IMPORT_BUTTON'), $msg = '', $task = 'import',
-				$list = false, $hidemenu = true, $params);
-
-		// add export button
-		$params['class'] = 'modaltoolbar';
-		$params['size'] = array('x' => 500, 'y' => 300);
-		unset($params['onClose']);
-		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=export&opsubject=aliases';
-		$bar
-			->appendButton('Shpopuptoolbarbutton', 'export', $url, JText::_('COM_SH404SEF_EXPORT_BUTTON'), $msg = '', $task = 'export',
-				$list = false, $hidemenu = true, $params);
-
-		// separator
-		JToolBarHelper::divider();
-
-		// edit home page button
-		$params['class'] = 'modalediturl';
-		$params['size'] = array('x' => 800, 'y' => 600);
-		$js = '\\function(){window.parent.shAlreadySqueezed = false;if(window.parent.shReloadModal) parent.window.location=\''
-			. $this->defaultRedirectUrl . '\';window.parent.shReloadModal=true}';
-		$params['onClose'] = $js;
-		$bar
-			->appendButton('Shpopupbutton', 'home', JText::_('COM_SH404SEF_HOME_PAGE_ICON'),
-				"index.php?option=com_sh404sef&c=editalias&task=edit&view=editurl&home=1&tmpl=component&startOffset=1", $params);
-
-		// add modal handler for configuration
-		JHTML::_('behavior.modal');
-		if (Sh404sefHelperAcl::userCan('sh404sef.view.configuration'))
-		{
-			// separator
-			JToolBarHelper::divider();
-
-			$configbtn = '<a class="modal" href="index.php?option=com_sh404sef&tmpl=component&c=configuration&view=configuration&component=com_sh404sef&hidemainmenu=1" rel="{handler: \'iframe\', size: {x: window.getSize().x*0.90, y: window.getSize().y*0.90}, onClose: function() {}}"><span class="icon-32-options"></span>'
-				. JText::_('COM_SH404SEF_CONFIGURATION') . '</a>';
-			$bar->appendButton('custom', $configbtn, 'sh-configbutton-button');
-		}
 	}
 
 	private function _makeToolbarJ3($params = null)
@@ -194,16 +93,32 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		// prepare configuration button
 		$bar->addButtonPath(SHLIB_ROOT_PATH . 'toolbarbutton');
 
+		// add new button
+		$params = array();
+		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
+		$params['buttonClass'] = 'btn btn-small';
+		$params['iconClass'] = 'icon-edit icon-white';
+		$params['checkListSelection'] = false;
+		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editalias';
+		$bar
+			->appendButton(
+				'J3popuptoolbarbutton', 'edit', JText::_('JTOOLBAR_NEW'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
+				$left = 0, $onClose = '', $title = '', $params
+			);
+
+
 		// add edit button
 		$params = array();
 		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
 		$params['buttonClass'] = 'btn btn-small btn-primary';
 		$params['iconClass'] = 'icon-edit icon-white';
 		$params['checkListSelection'] = true;
-		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editurl&startOffset=2';
+		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editalias';
 		$bar
-			->appendButton('J3popuptoolbarbutton', 'edit', JText::_('JTOOLBAR_EDIT'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
-				$left = 0, $onClose = '', $title = '', $params);
+			->appendButton(
+				'J3popuptoolbarbutton', 'edit', JText::_('JTOOLBAR_EDIT'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
+				$left = 0, $onClose = '', $title = '', $params
+			);
 
 		// delete button
 		$params = array();
@@ -213,8 +128,10 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$params['checkListSelection'] = true;
 		$url = 'index.php?option=com_sh404sef&c=editalias&task=confirmdelete&tmpl=component';
 		$bar
-			->appendButton('J3popuptoolbarbutton', 'delete', JText::_('JTOOLBAR_DELETE'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
-				$left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_CONFIRM_TITLE'), $params);
+			->appendButton(
+				'J3popuptoolbarbutton', 'delete', JText::_('JTOOLBAR_DELETE'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
+				$left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_CONFIRM_TITLE'), $params
+			);
 
 		// separator
 		JToolBarHelper::spacer(20);
@@ -227,8 +144,10 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$params['checkListSelection'] = false;
 		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=import&opsubject=aliases';
 		$bar
-			->appendButton('J3popuptoolbarbutton', 'import', JText::_('COM_SH404SEF_IMPORT_BUTTON'), $url, $params['size']['x'],
-				$params['size']['y'], $top = 0, $left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_IMPORTING_TITLE'), $params);
+			->appendButton(
+				'J3popuptoolbarbutton', 'import', JText::_('COM_SH404SEF_IMPORT_BUTTON'), $url, $params['size']['x'],
+				$params['size']['y'], $top = 0, $left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_IMPORTING_TITLE'), $params
+			);
 
 		// add export button
 		$params = array();
@@ -238,8 +157,10 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$params['checkListSelection'] = false;
 		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=export&opsubject=aliases';
 		$bar
-			->appendButton('J3popuptoolbarbutton', 'export', JText::_('COM_SH404SEF_EXPORT_BUTTON'), $url, $params['size']['x'],
-				$params['size']['y'], $top = 0, $left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_EXPORTING_TITLE'), $params);
+			->appendButton(
+				'J3popuptoolbarbutton', 'export', JText::_('COM_SH404SEF_EXPORT_BUTTON'), $url, $params['size']['x'],
+				$params['size']['y'], $top = 0, $left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_EXPORTING_TITLE'), $params
+			);
 
 		// separator
 		JToolBarHelper::spacer(20);
@@ -252,8 +173,10 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$params['checkListSelection'] = false;
 		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&view=editurl&home=1&tmpl=component&startOffset=1';
 		$bar
-			->appendButton('J3popuptoolbarbutton', 'home', JText::_('COM_SH404SEF_HOME_PAGE_ICON'), $url, $params['size']['x'], $params['size']['y'],
-				$top = 0, $left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_HOME_PAGE_EDIT_TITLE'), $params);
+			->appendButton(
+				'J3popuptoolbarbutton', 'home', JText::_('COM_SH404SEF_HOME_PAGE_ICON'), $url, $params['size']['x'], $params['size']['y'],
+				$top = 0, $left = 0, $onClose = '', $title = JText::_('COM_SH404SEF_HOME_PAGE_EDIT_TITLE'), $params
+			);
 
 		if (Sh404sefHelperAcl::userCan('sh404sef.view.configuration'))
 		{
@@ -268,50 +191,52 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 			$params['iconClass'] = 'icon-options';
 			$url = 'index.php?option=com_sh404sef&tmpl=component&c=configuration&view=configuration&component=com_sh404sef&hidemainmenu=1';
 			$bar
-				->appendButton('J3popuptoolbarbutton', 'configj3', JText::_('COM_SH404SEF_CONFIGURATION'), $url, $params['size']['x'],
-					$params['size']['y'], $top = 0, $left = 0, $onClose = '', $title = '', $params);
+				->appendButton(
+					'J3popuptoolbarbutton', 'configj3', JText::_('COM_SH404SEF_CONFIGURATION'), $url, $params['size']['x'],
+					$params['size']['y'], $top = 0, $left = 0, $onClose = '', $title = '', $params
+				);
 		}
-	}
-
-	private function _makeOptionsSelect($options)
-	{
-
-		$selects = new StdClass();
-
-		// component list
-		$current = $options->filter_component;
-		$name = 'filter_component';
-		$selectAllTitle = JText::_('COM_SH404SEF_ALL_COMPONENTS');
-		$selects->components = Sh404sefHelperHtml::buildComponentsSelectList($current, $name, $autoSubmit = true, $addSelectAll = true,
-			$selectAllTitle);
-
-		// language list
-		$current = $options->filter_language;
-		$name = 'filter_language';
-		$selectAllTitle = JText::_('COM_SH404SEF_ALL_LANGUAGES');
-		$selects->languages = Sh404sefHelperHtml::buildLanguagesSelectList($current, $name, $autoSubmit = true, $addSelectAll = true, $selectAllTitle);
-
-		// return set of select lists
-		return $selects;
 	}
 
 	private function _addFilters()
 	{
 		// component selector
-		JHtmlSidebar::addFilter(JText::_('COM_SH404SEF_ALL_COMPONENTS'), 'filter_component',
-			JHtml::_('select.options', Sh404sefHelperGeneral::getComponentsList(), 'element', 'name', $this->options->filter_component, true));
+		JHtmlSidebar::addFilter(
+			JText::_('COM_SH404SEF_ALL_COMPONENTS'), 'filter_component',
+			JHtml::_('select.options', Sh404sefHelperGeneral::getComponentsList(), 'element', 'name', $this->options->filter_component, true)
+		);
 
 		// language list
-		JHtmlSidebar::addFilter(JText::_('COM_SH404SEF_ALL_LANGUAGES'), 'filter_language',
-			JHtml::_('select.options', JHtml::_('contentlanguage.existing', $all = false, $translate = true), 'value', 'text',
-				$this->options->filter_language, false));
+		JHtmlSidebar::addFilter(
+			JText::_('COM_SH404SEF_ALL_LANGUAGES'), 'filter_language',
+			JHtml::_(
+				'select.options', JHtml::_('contentlanguage.existing', $all = false, $translate = true), 'value', 'text',
+				$this->options->filter_language, false
+			)
+		);
+
+		// Select Canonical/Redirect
+		$data = array(
+			array('value' => 'all', 'text' => JText::_('COM_SH404SEF_ALIASES_ALL_TARGET_TYPES')),
+			array('value' => Sh404sefModelRedirector::TARGET_TYPE_REDIRECT, 'text' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_REDIRECT_SHORT')),
+			array('value' => Sh404sefModelRedirector::TARGET_TYPE_CANONICAL, 'text' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_CANONICAL_SHORT'))
+		);
+		JHtmlSidebar::addFilter(
+			JText::_('COM_SH404SEF_ALIASES_ALL_TARGET_TYPES'), 'filter_target_type',
+			JHtml::_('select.options', $data, 'value', 'text', $this->options->filter_target_type, true),
+			true
+		);
 
 		// Select Requested/not Requested/ Requested or not
 		$data = array(
 			array('value' => Sh404sefHelperGeneral::SHOW_REQUESTED, 'text' => JText::_('COM_SH404SEF_SHOW_REQUESTED_URLS')),
 			array('value' => Sh404sefHelperGeneral::SHOW_NOT_REQUESTED, 'text' => JText::_('COM_SH404SEF_SHOW_NEVER_REQUESTED_URLS'))
 		);
-		JHtmlSidebar::addFilter(JText::_('COM_SH404SEF_SHOW_REQUESTED_OR_NOT'), 'filter_requested_urls',
-			JHtml::_('select.options', $data, 'value', 'text', $this->options->filter_requested_urls, true));
+		JHtmlSidebar::addFilter(
+			JText::_('COM_SH404SEF_SHOW_REQUESTED_OR_NOT'), 'filter_requested_urls',
+			JHtml::_('select.options', $data, 'value', 'text', $this->options->filter_requested_urls, true)
+		);
+
+
 	}
 }

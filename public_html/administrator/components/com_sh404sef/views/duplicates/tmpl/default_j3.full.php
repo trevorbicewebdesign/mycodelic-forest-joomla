@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.9.2.3552
- * @date        2017-06-01
+ * @version      4.13.1.3756
+ * @date        2017-12-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -42,7 +42,7 @@ JHtml::_('formbehavior.chosen', 'select');
 				<button class="btn btn-primary" type="button" onclick="<?php echo $onclick; ?>">
 					<i class="icon-publish icon-white"> </i>
 					<?php echo JText::_('COM_SH404SEF_DUPLICATES_MAKE_MAIN'); ?></button>
-				<button class="btn" type="button" onclick="<?php echo JRequest::getBool('refresh', 0)
+				<button class="btn" type="button" onclick="<?php echo JFactory::getApplication()->input->getBool('refresh', 0)
 					? 'window.parent.location.href=window.parent.location.href;' : '';
 				?>  window.parent.shlBootstrap.closeModal();">
 					<?php echo JText::_('JCANCEL'); ?>

@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 defined('_JEXEC') or die;
@@ -23,7 +23,10 @@ class PlgInstallerSh404sef extends JPlugin
 	 * @var    String  base update url, to decide whether to process the event or not
 	 * @since  2.5
 	 */
-	private $baseUrl = 'https://u1.weeblr.com/dist/sh404sef/full';
+	private $baseUrl = array(
+		'https://u1.weeblr.com/dist/sh404sef/full' => 'sh404sef',
+		'https://u1.weeblr.com/dist/sh404sef-importer/full' => 'sh404sef-importer'
+	);
 
 	/**
 	 * @var    String  extension identifier, to retrieve its params
@@ -36,7 +39,7 @@ class PlgInstallerSh404sef extends JPlugin
 	 *                    Not mandatory, depends on subscription management system
 	 * @since  2.5
 	 */
-	private $productId = 'sh404sef';
+	private $productId = '';
 
 	/**
 	 * @var    String    An edition type (full, free, lite,...) for the product
@@ -49,7 +52,7 @@ class PlgInstallerSh404sef extends JPlugin
 	 * Handle adding credentials to package download request
 	 *
 	 * @param   string $url url from which package is going to be downloaded
-	 * @param   array $headers headers to be sent along the download request (key => value format)
+	 * @param   array  $headers headers to be sent along the download request (key => value format)
 	 *
 	 * @return  boolean    true        always true
 	 *
@@ -58,7 +61,17 @@ class PlgInstallerSh404sef extends JPlugin
 	public function onInstallerBeforePackageDownload(&$url, &$headers)
 	{
 		// are we trying to update our extension?
-		if (strpos($url, $this->baseUrl) !== 0)
+		foreach ($this->baseUrl as $baseUrl => $productId)
+		{
+			if (wbStartsWith($url, $baseUrl))
+			{
+				$this->productId = $productId;
+				break;
+			}
+		}
+
+		// not one of our URLs.
+		if (empty($this->productId))
 		{
 			return true;
 		}
@@ -78,7 +91,7 @@ class PlgInstallerSh404sef extends JPlugin
 	 *
 	 * @param    array $credentials whatever credentials were retrieved for the current user/website
 	 * @param   string $url url from which package is going to be downloaded
-	 * @param   array $headers headers to be sent along the download request (key => value format)
+	 * @param   array  $headers headers to be sent along the download request (key => value format)
 	 *
 	 * @return void
 	 */
@@ -117,6 +130,7 @@ class PlgInstallerSh404sef extends JPlugin
 		if (empty($credentials['id']) || empty($credentials['secret'])
 		)
 		{
+			JPlugin::loadLanguage('com_sh404sef', JPATH_ADMINISTRATOR);
 			$app = JFactory::getApplication();
 			$app->enqueueMessage(JText::sprintf('COM_SH404SEF_UPDATE_NO_CREDENTIALS', 'https://weeblr.com/documentation/products.sh404sef/4/installation-update/updating.html'), 'error');
 			$app->redirect('index.php?option=com_installer&view=update');

@@ -6,13 +6,12 @@
  * @copyright   (c) Yannick Gaultier 2017
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.632
- * @date		2017-06-01
+ * @version     0.3.1.659
+ * @date        2017-12-22
  */
 
-
 // Security check to ensure this file is being included by a parent file.
-defined( '_JEXEC' ) or die;
+defined('_JEXEC') or die;
 
 /**
  * A set of timesaving php functions
@@ -56,7 +55,7 @@ if (!function_exists('wbArrayGet'))
 			$current = $array;
 			foreach ($keys as $key)
 			{
-				if (!array_key_exists($key, $current))
+				if (!is_array($current) || !array_key_exists($key, $current))
 				{
 					return $default;
 				}
@@ -68,6 +67,146 @@ if (!function_exists('wbArrayGet'))
 		}
 
 		return $default;
+	}
+}
+
+if (!function_exists('wbArrayIsSet'))
+{
+	/**
+	 * Find if an array has a specifi key.
+	 * Key can be an array of keys, which are then
+	 * traversed
+	 *
+	 * @param array $array
+	 * @param mixed $keys
+	 *
+	 * @return bool
+	 */
+	function wbArrayIsSet($array, $keys)
+	{
+		if (empty($keys) && $keys !== 0)
+		{
+			return false;
+		}
+
+		if (!is_array($array))
+		{
+			return false;
+		}
+
+		if (!is_array($keys) && isset($array[$keys]))
+		{
+			return true;
+		}
+
+		if (is_array($keys))
+		{
+			$current = $array;
+			foreach ($keys as $key)
+			{
+				if (!array_key_exists($key, $current))
+				{
+					return false;
+				}
+
+				$current = $current[$key];
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+}
+
+if (!function_exists('wbArrayIsEmpty'))
+{
+	/**
+	 * Get a value by key from an array and check if it is empty.
+	 *
+	 * @param array $array
+	 * @param       $keys
+	 *
+	 * @return bool
+	 */
+	function wbArrayIsEmpty($array, $keys)
+	{
+		$value = wbArrayGet($array, $keys, null);
+
+		return empty($value);
+	}
+}
+
+if (!function_exists('wbArrayIsEqual'))
+{
+	/**
+	 * Get a value by key from an array and check if it is equal to a given value
+	 *
+	 * @param array $array
+	 * @param       $keys
+	 * @param mixed $value
+	 * @param bool  $strict
+	 *
+	 * @return bool
+	 */
+	function wbArrayIsEqual($array, $keys, $value, $strict = false)
+	{
+		$actualValue = wbArrayGet($array, $keys, null);
+
+		return $strict ? $actualValue === $value : $actualValue == $value;
+	}
+}
+
+if (!function_exists('wbArraySet'))
+{
+	/**
+	 * Set a value by key from an array.
+	 * Key can be an array of keys, which are then
+	 * traversed
+	 *
+	 * @param array $array
+	 * @param mixed $keys
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	function wbArraySet($array, $keys, $value)
+	{
+		if (!is_array($array))
+		{
+			$array = array();
+		}
+
+		if (is_scalar($keys))
+		{
+			// end recursion
+			$array[$keys] = $value;
+
+			return $array;
+		}
+		if (!is_array($keys))
+		{
+			// objects?
+			return $array;
+		}
+
+		// current iteration key
+		$key = array_shift($keys);
+
+		if (!empty($keys))
+		{
+			if (!isset($array[$key]) || !is_array($array[$key]))
+			{
+				$array[$key] = array();
+			}
+			$array[$key] = wbArraySet($array[$key], $keys, $value);
+		}
+		else
+		{
+			$array[$key] = $value;
+		}
+
+		return $array;
 	}
 }
 
@@ -527,3 +666,64 @@ if (!function_exists('wbAbridge'))
 	}
 }
 
+if (!function_exists('wbGetProtectedProperty'))
+{
+	/**
+	 * Fetch a private or protected property from an object
+	 *
+	 * @param string  $className
+	 * @param string  $propertyName
+	 * @param object  $instance
+	 * @param boolean $static
+	 *
+	 * @return mixed property value, or null
+	 */
+	function wbGetProtectedProperty($className, $propertyName, $instance, $static = false)
+	{
+		static $_classesCache = array();
+		static $_propertiesCache = array();
+
+		if (version_compare(phpversion(), '5.3', 'ge'))
+		{
+			try
+			{
+				if (empty($_propertiesCache[$className . $propertyName]))
+				{
+					if (empty($_classesCache[$className]))
+					{
+						$_classesCache[$className] = new ReflectionClass($className);
+					}
+					$_propertiesCache[$className . $propertyName] = $_classesCache[$className]->getProperty($propertyName);
+					$_propertiesCache[$className . $propertyName]->setAccessible(true);
+				}
+				$propertyValue = $static ? $_propertiesCache[$className . $propertyName]->getStaticValue($instance)
+					: $_propertiesCache[$className . $propertyName]->getValue($instance);
+			}
+			catch (Exception $e)
+			{
+				ShlSystem_Log::error('sh404sef', __CLASS__ . '/' . __METHOD__ . '/' . __LINE__ . ': ' . $e->getMessage());
+				$propertyValue = null;
+			}
+		}
+		else
+		{
+			if (!$static)
+			{
+				// poor man's reflection, pre 5.3.0
+				$dump = print_r($instance, true);
+				$propertytag = '[' . $propertyName . ':protected]';
+				$bits = explode($propertytag, $dump);
+				$bit = $bits[1];
+				$bits = explode('[_', $bit);
+				$bit = str_replace('=>', '', $bits[0]);
+				$propertyValue = trim($bit);
+			}
+			else
+			{
+				$propertyValue = null;
+			}
+		}
+
+		return $propertyValue;
+	}
+}

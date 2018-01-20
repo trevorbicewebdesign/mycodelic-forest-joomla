@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2017
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.9.2.3552
- * @date        2017-06-01
+ * @version     4.13.1.3756
+ * @date        2017-12-22
  */
 
 /** ensure this file is being included by a parent file */
@@ -75,7 +75,7 @@ class Sh404sefClassPageinfo
 
 	public function getDefaultFrontLiveSite()
 	{
-		return wbLTrim($this->_defaultLiveSite, '/administrator');
+		return wbRTrim($this->_defaultLiveSite, '/administrator');
 	}
 
 	public function setCurrentLanguage($languageTag)
@@ -269,6 +269,6 @@ class Sh404sefClassPageinfo
 			}
 		}
 
-		return trim($uri);
+		return JString::trim($uri);
 	}
 }
