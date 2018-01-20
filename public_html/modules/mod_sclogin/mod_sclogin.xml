@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="1.6" type="module" method="upgrade" client="site">
     <name>SCLogin</name>
-    <version>7.2.2</version>
-    <creationDate>2017/10/08</creationDate>
+    <version>7.2.3</version>
+    <creationDate>2017/12/29</creationDate>
     <author>SourceCoast | www.sourcecoast.com</author>
     <authorEmail>support@sourcecoast.com</authorEmail>
     <authorUrl>http://www.sourcecoast.com</authorUrl>
-    <copyright>Copyright (C) 2009-2017 SourceCoast. All rights reserved.</copyright>
+    <copyright>Copyright (C) 2009-2018 SourceCoast. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description>
         <![CDATA[Enhanced login module with flexible styles and customizations for Facebook, Google+, Twitter, LinkedIn, Amazon, Github, Instagram, Meetup, VK.com and Windows Live Authentication when combined with <a href='http://www.sourcecoast.com/joomla-facebook/' target='_blank'>JFBConnect</a>.<br/><br/>Please visit <a href='http://www.sourcecoast.com/sclogin/features/' target='_blank'>SourceCoast</a> for more information or <a href='http://www.sourcecoast.com/forums' target='_blank'>our forums</a> for support.<br/><br/>If you use SCLogin, please post a rating and a review at the Joomla! Extensions Directory: <a href='http://extensions.joomla.org/extensions/access-a-security/site-access/authentication/24054' target='_blank'>SCLogin Enhanced Login</a>]]></description>

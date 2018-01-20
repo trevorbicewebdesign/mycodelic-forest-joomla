@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         SCLogin
- * @copyright (c)   2009-2017 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.2.2
- * @build-date      2017/10/08
+ * @version         Release v7.2.3
+ * @build-date      2017/12/29
  */
 
 // no direct access
@@ -582,7 +582,7 @@ class modSCLoginHelper
                 $menuNav .= '<ul class="flat-list">';
                 foreach ($menu_items as $menuItem)
                 {
-                    if($menuItem->params->get('menu_show'))
+                    if($menuItem->params->get('menu_show', '1'))
                         $menuNav .= $this->getUserMenuItem($menuItem);
                 }
                 $menuNav .= '</ul>';
@@ -602,7 +602,7 @@ class modSCLoginHelper
                 $menuNav .= '<ul class="dropdown-menu">';
                 foreach ($menu_items as $menuItem)
                 {
-                    if($menuItem->params->get('menu_show'))
+                    if($menuItem->params->get('menu_show', '1'))
                         $menuNav .= $this->getUserMenuItem($menuItem);
                 }
                 $menuNav .= '</ul>';
