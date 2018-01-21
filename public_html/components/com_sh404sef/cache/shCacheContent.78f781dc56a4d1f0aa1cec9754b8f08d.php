@@ -805,3 +805,8 @@ $shURLCacheCreationDate=1516207630;
 $this->_urlCache['2d22a93caa947912b771a4fdb14c1693']='index.php?option=com_kunena&amp;Itemid=423&amp;lang=en&amp;layout=default&amp;mode=topics&amp;view=topics#Forum/topics/mode-topics.html#0';
 $this->_urlCache['8450a1e79f72791fd5f310b7fbe09e91']='index.php?option=com_kunena&amp;Itemid=423&amp;lang=en&amp;layout=posts&amp;mode=unapproved&amp;userid=43&amp;view=topics#Forum/topics/posts/mode-unapproved/userid-43.html#0';
 $shURLCacheCreationDate=1516396218;
+$this->_urlCache['51791cc6a44ab95dd4f899a9862416ee']='index.php?option=com_k2&amp;id=802&amp;lang=en&amp;task=user&amp;view=itemlist#itemlist/user/802.html#0';
+$shURLCacheCreationDate=1516479298;
+$this->_urlCache['9766925a92b92a946717781d9750b7f2']='index.php?option=com_kunena&amp;Itemid=423&amp;lang=en&amp;layout=posts&amp;mode=latest&amp;userid=72&amp;view=topics#Forum/topics/posts/mode-latest/userid-72.html#0';
+$this->_urlCache['a4c4240240c0da61733770c3272b43e0']='index.php?option=com_kunena&amp;Itemid=423&amp;lang=en&amp;layout=posts&amp;mode=latest&amp;userid=71&amp;view=topics#Forum/topics/posts/mode-latest/userid-71.html#0';
+$shURLCacheCreationDate=1516479316;
