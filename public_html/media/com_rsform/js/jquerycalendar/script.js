@@ -65,6 +65,12 @@ RSFormPro.jQueryCalendar = {
 		
 		var calendarId 	 = 'cal'+idCalendar;
 		var txtDate 	 = jQuery('#txtjQ' + calendarId);
+		
+		if (!txtDate.length)
+		{
+			return;
+		}
+		
 		var hiddenDate 	 = jQuery('#hiddenjQ' + calendarId);
 		var calendarName = txtDate.attr('name').substring(5, txtDate.attr('name').length - 1);
 		

@@ -59,6 +59,12 @@ RSFormPro.YUICalendar = {
 		var calendarId 	 = 'cal'+idCalendar;
 		var txtDate 	 = document.getElementById('txt' + calendarId);
 		var hiddenDate 	 = document.getElementById('hidden' + calendarId);
+		
+		if (!txtDate)
+		{
+			return;
+		}
+		
 		var calendarName = txtDate.name.substring(5, txtDate.name.length - 1);
 		
 		if (typeof RSFormPro.YUICalendar.calendars[formId][calendarName] == 'undefined') {

@@ -8,8 +8,17 @@
 // no direct access
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
+if ($this->_form->GridLayout)
+{
+	require_once __DIR__ . '/grid/bootstrap2.php';
+	
+	$grid = new RSFormProGridBootstrap2($this->_form->GridLayout, $formId, $formOptions, $requiredMarker, $showFormTitle);
+	echo $grid->generate();
+	return;
+}
+
 //tooltips classes
-$tooltipClass = RSFormProHelper::isJ('3.0') ? ' hasTooltip' : ' hasTip';
+$tooltipClass = ' hasTooltip';
 ?>
 <?php if ($showFormTitle) { ?>
 <h2>{global:formtitle}</h2>
@@ -19,6 +28,7 @@ $tooltipClass = RSFormProHelper::isJ('3.0') ? ' hasTooltip' : ' hasTip';
 <!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->
 <fieldset class="form-horizontal formContainer" id="rsform_{global:formid}_page_<?php echo $page_num; ?>">
 <?php
+	if (!empty($fields['visible'])) {
 		foreach ($fields['visible'] as $field) {
 			// handle special hidden fields
 			
@@ -55,6 +65,7 @@ $tooltipClass = RSFormProHelper::isJ('3.0') ? ' hasTooltip' : ' hasTip';
 <?php } ?>
 <?php
 		}
+	}
 		if (!empty($fields['hidden'])) {
 			foreach ($fields['hidden'] as $field) {
 				$fieldName = $this->getProperty($field['data'], 'NAME'); ?>

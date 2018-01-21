@@ -16,7 +16,9 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 <?php foreach ($fieldsets as $page_num => $fields) { ?>
 <!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->
 	<tbody id="rsform_{global:formid}_page_<?php echo $page_num; ?>">
-<?php	foreach ($fields['visible'] as $field) {
+<?php
+	if (!empty($fields['visible'])) {
+		foreach ($fields['visible'] as $field) {
 			// handle special hidden fields
 			if ($this->getProperty($field['data'], 'LAYOUTHIDDEN', false)) {
 				continue;
@@ -37,7 +39,7 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 			<tr class="rsform-block rsform-block-<?php echo JFilterOutput::stringURLSafe($fieldName); ?>">
 				<td><?php if ($field['pagebreak']) { ?>&nbsp;<?php } else { ?>{<?php echo $fieldName; ?>:caption}<?php echo ($field['required'] ? '<strong class="formRequired">'.$requiredMarker.'</strong>' : '');?><?php } ?></td>
 				<td>{<?php echo $fieldName; ?>:body}<?php if ($field['pagebreak']) { ?></td>
-<?php } else { ?><div class=\"formClr\"></div>{<?php echo $fieldName; ?>:validation}</td>
+<?php } else { ?><div class="formClr"></div>{<?php echo $fieldName; ?>:validation}</td>
 <?php } ?>
 				<td><?php if ($field['pagebreak']) { ?>&nbsp;<?php } else { ?>{<?php echo $fieldName; ?>:description}<?php } ?></td>
 			</tr>
@@ -47,7 +49,8 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
 <?php
 		} ?>
 <?php
-		
+	}
+	
 		if (!empty($fields['hidden'])) {
 			foreach ($fields['hidden'] as $field) {
 				$fieldName = $this->getProperty($field['data'], 'NAME'); ?>

@@ -8,19 +8,14 @@
 defined('_JEXEC') or die('Restricted access');
 $listOrder	= $this->escape($this->filter_order);
 $listDirn	= $this->escape($this->filter_order_Dir); 
-JHtml::_('behavior.tooltip'); ?>
-
-<?php if (!RSFormProHelper::isJ('3.0')) { ?>
-<style type="text/css">
-table.category th { text-align:center !important; }
-</style>
-<?php } ?>
+JHtml::_('behavior.tooltip');
+?>
 
 <?php if ($this->params->get('show_page_heading', 1)) { ?>
 <h1><?php echo $this->escape($this->params->get('page_heading')); ?></h1>
 <?php } ?>
 
-<form action="<?php echo $this->escape(JURI::getInstance()); ?>" method="post" name="adminForm" id="adminForm" class="form-inline">
+<form action="<?php echo $this->escape(JUri::getInstance()); ?>" method="post" name="adminForm" id="adminForm" class="form-inline">
 	<?php if ($this->hasSearchFields || $this->directory->enablecsv) { ?>
 	<div class="well well-small">
 		<?php if ($this->hasSearchFields) { ?>
