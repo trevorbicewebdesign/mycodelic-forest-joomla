@@ -18,38 +18,14 @@
  *
  * If LICENSE file missing, see <http://www.gnu.org/licenses/>.
  */
-
 defined('_JEXEC') or die;
 
-if (version_compare(PHP_VERSION, '5.3.0', '<'))
+include_once dirname(__FILE__) . '/exclude.php';
+
+class JFormFieldExcludelazyloadfolders extends JFormFieldExclude
 {
 
-        class JFormFieldExcludelazyloadfolders extends JFormFieldTextarea
-        {
-
-                public $type = 'excludelazyloadfolders';
-
-        }
-
-}
-else
-{
-        include_once dirname(__FILE__) . '/exclude.php';
-
-        class JFormFieldExcludelazyloadfolders extends JFormFieldExclude
-        {
-
-                public $type = 'excludelazyloadfolders';
-                protected $jch_params = 'pro_excludeLazyLoadFolders';
-
-                /**
-                 * 
-                 * @return type
-                 */
-                protected function getFieldOptions()
-                {
-                        return $this->prepareFieldOptions('lazyload', $this->jch_params, 'folder');
-                }
-        }
-
+        public $type = 'excludelazyloadfolders';
+	public $filetype = 'lazyload';
+	public $filegroup = 'folder';
 }

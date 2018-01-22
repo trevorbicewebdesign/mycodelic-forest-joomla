@@ -62,18 +62,35 @@ if (jQuery)
                                         function showTree(c, t, i) {
                                                 $(c).addClass('wait');
                                                 $(".jqueryFileTree.start").remove();
-                                                $.post(o.script, {dir: t, view: 'tree', initial: i}, function (data) {
-                                                        $(c).find('.start').html('');
-                                                        $(c).removeClass('wait').append(data);
-
-                                                        if (o.root == t)
-                                                                $(c).find('UL:hidden').show();
-                                                        else
-                                                                $(c).find('UL:hidden').slideDown({duration: o.expandSpeed, easing: o.expandEasing});
-                                                        bindTree(c);
-
-
+						$.ajax({
+                                                        type: "GET",
+                                                        url: o.script,
+                                                        data: 'dir=' + t + '&jchview=tree&initial=' + i,
+                                                        success: function (data) {
+                                                                $(c).find('.start').html('');
+                                                                $(c).removeClass('wait').append(data);
+                                                                if (o.root == t)
+                                                                        $(c).find('UL:hidden').show();
+                                                                else
+                                                                        $(c).find('UL:hidden').slideDown({
+                                                                                duration: o.expandSpeed,
+                                                                                easing: o.expandEasing
+                                                                        });
+                                                                bindTree(c);
+                                                        }
                                                 });
+                                               // $.post(o.script, {dir: t, jchview: 'tree', initial: i}, function (data) {
+                                               //         $(c).find('.start').html('');
+                                               //         $(c).removeClass('wait').append(data);
+
+                                               //         if (o.root == t)
+                                               //                 $(c).find('UL:hidden').show();
+                                               //         else
+                                               //                 $(c).find('UL:hidden').slideDown({duration: o.expandSpeed, easing: o.expandEasing});
+                                               //         bindTree(c);
+
+
+                                               // });
                                         }
 
                                         function bindTree(t) {
@@ -96,7 +113,7 @@ if (jQuery)
                                                                                 duration: o.collapseSpeed, easing: o.collapseEasing});
                                                                         $(obj).parent().find('LI.directory').removeClass('expanded').addClass('collapsed');
                                                                 }
-                                                               $('#files-container').load(o.script, {dir: escape($(obj).attr('rel'))},
+                                                               $('#files-container').load(o.script, 'dir='+escape($(obj).attr('rel')),
                                                                 function () {
                                                                         bindDirList();
                                                                 }); 
@@ -111,7 +128,7 @@ if (jQuery)
                                                                 showTree($(obj).parent(), escape($(obj).attr('rel')), '0');
                                                                 $(obj).parent().removeClass('collapsed').addClass('expanded');
 
-                                                                $('#files-container').load(o.script, {dir: escape($(obj).attr('rel'))},
+                                                                $('#files-container').load(o.script, 'dir='+escape($(obj).attr('rel')),
                                                                 function () {
                                                                         bindDirList();
                                                                 });
@@ -144,7 +161,7 @@ if (jQuery)
                                         // Get the initial file list
                                         showTree($(this), escape(o.root), '1');
 
-                                        $('#files-container').load(o.script, {dir: escape(o.root)}, function () {
+                                        $('#files-container').load(o.script, 'dir='+escape(o.root), function () {
                                                 bindDirList();
                                         });
 

@@ -31,7 +31,7 @@ class JchPlatformPlugin implements JchInterfacePlugin
          */
         public static function getPluginId()
         {
-                $plugin = static::load();
+                $plugin = static::loadjch();
 
                 return $plugin->extension_id;
         }
@@ -42,7 +42,7 @@ class JchPlatformPlugin implements JchInterfacePlugin
          */
         public static function getPlugin()
         {
-                $plugin = static::load();
+                $plugin = static::loadjch();
 
                 return $plugin;
         }
@@ -51,22 +51,29 @@ class JchPlatformPlugin implements JchInterfacePlugin
          * 
          * @return type
          */
-        private static function load()
+        private static function loadjch()
         {
                 if (self::$plugin !== null)
                 {
                         return self::$plugin;
                 }
 
-                $db    = JFactory::getDbo();
-                $query = $db->getQuery(true)
-                        ->select('*')
-                        ->from('#__extensions')
-                        ->where('element =' . $db->quote('jch_optimize'))
-                        ->where('type = ' . $db->quote('plugin'));
+               // $cache = JchPlatformCache::getCacheObject('output');
+               // $id    = 'jchoptimizeplugincache';
 
-                self::$plugin = $db->setQuery($query)->loadObject();
+               // if (!self::$plugin = $cache->get($id))
+               // {
+                        $db    = JFactory::getDbo();
+                        $query = $db->getQuery(true)
+                                ->select('folder AS type, element AS name, params, extension_id')
+                                ->from('#__extensions')
+                                ->where('element = ' . $db->quote('jch_optimize'))
+                                ->where('type = ' . $db->quote('plugin'));
 
+                        self::$plugin = $db->setQuery($query)->loadObject();
+
+               //         $cache->store(self::$plugin, $id);
+               // }
 
                 return self::$plugin;
         }
@@ -76,16 +83,23 @@ class JchPlatformPlugin implements JchInterfacePlugin
          */
         public static function getPluginParams()
         {
-                $plugin       = self::getPlugin();
-                $pluginParams = new JRegistry();
-                $pluginParams->loadString($plugin->params);
+                static $params = null;
 
-                if (!defined('JCH_DEBUG'))
+                if (is_null($params))
                 {
-                        define('JCH_DEBUG', ($pluginParams->get('debug', 0) && JDEBUG));
+                        $plugin       = self::getPlugin();
+                        $pluginParams = new JRegistry();
+                        $pluginParams->loadString($plugin->params);
+
+                        if (!defined('JCH_DEBUG'))
+                        {
+                                define('JCH_DEBUG', ($pluginParams->get('debug', 0) && JDEBUG));
+                        }
+
+                        $params = JchPlatformSettings::getInstance($pluginParams);
                 }
 
-                return JchPlatformSettings::getInstance($pluginParams);
+                return $params;
         }
 
         /**
@@ -94,8 +108,10 @@ class JchPlatformPlugin implements JchInterfacePlugin
          */
         public static function saveSettings($params)
         {
-                $oPlugin         = JchPlatformPlugin::getPlugin();
-                $oPlugin->params = $params->toArray();
+                $oPlugin          = JchPlatformPlugin::getPlugin();
+                $oPlugin->params  = $params->toArray();
+                $oPlugin->name    = 'PLG_SYSTEM_JCH_OPTIMIZE';
+                $oPlugin->element = 'jch_optimize';
 
                 $oData = new JRegistry($oPlugin);
                 $aData = $oData->toArray();

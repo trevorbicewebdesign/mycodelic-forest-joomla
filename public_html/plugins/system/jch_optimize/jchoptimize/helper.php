@@ -31,9 +31,9 @@ class JchOptimizeHelperBase
         /**
          * 
          */
-        public static function cookieLessDomain($params, $path = '', $array = FALSE)
+        public static function cookieLessDomain($params, $path, $orig_path, $domains_only=false)
         {
-                return $path;
+                return $domains_only ? array() : $orig_path;
         }
 
 }
@@ -103,7 +103,7 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
                 //Use absolute file path if file is internal and a static file
                 if (JchOptimizeUrl::isInternal($sUrl) && !JchOptimizeUrl::requiresHttpProtocol($sUrl))
                 {
-                        return JchPlatformPaths::absolutePath(str_replace($sUriPath, '', $oUrl->getPath()));
+                        return JchPlatformPaths::absolutePath(preg_replace('#^' . preg_quote($sUriPath, '#') . '#', '', $oUrl->getPath()));
                 }
                 else
                 {
@@ -437,8 +437,8 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
          */
         public static function validateHtml($sHtml)
         {
-                return preg_match('#^(?>(?><?[^<]*+)+?<html(?><?[^<]*+)+?<head(?><?[^<]*+)+?</head>(?><?[^<]*+)+?)'
-                        . '<body.*</body>(?><?[^<]*+)*?</html>#is', $sHtml);
+                return preg_match('#^(?>(?><?[^<]*+)*?<html(?><?[^<]*+)*?<head(?><?[^<]*+)*?</head\s*+>)(?><?[^<]*+)*?'
+                        . '<body.*</body\s*+>(?><?[^<]*+)*?</html\s*+>#is', $sHtml);
         }
 
         /**
@@ -466,59 +466,102 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
          * 
          */
 
-        public static function cookieLessDomain($params, $path = '', $array = FALSE)
+        public static function cookieLessDomain($params, $path, $orig_path, $domains_only=false, $reset=false)
         {
-                if (!$params->get('pro_cookielessdomain_enable', '0'))
+		//If feature disabled just return the path if present
+                if (!$params->get('pro_cookielessdomain_enable', '0') && !$domains_only)
                 {
-                        return parent::cookieLessDomain($params, $path, $array);
+                        return parent::cookieLessDomain($params, $path, $orig_path, $domains_only);
                 }
 
+		//Cache processed files to ensure the same file isn't placed on a different domain
+		//if it occurs on the page twice
                 static $aDomain    = array();
                 static $aFilePaths = array();
 
-                $scheme_param = $params->get('pro_cdn_scheme', '0');
+		//reset $aFilePaths for unit testing
+		if ($reset)
+		{
+			foreach ($aFilePaths as $key => $value)
+			{
+				unset($aFilePaths[$key]);
+			}
+			
+			foreach ($aDomain as $key => $value)
+			{
+				unset($aDomain[$key]);
+			}
+
+			return false;
+		}
 
                 if (empty($aDomain))
                 {
-                        if (trim($params->get('pro_cookielessdomain', '')) != '')
-                        {
-                                $aDomain[] = self::prepareDomain($scheme_param, $params->get('pro_cookielessdomain'));
-                        }
+			switch ($params->get('pro_cdn_scheme', '0'))
+			{
+				case '1':
+					$scheme = 'http:';
+					break;
+				case '2':
+					$scheme = 'https:';
+					break;
+				case '0':
+				default:
+					$scheme = '';
+					break;
+			}
+			
+			$aDefaultFiles = array('css', 'js', 'jpe?g', 'gif', 'png', 'ico', 'bmp', 'pdf', 'tiff?', 'docx?');
 
-                        if (trim($params->get('pro_cookielessdomain_2', '')) != '')
-                        {
-                                $aDomain[] = self::prepareDomain($scheme_param, $params->get('pro_cookielessdomain_2'));
+			if (trim($params->get('pro_cookielessdomain', '')) != '')
+			{
+				$domain1 = $params->get('pro_cookielessdomain');
+				$staticfiles1 = implode('|', $params->get('pro_staticfiles', $aDefaultFiles)); 
+
+				$aDomain[$scheme . self::prepareDomain($domain1)] = $staticfiles1;
+			}
+
+			if (trim($params->get('pro_cookielessdomain_2', '')) != '')
+			{
+				$domain2 = $params->get('pro_cookielessdomain_2');
+				$staticfiles2 = implode('|', $params->get('pro_staticfiles_2', $aDefaultFiles)); 
+
+                                $aDomain[$scheme . self::prepareDomain($domain2)] = $staticfiles2;
                         }
 
                         if (trim($params->get('pro_cookielessdomain_3', '')) != '')
                         {
-                                $aDomain[] = self::prepareDomain($scheme_param, $params->get('pro_cookielessdomain_3'));
+				$domain3 = $params->get('pro_cookielessdomain_3');
+				$staticfiles3 = implode('|', $params->get('pro_staticfiles_3', $aDefaultFiles)); 
+
+                                $aDomain[$scheme . self::prepareDomain($domain3)] = $staticfiles3;
                         }
                 }
 
+		//Sprite Generator needs this to remove CDN domains from images to create sprite
+		if ($domains_only)
+		{
+			return $aDomain;
+		}
+
+		//if no domain is configured abort
                 if (empty($aDomain))
                 {
-                        return parent::cookieLessDomain($params, $path, $array);
+                        return parent::cookieLessDomain($params, $path, $orig_path);
                 }
 
-                if ($array)
-                {
-                        return $aDomain;
-                }
+		//If we haven't matched a cdn domain to this file yet then find one.
+		if (!isset($aFilePaths[$path]))
+		{
+			$aFilePaths[$path] = self::selectDomain($aDomain, $path);
+		}
 
-                if ($path != '')
-                {
-                        $path = preg_replace('#\?.*$#', '', $path);
+		if ($aFilePaths[$path] === false)
+		{
+			return $orig_path;
+		}
 
-                        if (!isset($aFilePaths[$path]))
-                        {
-                                $aFilePaths[$path] = self::selectDomain($aDomain) . $path;
-                        }
-
-                        return $aFilePaths[$path];
-                }
-
-                return self::selectDomain($aDomain);
+		return $aFilePaths[$path];
         }
 
         /**
@@ -526,23 +569,10 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
          * @param type $domain
          * @return type
          */
-        private static function prepareDomain($scheme_param, $domain)
+        private static function prepareDomain($domain)
         {
-                switch ($scheme_param)
-                {
-                        case '1':
-                                $scheme = 'http:';
-                                break;
-                        case '2':
-                                $scheme = 'https:';
-                                break;
-                        case '0':
-                        default:
-                                $scheme = '';
-                                break;
-                }
 
-                return $scheme . '//' . preg_replace('#^(?:https?:)?//|/$#i', '', $domain);
+                return '//' . preg_replace('#^(?:https?:)?//|/$#i', '', trim($domain));
         }
 
         /**
@@ -550,23 +580,35 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
          * @staticvar int $iIndex
          * @param type $aDomain
          * @return type
-         */
-        private static function selectDomain($aDomain)
+	 */
+        private static function selectDomain(&$aDomain, $sPath)
         {
-                $num = count($aDomain);
+		$i = 0;
 
-                static $iIndex = 0;
+		while (count($aDomain) > $i) 
+		{
+			list($sDomain, $sStaticFiles) = each($aDomain);
 
-                $sDomain = $aDomain[$iIndex];
+			if(current($aDomain) === false)
+			{
+				reset($aDomain);
+			}
 
-                $iIndex++;
+			$i++;
 
-                if ($iIndex == $num)
-                {
-                        $iIndex = 0;
-                }
+			if (preg_match('#\.(?>' . $sStaticFiles . ')#i', $sPath))
+			{
+				//Prepend the cdn domain to the file path if a match is found.
+				$sCdnUrl = $sDomain . $sPath;
 
-                return $sDomain;
+				break;
+			}
+
+			//If no domain is matched to a configured file type then we'll just return the file
+			$sCdnUrl = false;
+		}
+
+                return $sCdnUrl;
         }
 
 ##</procode>##

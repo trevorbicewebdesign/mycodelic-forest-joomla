@@ -21,35 +21,12 @@
 
 defined('_JEXEC') or die;
 
-if (version_compare(PHP_VERSION, '5.3.0', '<'))
-{
-
-        class JFormFieldExcludelazyload extends JFormFieldTextarea
-        {
-
-                public $type = 'excludelazyload';
-
-        }
-
-}
-else
-{
         include_once dirname(__FILE__) . '/exclude.php';
 
         class JFormFieldExcludelazyload extends JFormFieldExclude
         {
 
                 public $type = 'excludelazyload';
-                protected $jch_params = 'pro_excludeLazyLoad';
-
-                /**
-                 * 
-                 * @return type
-                 */
-                protected function getFieldOptions()
-                {
-                        return $this->prepareFieldOptions('lazyload', $this->jch_params, 'file');
-                }
+		public $filetype = 'lazyload';
+		public $filegroup = 'file';
         }
-
-}

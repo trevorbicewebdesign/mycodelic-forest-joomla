@@ -72,31 +72,20 @@ else
 
                 protected function getInput()
                 {
+			$size = 0;
+			$no_files = 0;
+
                         $cache_path = JPATH_SITE . '/cache/plg_jch_optimize/';
+			$this->getCacheSize($cache_path, $size, $no_files);
 
-                        if (file_exists($cache_path))
-                        {
-                                $fi = new FilesystemIterator($cache_path, FilesystemIterator::SKIP_DOTS);
+			$cache_path = JchPlatformPaths::cachePath(false);
+			$this->getCacheSize($cache_path, $size, $no_files);
 
-                                $size = 0;
-
-                                foreach ($fi as $file)
-                                {
-                                        $size += $file->getSize();
-                                }
-
-                                $decimals = 2;
-                                $sz       = 'BKMGTP';
-                                $factor   = (int) floor((strlen($size) - 1) / 3);
-                                $size     = sprintf("%.{$decimals}f", $size / pow(1024, $factor)) . $sz[$factor];
-
-                                $no_files = number_format(iterator_count($fi));
-                        }
-                        else
-                        {
-                                $no_files = 0;
-                                $size     = '0B';
-                        }
+			$decimals = 2;
+			$sz       = 'BKMGTP';
+			$factor   = (int) floor((strlen($size) - 1) / 3);
+			$size     = sprintf("%.{$decimals}f", $size / pow(1024, $factor)) . $sz[$factor];
+			$no_files = number_format($no_files);
 
                         $sField = parent::getInput();
 
@@ -106,6 +95,21 @@ else
 
                         return $sField;
                 }
+
+		protected function getCacheSize($cache_path, &$size, &$no_files)
+		{
+                        if (file_exists($cache_path))
+                        {
+                                $fi = new FilesystemIterator($cache_path, FilesystemIterator::SKIP_DOTS);
+
+                                foreach ($fi as $file)
+                                {
+                                        $size += $file->getSize();
+                                }
+
+				$no_files += iterator_count($fi);
+                        }
+		}
 
                 protected function getButtons()
                 {
@@ -130,17 +134,26 @@ else
                 public static function cleanCache($install=false)
                 {
                         $oJchCache = JchPlatformCache::getCacheObject();
+			$oJCache = JCache::getInstance();
 
-                        $oController = new JControllerLegacy();
-                        
                         $plugin_cache = $oJchCache->clean('plg_jch_optimize');
-                        $page_cache = $oJchCache->clean('page');
+                        $page_cache = $oJCache->clean('page');
                         
+			$cache_path = JchPlatformPaths::cachePath(false);
+
+                        if (file_exists($cache_path))
+                        {
+				jimport('joomla.filesystem.folder');
+				JFolder::delete($cache_path);
+                        }
+
                         if($install)
                         {
                                 return;
                         }
 
+                        $oController = new JControllerLegacy();
+                        
                         JchOptimizeHelper::clearHiddenValues(JchPlatformPlugin::getPluginParams());
                                 
                         if ($plugin_cache === FALSE || $page_cache === FALSE)
@@ -178,11 +191,16 @@ else
                 /**
                  * 
                  */
-                protected function leverageBrowserCaching()
+                public static function leverageBrowserCaching($install=false)
                 {
-                        $oController = new JControllerLegacy();
-
                         $expires = JchOptimizeAdmin::leverageBrowserCaching();
+
+			if($install)
+			{ 
+				return;
+			}
+
+                        $oController = new JControllerLegacy();
 
                         if ($expires === FALSE)
                         {
@@ -201,7 +219,7 @@ else
                                 $oController->setMessage(JText::_('JCH_LEVERAGEBROWSERCACHE_SUCCESS'));
                         }
 
-                        $this->display($oController);
+			self::display($oController);
                 }
 
                 /**
@@ -270,26 +288,31 @@ else
                  */
                 public static function orderPlugins($install=false)
                 {
+			//These plugins must be ordered last in this order; array of plugin elements
                         $aOrder = array(
                                 'jscsscontrol',
                                 'eorisis_jquery',
                                 'jqueryeasy',
                                 'jch_optimize',
                                 'plugin_googlemap3',
+				'jomcdn',
                                 'cdnforjoomla',
                                 'bigshotgoogleanalytics',
                                 'GoogleAnalytics',
                                 'ykhoonhtmlprotector',
                                 'jat3',
-                                'cache',
+				'cache',
+				'pagecacheextended',
                                 'homepagecache',
                                 'jSGCache',
                                 'jotcache',
                                 'vmcache_last'
                         );
 
+			//Get an associative array of all installed system plugins with their extension id, ordering, and element
                         $aPlugins = self::getPlugins();
 
+			//Get an array of all the plugins that are installed that are in the array of specified plugin order above
                         $aLowerPlugins = array_values(array_filter($aOrder,
                                                                    function($aVal) use ($aPlugins)
                                 {
@@ -297,41 +320,36 @@ else
                                 }
                         ));
 
+			//Number of installed plugins
                         $iNoPlugins      = count($aPlugins);
+			//Number of installed plugins that needs to be ordered at the bottom of the order
                         $iNoLowerPlugins = count($aLowerPlugins);
                         $iBaseOrder      = $iNoPlugins - $iNoLowerPlugins;
 
                         $cid   = array();
                         $order = array();
 
+			//Iterate through list of installed system plugins
                         foreach ($aPlugins as $key => $value)
                         {
                                 if (in_array($key, $aLowerPlugins))
                                 {
-                                        $value['ordering'] = $iBaseOrder + 1 + array_search($key, $aLowerPlugins);
-                                }
-                                elseif ($value['ordering'] >= $iBaseOrder)
-                                {
-                                        $value['ordering'] = $iBaseOrder - 1;
+                                        $value['ordering'] = $iNoPlugins + 1 + array_search($key, $aLowerPlugins);
                                 }
 
-                                $cid[]   = $value['extension_id'];
-                                $order[] = $value['ordering'];
+				$cid[]   = $value['extension_id'];
+				$order[] = $value['ordering'];
                         }
 
                         JArrayHelper::toInteger($cid);
                         JArrayHelper::toInteger($order);
-
-                        $aOrder          = array();
-                        $aOrder['cid']   = $cid;
-                        $aOrder['order'] = $order;
 
                         $oController = new JControllerLegacy;
 
                         $oController->addModelPath(JPATH_ADMINISTRATOR . '/components/com_plugins/models', 'PluginsModel');
                         $oPluginModel = $oController->getModel('Plugin', 'PluginsModel');
 
-                        $saved = $oPluginModel->saveorder($aOrder['cid'], $aOrder['order']);
+                        $saved = $oPluginModel->saveorder($cid, $order);
                         
                         if($install)
                         {

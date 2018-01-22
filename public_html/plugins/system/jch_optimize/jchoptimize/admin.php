@@ -56,7 +56,7 @@ class JchOptimizeAdmin
                         $aArgs     = array($oObj, $sCss);
                         $iLifeTime = (int) $this->params->get('cache_lifetime', '1') * 24 * 60 * 60;
 
-                        $this->links = JchPlatformCache::getCallbackCache($sId, $iLifeTime, $aFunction, $aArgs);
+                        $this->links = JchPlatformCache::getCallbackCache($sId, $aFunction, $aArgs);
                 }
 
                 return $this->links;
@@ -90,7 +90,7 @@ class JchOptimizeAdmin
                 $params->set('excludeJsComponents', array());
                 $params->set('csg_exclude_images', array());
                 $params->set('csg_include_images', array());
-                
+
                 ##<procode>##
                 $params->set('pro_searchBody', '1');
                 $params->set('pro_phpAndExternal', '1');
@@ -103,31 +103,38 @@ class JchOptimizeAdmin
                 $params->set('pro_excludeLazyLoadClass', array());
                 ##</procode>##
 
-                $sHtml   = $oObj->getOriginalHtml();
-                $oParser = new JchOptimizeParser($params, $sHtml, JchOptimizeFileRetriever::getInstance());
-
-                $aLinks = $oParser->getReplacedFiles();
-
-                if ($sCss == '' && !empty($aLinks['css'][0]))
+                try
                 {
-                        $oCombiner  = new JchOptimizeCombiner($params, $this->bBackend);
-                        $oCssParser = new JchOptimizeCssParser($params, $this->bBackend);
+                        $sHtml   = $oObj->getOriginalHtml();
+                        $oParser = new JchOptimizeParser($params, $sHtml, JchOptimizeFileRetriever::getInstance());
 
-                        $oCombiner->combineFiles($aLinks['css'][0], 'css', $oCssParser);
-                        $sCss = $oCombiner->css;
+                        $aLinks = $oParser->getReplacedFiles();
+
+                        if ($sCss == '' && !empty($aLinks['css'][0]))
+                        {
+                                $oCombiner  = new JchOptimizeCombiner($params, $oParser);
+                                $oCssParser = new JchOptimizeCssParser($params, $this->bBackend);
+
+                                $oCombiner->combineFiles($aLinks['css'][0], 'css', $oCssParser);
+                                $sCss = $oCombiner->css;
+                        }
+
+                        $oSpriteGenerator = new JchOptimizeSpriteGenerator($params);
+                        $aLinks['images'] = $oSpriteGenerator->processCssUrls($sCss, TRUE);
+
+                        ##<procode>##
+                        $sRegex = $oParser->getLazyLoadRegex(TRUE);
+
+                        preg_match_all($sRegex, $oParser->getBodyHtml(), $aMatches);
+
+                        $aLinks['lazyloadclass'] = array_filter(array_merge($aMatches[2], $aMatches[7]));
+                        $aLinks['lazyload']      = array_merge($aMatches[4], $aMatches[9]);
+                        ##</procode>##
                 }
-
-                $oSpriteGenerator = new JchOptimizeSpriteGenerator($params);
-                $aLinks['images'] = $oSpriteGenerator->processCssUrls($sCss, TRUE);
-
-                ##<procode>##
-                $sRegex = $oParser->getLazyLoadRegex(TRUE);
-
-                preg_match_all($sRegex, $oParser->getBodyHtml(), $aMatches);
-
-                $aLinks['lazyloadclass'] = array_filter($aMatches[2]);
-                $aLinks['lazyload']      = $aMatches[4];
-                ##</procode>##
+                catch (Exception $e)
+                {
+                        $aLinks = array();
+                }
 
                 JCH_DEBUG ? JchPlatformProfiler::stop('GenerateAdminLinks', TRUE) : null;
 
@@ -140,7 +147,7 @@ class JchOptimizeAdmin
          * @param type $sField
          * @return type
          */
-        public function prepareFieldOptions($sType, $sExcludeParams, $sGroup = '')
+        public function prepareFieldOptions($sType, $sExcludeParams, $sGroup = '', $bIncludeExcludes=true)
         {
                 if ($sType == 'lazyload')
                 {
@@ -158,18 +165,24 @@ class JchOptimizeAdmin
                         $aFieldOptions = $this->getOptions($sType, $sGroup . 's');
                 }
 
-                $aOptions  = array();
-                $oParams   = $this->params;
-                $aExcludes = JchOptimizeHelper::getArray($oParams->get($sExcludeParams, array()));
+		$aOptions  = array();
+		$oParams   = $this->params;
+		$aExcludes = JchOptimizeHelper::getArray($oParams->get($sExcludeParams, array()));
 
-                foreach ($aExcludes as $sExclude)
-                {
-                        $aOptions[$sExclude] = $this->{'prepare' . ucfirst($sGroup) . 'Values'}($sExclude);
-                }
+		foreach ($aExcludes as $sExclude)
+		{
+			$aOptions[$sExclude] = $this->{'prepare' . ucfirst($sGroup) . 'Values'}($sExclude);
+		}
 
-                return array_unique(array_merge($aFieldOptions, $aOptions));
-
-                return $aFieldOptions;
+		//Should we include saved exclude parameters?
+		if($bIncludeExcludes)
+		{
+			return array_merge($aFieldOptions, $aOptions);
+		}
+		else
+		{
+			return array_diff($aFieldOptions, $aOptions);
+		}
         }
 
         /**
@@ -192,7 +205,7 @@ class JchOptimizeAdmin
                                 {
                                         if ($sExclude == 'files')
                                         {
-                                                $sFile = $this->prepareFileValues($aLink['url'], 'key');
+                                                $sFile            = $this->prepareFileValues($aLink['url'], 'key');
                                                 $aOptions[$sFile] = $this->prepareFileValues($sFile, 'value');
                                         }
                                         elseif ($sExclude == 'extensions')
@@ -226,9 +239,9 @@ class JchOptimizeAdmin
                                                 {
                                                         $sScript = substr($sScript, 0, 60);
                                                 }
-                                                
+
                                                 $sScript = htmlspecialchars($sScript);
-                                                
+
                                                 $aOptions[addslashes($sScript)] = $this->prepareScriptValues($sScript);
                                         }
                                 }
@@ -258,7 +271,7 @@ class JchOptimizeAdmin
                                         {
                                                 $regex = '#(?<!/)/[^/\n]++$|(?<=^)[^/.\n]++$#';
                                                 $i     = 0;
-                                                
+
                                                 $sImage = $this->prepareFileValues($sImage, 'key');
                                                 $folder = preg_replace($regex, '', $sImage);
 
@@ -279,7 +292,7 @@ class JchOptimizeAdmin
                                         else
                                         {
                                                 $sImage = $this->prepareFileValues($sImage, 'key');
-                                                
+
                                                 $aFieldOptions[$sImage] = $this->prepareFileValues($sImage, 'value');
                                         }
                                 }
@@ -333,7 +346,7 @@ class JchOptimizeAdmin
          * 
          * @param type $sContent
          */
-        protected function prepareScriptValues($sScript)
+        public static function prepareScriptValues($sScript)
         {
                 $sEps = '';
 
@@ -357,9 +370,9 @@ class JchOptimizeAdmin
          * @param type $sStyle
          * @return type
          */
-        protected function prepareStyleValues($sStyle)
+        public static function prepareStyleValues($sStyle)
         {
-                return $this->prepareScriptValues($sStyle);
+                return self::prepareScriptValues($sStyle);
         }
 
         /**
@@ -373,7 +386,7 @@ class JchOptimizeAdmin
                 {
                         $oFile = JchPlatformUri::getInstance($sFile);
 
-                        if(JchOptimizeUrl::isInternal($sFile))
+                        if (JchOptimizeUrl::isInternal($sFile))
                         {
                                 $sFile = $oFile->getPath();
                         }
@@ -381,7 +394,7 @@ class JchOptimizeAdmin
                         {
                                 $sFile = $oFile->toString(array('scheme', 'user', 'pass', 'host', 'port', 'path'));
                         }
-                        
+
                         if ($sType == 'key')
                         {
                                 return $sFile;
@@ -407,7 +420,7 @@ class JchOptimizeAdmin
          * @param type $sUrl
          * @return boolean
          */
-        protected function prepareExtensionValues($sUrl, $bReturn = TRUE)
+        public static function prepareExtensionValues($sUrl, $bReturn = TRUE)
         {
                 if ($bReturn)
                 {
@@ -444,11 +457,20 @@ class JchOptimizeAdmin
          * @param type $sImage
          * @return type
          */
-        protected function prepareImagesValues($sImage)
+        public static function prepareImagesValues($sImage)
         {
                 return $sImage;
         }
 
+	public static function prepareFolderValues($sFolder)
+	{
+		return self::prepareFileValues($sFolder);
+	}
+
+	public static function prepareClassValues($sClass)
+	{
+		return self::prepareFileValues($sClass);
+	}
         /**
          * 
          * @param type $aButtons
@@ -463,7 +485,7 @@ class JchOptimizeAdmin
                         $tooltip = isset($sButton['tooltip']) ? 'class="hasTooltip" title="' . $sButton['tooltip'] . '"' : '';
                         $sField .= <<<JFIELD
 <div class="icon {$sButton['class']}">
-        <a href="{$sButton['link']}"  {$sButton['script']}  >
+        <a class="btn" href="{$sButton['link']}"  {$sButton['script']}  >
                 <div style="text-align: center;">
                         <i class="fa {$sButton['icon']} fa-3x" style="margin: 7px 0; color: {$sButton['color']}"></i>
                 </div>
@@ -566,10 +588,10 @@ JFIELD;
                 $aButtons[1]['link']    = JchPlatformPaths::adminController('browsercaching');
                 $aButtons[1]['icon']    = 'fa-globe';
                 $aButtons[1]['color']   = '#51A351';
-                $aButtons[1]['text']    = JchPlatformUtility::translate('Leverage browser caching');
+                $aButtons[1]['text']    = JchPlatformUtility::translate('Optimize .htaccess');
                 $aButtons[1]['script']  = '';
                 $aButtons[1]['class']   = 'enabled';
-                $aButtons[1]['tooltip'] = JchPlatformUtility::translate('Use this button to add codes to your htaccess file to leverage browser caching.');
+                $aButtons[1]['tooltip'] = JchPlatformUtility::translate('Use this button to add codes to your htaccess file to enable leverage browser caching and gzip compression.');
 
                 $aButtons[3]['link']    = JchPlatformPaths::adminController('filepermissions');
                 $aButtons[3]['icon']    = 'fa-file-text';
@@ -602,68 +624,99 @@ JFIELD;
                 {
                         $contents = file_get_contents($htaccess);
 
-                        if (!preg_match('#ExpiresByType#', $contents))
+                        if (!preg_match('@\n?## BEGIN EXPIRES CACHING - JCH OPTIMIZE ##.*?## END EXPIRES CACHING - JCH OPTIMIZE ##@s', $contents))
                         {
-                                $sExpires = <<<JCHEXPIRES
+				$sExpires = PHP_EOL;
+				$sExpires .= '## BEGIN EXPIRES CACHING - JCH OPTIMIZE ##' . PHP_EOL;
+				$sExpires .= '<IfModule mod_expires.c>' . PHP_EOL;
+				$sExpires .= '  ExpiresActive on' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# Perhaps better to whitelist expires rules? Perhaps.' . PHP_EOL;
+				$sExpires .= '  ExpiresDefault "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# cache.appcache needs re-requests in FF 3.6 (thanks Remy ~Introducing HTML5)' . PHP_EOL;
+				$sExpires .= '  ExpiresByType text/cache-manifest "access plus 0 seconds"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# Your document html' . PHP_EOL;
+				$sExpires .= '  ExpiresByType text/html "access plus 0 seconds"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# Data' . PHP_EOL;
+				$sExpires .= '  ExpiresByType text/xml "access plus 0 seconds"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/xml "access plus 0 seconds"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/json "access plus 0 seconds"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# Feed' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/rss+xml "access plus 1 hour"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/atom+xml "access plus 1 hour"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# Favicon (cannot be renamed)' . PHP_EOL;
+				$sExpires .= '  ExpiresByType image/x-icon "access plus 1 week"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# Media: images, video, audio' . PHP_EOL;
+				$sExpires .= '  ExpiresByType image/gif "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType image/png "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType image/jpg "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType image/jpeg "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType video/ogg "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType audio/ogg "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType video/mp4 "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType video/webm "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# HTC files (css3pie)' . PHP_EOL;
+				$sExpires .= '  ExpiresByType text/x-component "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# Webfonts' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/font-ttf "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType font/opentype "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/font-woff "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/font-woff2 "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType image/svg+xml "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/vnd.ms-fontobject "access plus 1 month"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '# CSS and JavaScript' . PHP_EOL;
+				$sExpires .= '  ExpiresByType text/css "access plus 1 year"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType text/javascript "access plus 1 year"' . PHP_EOL;
+				$sExpires .= '  ExpiresByType application/javascript "access plus 1 year"' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '  <IfModule mod_headers.c>' . PHP_EOL;
+				$sExpires .= '    Header append Cache-Control "public"' . PHP_EOL;
+				$sExpires .= '  </IfModule>' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '</IfModule>' . PHP_EOL;
+				$sExpires .= '' . PHP_EOL;
+				$sExpires .= '<IfModule mod_deflate.c>' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE text/html' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE text/css' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE text/javascript' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE text/xml' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE text/plain' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE image/x-icon' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE image/svg+xml' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/rss+xml' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/javascript' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/x-javascript' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/xml' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/xhtml+xml' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/font' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/font-truetype' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/font-ttf' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/font-otf' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/font-opentype' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/font-woff' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/font-woff2' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE application/vnd.ms-fontobject' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE font/ttf' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE font/otf' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE font/opentype' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE font/woff' . PHP_EOL;
+				$sExpires .= 'AddOutputFilterByType DEFLATE font/woff2' . PHP_EOL;
+				$sExpires .= '# For Olders Browsers Which Can\'t Handle Compression' . PHP_EOL;
+				$sExpires .= 'BrowserMatch ^Mozilla/4 gzip-only-text/html' . PHP_EOL;
+				$sExpires .= 'BrowserMatch ^Mozilla/4\.0[678] no-gzip' . PHP_EOL;
+				$sExpires .= 'BrowserMatch \bMSIE !no-gzip !gzip-only-text/html' . PHP_EOL;
+				$sExpires .= '</IfModule>' . PHP_EOL;
+				$sExpires .= '## END EXPIRES CACHING - JCH OPTIMIZE ##' . PHP_EOL;
 
-
-## BEGIN EXPIRES CACHING - JCH OPTIMIZE ##
-<IfModule mod_expires.c>
-  ExpiresActive on
-
-# Perhaps better to whitelist expires rules? Perhaps.
-  ExpiresDefault "access plus 1 month"
-
-# cache.appcache needs re-requests in FF 3.6 (thanks Remy ~Introducing HTML5)
-  ExpiresByType text/cache-manifest "access plus 0 seconds"
-
-# Your document html
-  ExpiresByType text/html "access plus 0 seconds"
-
-# Data
-  ExpiresByType text/xml "access plus 0 seconds"
-  ExpiresByType application/xml "access plus 0 seconds"
-  ExpiresByType application/json "access plus 0 seconds"
-
-# Feed
-  ExpiresByType application/rss+xml "access plus 1 hour"
-  ExpiresByType application/atom+xml "access plus 1 hour"
-
-# Favicon (cannot be renamed)
-  ExpiresByType image/x-icon "access plus 1 week"
-
-# Media: images, video, audio
-  ExpiresByType image/gif "access plus 1 month"
-  ExpiresByType image/png "access plus 1 month"
-  ExpiresByType image/jpg "access plus 1 month"
-  ExpiresByType image/jpeg "access plus 1 month"
-  ExpiresByType video/ogg "access plus 1 month"
-  ExpiresByType audio/ogg "access plus 1 month"
-  ExpiresByType video/mp4 "access plus 1 month"
-  ExpiresByType video/webm "access plus 1 month"
-
-# HTC files (css3pie)
-  ExpiresByType text/x-component "access plus 1 month"
-
-# Webfonts
-  ExpiresByType application/x-font-ttf "access plus 1 month"
-  ExpiresByType font/opentype "access plus 1 month"
-  ExpiresByType application/x-font-woff "access plus 1 month"
-  ExpiresByType image/svg+xml "access plus 1 month"
-  ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
-
-# CSS and JavaScript
-  ExpiresByType text/css "access plus 1 year"
-  ExpiresByType text/javascript "access plus 1 year"
-  ExpiresByType application/javascript "access plus 1 year"
-
-  <IfModule mod_headers.c>
-    Header append Cache-Control "public"
-  </IfModule>
-
-</IfModule>
-## END EXPIRES CACHING - JCH OPTIMIZE ##
-JCHEXPIRES;
                                 return file_put_contents($htaccess, $sExpires, FILE_APPEND);
                         }
                         else
@@ -677,4 +730,21 @@ JCHEXPIRES;
                 }
         }
 
+	public static function cleanHtaccess()
+	{
+                $htaccess = JchPlatformPaths::rootPath() . '.htaccess';
+
+                if (file_exists($htaccess))
+                {
+                        $contents = file_get_contents($htaccess);
+                        $regex    = '@\n?## BEGIN EXPIRES CACHING - JCH OPTIMIZE ##.*?## END EXPIRES CACHING - JCH OPTIMIZE ##@s';
+
+                        $clean_contents = preg_replace($regex, '', $contents, -1, $count);
+
+			if($count > 0)
+			{
+				file_put_contents($htaccess, $clean_contents);
+			}
+                }
+	}
 }

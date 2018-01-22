@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="2.5" type="plugin" group="system" method="upgrade">
+<extension version="3.3.0" type="plugin" group="system" method="upgrade">
         <name>PLG_SYSTEM_JCH_OPTIMIZE</name>
         <author>Samuel Marshall</author>
-        <creationDate>Dec 2015</creationDate>
-        <copyright>Copyright (C) 2015 Samuel Marshall. All rights reserved.</copyright>
+        <creationDate>November 2017</creationDate>
+        <copyright>Copyright (C) 2017 Samuel Marshall. All rights reserved.</copyright>
         <license>GNU/GPLv3 http://www.gnu.org/copyleft/gpl.html</license>
         <authorEmail>sdmarshall73@gmail.com</authorEmail>
         <authorUrl>http://www.jch-optimize.net</authorUrl>
-        <version>5.0.5</version>
+        <version>5.2.2</version>
         <variant>PRO</variant>
         <description>JCH_OPTIMIZE_DESCRIPTION</description>
         <files>
                 <filename plugin="jch_optimize">jch_optimize.php</filename>
                 <filename>index.html</filename>
                 <filename>bootstrap.php</filename>
-                <filename>ajax.php</filename>
                 <filename>logo.gif</filename>
                 <folder>fields</folder>
                 <folder>platform</folder>
@@ -46,7 +45,6 @@
                 <language tag="zh-TW">zh-TW/zh-TW.plg_system_jch_optimize.ini</language>
                 <language tag="zh-TW">zh-TW/zh-TW.plg_system_jch_optimize.sys.ini</language>
         </languages>
-        <scriptfile>script.php</scriptfile>
         <media folder="media" destination="plg_jchoptimize">
                 <folder>css</folder>
                 <folder>js</folder>
@@ -59,6 +57,10 @@
         <config>
                 <fields name="params">
                         <fieldset name="basic" addfieldpath="/plugins/system/jch_optimize/fields">
+                            <field name="ajax" 
+                                       type="ajax"
+                                >
+                            </field>
                             <field name="jch_version" 
                                        type="jchdescription"
                                        section="version"
@@ -115,10 +117,10 @@
                                        default="2" 
                                        label="HTACCESS_LABEL" 
                                        description="HTACCESS_DESCRIPTION">
-                                        <option value="0">JNO</option>
-                                        <option value="1">JYES</option>
-                                        <option value="3">JYES_WITHOUT_OPTION</option>
-                                        <option value="2">JCH_AUTO</option>
+                                        <option value="2">JCH_STATIC_FILES</option>
+                                        <option value="0">JCH_PHP_NO_HTACCESS</option>
+                                        <option value="1">JCH_PHP_HTACCESS</option>
+                                        <option value="3">JCH_PHP_WITHOUT_OPTIONSSYMLINK</option>
                                 </field>   
                                 <field name="try_catch" 
                                        type="radio" 
@@ -129,13 +131,13 @@
                                         <option value="0">JNO</option>
                                         <option value="1">JYES</option>
                                 </field>  
-                                <field name="cache_lifetime" 
+				<!--            <field name="cache_lifetime" 
                                        type="text" 
                                        default="1" 
                                        label="LIFETIME_LABEL" 
                                        description="LIFETIME_DESCRIPTION" 
                                        size="6" >
-                                </field>
+				</field> -->
                                 <field name="group_basic_combine_end"
                                        type="jchgroup"
                                        section="end">
@@ -234,7 +236,7 @@
                                         <option value="0">JNO</option>
                                         <option value="1">JYES</option>
                                 </field>
-                                <field name="defer_js" 
+				<!--<field name="defer_js" 
                                        type="radio" 
                                        class="btn-group s1-off s2-off s3-off s4-off s5-off s6-on" 
                                        default="0" 
@@ -242,17 +244,7 @@
                                        description="DEFER_JS_DESCRIPTION">
                                         <option value="0">JNO</option>
                                         <option value="1">JYES</option>
-                                </field>
-                                <field name="bottom_js" 
-                                       type="list"
-                                       class="position-javascript" 
-                                       default="0" 
-                                       label="POSITION_JS_LABEL" 
-                                       description="POSITION_JS_DESCRIPTION">
-                                        <option value="0">JCH_MAINTAIN_EXEC_ORDER</option>
-                                        <option value="2">JCH_COMBINE_ONE_FILE</option>
-                                        <option value="1">JCH_JS_BOTTOM_OF_PAGE</option>
-                                </field>
+				</field>-->
                                 <field type="spacer" name="auto_exclude_spacer" label="JCH_AUTO_EXCLUDE_LABEL" />
                                 <field name="includeAllExtensions" 
                                        type="radio" 
@@ -300,12 +292,21 @@
                                         <option value="0">JNO</option>
                                         <option value="1">JYES</option>
                                 </field>
-                                <field name="pro_searchBody" 
+				<!--<field name="pro_searchBody" 
                                        type="radio" 
                                        class="btn-group s1-off s2-off s3-off s4-off s5-on s6-on" 
                                        label="JCH_PRO_SEARCHBODY_LABEL" 
                                        description="JCH_PRO_SEARCHBODY_DESC" 
                                        default="0" >
+                                        <option value="0">JNO</option>
+                                        <option value="1">JYES</option>
+				</field>-->
+                                <field name="pro_bottom_js" 
+                                       type="radio"
+                                       class="btn-group s1-off s2-off s3-off s4-off s5-on s6-on" 
+                                       default="0" 
+                                       label="POSITION_JS_LABEL" 
+                                       description="POSITION_JS_DESCRIPTION">
                                         <option value="0">JNO</option>
                                         <option value="1">JYES</option>
                                 </field>
@@ -327,7 +328,7 @@
                                 </field>  
                         </fieldset>
                         <fieldset name="JCH_EXCLUDE_OPTIONS" label="JCH_EXCLUDE_OPTIONS_FIELDSET_LABEL">
-                                <field name="group_advanced_menuitem_start"
+				<!--<field name="group_advanced_menuitem_start"
                                        type="jchgroup"
                                        section="start"
                                        label="JCH_MENU_LABEL"
@@ -343,13 +344,31 @@
                                 <field name="group_advanced_menuitem_end"
                                        type="jchgroup"
                                        section="end">
+				</field>-->
+				<!--     <field name="group_exclude_url_start"
+                                        type="jchgroup"
+                                        section="start"
+                                        label="JCH_EXCLUDE_URL_GROUP_LABEL"
+                                        description="JCH_EXCLUDE_URL_GROUP_DESC">
                                 </field>
+                                <field name="exclude_url" 
+                                       type="excludeurl"  
+                                       rows="3" 
+                                       default="" 
+                                       cols="20" 
+                                       label="JCH_EXCLUDE_URL_LABEL" 
+                                       description="JCH_EXCLUDE_URL_DESCRIPTION">
+                                </field>
+                                <field name="group_exclude_url_end"
+                                       type="jchgroup"
+                                       section="end">
+				</field>  -->
                                 
-                                <field name="group_advanced_exclude_start"
+                                <field name="group_exclude_peo_start"
                                        type="jchgroup"
                                        section="start"
-                                       label="JCH_GROUP_EXCLUDE_LABEL"
-                                       description="JCH_GROUP_EXCLUDE_DESC">
+                                       label="JCH_GROUP_EXCLUDE_PEO_LABEL"
+                                       description="JCH_GROUP_EXCLUDE_PEO_DESC">
                                 </field>
                                 
                                 <field name="excludeCss" 
@@ -360,7 +379,7 @@
                                        label="EXCLUDE_CSS_LABEL" 
                                        description="EXCLUDE_CSS_DESCRIPTION">
                                 </field>
-                                <field name="excludeJs" 
+                                <field name="excludeJs_peo" 
                                        type="excludejs" 
                                        rows="3" 
                                        default="" 
@@ -376,7 +395,7 @@
                                        label="EXCLUDE_CSS_COMPONENTS_LABEL" 
                                        description="EXCLUDE_CSS_COMPONENTS_DESCRIPTION">
                                 </field>
-                                <field name="excludeJsComponents" 
+                                <field name="excludeJsComponents_peo" 
                                        type="excludejsextns" 
                                        rows="3" 
                                        default="" 
@@ -384,24 +403,14 @@
                                        label="EXCLUDE_JS_COMPONENTS_LABEL" 
                                        description="EXCLUDE_JS_COMPONENTS_DESCRIPTION">
                                 </field>
-                                <field type="spacer" name="exclude_js_spacer" label="JCH_EXCLUDE_JS_LABEL" />
+				<!--           <field type="spacer" name="exclude_js_spacer" label="JCH_EXCLUDE_JS_LABEL" />
                                 <field name="pro_loadFilesAsync" 
                                        type="loadfilesasync" 
                                        rows="3" 
                                        label="JCH_PRO_LOADFILESASYNC_LABEL" 
                                        description="JCH_PRO_LOADFILESASYNC_DESC" 
                                        default="" >
-                                </field>
-                                <field name="group_advanced_exclude_end"
-                                       type="jchgroup"
-                                       section="end">
-                                </field>
-                                <field name="group_advanced_excludeinline_start"
-                                       type="jchgroup"
-                                       section="start"
-                                       label="JCH_GROUP_EXCLUDEINLINE_LABEL"
-                                       description="JCH_GROUP_EXCLUDEINLINE_DESC">
-                                </field>
+				</field> -->
                                 <field name="pro_excludeStyles" 
                                        type="excludestyles"  
                                        rows="3" 
@@ -409,6 +418,58 @@
                                        cols="20" 
                                        label="JCH_PRO_EXCLUDE_STYLES_LABEL" 
                                        description="JCH_PRO_EXCLUDE_STYLES_DESC">
+                                </field>
+                                <field name="pro_excludeScripts_peo" 
+                                       type="excludescripts"  
+                                       rows="3" 
+                                       default="" 
+                                       cols="20" 
+                                       label="JCH_PRO_EXCLUDE_SCRIPT_LABEL" 
+                                       description="JCH_PRO_EXCLUDE_SCRIPT_DESC">
+                                </field>
+                                <field name="pro_excludeAllStyles" 
+                                       type="radio" 
+				       class="btn-group"
+                                       label="JCH_PRO_EXCLUDEALLSTYLES_LABEL" 
+				       description="JCH_PRO_EXCLUDEALLSTYLES_DESC" 
+				       default="0" >
+                                        <option value="0">JNO</option>
+                                        <option value="1">JYES</option>
+                                </field>                
+                                <field name="pro_excludeAllScripts"
+                                       type="radio" 
+				       class="btn-group"
+                                       label="JCH_PRO_EXCLUDEALLSCRIPTS_LABEL" 
+                                       description="JCH_PRO_EXCLUDEALLSCRIPTS_DESC" 
+                                       default="0" >
+                                        <option value="0">JNO</option>
+                                        <option value="1">JYES</option>
+                                </field>
+                                <field name="group_exclude_peo_end"
+                                       type="jchgroup"
+                                       section="end">
+                                </field>
+                                <field name="group_exclude_ieo_start"
+                                       type="jchgroup"
+                                       section="start"
+                                       label="JCH_GROUP_EXCLUDE_IEO_LABEL"
+                                       description="JCH_GROUP_EXCLUDE_IEO_DESC">
+                                </field>
+                                <field name="excludeJs" 
+                                       type="excludejs" 
+                                       rows="3" 
+                                       default="" 
+                                       cols="20" 
+                                       label="EXCLUDE_JS_LABEL" 
+                                       description="EXCLUDE_JS_DESCRIPTION">
+                                </field>
+                                <field name="excludeJsComponents" 
+                                       type="excludejsextns" 
+                                       rows="3" 
+                                       default="" 
+                                       cols="20" 
+                                       label="EXCLUDE_JS_COMPONENTS_LABEL" 
+                                       description="EXCLUDE_JS_COMPONENTS_DESCRIPTION">
                                 </field>
                                 <field name="pro_excludeScripts" 
                                        type="excludescripts"  
@@ -418,11 +479,11 @@
                                        label="JCH_PRO_EXCLUDE_SCRIPT_LABEL" 
                                        description="JCH_PRO_EXCLUDE_SCRIPT_DESC">
                                 </field>
-                                <field name="group_advanced_excludeinline_end"
+                                <field name="group_exclude_ieo_end"
                                        type="jchgroup"
                                        section="end">
                                 </field>
-                                <field name="group_advanced_removefiles_start"
+				<!--                 <field name="group_advanced_removefiles_start"
                                        type="jchgroup"
                                        section="start"
                                        label="JCH_GROUP_REMOVEFILES_LABEL"
@@ -447,8 +508,27 @@
                                 <field name="group_advanced_removefiles_end"
                                        type="jchgroup"
                                        section="end">
-                                </field>
-                                
+				</field>  -->
+			       <field name="group_advanced_menuselect_start" 
+				      type="jchgroup"
+				      section="start"
+				      label="JCH_GROUP_MENUSELECT_LABEL"
+				      description="JCH_GROUP_MENUSELECT_DESC">
+			      </field> 
+			      <!--		      <field name="pluginassignment"
+				      type="pluginassignment"
+				      label="JCH_PLUGINSELECTION_LABEL"
+				      description="JCH_PLUGINSELECTION_DESC">
+			      </field> -->
+			      <field name="menuexcluded"
+				      type="menuselection"
+				      label="JCH_MENUSELECTION_LABEL"
+				      description="JCH_MENUSELECTION_DESC">
+			      </field> 
+			      <field name="group_advanced_menuselect_end"
+				      type="jchgroup"
+				      section="end">
+			      </field>
                         </fieldset>
                         <fieldset name="free_features" label="JCH_FREE_FEATURES_FIELDSET_LABEL">
                                 <field name="group_csg_spritegenerator_start"
@@ -563,41 +643,73 @@
                                         <option value="0">JNO</option>
                                         <option value="1">JYES</option>
                                 </field>
-                                <field name="pro_cookielessdomain" 
-                                       type="text" 
-                                       default="" 
-                                       label="JCH_PRO_COOKIELESSDOMAINONE" 
-                                       description="JCH_PRO_COOKIELESSDOMAIN_DESC" 
-                                       size="50" >
-                                </field> 
-                                <field name="pro_cookielessdomain_2" 
-                                       type="text" 
-                                       default="" 
-                                       label="JCH_PRO_COOKIELESSDOMAINTWO" 
-                                       description="JCH_PRO_COOKIELESSDOMAIN_DESC" 
-                                       size="50" >
-                                </field> 
-                                <field name="pro_cookielessdomain_3" 
-                                       type="text" 
-                                       default="" 
-                                       label="JCH_PRO_COOKIELESSDOMAINTHREE" 
-                                       description="JCH_PRO_COOKIELESSDOMAIN_DESC" 
-                                       size="50" >
-                                </field> 
                                 <field name="pro_cdn_scheme" 
                                        type="list" 
                                        default="0"
                                        size="5"
                                        label="JCH_PRO_CDN_SCHEME_LABEL" 
                                        description="JCH_PRO_CDN_SCHEME_DESC">
-                                        <option value="0">JCH_AUTO</option>
+                                        <option value="0">JCH_SCHEME_RELATIVE</option>
                                         <option value="1">JCH_HTTP</option>
                                         <option value="2">JCH_HTTPS</option>
                                 </field>
+                                <field name="pro_cookielessdomain" 
+                                       type="text" 
+                                       default="" 
+                                       label="JCH_PRO_COOKIELESSDOMAINONE" 
+                                       description="JCH_PRO_COOKIELESSDOMAINONE_DESC" 
+                                       size="50" >
+                                </field> 
                                 <field name="pro_staticfiles" 
                                        type="checkboxes"
                                        label="JCH_PRO_STATICFILES_LABEL" 
                                        description="JCH_PRO_STATICFILES_DESC"
+                                       checked="css,js,jpe?g,gif,png,ico,bmp,pdf,tiff?,docx?">
+                                        <option value="css">css</option>
+                                        <option value="png">png</option>
+                                        <option value="gif">gif</option>
+                                        <option value="ico">ico</option>
+                                        <option value="pdf">pdf</option>
+                                        <option value="js">js</option>
+                                        <option value="jpe?g">jp(e)g</option>
+                                        <option value="bmp">bmp</option>
+                                        <option value="tiff?">tif(f)</option>
+                                        <option value="docx?">doc(x)</option>
+                                </field>
+                                <field name="pro_cookielessdomain_2" 
+                                       type="text" 
+                                       default="" 
+                                       label="JCH_PRO_COOKIELESSDOMAINTWO" 
+                                       description="JCH_PRO_COOKIELESSDOMAINTWO_DESC" 
+                                       size="50" >
+                                </field> 
+                                <field name="pro_staticfiles_2" 
+                                       type="checkboxes"
+                                       label="JCH_PRO_STATICFILES2_LABEL" 
+                                       description="JCH_PRO_STATICFILES2_DESC"
+                                       checked="css,js,jpe?g,gif,png,ico,bmp,pdf,tiff?,docx?">
+                                        <option value="css">css</option>
+                                        <option value="png">png</option>
+                                        <option value="gif">gif</option>
+                                        <option value="ico">ico</option>
+                                        <option value="pdf">pdf</option>
+                                        <option value="js">js</option>
+                                        <option value="jpe?g">jp(e)g</option>
+                                        <option value="bmp">bmp</option>
+                                        <option value="tiff?">tif(f)</option>
+                                        <option value="docx?">doc(x)</option>
+                                </field>
+                                <field name="pro_cookielessdomain_3" 
+                                       type="text" 
+                                       default="" 
+                                       label="JCH_PRO_COOKIELESSDOMAINTHREE" 
+                                       description="JCH_PRO_COOKIELESSDOMAINTHREE_DESC" 
+                                       size="50" >
+                                </field> 
+                                <field name="pro_staticfiles_3" 
+                                       type="checkboxes"
+                                       label="JCH_PRO_STATICFILES3_LABEL" 
+                                       description="JCH_PRO_STATICFILES3_DESC"
                                        checked="css,js,jpe?g,gif,png,ico,bmp,pdf,tiff?,docx?">
                                         <option value="css">css</option>
                                         <option value="png">png</option>
@@ -744,8 +856,4 @@
                         </fieldset>
                 </fields>
         </config>
-        <updateservers>
-                <server type="extension" priority="1"
-                        name="JCH Optimize Updates"><![CDATA[https://www.jch-optimize.net/index.php?option=com_ars&view=update&task=stream&format=xml&id=1&file=extension.xml]]></server>
-        </updateservers>
 </extension>

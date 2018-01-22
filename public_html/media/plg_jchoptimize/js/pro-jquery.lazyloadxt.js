@@ -22,7 +22,7 @@
 
             loadEvent: 'pageshow', // check AJAX-loaded content in jQueryMobile
             updateEvent: 'load orientationchange resize scroll touchmove focus', // page-modified events
-            forceEvent: '', // force loading of all elements
+            forceEvent: 'lazyloadall', // force loading of all elements
 
             //onstart: null,
             oninit: {removeClass: 'lazy'}, // init handler
@@ -227,6 +227,7 @@
             }
 
             if (removeNode) {
+                $data(el, dataLazied, 0);
                 elements.splice(i--, 1);
                 length--;
             }
@@ -298,13 +299,13 @@
         triggerEvent('start', $window);
 
         $window
-            .on(options.loadEvent, initLazyElements)
             .on(options.updateEvent, queueCheckLazyElements)
             .on(options.forceEvent, forceLoadAll);
 
         $(document).on(options.updateEvent, queueCheckLazyElements);
 
         if (options.autoInit) {
+            $window.on(options.loadEvent, initLazyElements);
             initLazyElements(); // standard initialization
         }
     });

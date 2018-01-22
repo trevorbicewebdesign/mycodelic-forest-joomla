@@ -325,7 +325,7 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
                 $obj = $this;
 
                 $sCorrectedContent = preg_replace_callback(
-                        "#(?>[(]?[^('/\"]*+(?:{$this->e}|/)?)*?(?:(?<=url)\(\s*+\K['\"]?((?<!['\"])[^\s)]*+|(?<!')[^\"]*+|[^']*+)['\"]?|\K$)#i",
+                        "#(?>[(]?[^('/\"]*+(?:{$this->e}|/)?)*?(?:(?<=url)\(\s*+\K['\"]?((?<!['\"])[^)]*+|(?<!')[^\"]*+|[^']*+)['\"]?|\K$)#i",
                         function ($aMatches) use ($aUrl, $obj)
                 {
                         return $obj->_correctUrlCB($aMatches, $aUrl);
@@ -365,24 +365,18 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
 
                                 $oImageUri = clone JchPlatformUri::getInstance($sImageUrl);
 
-                                $aStaticFiles = $this->params->get('pro_staticfiles', array('css', 'js', 'jpe?g', 'gif', 'png', 'ico', 'bmp', 'pdf'));
-                                unset($aStaticFiles[0]);
-                                $sStaticFiles = implode('|', $aStaticFiles);
-
                                 $aFontFiles = $this->fontFiles();
                                 $sFontFiles = implode('|', $aFontFiles);
 
-                                if (preg_match('#\.(?>' . $sStaticFiles . ')#', $oImageUri->getPath()))
-                                {
-                                        $sImageUrl = JchOptimizeHelper::cookieLessDomain($this->params, $oImageUri->toString(array('path')));
-                                }
-                                elseif ($this->params->get('pro_cookielessdomain_enable', '0')
+				$sImageUrl = JchOptimizeHelper::cookieLessDomain($this->params, $oImageUri->toString(array('path')), $sImageUrl);
+
+                                if ($this->params->get('pro_cookielessdomain_enable', '0')
                                         && preg_match('#\.(?>' . $sFontFiles . ')#', $oImageUri->getPath()))
                                 {
                                         $oUri = clone JchPlatformUri::getInstance();
 
                                         $sImageUrl = '//' . $oUri->toString(array('host', 'port')) .
-                                                $oImageUri->toString(array('path'));
+                                                $oImageUri->toString(array('path', 'query', 'fragment'));
                                 }
                         }
                         else
@@ -391,12 +385,22 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
                                 {
                                         $sImageUrl = JchOptimizeUrl::toAbsolute($sImageUrl, $sCssFileUrl);
                                 }
+				else
+				{
+					return $aMatches[0];
+				}
                         }
+
+			$sImageUrl = preg_match('#(?<!\\\\)[\s\'"(),]#', $sImageUrl) ? '"' . $sImageUrl . '"' : $sImageUrl;
+
+			return $sImageUrl;
+
                 }
+		else
+		{
+			return $aMatches[0];
+		}
 
-                $sImageUrl = preg_match('#(?<!\\\\)[\s\'"(),]#', $sImageUrl) ? '"' . $sImageUrl . '"' : $sImageUrl;
-
-                return $sImageUrl;
         }
 
         /**
@@ -408,8 +412,9 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
          */
         public function sortImports($sCss)
         {
+		$i = "#(?>@?[^@('\"/]*+(?:{$this->u}|/|\()?)*?\K(?:@media\s([^{]++)({(?>[^{}]++|(?2))*+})|\K$)#i";
                 $sCssMediaImports = preg_replace_callback("#(?>@?[^@('\"/]*+(?:{$this->u}|/|\()?)*?\K(?:@media\s([^{]++)({(?>[^{}]++|(?2))*+})|\K$)#i",
-                                                          array(__CLASS__, '_sortImportsCB'), $sCss);
+                                                          array($this, '_sortImportsCB'), $sCss);
 
                 if (is_null($sCssMediaImports))
                 {
@@ -467,8 +472,8 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
         public function addRightBrace($sCss)
         {
                 $sRCss = '';
-
-                preg_replace_callback("#(?>[^{}'\"/(]*+(?:{$this->u})?)+?(?:(?<b>{(?>[^{}]++|(?&b))*+})|\||)#",
+$r = "#(?>[^{}'\"/(]*+(?:{$this->u})?)+?(?:(?<b>{(?>[^{}'\"/(]++|{$this->u}|(?&b))*+})|$)#";
+                preg_replace_callback("#(?>[^{}'\"/(]*+(?:{$this->u})?)+?(?:(?<b>{(?>[^{}'\"/(]++|{$this->u}|(?&b))*+})|(?=}}$))#",
                                       function($m) use (&$sRCss)
                 {
                         $sRCss .= $m[0];
@@ -485,8 +490,10 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
         {
                 $c = self::BLOCK_COMMENTS . '|' . self::LINE_COMMENTS;
 
-                return "(?:\s*+(?>$c)\s*+)*+\K"
+                $r =  "(?:\s*+(?>$c)\s*+)*+\K"
                         . "((?>[^{}@/]*+(?:/(?![*/]))?)*?)(?>{[^{}]*+}|(@[^{};]*+)(?>({((?>[^{}]++|(?3))*+)})|;?)|$)";
+
+		return $r;
         }
 
         /**
@@ -543,7 +550,6 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
                 $this->_debug('', '', 'afterLoadHtmlDom');
 
                 $sCriticalCss = '';
-
                 $sContents = preg_replace_callback(
                         '#' . self::cssRulesRegex() . '#',
                         function ($aMatches) use ($obj, $oXPath, $sHtmlTruncated, &$sCriticalCss)
@@ -553,8 +559,8 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
 
                 $this->_debug('', '', 'afterExtractCriticalCss');
 
-                $sCriticalCss = preg_replace('#@[^{]*+{[^\S}]*+}#', '', $sCriticalCss);
-                $sCriticalCss = preg_replace('#@[^{]*+{[^\S}]*+}#', '', $sCriticalCss);
+                $sCriticalCss = preg_replace('#@media[^{]*+{[^\S}]*+}#', '', $sCriticalCss);
+                //$sCriticalCss = preg_replace('#@media[^{]*+{[^\S}]*+}#', '', $sCriticalCss);
                 $sCriticalCss = preg_replace('#/\*\*\*!+[^!]+!\*\*\*+/[^\S]*+(?=\/\*\*\*!|$)#', '', $sCriticalCss);
                 $sCriticalCss = preg_replace('#\s*[\r\n]{2,}\s*#', "\n\n", $sCriticalCss);
 
@@ -582,6 +588,7 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
         {
                 $matches0 = ltrim($aMatches[0]);
 
+		//add all font at-rules to the crtitical css
                 if (preg_match('#^(?>@(?:-[^-]+-)?(?:font-face|import))#i', $matches0))
                 {
                         $sCriticalCss .= $aMatches[0];
@@ -589,6 +596,7 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
                         return $aMatches[0];
                 }
 
+		//recurse into each @media rule
                 if (preg_match('#^@media#', $matches0))
                 {
                         $sCriticalCss .= $aMatches[2] . '{';
@@ -609,12 +617,15 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
                         return $sMatch;
                 }
 
+		//remove all other at-rules from critical css
                 if (preg_match('#^\s*+@(?:-[^-]+-)?(?:page|keyframes|charset|namespace)#i', $matches0))
                 {
                         return '';
                 }
 
-                $sSelectors = preg_replace('#::?[a-zA-Z0-9(\[\])-]+#', '', $aMatches[1]);
+		//we're inside a @media rule or global css
+		//remove pseudo-selectos
+                $sSelectors = preg_replace('#:not\([^)]+\)|::?[a-zA-Z0-9(\[\])-]+#', '', $aMatches[1]);
                 $aSelectors = explode(',', $sSelectors);
                 $aFoundSels = array();
 

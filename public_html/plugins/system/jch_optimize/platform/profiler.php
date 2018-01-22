@@ -41,7 +41,7 @@ class JchPlatformProfiler implements JchInterfaceProfiler
          * 
          * @param type $sHtml
          */
-        public static function attachProfiler(&$sHtml)
+        public static function attachProfiler(&$sHtml, $bAmpPage=false)
         {
                 
         }

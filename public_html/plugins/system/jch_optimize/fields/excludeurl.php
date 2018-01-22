@@ -18,47 +18,15 @@
  *
  * If LICENSE file missing, see <http://www.gnu.org/licenses/>.
  */
-require_once dirname(__FILE__) . '/bootstrap.php';
+defined('_JEXEC') or die;
 
-$app = JFactory::getApplication('site');
+include_once dirname(__FILE__) . '/exclude.php';
 
-$action = $app->input->get('action', '', 'string');
-$format = strtolower($app->input->getWord('format'));
-
-if(!$action)
+class JFormFieldExcludeurl extends JFormFieldExclude
 {
-        exit();
+
+        public $type = 'excludeurl';
+	public $filetype = 'url';
+	public $filegroup = 'file';
+
 }
-
-jimport('joomla.event.dispatcher');
-
-$plugin = JPluginHelper::getPlugin('system', 'jch_optimize');
-
-if(!$plugin)
-{
-        exit();
-}
-
-JPluginHelper::importPlugin('system', $plugin->name);
-$dispatcher = JDispatcher::getInstance();
-
-try
-{
-        $results = $dispatcher->trigger('onAjax' . ucfirst($action));
-}
-catch (Exception $e)
-{
-        $results = $e;
-}
-
-
-if (is_scalar($results))
-{
-        $out = (string) $results;
-}
-else
-{
-        $out = implode((array) $results);
-}
-
-echo $out;

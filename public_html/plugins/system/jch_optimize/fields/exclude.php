@@ -21,69 +21,27 @@
 defined('_JEXEC') or die;
 
 JFormHelper::loadFieldClass('Textarea');
+JchPlatformPlugin::getPluginParams();
 
-
-if (version_compare(JVERSION, '3.0', '>='))
+abstract class JchTextarea extends JFormFieldTextarea
 {
 
-        abstract class JchTextarea extends JFormFieldTextarea
+        protected $aOptions = array();
+
+        public function setup(SimpleXMLElement $element, $value, $group = NULL)
         {
+                JCH_DEBUG ? JchPlatformProfiler::mark('beforeSetup' . $this->type) : null;
 
-                protected $aOptions = array();
+                $value = $this->castValue($value);
 
-                public function setup(SimpleXMLElement $element, $value, $group = NULL)
-                {
-                        $this->getParams();
+                JCH_DEBUG ? JchPlatformProfiler::mark('afterSetup' . $this->type) : null;
 
-                        JCH_DEBUG ? JchPlatformProfiler::mark('beforeSetup' . $this->type) : null;
-
-                        $this->getAdminObject();
-                        $this->setOptions();
-
-                        $value = $this->castValue($value);
-
-                        JCH_DEBUG ? JchPlatformProfiler::mark('afterSetup' . $this->type) : null;
-
-                        return parent::setup($element, $value, $group);
-                }
-
-                protected function castValue($value)
-                {
-                        
-                }
-
+                return parent::setup($element, $value, $group);
         }
 
-}
-else
-{
-
-        abstract class JchTextarea extends JFormFieldTextarea
+        protected function castValue($value)
         {
-
-                protected $aOptions = array();
-
-                public function setup(&$element, $value, $group = NULL)
-                {
-                        $this->getParams();
-
-                        JCH_DEBUG ? JchPlatformProfiler::mark('beforeSetup - ' . $this->type) : null;
-
-                        $this->getAdminObject();
-                        $this->setOptions();
-
-                        $value = $this->castValue($value);
-
-                        JCH_DEBUG ? JchPlatformProfiler::mark('afterSetup - ' . $this->type) : null;
-
-                        return parent::setup($element, $value, $group);
-                }
-
-                protected function castValue($value)
-                {
-                        
-                }
-
+                
         }
 
 }
@@ -93,7 +51,11 @@ abstract class JFormFieldExclude extends JchTextarea
 
         protected static $oParams = null;
         protected static $oParser = null;
+        protected $ajax_params    = '';
+        protected $first_field    = false;
+	protected $filegroup = 'file';
 
+        
         /**
          * 
          * @param type $value
@@ -101,98 +63,12 @@ abstract class JFormFieldExclude extends JchTextarea
          */
         protected function castValue($value)
         {
-//                if (is_array($value) && $GLOBALS['bTextArea'])
-//                {
-//                        $value = implode(', ', $value);
-//                }
-
-                if (!is_array($value)/* && !$GLOBALS['bTextArea'] */)
+                if (!is_array($value))
                 {
                         $value = JchOptimizeHelper::getArray($value);
                 }
 
                 return $value;
-        }
-
-        /**
-         * 
-         * @return type
-         */
-        protected function getParams()
-        {
-                if (!isset($GLOBALS['oJchParams']))
-                {
-                        $GLOBALS['oJchParams'] = JchPlatformPlugin::getPluginParams();
-                }
-
-                return $GLOBALS['oJchParams'];
-        }
-
-        /**
-         * 
-         * @return type
-         */
-        public function getOriginalHtml()
-        {
-                JCH_DEBUG ? JchPlatformProfiler::mark('beforeGetHtml') : null;
-
-                try
-                {
-                        $oFileRetriever = JchOptimizeFileRetriever::getInstance();
-
-                        $response = $oFileRetriever->getFileContents($this->getMenuUrl());
-
-                        if ($oFileRetriever->response_code != 200)
-                        {
-                                throw new Exception('Failed fetching front end HTML with response code ' . $oFileRetriever->response_code);
-                        }
-
-                        JCH_DEBUG ? JchPlatformProfiler::mark('afterGetHtml') : null;
-
-                        return $response;
-                }
-                catch (Exception $e)
-                {
-                        JchOptimizeLogger::log($this->getMenuUrl() . ': ' . $e->getMessage(), $this->getParams());
-
-                        JCH_DEBUG ? JchPlatformProfiler::mark('afterGetHtml') : null;
-
-                        throw new RuntimeException(JText::_('JCH_REFRESH_FRONT_END'));
-                }
-        }
-
-        /**
-         * 
-         * @return string
-         */
-        protected function getMenuUrl()
-        {
-                $oParams     = $this->getParams();
-                $iMenuLinkId = $oParams->get('jchmenu');
-
-                if (!$iMenuLinkId)
-                {
-                        require_once dirname(__FILE__) . '/jchmenuitem.php';
-                        $iMenuLinkId = JFormFieldJchmenuitem::getHomePageLink();
-                }
-
-                $app       = JFactory::getApplication();
-                $oMenu     = $app->getMenu('site');
-                $oMenuItem = $oMenu->getItem($iMenuLinkId);
-
-                $oUri = clone JUri::getInstance();
-
-                $router = $app->getRouter('site', array('mode' => $app->get('sef')));
-
-                $uri = $router->build($oMenuItem->link . '&Itemid=' . $oMenuItem->id . '&jchbackend=2');
-
-                $uri->setScheme($oUri->getScheme());
-                $uri->setHost($oUri->getHost());
-                $uri->setPort($oUri->getPort());
-
-                $sMenuUrl = str_replace('/administrator', '', $uri->toString());
-
-                return $sMenuUrl;
         }
 
         /**
@@ -206,69 +82,115 @@ abstract class JFormFieldExclude extends JchTextarea
 
         /**
          * 
+         * @param type $sType
+         * @param type $sParam
+         * @param type $sGroup
+         */
+        protected function setAjaxParams()
+        {
+                $this->ajax_params = '"type": "' . $this->filetype . '", "param": "' . $this->fieldname . '", "group": "' . $this->filegroup . '"';
+        }
+
+        /**
+         * 
          * @return type
          */
         protected function getInput()
         {
-                $attributes = 'class="inputbox chzn-custom-value input-xlarge" multiple="multiple" size="5" data-custom_group_text="Custom Position" data-no_results_text="Add custom item"';
+                $attributes = 'class="inputbox chzn-custom-value input-xlarge" multiple="multiple" size="5" data-custom_group_text="Custom Position" data-no_results_text="Add custom item" data-jch_type="' . $this->filetype . '" data-jch_param="' . $this->fieldname . '" data-jch_group="' . $this->filegroup . '"';
+		$options = array();
 
-                $sField = JHTML::_('select.genericlist', $this->aOptions, $this->name . '[]', $attributes, 'id', 'name', $this->value, $this->id) 
-                        .  '<button type="button" onclick="addJchOption(\'jform_params_' . $this->jch_params . '\')">' 
-                        . JText::_('JCH_ADD_ITEM') . '</button>';
+		foreach($this->value as $excludevalue)
+		{
+			$options[$excludevalue] = JchOptimizeAdmin::{'prepare' . ucfirst($this->filegroup) . 'Values'}($excludevalue);
+;
+		}
 
-                return $sField;
+                $select = JHTML::_('select.genericlist', $options, 'jform[params][' . $this->fieldname . '][]', $attributes, 'id', 'name', $this->value, $this->id);
+
+			
+		$field = '<div id="div-' . $this->fieldname . '"> ' . $select . '
+
+                                <img id="img-' . $this->fieldname . '" src="' . JUri::root() . 'media/plg_jchoptimize/images/exclude-loader.gif" />
+</div>';
+//<script type="text/javascript">
+//';
+//
+//               // if ($this->first_field)
+//               // {
+//               //         $field .= $this->getFirstField();
+//               // }
+//               // else
+//               // {
+//               //         $field .= $this->getObserverField();
+//               // }
+//
+//                $field .= '
+//</script> ';
+
+                return $field;
         }
 
         /**
          * 
-         * @param type $oParams
          * @return type
          */
-        protected function getAdminObject()
+        protected function getAjaxFunction()
         {
-                if (!isset($GLOBALS['oAdmin']))
-                {
-                        $params            = $this->getParams();
-                        $GLOBALS['oAdmin'] = $oAdmin            = new JchOptimizeAdmin($params, TRUE);
+		$this->setAjaxParams();
 
-                        try
-                        {
-                                $oAdmin->getAdminLinks($this, $params->get('jchmenu'));
-                        }
-                        catch (RuntimeException $ex)
-                        {
-                                JFactory::getApplication()->enqueueMessage($ex->getMessage(), 'Notice');
-                        }
-                        catch (Exception $ex)
-                        {
-                                JchOptimizeLogger::log($ex->getMessage(), $this->getParams());
-
-                                JFactory::getApplication()->enqueueMessage($ex->getMessage(), 'Warning');
-                        }
-                }
-
-                return $GLOBALS['oAdmin'];
-        }
-
-        /**
-         * 
-         * @param type $sType
-         * @param type $sExcludeParams
-         * @param type $sGroup
-         */
-        protected function prepareFieldOptions($sType, $sExcludeParams, $sGroup = '')
-        {
-                $oAdmin = $this->getAdminObject();
-
-                return $oAdmin->prepareFieldOptions($sType, $sExcludeParams, $sGroup);
-        }
-
-        /**
-         * 
-         */
-        protected function getFieldOptions()
-        {
+                $field = '
+var timestamp = getTimeStamp();                       
+jQuery("div#div-' . $this->fieldname . '").load(
+        jch_ajax_url + "&action=getmultiselect&_=" + timestamp,
+        {' . $this->ajax_params . ', "name": "' . $this->name . '", "value": ' . json_encode($this->value) . '},
+        function(){
+                jQuery("img-' . $this->fieldname . '").hide(); 
                 
+                if(!jQuery.isEmptyObject(jch_observers)){
+                        window["create" + jch_observers.shift()]();
+                }
+                
+                jQuery("#jform_params_' . $this->fieldname . '").chosen();
+        }
+);';
+
+                return $field;
+        }
+
+        /**
+         * 
+         * @return string
+         */
+        protected function getFirstField()
+        {
+                //$field = 'jQuery(document).ready(function()
+                //        {
+                //                ';
+                $field = $this->getAjaxFunction();
+                //$field .= '
+                //        });
+                //';
+
+                return $field;
+        }
+
+        /**
+         * 
+         * @return string
+         */
+        protected function getObserverField()
+        {
+                $field = 'jch_observers.push("' . ucfirst($this->fieldname) . '");
+function create' . ucfirst($this->fieldname) . '()
+{
+                        ';
+                $field .= $this->getAjaxFunction();
+                $field .= '
+};
+                ';
+
+                return $field;
         }
 
 }

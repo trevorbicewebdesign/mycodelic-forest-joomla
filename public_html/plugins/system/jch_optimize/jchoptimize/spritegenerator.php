@@ -117,19 +117,20 @@ class JchOptimizeSpriteGenerator
                 $aSpriteCss = $oSpriteGen->GetCssBackground();
 
                 $aPatterns    = array();
-                $aPatterns[0] = '#background-image:#'; // Background image declaration regex
+                $aPatterns[0] = '#background-position:[^;}]+;?#i'; //Background position declaration regex
                 $aPatterns[1] = '#(background:[^;}]*)\b' //Background position regex
                         . '((?:top|bottom|left|right|center|-?[0-9]+(?:%|[c-x]{2})?)'
-                        . '\s(?:top|bottom|left|right|center|-?[0-9]+(?:%|[c-x]{2})?))([^;}]*[;}])#';
-                $aPatterns[2] = '#url\((?=[^\)]+\.(?:png|gif|jpe?g))[^\)]+\)#'; //Background image regex
-                $aPatterns[3] = '#background-position:[^;}]+;?#'; //Background position declaration regex
+                        . '\s(?:top|bottom|left|right|center|-?[0-9]+(?:%|[c-x]{2})?))([^;}]*[;}])#i';
+                $aPatterns[2] = '#(background-image:)[^;}]+;?#i'; // Background image declaration regex
+		$aPatterns[3] = '#(background:[^;}]*)\b'
+			. 'url\((?=[^\)]+\.(?:png|gif|jpe?g))[^\)]+\)'
+			. '([^;}]*[;}])#i'; //Background image regex
 
                 $sSpriteName = $oSpriteGen->GetSpriteFilename();
 
                 $aSearch = array();
-                $aStaticFiles = $this->params->get('pro_staticfiles', array('css','js','jpe?g','gif','png','ico','bmp','pdf'));
-                $cdn = in_array('png', $aStaticFiles) ? JchOptimizeHelper::cookieLessDomain($this->params) : '';
-                $spritepath =  $cdn . JchPlatformPaths::spriteDir(TRUE) . $sSpriteName;
+		$spritepath = JchPlatformPaths::spriteDir(true) . $sSpriteName;
+		$spritepath = JchOptimizeHelper::cookieLessDomain($this->params, $spritepath, $spritepath);
 
                 for ($i = 0; $i < count($aSpriteCss); $i++)
                 {
@@ -138,10 +139,10 @@ class JchOptimizeSpriteGenerator
                                 $aSearch['needles'][] = $aDeclaration[$i];
                                 
                                 $aReplacements    = array();
-                                $aReplacements[0] = 'background:';
+                                $aReplacements[0] = '';
                                 $aReplacements[1] = '$1$3';
-                                $aReplacements[2] = 'url(' . $spritepath . ') ' . $aSpriteCss[$i];
-                                $aReplacements[3] = '';
+                                $aReplacements[2] = '$1 url(' . $spritepath . '); background-position: ' . $aSpriteCss[$i] . ';';
+                                $aReplacements[3] = '$1url(' . $spritepath . ') ' . $aSpriteCss[$i] . '$2';
 
                                 $sReplacement = preg_replace($aPatterns, $aReplacements, $aDeclaration[$i]);
 

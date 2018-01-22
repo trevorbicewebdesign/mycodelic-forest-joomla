@@ -20,30 +20,19 @@
  */
 defined('_JEXEC') or die;
 
-if (version_compare(PHP_VERSION, '5.3.0', '<'))
+include_once dirname(__FILE__) . '/exclude.php';
+
+class JFormFieldRemovejs extends JFormFieldExclude
 {
 
-        class JFormFieldRemovejs extends JFormFieldTextarea
+        public $type          = 'removejs';
+        protected $jch_params = 'removeJs';
+
+        protected function getInput()
         {
+                $this->setAjaxParams('js', $this->jch_params, 'file');
 
-                public $type = 'removejs';
-
+                return parent::getInput();
         }
 
-}
-else
-{
-        include_once dirname(__FILE__) . '/exclude.php';
-
-        class JFormFieldRemovejs extends JFormFieldExclude
-        {
-
-                public $type = 'removejs';
-                protected $jch_params = 'removeJs';
-
-                protected function getFieldOptions()
-                {
-                        return $this->prepareFieldOptions('js', $this->jch_params, 'file');
-                }
-        }
 }

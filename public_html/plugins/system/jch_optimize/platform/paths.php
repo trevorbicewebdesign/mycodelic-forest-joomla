@@ -36,6 +36,25 @@ class JchPlatformPaths implements JchInterfacePaths
                 return $sBaseFolder . 'media/plg_jchoptimize/assets';
         }
 
+	/**
+	 *
+	 *
+	 *
+	 */
+	public static function cachePath($rootrelative=true)
+	{
+		$sCache = 'media/plg_jchoptimize/cache';
+
+		if($rootrelative)
+		{
+			return JchOptimizeHelper::getBaseFolder() . $sCache;
+		}	
+		else
+		{
+			return self::rootPath() . $sCache;
+		}	
+	}
+
         /**
          * 
          * @return type
@@ -131,7 +150,7 @@ class JchPlatformPaths implements JchInterfacePaths
          */
         public static function backupImagesParentFolder()
         {
-                return 'images/';
+                return self::rootPath() . 'images/';
         }
         
         /**

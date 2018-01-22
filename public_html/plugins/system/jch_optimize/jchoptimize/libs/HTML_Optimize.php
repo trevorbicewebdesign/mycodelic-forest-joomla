@@ -59,7 +59,7 @@ class HTML_Optimize extends Optimize
                 }
                 catch(\Exception $e)
                 {
-                        return $min->css;
+                        return $min->_html;
                 }
         }
 
@@ -103,10 +103,10 @@ class HTML_Optimize extends Optimize
                 $s2 = self::SINGLE_QUOTE_STRING;
 
                 //Regex for escape elements
-                $pr = "<pre\b[^>]*+>(?><?[^<]*+)*?</pre>";
-                $sc = "<script\b[^>]*+>(?><?[^<]*+)*?</script>";
-                $st = "<style\b[^>]*+>(?><?[^<]*+)*?</style>";
-                $tx = "<textarea\b[^>]*+>(?><?[^<]*+)*?</textarea>";
+                $pr = "<pre\b[^>]*+>(?><?[^<]*+)*?</pre\s*+>";
+                $sc = "<script\b[^>]*+>(?><?[^<]*+)*?</script\s*+>";
+                $st = "<style\b[^>]*+>(?><?[^<]*+)*?</style\s*+>";
+                $tx = "<textarea\b[^>]*+>(?><?[^<]*+)*?</textarea\s*+>";
 
                 if ($this->_minifyLevel > 0)
                 {
@@ -123,8 +123,8 @@ class HTML_Optimize extends Optimize
 
                 //Minify scripts
                 $rx          = "#(?><?[^<]*+(?:$x)?)*?\K"
-                        . "(?:(<script\b[^>]*+>)((?><?[^<]*+)*?)(</script>)|"
-                        . "(<style\b[^>]*+>)((?><?[^<]*+)*?)(</style>)|$)#i";
+                        . "(?:(<script(?=(?>[^\s>]*+[\s](?(?=type\s*+=\s*+)type\s*+=\s*+[\"']?(?:text|application)/javascript[\"' ]))*+[^\s>]*+>)[^>]*+>)((?><?[^<]*+)*?)(</script>)|"
+                        . "(<style(?=(?>[^\s>]*+[\s](?:(?!(?:type\s*+=\s*+(?![\"']?text/css[\"' ])))))*+[^\s>]*+>)[^>]*+>)((?><?[^<]*+)*?)(</style>)|$)#i";
                 $this->_html = $this->_replace($rx, '', $this->_html, '3', array($this, '_minifyCB'));
 
                 if ($this->_minifyLevel < 1)
@@ -216,6 +216,11 @@ class HTML_Optimize extends Optimize
                         return $m[0];
                 }
 
+		if (strpos($m[0], 'var google_conversion') !== FALSE)
+		{
+			return $m[0];
+		}
+
                 $openTag  = isset($m[1]) && $m[1] != '' ? $m[1] : (isset($m[4]) && $m[4] != '' ? $m[4] : '');
                 $content  = isset($m[2]) && $m[2] != '' ? $m[2] : (isset($m[5]) && $m[5] != '' ? $m[5] : '');
                 $closeTag = isset($m[3]) && $m[3] != '' ? $m[3] : (isset($m[6]) && $m[6] != '' ? $m[6] : '');
@@ -277,7 +282,7 @@ class HTML_Optimize extends Optimize
                 $b  = self::BLOCK_COMMENTS;
                 $l  = self::LINE_COMMENTS;
 
-                $c = '(?:(?:<!--|-->)[^\r\n]*+)|(?:<!\[CDATA\[|\]\]>)';
+                $c = '(?:(?:<!?--|-->)[^\r\n]*+)|(?:<!?\[CDATA\[|\]\]>)';
 
                 if ($type == 'css')
                 {

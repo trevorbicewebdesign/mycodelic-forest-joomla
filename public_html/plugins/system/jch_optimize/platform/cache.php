@@ -24,6 +24,7 @@ defined('_JEXEC') or die('Restricted access');
 
 class JchPlatformCache implements JchInterfaceCache
 {
+	protected static $lifetime = 1440;
 
         /**
          * 
@@ -31,9 +32,9 @@ class JchPlatformCache implements JchInterfaceCache
          * @param type $lifetime
          * @return type
          */
-        public static function getCache($id, $lifetime)
+        public static function getCache($id)
         {
-                $oCache = self::getCacheObject('output', $lifetime);
+                $oCache = self::getCacheObject('output');
                 $aCache = $oCache->get($id);
 
                 if ($aCache === FALSE)
@@ -52,9 +53,9 @@ class JchPlatformCache implements JchInterfaceCache
          * @param type $args
          * @return type
          */
-        public static function getCallbackCache($id, $lifetime, $function, $args)
+        public static function getCallbackCache($id, $function, $args)
         {
-                $oCache = self::getCacheObject('callback', $lifetime);
+                $oCache = self::getCacheObject('callback');
 
                 return $oCache->get($function, $args, $id);
         }
@@ -64,11 +65,11 @@ class JchPlatformCache implements JchInterfaceCache
          * @param type $type
          * @return type
          */
-        public static function getCacheObject($type='callback', $lifetime=86400)
+        public static function getCacheObject($type='callback')
         {
                 $aOptions = array(
                         'defaultgroup' => 'plg_jch_optimize',
-                        'checkTime'    => TRUE,
+                        'checkTime'    => true,
                         'application'  => 'site',
                         'language'     => 'en-GB',
                         'cachebase'    => JPATH_SITE . '/cache',
@@ -77,8 +78,8 @@ class JchPlatformCache implements JchInterfaceCache
 
                 $oCache = JCache::getInstance($type, $aOptions);
 
-                $oCache->setCaching(TRUE);
-                $oCache->setLifeTime($lifetime);
+                $oCache->setCaching(true);
+                $oCache->setLifeTime(self::$lifetime);
 
                 return $oCache;
         }
@@ -87,10 +88,24 @@ class JchPlatformCache implements JchInterfaceCache
          * 
          * @param type $lifetime
          */
-        public static function gc($lifetime)
+        public static function gc()
         {
-                $oCache = self::getCacheObject('callback', $lifetime);
+                $oCache = self::getCacheObject('callback');
                 $oCache->gc();
+
+		$staticcachepath = JchPlatformPaths::cachePath(false);
+
+		if (file_exists($staticcachepath))
+		{
+			$options = array(
+				'cachebase' => $staticcachepath,
+				'lifetime' => self::$lifetime,
+				'storage' => 'file'
+			);
+
+			$oStaticCache = JCache::getInstance('output', $options);
+			$oStaticCache->gc();
+		}
         }
 
 }

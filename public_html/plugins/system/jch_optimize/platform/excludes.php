@@ -40,7 +40,7 @@ class JchPlatformExcludes implements JchInterfaceExcludes
                         }
                         else
                         {
-                                return array();
+                                return array('assets.pinterest.com/js/pinit.js');
                         }
                 }
 
@@ -75,7 +75,7 @@ class JchPlatformExcludes implements JchInterfaceExcludes
                         }
                         else
                         {
-                                return array('plugin_googlemap3', '/jw_allvideos/');
+                                return array('plugin_googlemap3', '/jw_allvideos/', '/tinymce/');
                         }
                         
                 }

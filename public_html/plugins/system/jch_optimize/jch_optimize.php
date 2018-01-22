@@ -28,10 +28,16 @@ if (!defined('JCH_PLUGIN_DIR'))
         define('JCH_PLUGIN_DIR', dirname(__FILE__) . '/');
 }
 
+if (!defined('JCH_VERSION'))
+{
+        define('JCH_VERSION', '5.2.2');
+}
+
 include_once(dirname(__FILE__) . '/jchoptimize/loader.php');
 
 class plgSystemJCH_Optimize extends JPlugin
 {
+
 
         /**
          * 
@@ -43,11 +49,14 @@ class plgSystemJCH_Optimize extends JPlugin
                 $app    = JFactory::getApplication();
                 $config = JFactory::getConfig();
                 $user   = JFactory::getUser();
+                
+                $menuexcluded = $this->params->get('menuexcluded', array());
 
                 if (($app->getName() != 'site') || (JFactory::getDocument()->getType() != 'html')
                         || ($app->input->get('jchbackend', '', 'int') == 1)
                         || ($config->get('offline') && $user->guest)
-                        || $this->isEditorLoaded())
+                        || $this->isEditorLoaded()
+                        || in_array($app->input->get('Itemid', '', 'int'), $menuexcluded))
                 {
                         return FALSE;
                 }
@@ -64,11 +73,6 @@ class plgSystemJCH_Optimize extends JPlugin
                         echo $sHtml;
                         while (@ob_end_flush());
                         exit;
-                }
-
-                if (!defined('JCH_VERSION'))
-                {
-                        define('JCH_VERSION', '5.0.5');
                 }
 
                 try
@@ -95,14 +99,19 @@ class plgSystemJCH_Optimize extends JPlugin
          */
         protected function isEditorLoaded()
         {
-                $sEditor = JFactory::getUser()->getParam('editor');
-                $sEditor = !isset($sEditor) ? JFactory::getConfig()->get('editor') : $sEditor;
+		$aEditors = JPluginHelper::getPlugin('editors');
 
-                $sEditorClass = 'plgEditor' . $sEditor;
+		foreach($aEditors as $sEditor)
+		{
+			if(class_exists('plgEditor' . $sEditor->name, false))
+			{
+				return true;
+			}
+		}
 
-                return class_exists($sEditorClass, FALSE);
+		return false;
         }
-        
+
         /**
          * 
          */
@@ -110,7 +119,29 @@ class plgSystemJCH_Optimize extends JPlugin
         {
                 return JchOptimizeAjax::garbageCron(JchPlatformSettings::getInstance($this->params));
         }
-        
+
+        /**
+         * 
+         */
+        public function onAjaxGetmultiselect()
+        {
+                $aData  = JchPlatformUtility::get('data', '', 'array');
+
+                $params = JchPlatformPlugin::getPluginParams();
+                $oAdmin = new JchOptimizeAdmin($params, TRUE);
+                $oAdmin->getAdminLinks(new JchPlatformHtml($params), $params->get('jchmenu'));
+
+		$response = array();
+
+		foreach($aData as $sData)
+		{
+			$options = $oAdmin->prepareFieldOptions($sData['type'], $sData['param'], $sData['group'], false);
+			$response[$sData['id']] = new JchOptimizeJson($options);
+		}
+
+		return new JchOptimizeJson($response);
+
+        }
 
         ##<procode>##
 
@@ -125,7 +156,7 @@ class plgSystemJCH_Optimize extends JPlugin
                         && $app->input->get('jchbackend', '', 'int') != 1)
                 {
                         JHtml::stylesheet('plg_jchoptimize/pro-jquery.lazyloadxt.fadein.css', array(), TRUE);
-                        
+
                         if (version_compare(JVERSION, '3.0', '<'))
                         {
                                 JHtml::script('plg_jchoptimize/jquery.min.js', FALSE, TRUE);
@@ -140,7 +171,7 @@ class plgSystemJCH_Optimize extends JPlugin
                         JHtml::script('plg_jchoptimize/pro-jquery.lazyloadxt.js', FALSE, TRUE);
 
                         $force_load = $this->params->get('pro_lazyload_forceload', '0') ? 'forceLoad: true' : '';
-                        $document = JFactory::getDocument();
+                        $document   = JFactory::getDocument();
                         $document->addScriptDeclaration('
                                 jQuery.extend(jQuery.lazyLoadXT, {
   selector: \'img[data-jchll=true]\',
@@ -154,6 +185,7 @@ jQuery(window).on(\'ajaxComplete\', function() {
 });
 ');
                 }
+
         }
 
         /**
@@ -174,7 +206,7 @@ jQuery(window).on(\'ajaxComplete\', function() {
                 }
 
                 // Get the download ID
-                $dlid = $this->params->get('pro_downloadid', '');
+                $dlid = trim($this->params->get('pro_downloadid', ''));
 
                 // If the download ID is invalid, return without any further action
                 if (!preg_match('/^([0-9]{1,}:)?[0-9a-f]{32}$/i', $dlid))
@@ -198,9 +230,6 @@ jQuery(window).on(\'ajaxComplete\', function() {
          */
         public function onAjaxFiletree()
         {
-                $lang = JFactory::getLanguage();
-                $lang->load('plg_system_jch_optimize', JPATH_ADMINISTRATOR);
-
                 return JchOptimizeAjax::fileTree();
         }
 
@@ -211,7 +240,7 @@ jQuery(window).on(\'ajaxComplete\', function() {
         {
                 return JchOptimizeAjax::optimizeImages();
         }
-        
+
         /**
          * 
          * @param type $arr

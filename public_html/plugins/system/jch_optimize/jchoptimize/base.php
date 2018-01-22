@@ -28,9 +28,6 @@ defined('_JCH_EXEC') or die('Restricted access');
 class JchOptimizeBase
 {
 
-        protected $sBodyHtml = '';
-        protected $sHeadHtml = '';
-
         /**
          * Search area used to find js and css files to remove
          * 
@@ -38,20 +35,26 @@ class JchOptimizeBase
          */
         public function getHeadHtml()
         {
-                if ($this->sHeadHtml == '')
-                {
-                        $sHeadRegex = $this->getHeadRegex();
+		$sHeadRegex = $this->getHeadRegex();
 
-                        if (preg_match($sHeadRegex, $this->sHtml, $aHeadMatches) === FALSE || empty($aHeadMatches))
-                        {
-                                throw new Exception('An error occured while trying to find the <head> tags in the HTML document. Make sure your template has <head> and </head>');
-                        }
+		if (preg_match($sHeadRegex, $this->sHtml, $aHeadMatches) === FALSE || empty($aHeadMatches))
+		{
+			throw new Exception('An error occured while trying to find the <head> tags in the HTML document. Make sure your template has <head> and </head>');
+		}
 
-                        $this->sHeadHtml = $aHeadMatches[0];
-                }
-
-                return $this->sHeadHtml;
+		return  $aHeadMatches[0] . $this->sRegexMarker;
         }
+
+	protected function cleanRegexMarker($sHtml)
+	{
+		return preg_replace('#' . preg_quote($this->sRegexMarker) . '.*+$#', '', $sHtml);
+	}
+
+	public function setHeadHtml($sHtml)
+	{
+		$sHtml = $this->cleanRegexMarker($sHtml);
+		$this->sHtml = preg_replace($this->getHeadRegex(), JchOptimizeHelper::cleanReplacement($sHtml), $this->sHtml, 1);	
+	}
 
         /**
          * Fetches HTML to be sent to browser
@@ -60,14 +63,7 @@ class JchOptimizeBase
          */
         public function getHtml()
         {
-                $sHtml = preg_replace($this->getHeadRegex(), JchOptimizeHelper::cleanReplacement($this->sHeadHtml), $this->sHtml, 1);
-
-                if (is_null($sHtml) || $sHtml == '')
-                {
-                        throw new Exception('Error occured while trying to get html');
-                }
-
-                return $sHtml;
+                return $this->sHtml;
         }
 
         /**
@@ -87,9 +83,12 @@ class JchOptimizeBase
          * 
          * @return string
          */
-        public function getHeadRegex()
+        public function getHeadRegex($headonly=false)
         {
-                return '#<head\b[^>]*+>(?><?[^<]*+)*?</head>#i';
+		$s = $headonly ? '<head' : '^';
+		
+		return "#$s(?><?[^<]*+(?:<script\b(?><?[^<]*+)*?</\s*script\b|" . $this->ifRegex() 
+			. ")?)*?(?:</\s*head\s*+>|(?=<body\b))#si";
         }
         
         /**
@@ -108,7 +107,7 @@ class JchOptimizeBase
          */
         public function excludeDeclaration($sType)
         {
-                return TRUE;
+                return true;
         }
 
         /**
@@ -136,7 +135,8 @@ class JchOptimizeBase
          */
         public function getBodyRegex()
         {
-                return '#<body\b[^>]*+>.*</body>#si';
+		return '#^(?><?[^<]*+(?:<script\b[^>]*+>(?><?[^<]*+)*?</\s*script\s*+>|' . $this->ifRegex() 
+		. ')?)*?(?:</\s*head\s*+>|(?=<body\b))\K.*$#si';
         }
 
 }

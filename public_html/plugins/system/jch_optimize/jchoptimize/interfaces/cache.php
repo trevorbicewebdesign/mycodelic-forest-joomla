@@ -32,18 +32,18 @@ interface JchInterfaceCache
          * @param type $function
          * @param type $args
          */
-        public static function getCallbackCache($id, $lifetime, $function, $args);
+        public static function getCallbackCache($id, $function, $args);
 
         /**
          * 
          * @param type $id
          * @param type $lifetime
          */
-        public static function getCache($id, $lifetime);
+        public static function getCache($id);
         
         /**
          * 
          * @param type $lifetime
          */
-        public static function gc($lifetime);
+        public static function gc();
 }

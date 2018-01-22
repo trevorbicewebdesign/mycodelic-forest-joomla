@@ -20,30 +20,19 @@
  */
 defined('_JEXEC') or die;
 
-if (version_compare(PHP_VERSION, '5.3.0', '<'))
+include_once dirname(__FILE__) . '/exclude.php';
+
+class JFormFieldLoadfilesasync extends JFormFieldExclude
 {
 
-        class JFormFieldLoadfilesasync extends JFormFieldTextarea
+        public $type          = 'loadfilesasync';
+        protected $jch_params = 'pro_loadFilesAsync';
+
+        protected function getInput()
         {
+                $this->setAjaxParams('js', $this->jch_params, 'file');
 
-                public $type = 'loadfilesasync';
-
+                return parent::getInput();
         }
 
-}
-else
-{
-        include_once dirname(__FILE__) . '/exclude.php';
-
-        class JFormFieldLoadfilesasync extends JFormFieldExclude
-        {
-
-                public $type = 'loadfilesasync';
-                protected $jch_params = 'pro_loadFilesAsync';
-
-                protected function getFieldOptions()
-                {
-                        return $this->prepareFieldOptions('js', $this->jch_params, 'file');
-                }
-        }
 }

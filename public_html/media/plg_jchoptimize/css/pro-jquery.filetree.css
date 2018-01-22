@@ -91,3 +91,97 @@ UL.jqueryFileTree A:hover {
 .jqueryFileTree LI.ext_zip { background: url(../images/zip.png) left top no-repeat; }
 
 .jqueryFileTree LI.check-all { background: url(../images/arrow_left.png) left top no-repeat; }
+
+
+#file-tree-container, #files-container{
+        float:left;
+        padding: 5px;
+}
+
+.files-content{
+        height:400px;
+        overflow-y: auto;
+}
+
+#file-tree-container{
+        width:30%;
+}
+
+#files-container{
+        width: 40%;
+        margin-right: 20px;
+}
+
+#files-container a{
+        display: inline;
+}
+
+#files-container .files-content{
+        height: 364px;
+        padding-left: 30px;
+}
+
+#files-container-header{
+        padding-left: 30px;
+        border-bottom: 1px solid #ccc;
+}
+
+#files-container ul li{
+       height: 18px;
+       line-height:18px;
+       padding-left: 0px !important;
+}
+
+#files-container ul li span:first-of-type{
+        position: relative;
+        left: -20px;
+        width: 20px;
+        display: inline-block;
+}
+
+#files-container ul li span:nth-child(2),
+#files-container ul li span:nth-child(3),
+#files-container ul li span:nth-child(4){
+        display: inline-block;
+        width: 22.5%;
+        min-width: 60px;
+}
+
+#files-container ul li span:nth-child(2){
+        width: 50%;
+}
+
+#files-container ul li span input{
+        margin: 0;
+}
+
+#files-container ul li.check-all{
+        margin-bottom: 5px;
+}
+
+#files-container ul li input[type=text]{
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        font-size: 11px;
+        height:18px;
+        border-radius: 0px;
+        width:60px;
+}
+
+#files-container ul li input[type=text]:focus{
+        box-shadow: none;
+        border-color: #ccc;
+}
+
+#files-container ul li.file:nth-child(odd),
+#files-container ul li.file:nth-child(odd) input[type=text]
+{
+        background-color: whitesmoke;
+}
+
+#files-container ul li.file:nth-child(even),
+#files-container ul li.file:nth-child(even) input[type=text]
+{
+        background-color: white;
+}

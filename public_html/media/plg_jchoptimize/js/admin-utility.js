@@ -17,21 +17,21 @@
  * If LICENSE file missing, see <http://www.gnu.org/licenses/>.
  */
 
+
 function applyAutoSettings(int, pos)
 {
-        if (jQuery("fieldset.s" + int + "-on > input[type=radio]").length)
+        var selectoron = getSelector(int, "on");
+        var selectoroff = getSelector(int, "off");
+        
+        
+        if (jQuery(selectoron).length)
         {
-                jQuery("fieldset.s" + int + "-on > input[type=radio]").val("1");
+                jQuery(selectoron).val("1");
         }
 
-        if (jQuery("fieldset.s" + int + "-off > input[type=radio]").length)
+        if (jQuery(selectoroff).length)
         {
-                jQuery("fieldset.s" + int + "-off > input[type=radio]").val("0");
-        }
-
-        if (jQuery("select.position-javascript").length)
-        {
-                jQuery("select.position-javascript").val(pos);
+                jQuery(selectoroff).val("0");
         }
 
         submitJchSettings();
@@ -43,7 +43,10 @@ jQuery(document).ready(function () {
         for (i = 1; i <= 6; i++) {
                 var flag = true;
 
-                jQuery("fieldset.s" + i + "-on > input[type=radio][value=1]").each(function () {
+                var selectoron = getSelector(i, "on");
+                var selectoroff = getSelector(i, "off");
+
+                jQuery(selectoron + "[value=1]").each(function () {
                         var attr = jQuery(this).attr("checked");
 
                         if (typeof attr === typeof undefined || attr === false) {
@@ -53,7 +56,7 @@ jQuery(document).ready(function () {
                 });
 
                 if (flag == true) {
-                        jQuery("fieldset.s" + i + "-off > input[type=radio][value=0]").each(function () {
+                        jQuery(selectoroff + "[value=0]").each(function () {
                                 var attr = jQuery(this).attr("checked");
 
                                 if (typeof attr === typeof undefined || attr === false) {
@@ -61,14 +64,6 @@ jQuery(document).ready(function () {
                                         return false;
                                 }
                         })
-
-                        if (flag == true) {
-                                var pos = jQuery("select.position-javascript").val();
-
-                                if (((i <= 3) && pos != 0) || ((i == 4) && pos != 2) || ((i >= 5) && pos != 1)) {
-                                        flag = false;
-                                }
-                        }
                 }
 
                 if (flag == true) {
@@ -101,3 +96,13 @@ function addJchOption(id)
         jQuery("#" + id).trigger("chosen:updated");
 }
 ;
+
+function ucFirst(string) {
+    return string[0].toUpperCase() + string.slice(1);
+};
+
+
+function getTimeStamp() {
+        return new Date().getTime();
+}
+

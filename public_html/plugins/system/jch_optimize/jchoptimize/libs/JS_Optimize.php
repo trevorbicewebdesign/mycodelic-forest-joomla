@@ -170,10 +170,11 @@ class JS_Optimize extends Optimize
                 //remove linefeeds except if it precedes a non-ASCII character or an ASCII letter or digit or one of these 
                 //characters: ! \ $ _ [ ( { + - and if it follows a non-ASCII character or an ASCII letter or digit or one of these 
                 //characters: \ $ _ ] ) } + - " ' ...ie., all ASCII characters except those listed respectively
+		//(or a ) followed by a string)
                 $ln = '(?<=[!\#%&`*./,:;<=>?@\^|~{\[(])\n|\n(?=[\#%&`*./,:;<=>?@\^|~}\])"\'])';
 
                 //line feeds to keep
-                $k2 = "(?<=[\$_a-z0-9\\\\\])}+\-\"']|$na)\n(?=[!\$_a-z0-9\\\\\[({+\-]|$na)";
+                $k2 = "(?<=[\$_a-z0-9\\\\\])}+\-\"']|$na)\\n(?=[!\$_a-z0-9\\\\\[({+\-]|$na)|(?<=\))\\n(?=[\"'])";
 
                 //remove unnecessary linefeeds and spaces
                 $rx = "#(?>[^'\"/\\n ]*+(?>$s1|$s2|$x|/|$k1|$k2)?)*?\K(?>$sp|$ln|$)#si";

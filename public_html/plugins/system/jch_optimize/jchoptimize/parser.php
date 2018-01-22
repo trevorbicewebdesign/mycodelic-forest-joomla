@@ -37,12 +37,20 @@ class JchOptimizeParser extends JchOptimizeBase
         /** @var array    Array of css or js urls taken from head */
         protected $aLinks = array();
         protected $aUrls  = array();
+        protected $oFileRetriever;
+	protected $sRegexMarker = 'JCHREGEXMARKER';
         public $params    = null;
         public $sLnEnd    = '';
         public $sTab      = '';
         public $sFileHash = '';
-        private $bPreserveOrder;
-        protected $oFileRetriever;
+	public $bAmpPage  = false;
+	public $iIndex_js    = 0;
+	public $iIndex_css   = 0;
+	public $bExclude_js  = false;
+	public $bExclude_css = false;
+
+	public $sAttributeRegex = '[^\s/"\'=<>]*+(?:\s*=(?:\s*+"[^"]*+"|\s*+\'[^\']*+\'|[^\s>]*+[\s>]))?';
+	public $sAttributeValueRegex = '(?:(?<=")[^"]*+|(?<=\')[^\']*+|(?<==)[^\s*+>]*+)'; 
 
         /**
          * Constructor
@@ -63,8 +71,10 @@ class JchOptimizeParser extends JchOptimizeBase
                 if (!defined('JCH_TEST_MODE'))
                 {
                         $oUri            = JchPlatformUri::getInstance();
-                        $this->sFileHash = serialize($this->params->getOptions()) . JCH_VERSION . $oUri->getHost();
+                        $this->sFileHash = serialize($this->params->getOptions()) . JCH_VERSION . $oUri->toString(array('scheme', 'host'));
                 }
+
+		$this->bAmpPage = (bool) preg_match('#<html [^>]*?(?:&\#26A1;|amp)(?: |>)#', $sHtml);
 
                 $this->parseHtml();
         }
@@ -85,9 +95,9 @@ class JchOptimizeParser extends JchOptimizeBase
         public function cleanHtml()
         {
                 $hash = preg_replace(array(
-                        $this->getHeadRegex(),
+                        $this->getHeadRegex(true),
                         '#' . $this->ifRegex() . '#',
-                        '#' . implode('', $this->getJsRegex()) . '#six',
+                        '#' . implode('', $this->getJsRegex()) . '#ix',
                         '#' . implode('', $this->getCssRegex()) . '#six'
                         ), '', $this->sHtml);
 
@@ -126,19 +136,17 @@ class JchOptimizeParser extends JchOptimizeBase
 
                 $aCBArgs = array();
 
-                $this->getHeadHtml();
-                $this->getBodyHtml();
-
-                if (!JchOptimizeHelper::isMsieLT10() && $oParams->get('combine_files_enable', '1'))
+                if (!JchOptimizeHelper::isMsieLT10() && $oParams->get('combine_files_enable', '1') && !$this->bAmpPage)
                 {
                         loadJchOptimizeClass('JchPlatformExcludes');
-
-                        $aExJsComp  = $this->getExComp($oParams->get('excludeJsComponents', ''));
+			
+			//These parameters will be excluded while preserving execution order
+                        $aExJsComp  = $this->getExComp($oParams->get('excludeJsComponents_peo', ''));
                         $aExCssComp = $this->getExComp($oParams->get('excludeCssComponents', ''));
 
-                        $aExcludeJs     = JchOptimizeHelper::getArray($oParams->get('excludeJs', ''));
+                        $aExcludeJs     = JchOptimizeHelper::getArray($oParams->get('excludeJs_peo', ''));
                         $aExcludeCss    = JchOptimizeHelper::getArray($oParams->get('excludeCss', ''));
-                        $aExcludeScript = JchOptimizeHelper::getArray($oParams->get('pro_excludeScripts'));
+                        $aExcludeScript = JchOptimizeHelper::getArray($oParams->get('pro_excludeScripts_peo'));
                         $aExcludeStyle  = JchOptimizeHelper::getArray($oParams->get('pro_excludeStyles'));
 
                         $aExcludeScript = array_map(function($sScript)
@@ -147,7 +155,10 @@ class JchOptimizeParser extends JchOptimizeBase
                         }, $aExcludeScript);
 
                         $aCBArgs['excludes']['js']         = array_merge($aExcludeJs, $aExJsComp,
-                                                                         array('.com/maps/api/js', '.com/jsapi', '.com/uds', 'typekit.net'),
+                                                                         array('.com/maps/api/js', '.com/jsapi', '.com/uds', 'typekit.net','cdn.ampproject.org', 'googleadservices.com/pagead/conversion'),
+
+
+
                                                                          JchPlatformExcludes::head('js'));
                         $aCBArgs['excludes']['css']        = array_merge($aExcludeCss, $aExCssComp, JchPlatformExcludes::head('css'));
                         $aCBArgs['excludes']['js_script']  = $aExcludeScript;
@@ -155,6 +166,14 @@ class JchOptimizeParser extends JchOptimizeBase
 
                         $aCBArgs['removals']['js']  = JchOptimizeHelper::getArray($oParams->get('removeJs', ''));
                         $aCBArgs['removals']['css'] = JchOptimizeHelper::getArray($oParams->get('removeCss', ''));
+
+			//These parameters will be excluded without preserving execution order
+                        $aExJsComp_ieo  = $this->getExComp($oParams->get('excludeJsComponents', ''));
+                        $aExcludeJs_ieo     = JchOptimizeHelper::getArray($oParams->get('excludeJs', ''));
+                        $aExcludeScript_ieo = JchOptimizeHelper::getArray($oParams->get('pro_excludeScripts'));
+
+			$aCBArgs['excludes_ieo']['js'] = array_merge($aExcludeJs_ieo, $aExJsComp_ieo);
+			$aCBArgs['excludes_ieo']['js_script'] = $aExcludeScript_ieo;
 
                         JCH_DEBUG ? JchPlatformProfiler::stop('SetUpExcludes', TRUE) : null;
 
@@ -180,24 +199,19 @@ class JchOptimizeParser extends JchOptimizeBase
                 $c         = implode('', $aCssRegex);
 
                 $i  = $this->ifRegex();
-                $ns = '<noscript\b[^>]*+>(?><?[^<]*+)*?</noscript>';
+                $ns = '<noscript\b[^>]*+>(?><?[^<]*+)*?</noscript\s*+>';
 
                 $sRegex = "#(?>(?:<(?!!))?[^<]*+(?:$i|$ns|<!)?)*?\K(?:$j|$c|\K$)#six";
 
-                $this->iIndex_js    = -1;
-                $this->iIndex_css   = -1;
-                $this->bExclude_js  = TRUE;
-                $this->bExclude_css = TRUE;
 
                 JCH_DEBUG ? JchPlatformProfiler::stop('InitSearch', TRUE) : null;
 
-                $this->searchArea($sRegex, 'head', $aCBArgs);
-
+		$this->searchArea($sRegex, 'head', $aCBArgs);
                 ##<procode>##
 
-                if ($this->params->get('pro_searchBody', '0'))
+		if ($this->params->get('pro_bottom_js', '0') == 1)
                 {
-                        $aCBArgs['excludes']['js_script'] = array_merge($aCBArgs['excludes']['js_script'], array('document.write'),
+                        $aCBArgs['excludes']['js_script'] = array_merge($aCBArgs['excludes']['js_script'], array('.write(', 'var google_conversion'),
                                                                         JchPlatformExcludes::body('js', 'script'));
                         $aCBArgs['excludes']['js']        = array_merge($aCBArgs['excludes']['js'], array('.com/recaptcha/api'),
                                                                         JchPlatformExcludes::body('js'));
@@ -226,14 +240,14 @@ class JchOptimizeParser extends JchOptimizeBase
                                                         function($aMatches) use ($obj, $aCBArgs)
                 {
                         return $obj->replaceScripts($aMatches, $aCBArgs);
-                }, $this->{'s' . ucfirst($sSection) . 'Html'});
+                }, $this->{'get' . ucfirst($sSection) . 'Html'}());
 
                 if (is_null($sProcessedHtml))
                 {
                         throw new Exception(sprintf('Error while parsing for links in %1$s', $sSection));
                 }
 
-                $this->{'s' . ucfirst($sSection) . 'Html'} = $sProcessedHtml;
+                $this->{'set' . ucfirst($sSection) . 'Html'}($sProcessedHtml);
 
                 JCH_DEBUG ? JchPlatformProfiler::stop('SearchArea - ' . $sSection, TRUE) : null;
         }
@@ -251,6 +265,7 @@ class JchOptimizeParser extends JchOptimizeBase
                                 . '(?=(?>[^\s>]*+\s++)*?height\s*+=\s*+["\'][^\'">a-z]++[\'"]))'
                                 . '(?=(?>[^\s>]*+\s++)*?src\s*+=(?:\s*+"([^">]*+)"|\s*+\'([^\'>]*+)\'|([^\s>]++)))[^>]*+>|$)#i';
 
+			//find all images without width and height attributes and populate the $m array
                         preg_match_all($rx, $this->getBodyHtml(), $m, PREG_PATTERN_ORDER);
 
                         $this->aLinks['img'] = array_map(function($a)
@@ -270,10 +285,8 @@ class JchOptimizeParser extends JchOptimizeBase
          */
         public function replaceScripts($aMatches, $aCBArgs)
         {
-                $sUrl            = $aMatches['url'] = isset($aMatches[1]) && $aMatches[1] != '' ? 
-                        $aMatches[1] : (isset($aMatches[3]) ? $aMatches[3] : '');
-
-                $sDeclaration = isset($aMatches[2]) && $aMatches[2] != '' ? $aMatches[2] : (isset($aMatches[4]) ? $aMatches[4] : '');
+                $sUrl = $aMatches['url'] = trim(!empty($aMatches[1]) ? $aMatches[1] : (!empty($aMatches[3]) ? $aMatches[3] : ''));
+		$sDeclaration = $aMatches['content'] = !empty($aMatches[2]) ? $aMatches[2] : (!empty($aMatches[4]) ? $aMatches[4] : '');
 
                 if (preg_match('#^<!--#', $aMatches[0])
                         || (JchOptimizeUrl::isInvalid($sUrl) && trim($sDeclaration) == ''))
@@ -293,10 +306,6 @@ class JchOptimizeParser extends JchOptimizeBase
                         return $aMatches[0];
                 }
 
-                $this->bPreserveOrder = (bool) !(($sType == 'css' && $this->params->get('pro_optimizeCssDelivery_enable', '0'))
-                        || ($this->params->get('bottom_js', '0'))
-                        || ($sType == 'js' && $this->params->get('bottom_js', '0') == '1'));
-
 
                 $aExcludes = array();
 
@@ -305,12 +314,17 @@ class JchOptimizeParser extends JchOptimizeBase
                         $aExcludes = $aCBArgs['excludes'];
                 }
 
+		if (isset($aCBArgs['excludes_ieo']))
+		{
+			$aExcludes_ieo = $aCBArgs['excludes_ieo'];
+		}
+
                 $aRemovals = array();
 
-                if (isset($aCBArgs['removals']))
-                {
-                        $aRemovals = $aCBArgs['removals'];
-                }
+               // if (isset($aCBArgs['removals']))
+               // {
+               //         $aRemovals = $aCBArgs['removals'];
+               // }
 
                 $sMedia = '';
 
@@ -319,42 +333,66 @@ class JchOptimizeParser extends JchOptimizeBase
                         $sMedia .= $aMediaTypes[1] ? $aMediaTypes[1] : $aMediaTypes[2];
                 }
 
-                switch (TRUE)
+                switch (true)
                 {
+			//These cases are being excluded without preserving execution order
+                        case ($sUrl != '' && !JchOptimizeUrl::isHttpScheme($sUrl)):
+			case (!empty($sUrl) && !empty($aExcludes_ieo['js']) && JchOptimizeHelper::findExcludes($aExcludes_ieo['js'], $sUrl)):
+                        case ($sDeclaration != '' && JchOptimizeHelper::findExcludes($aExcludes_ieo['js_script'], $sDeclaration, 'js')):
+
+				return $aMatches[0];
+
+			//These cases are being excluded while preserving execution order
                         case (($sUrl != '') && !$this->isHttpAdapterAvailable($sUrl)):
                         case ($sUrl != '' && JchOptimizeUrl::isSSL($sUrl) && !extension_loaded('openssl')):
-                        case ($sUrl != '' && !JchOptimizeUrl::isHttpScheme($sUrl)):
                         case (($sUrl != '') && !empty($aExcludes[$sType]) && JchOptimizeHelper::findExcludes($aExcludes[$sType], $sUrl)):
                         case ($sDeclaration != '' && $this->excludeDeclaration($sType)):
                         case ($sDeclaration != '' && JchOptimizeHelper::findExcludes($aExcludes[$sType . '_script'], $sDeclaration, $sType)):
                         case (($sUrl != '') && $this->excludeExternalExtensions($sUrl)):
 
-                                $this->{'bExclude_' . $sType} = TRUE;
+				//We want to put the combined js files as low as possible, if files were removed before,
+				//we place them just above the excluded files
+				if($sType == 'js' && !$this->bExclude_js && !empty($this->aLinks['js']))
+				{
+					$aMatches[0] = '<JCH_JS' . $this->iIndex_js . '>' . $this->sLnEnd . 
+						$this->sTab . $aMatches[0];
+				}
+
+                                $this->{'bExclude_' . $sType} = true;
 
                                 return $aMatches[0];
 
-                        case (($sUrl != '') && $this->isDuplicated($sUrl)):
-                        case (($sUrl != '') && !empty($aRemovals[$sType]) && JchOptimizeHelper::findExcludes($aRemovals[$sType], $sUrl)):
+			case (($sUrl != '') && $this->isDuplicated($sUrl)):
 
                                 return '';
-
+				
                         default:
                                 $return = '';
 
-                                if ($this->{'bExclude_' . $sType} && $this->bPreserveOrder)
-                                {
-                                        $this->{'bExclude_' . $sType} = FALSE;
+				//mark location of first css file
+				if($sType == 'css' && empty($this->aLinks['css']) 
+					&& !$this->params->get('pro_optimizeCssDelivery_enable', '0'))
+				{
+					$return = '<JCH_CSS' . $this->iIndex_css . '>';
+				}
 
-                                        $iIndex = ++$this->{'iIndex_' . $sType};
-                                        $return = '<JCH_' . strtoupper($sType) . $iIndex . '>';
-                                }
-                                elseif (!$this->bPreserveOrder)
+				//The last file was excluded while preserving execution order
+                                if ($this->{'bExclude_' . $sType})
                                 {
-                                        $iIndex = 0;
-                                }
-                                else
-                                {
-                                        $iIndex = $this->{'iIndex_' . $sType};
+					//reset Exclude flag
+                                        $this->{'bExclude_' . $sType} = false;
+
+					//mark location of next removed css file
+					if ($sType == 'css' && !empty($this->aLinks['css'])
+						&& !$this->params->get('pro_optimizeCssDelivery_enable', '0'))
+					{
+						$return = '<JCH_CSS' . ++$this->iIndex_css . '>';
+					}
+
+					if ($sType == 'js' && !empty($this->aLinks['js']))
+					{
+						$this->iIndex_js++;
+					}
                                 }
 
                                 $array = array();
@@ -382,7 +420,7 @@ class JchOptimizeParser extends JchOptimizeBase
                                         $array['media'] = $sMedia;
                                 }
 
-                                $this->aLinks[$sType][$iIndex][] = $array;
+                                $this->aLinks[$sType][$this->{'iIndex_' . $sType}][] = $array;
 
                                 return $return;
                 }
@@ -395,12 +433,14 @@ class JchOptimizeParser extends JchOptimizeBase
          */
         protected function getFileID($aMatches)
         {
-                $id = $aMatches[0];
+                $id = '';
 
                 $containsgf = JchOptimizeHelper::getArray($this->params->get('hidden_containsgf', ''));
 
                 if (!empty($aMatches['url']))
                 {
+			$id .= $aMatches['url'];
+
                         if (strpos($aMatches['url'], 'fonts.googleapis.com') !== FALSE
                                 || in_array($aMatches['url'], $containsgf))
                         {
@@ -409,6 +449,10 @@ class JchOptimizeParser extends JchOptimizeBase
                                 $id .= $browser->getFontHash();
                         }
                 }
+		else
+		{
+			$id .= $aMatches['content'];
+		}
 
                 return md5($this->sFileHash . $id);
         }
@@ -477,16 +521,6 @@ class JchOptimizeParser extends JchOptimizeBase
         }
 
         /**
-         * Set the Searcharea property
-         * 
-         * @param type $sSearchArea
-         */
-        public function setSearchArea($sSearchArea, $sSection)
-        {
-                $this->{'s' . ucfirst($sSection) . 'Html'} = $sSearchArea;
-        }
-
-        /**
          * Determines if document is of html5 doctype
          * 
          * @return boolean
@@ -500,7 +534,7 @@ class JchOptimizeParser extends JchOptimizeBase
          * 
          * @return string
          */
-        protected static function ifRegex()
+        public static function ifRegex()
         {
                 return '<!--(?>-?[^-]*+)*?-->';
         }
@@ -517,7 +551,7 @@ class JchOptimizeParser extends JchOptimizeBase
                 $sExts  = implode('|', $aExts);
 
                 $sUrlRegex = <<<URLREGEX
-                (?>  [^\s>]*+\s  )+?  (?>$sAttrs)=["']?
+                (?>  [^\s>]*+\s  )+?  (?>$sAttrs)\s*+=\s*+["']?
                 ( (?<!["']) [^\s>]*+  | (?<!') [^"]*+ | [^']*+ )
                                                                         
 URLREGEX;
@@ -544,13 +578,11 @@ URLREGEX;
         {
                 $aRegex = array();
 
-                $aRegex[0] = '(?:<script';
+		$a = $this->sAttributeRegex;
+		$u = $this->sAttributeValueRegex;
 
-                $sCriteria = '(?(?=  type=  )  type=["\']?(?:text|application)/javascript  )';
-
-                $aRegex[1] = self::criteriaRegex($sCriteria);
-                $aRegex[2] = '(?:' . self::urlRegex(array('src'), array('js', 'php')) . ')?';
-                $aRegex[3] = "[^>]*+>(  (?> <? [^<]*+)*?  )</script>)";
+		$aRegex[0] = "(?:<script\b(?!(?>\s*+$a)*?\s*+type\s*+=\s*+(?![\"']?(?:text|application)/javascript[\"' ]))";
+		$aRegex[1] = "(?>\s*+(?!src)$a)*\s*+(?:src\s*+=\s*+[\"']?($u))?[^<>]*+>((?><?[^<]*+)*?)</\s*+script\s*+>)";
 
                 return $aRegex;
         }
@@ -563,14 +595,12 @@ URLREGEX;
         {
                 $aRegex = array();
 
-                $aRegex[0] = '(?:<link';
+		$a = $this->sAttributeRegex;
+		$u = $this->sAttributeValueRegex;
 
-                $sCriteria = '(?! (?:  itemprop | disabled | type=  (?!  ["\']?text/css  )  | rel=  (?!  ["\']?stylesheet  )  ) ) ';
-
-                $aRegex[1] = self::criteriaRegex($sCriteria);
-                $aRegex[2] = self::urlRegex(array('href'), array('css', 'php'));
-                $aRegex[3] = '[^>]*+>)';
-                $aRegex[4] = "|(?:<style(?:(?!(?:type=(?![\"']?text/css))|(?:scoped))[^>])*>((?><?[^<]+)*?)</[a-z0-9]++>)";
+		$aRegex[0] = "(?:<link\b(?!(?>\s*+$a)*?\s*+(?:itemprop|disabled|type\s*+=\s*+(?![\"']?text/css[\"' ])|rel\s*+=\s*+(?![\"']?stylesheet[\"' ])))";
+		$aRegex[1] = "(?>\s*+$a)*?\s*+href\s*+=\s*+[\"']?($u)[^<>]*+>)";
+                $aRegex[3] = "|(?:<style\b(?:(?!(?:\stype\s*+=\s*+(?![\"']?text/css[\"' ]))|(?:scoped|amp))[^>])*>((?><?[^<]+)*?)</\s*+style\s*+>)";
 
                 return $aRegex;
         }
@@ -583,41 +613,30 @@ URLREGEX;
          */
         public function getBodyHtml()
         {
-                if ($this->sBodyHtml == '')
-                {
-                        if (preg_match($this->getBodyRegex(), $this->sHtml, $aBodyMatches) === FALSE || empty($aBodyMatches))
-                        {
-                                throw new Exception('Error occurred while trying to match for search area.'
-                                . ' Check your template for open and closing body tags');
-                        }
+		if (preg_match($this->getBodyRegex(), $this->sHtml, $aBodyMatches) === false || empty($aBodyMatches))
+		{
+			throw new Exception('Error occurred while trying to match for search area.'
+			. ' Check your template for open and closing body tags');
+		}
 
-                        $this->sBodyHtml = $aBodyMatches[0];
-                }
-
-                return $this->sBodyHtml;
+		return $aBodyMatches[0] . $this->sRegexMarker;
         }
 
-        /**
-         * Returns processed html to be sent to the browser
-         * 
-         * @return string
-         */
-        public function getHtml()
-        {
-                $sHtml = parent::getHtml();
+	public function setBodyHtml($sHtml)
+	{
+		$sHtml = $this->cleanRegexMarker($sHtml);
+		$this->sHtml = preg_replace($this->getBodyRegex(), JchOptimizeHelper::cleanReplacement($sHtml), $this->sHtml, 1);	
+	}
 
-                if ($this->sBodyHtml != '')
-                {
-                        $sHtml = preg_replace($this->getBodyRegex(), JchOptimizeHelper::cleanReplacement($this->sBodyHtml), $sHtml, 1);
+	public function getFullHtml()
+	{
+		return $this->sHtml . $this->sRegexMarker;
+	}
 
-                        if (is_null($sHtml) || $sHtml == '')
-                        {
-                                throw new Exception('Error occured while trying to get HTML');
-                        }
-                }
-
-                return $sHtml;
-        }
+	public function setFullHtml($sHtml)
+	{
+		$this->sHtml = $this->cleanRegexMarker($sHtml);
+	}
 
         ##<procode2>##
 
@@ -627,8 +646,8 @@ URLREGEX;
          */
         public function excludeDeclaration($sType)
         {
-                return ($sType == 'css' && !$this->params->get('pro_inlineStyle', '1'))
-                        || ($sType == 'js' && !$this->params->get('pro_inlineScripts', '0'));
+		return ($sType == 'css' && (!$this->params->get('pro_inlineStyle', '1') || $this->params->get('pro_excludeAllStyles', '0')))
+                        || ($sType == 'js' && (!$this->params->get('pro_inlineScripts', '0') || $this->params->get('pro_excludeAllScripts', '0')));
         }
 
         ##</procode2>##
@@ -669,9 +688,10 @@ URLREGEX;
                 {
                         JCH_DEBUG ? JchPlatformProfiler::start('RunCookieLessDomain') : null;
 
-                        $static_files_array = $this->params->get('pro_staticfiles',
-                                                                 array('css', 'js', 'jpe?g', 'gif', 'png', 'ico', 'bmp', 'pdf', 'tiff?', 'docx?'));
-                        $static_files       = implode('|', $static_files_array);
+                        $static_files_array = array('css', 'js', 'jpe?g', 'gif', 'png', 'ico', 'bmp', 'pdf', 'tiff?', 'docx?');
+                        $sf  = implode('|', $static_files_array);
+			$a = $this->sAttributeRegex;
+			$u = $this->sAttributeValueRegex;
 
                         $uri  = clone JchPlatformUri::getInstance();
                         $port = $uri->toString(array('port'));
@@ -681,63 +701,60 @@ URLREGEX;
                                 $port = ':80';
                         }
 
-                        $host = preg_quote($uri->getHost()) . '(?:' . $port . ')?';
-                        $path = $uri->getPath();
+                        $host = '(?:www\.)?' . preg_quote(preg_replace('#^www\.#i', '', $uri->getHost())) . '(?:' . $port . ')?';
 
-                        $aPath = (preg_split('#/#', $path));
-                        array_pop($aPath);
-                        $dir   = trim(implode('/', $aPath), '/');
-                        $dir   = str_replace('/administrator', '', $dir);
+			if(preg_match("#<base[^>]*?\shref\s*+=\s*+[\"']\K$u#i", 
+				$this->getHeadHtml(), $mm))
+			{
+				$oBaseDir = JchPlatformUri::getInstance($mm[0]);
+				$dir = trim($oBaseDir->getPath(), '/');
+			}
+			else
+			{
+				$dir  = trim(JchPlatformUri::base(true), '/');
+			}
 
                         $match = '(?!data:image|[\'"])'
-                                . '(?=((?:(?:https?:)?//' . $host . ')?)((?!http|//).))'
-                                . '(?:(?<![=\'(])(?:\g{1}|\g{2})((?>\.?[^.">?]*+)*?\.(?>' . $static_files . ')[^">]*+)'
-                                . '|(?<![\'="])(?:\g{1}|\g{2})((?>\.?[^.)>?]*+)*?\.(?>' . $static_files . ')[^)>]*+)'
-                                . '|(?<![="(])(?:\g{1}|\g{2})((?>\.?[^.\'>?]*+)*?\.(?>' . $static_files . ')[^\'>]*+)'
-                                . '|(?<![\'"(])(?:\g{1}|\g{2})((?>\.?[^.\s*>?]*+)*?\.(?>' . $static_files . ')[^\s>]*+))';
+                                . '(?=(\s*+(?:(?:https?:)?//' . $host . ')?)(?!http|//))'
+				. '(?=(?<=")\1((?>\.?[^\.>"?]*+)*?\.(?>' . $sf . '))["?]'
+				. '|(?<=\')\1((?>\.?[^\.>\'?]*+)*?\.(?>' . $sf . '))[\'?]'
+				. '|(?<=\()\1((?>\.?[^\.>)?]*+)*?\.(?>' . $sf . '))[)?]'
+				. '|(?<==)\1((?>\.?[^\.>\s?]*+)*?\.(?>' . $sf . '))[\s?])'
+				. '((?<=\()[^)]*+|' . $u . ')';
 
-                        $a = '(?:<(?:link|script|ima?ge?|a))?(?>=?[^=<>]*+)*?(?<= href| src| data-src| xlink:href)=["\']?';
-                        $b = '(?:<style[^>]*+>|(?=(?>(?:<(?!style))?[^<]*+)?</style))(?>\(?[^(<>]*+)*?(?<= url)\(["\']?';
-                        $c = '(?>=?[^=>]++)*?(?<= style)=[^(>]++(?<=url)\(["\']?';
+			$l = '(?:xlink:)?href|(?:data-)?src';
+			$x = "(?:<(?:link|script|(?:amp-)?ima?ge?|a))(?>\s*+$a)*?\s*+" 
+				. "(?:(?:(?:$l)\s*+=\s*+[\"']?|style[^>(]*+(?<=url)\(['\"]?))";
+			$s = '<script\b(?:(?! src\*?=)[^>])*+>(?><?[^<]*+)*?</script\s*+>';
 
-                        $sRegex = "#(?><?[^<]*+)*?(?:(?:$a|$b|$c)\K$match|\K$)#iS";
+			$sRegex = '#(?:(?=[^<>]++>)(?>[\'"(\s]?[^\'"(\s>]*+)*?\s*+'
+				. "(?:(?:$l)\s*+=\s*+[\"']?|(?<=url)\(['\"]?)|" 
+				. "(?>[<(]?[^<(]*+(?:$s)?)*?)(?:(?:$x|(?<=url)\([\"']?)?\K$match|\K$)#iS";
 
-                        $obj = $this;
-
-                        $sProcessedHeadHtml = preg_replace_callback($sRegex,
-                                                                    function($m) use ($dir, $obj)
+                        $sProcessedFullHtml = preg_replace_callback($sRegex,
+                                                                    function($m) use ($dir)
                         {
-                                return $obj->cdnCB($m, $dir);
-                        }, $this->getHeadHtml());
-                        $sProcessedBodyHtml = preg_replace_callback($sRegex,
-                                                                    function($m) use ($dir, $obj)
-                        {
-                                return $obj->cdnCB($m, $dir);
-                        }, $this->getBodyHtml());
+				$m_array = array_filter($m);
+				array_pop($m_array);
+				$sPath = array_pop($m_array);
 
-                        if (is_null($sProcessedHeadHtml) || is_null($sProcessedBodyHtml))
+				if(substr($sPath, 0, 1) != '/')
+				{
+					$sPath = '/'. $dir . '/' . $sPath;
+				}
+
+				return JchOptimizeHelper::cookieLessDomain($this->params, $sPath, $m[0]);
+
+                        }, $this->getFullHtml());
+
+                        if (is_null($sProcessedFullHtml))
                         {
                                 JchOptimizeLogger::log('Cookie-less domain function failed', $this->params);
 
                                 return;
                         }
 
-                        if (preg_match($this->getHeadRegex(), $sProcessedHeadHtml, $aHeadMatches) === FALSE || empty($aHeadMatches))
-                        {
-                                JchOptimizeLogger::log('Failed retrieving head in cookie-less domain function', $this->params);
-
-                                return;
-                        }
-
-                        if (preg_match($this->getBodyRegex(), $sProcessedBodyHtml, $aBodyMatches) === FALSE || empty($aBodyMatches))
-                        {
-                                JchOptimizeLogger::log('Failed retrieving body in cookie-less domain function', $this->params);
-
-                                return;
-                        }
-
-                        $this->sHeadHtml = $aHeadMatches[0];
-                        $this->sBodyHtml = $aBodyMatches[0];
+			$this->setFullHtml($sProcessedFullHtml);
 
                         JCH_DEBUG ? JchPlatformProfiler::stop('RunCookieLessDomain', TRUE) : null;
                 }
@@ -752,11 +769,7 @@ URLREGEX;
          */
         public function cdnCB($m, $dir)
         {
-                $sPath = (isset($m[2]) && $m[2] != '/' ? '/' . $dir . '/' : '') .
-                        (isset($m[3]) ? $m[3] : '') .
-                        (isset($m[4]) ? $m[4] : '') .
-                        (isset($m[5]) ? $m[5] : '') .
-                        (isset($m[6]) ? $m[6] : '');
+		$sPath = JchOptimizeUrl::isPathRelative($m[0]) ?  '/' . $dir . '/' . $m[0] : $m[0]; 
 
                 return JchOptimizeHelper::cookieLessDomain($this->params, $sPath);
         }
@@ -767,7 +780,7 @@ URLREGEX;
          */
         public function lazyLoadImages()
         {
-                if ($this->params->get('pro_lazyload', '0'))
+                if ($this->params->get('pro_lazyload', '0') && !$this->bAmpPage)
                 {
                         JCH_DEBUG ? JchPlatformProfiler::start('LazyLoadImages') : null;
 
@@ -780,12 +793,12 @@ URLREGEX;
                 </noscript>
         </head>';
 
-                        $this->sHeadHtml = preg_replace('#</head>#i', $css, $this->getHeadHtml(), 1);
+                        $this->sHtml = preg_replace('#' . JchOptimizeLinkbuilder::getEndHeadTag() . '#i', $css, $this->sHtml, 1);
 
                         $sLazyLoadBodyHtml = preg_replace(
                                 $this->getLazyLoadRegex(),
-                                '$1src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="$3" '
-                                . 'data-jchll="true"$4<noscript>$1$2$4</noscript>'
+                                '$1$5src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="$3$7" '
+                                . 'data-jchll="true"$4$8<noscript>$1$5$2$6$4$8</noscript>'
                                 , $this->getBodyHtml());
 
                         if (is_null($sLazyLoadBodyHtml))
@@ -795,14 +808,7 @@ URLREGEX;
                                 return;
                         }
 
-                        if (preg_match($this->getBodyRegex(), $sLazyLoadBodyHtml, $aBodyMatches) === FALSE || empty($aBodyMatches))
-                        {
-                                JchOptimizeLogger::log('Failed retrieving body in lazy load images function', $this->params);
-
-                                return;
-                        }
-
-                        $this->sBodyHtml = $aBodyMatches[0];
+			$this->setBodyHtml($sLazyLoadBodyHtml);
 
                         JCH_DEBUG ? JchPlatformProfiler::stop('LazyLoadImages', TRUE) : null;
                 }
@@ -814,10 +820,10 @@ URLREGEX;
          */
         public function getLazyLoadRegex($admin = FALSE)
         {
-                $s      = '<script\b[^>]*+>(?><?[^<]*+)*?</script>';
-                $n      = '<noscript\b[^>]*+>(?><?[^<]*+)*?</noscript>';
-                $t      = '<textarea\b[^>]*+>(?><?[^<]*+)*?</textarea>';
-                $sRegex = "#(?><?[^<]*+(?:$s|$n|$t)?)*?"
+                $s      = '<script\b[^>]*+>(?><?[^<]*+)*?</script\s*+>';
+                $n      = '<noscript\b[^>]*+>(?><?[^<]*+)*?</noscript\s*+>';
+                $t      = '<textarea\b[^>]*+>(?><?[^<]*+)*?</textarea\s*+>';
+                $sRegex = "(?><?[^<]*+(?:$s|$n|$t)?)*?"
                         . '\K(?:(<img(?!(?>\s*+[^\s>]*+)*?\s*+(?>data-(?:src|original)';
 
                 $aExcludeClass = JchOptimizeHelper::getArray($this->params->get('pro_excludeLazyLoadClass', array()));
@@ -858,9 +864,14 @@ URLREGEX;
                         $sRegex .= '|' . $sExcludes;
                 }
 
-                $sRegex .= '))[\'"]?((?(?<=[\'"])[^\'"]*+|[^\s>]*+))[\'"]?)([^>]*+>)|\K$)#i';
+                $sRegex .= '))[\'"]?((?(?<=[\'"])[^\'"]*+|[^\s>]*+))[\'"]?)([^>]*+>)|\K$)';
 
-                return $sRegex;
+		//Skip first 200 elements before starting to modify images for lazy load to avoid problems 
+		//with css render blocking
+		$sFullRegex = '#(?>^(?><?[^<]*+)*?(?:(?><?(?:[a-z0-9]++)(?:[^>]*+)>(?><?[^<]*+)*?(?=<[a-z0-9])){200}|$)' .
+			$sRegex . ')|(?:' . $sRegex . ')#i';
+
+                return $sFullRegex;
         }
 
         ##</procode>##

@@ -20,32 +20,11 @@
  */
 defined('_JEXEC') or die;
 
-if (version_compare(PHP_VERSION, '5.3.0', '<'))
+include_once dirname(__FILE__) . '/exclude.php';
+
+class JFormFieldIncludeimages extends JFormFieldExclude
 {
 
-        class JFormFieldIncludeimages extends JFormFieldTextarea
-        {
-
-                public $type = 'includeimages';
-
-        }
-
-}
-else
-{
-        include_once dirname(__FILE__) . '/exclude.php';
-
-        class JFormFieldIncludeimages extends JFormFieldExclude
-        {
-
-                public $type = 'includeimages';
-                protected $jch_params = 'csg_include_images';
-
-                protected function getFieldOptions()
-                {
-                        return $this->prepareFieldOptions('images', $this->jch_params);
-                }
-
-        }
-
+        public $type          = 'includeimages';
+	public $filetype = 'images';
 }

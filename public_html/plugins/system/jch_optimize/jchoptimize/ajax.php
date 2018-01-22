@@ -30,9 +30,7 @@ class JchOptimizeAjax
          */
         public static function garbageCron(JchPlatformSettings $params)
         {
-                $lifetime = (int) $params->get('cache_lifetime', '1') * 24 * 60 * 60;
-
-                JchPlatformCache::gc($lifetime);
+                JchPlatformCache::gc();
         }
 
         ##<procode>##
@@ -55,10 +53,9 @@ class JchOptimizeAjax
                 $params    = (object) JchPlatformUtility::get('params', '', 'array');
                 $task      = JchPlatformUtility::get('task', '0', 'string');
 
-                $dir = rtrim(JchPlatformUtility::decrypt($dir_array['path']), '/\\');
-
                 if ($task == 'getfiles')
                 {
+			$dir = rtrim(JchPlatformUtility::decrypt($dir_array['path']), '/\\');
                         $files = array();
 
                         if (count(array_filter($subdirs)))
@@ -86,83 +83,123 @@ class JchOptimizeAjax
                         return new JchOptimizeJson($data);
                 }
 
-                $file = $dir;
-                $data = array();
+                $options = array(
+                        "files"  => array(),
+                        "lossy" => true,//(bool) $params->kraken_optimization_level
+			"resize" => array()
+                );
+
+
+		//Iterate through the packet of files
+		foreach($dir_array as $file)
+		{
+			//Populate the files array with the file names
+			$filepath = rtrim(JchPlatformUtility::decrypt($file['path']), '/\\'); 
+			$options['files'][] = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $filepath);
+
+			//If resize dimensions are specified, save them in resize array using file path as index
+			if (!empty($file['width']) || !empty($file['height']))
+			{
+				$filename = basename($filepath);
+				$options['resize'][$filename]['width']  = (int) (!empty($file['width']) ? $file['width'] : 0);
+				$options['resize'][$filename]['height'] = (int) (!empty($file['height']) ? $file['height'] : 0);
+			}
+
+			//Save backup of file
+			if ($params->kraken_backup || !empty($options['resize'][$file['path']]))
+			{
+				$backup_file = self::getBackupFilename($filepath);
+				self::copy($filepath, $backup_file);
+			}
+
+		}
 
                 $oJchio = new JchOptimize\ImageOptimizer($params->pro_downloadid, $params->hidden_api_secret);
 
-                $options = array(
-                        "file"  => $file,
-                        "lossy" => true//(bool) $params->kraken_optimization_level
-                );
-
-                if (!empty($dir_array['width']) || !empty($dir_array['height']))
-                {
-                        $options['resize']['width']  = (int) (!empty($dir_array['width']) ? $dir_array['width'] : 0);
-                        $options['resize']['height'] = (int) (!empty($dir_array['height']) ? $dir_array['height'] : 0);
-                }
-
-                if ($params->kraken_backup || !empty($options['resize']))
-                {
-                        $backup_file = self::getBackupFilename($file);
-                        self::copy($file, $backup_file);
-                }
-
                 $message = '';
-                $file    = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $file);
+		$datas = array();
+		$data = null;
 
                 try
                 {
-                        $response = $oJchio->upload($options);
+			//return an array of responses in the data property
+                        $responses = $oJchio->upload($options);
 
-                        if (isset($response->success))
+			//Check if response if formatted properly
+                        if (!isset($responses->success))
                         {
-                                if ($response->success)
-                                {
-                                        if (self::copy($response->data->kraked_url, $file))
-                                        {
-                                                $message .= 'Optimized! You saved ' . $response->data->saved_bytes . ' bytes.';
-                                        }
-                                        else
-                                        {
-                                                $data = new Exception('Could not copy optimized file.', 404);
-                                        }
-                                }
-                                else
-                                {
-                                        $data = new Exception($response->message, $response->code);
-                                }
-                        }
-                        else
-                        {
-                                JchOptimizeLogger::logInfo($response, 'Server error');
+				self::logMessage($responses, 'Server error');
 
-                                $data = new Exception('Unrecognizable response from server', 500);
+                                throw new Exception('Unrecognizable response from server', 500);
                         }
+
+			//Handle responses that are exceptions (ie, codes 403, 500)
+			if (!$responses->success)
+			{
+				self::logMessage($responses->message);
+
+				throw new Exception($responses->message, $responses->code);
+			}
+			
+			//Iterate through the array of data
+			foreach($responses->data as $i => $response)
+			{
+				$original_file = $options['files'][$i];
+				$message = $original_file . ': ';
+
+				//Check if file was successfully optimized
+				if ($response->success)
+				{
+					//Copy optimized file over original file
+					if (self::copy($response->data->kraked_url, $original_file))
+					{
+						$message .= 'Optimized! You saved ' . $response->data->saved_bytes . ' bytes.';
+					}
+					else
+					{
+						//If copy failed
+						$message .= 'Could not copy optimized file.';
+						$data = new Exception($message, 404);
+					}
+				}
+				else
+				{
+					//If file wasn't optimized format response accordingly
+					$message .= $response->message;
+					$data = new Exception($message, $response->code);
+				}
+
+				//Format each response
+				$data = new JchOptimizeJson($data, $message);
+
+				self::logMessage($data->message);
+
+				//Save each response in the response array
+				$datas[] = $data;
+			}
                 }
                 catch (Exception $e)
                 {
-                        $data = $e;
+			//Save exceptions to datas variable in place of array.
+			$datas = $e;
                 }
 
-                $respond = new JchOptimizeJson($data, $message);
+		//Format Ajax response
+                $respond = new JchOptimizeJson($datas);
 
-                if ($respond->success || $respond->code == 404)
-                {
-                        $respond->message = $file . ': ' . $respond->message;
-                }
+                return $respond;
+        }
 
-                try
-                {
-                        JchOptimizeLogger::logInfo($respond->message, 'INFO');
+	protected static function logMessage($message, $type='INFO')
+	{
+                try {
+                        JchOptimizeLogger::logInfo($message, $type);
                 }
                 catch (Exception $e)
                 {
                         
                 }
-
-                return $respond;
-        }
+	}
 
         /**
          * 
@@ -171,11 +208,10 @@ class JchOptimizeAjax
          */
         protected static function getBackupFilename($file)
         {
-                $root                 = JchPlatformPaths::rootPath();
                 $backup_parent_folder = JchPlatformPaths::backupImagesParentFolder();
 
-                $backup_file = $root . $backup_parent_folder . 'jch_optimize_backup_images/' .
-                        str_replace(array($root, '_', '/'), array('', '', '_'), $file);
+                $backup_file = $backup_parent_folder . 'jch_optimize_backup_images/' .
+                        str_replace(array(JchPlatformPaths::rootPath(), '_', '/'), array('', '', '_'), $file);
 
                 if (@file_exists($backup_file))
                 {
@@ -201,7 +237,7 @@ class JchOptimizeAjax
                         return $m[1] . (string) ++$m[2] . $m[3];
                 }, rtrim($file));
 
-                if (file_exists($backup_file))
+                if (@file_exists($backup_file))
                 {
                         $backup_file = self::incrementBackupFileName($backup_file);
                 }
@@ -219,10 +255,56 @@ class JchOptimizeAjax
         {
                 $dest_dir = dirname($dest);
 
-                if (!file_exists($dest_dir))
+                if (!@file_exists($dest_dir))
                 {
                         JchPlatformUtility::createFolder($dest_dir);
                 }
+
+		if(!ini_get('allow_url_fopen'))
+		{
+			if(!preg_match('#^http#i', $src))
+			{
+				return copy($src, $dest);
+			}
+
+			//Open file handler.
+			$fp = fopen($dest, 'wb');
+
+			//If $fp is FALSE, something went wrong.
+			if($fp === false){
+				return false;
+			}
+
+			//Create a cURL handle.
+			$ch = curl_init($src);
+
+			//Pass our file handle to cURL.
+			curl_setopt($ch, CURLOPT_FILE, $fp);
+
+			curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__) . '/libs/cacert.pem');
+
+			//Execute the request.
+			curl_exec($ch);
+
+			//If there was an error, throw an Exception
+			if($errno = curl_errno($ch)){
+				return false;
+			}
+
+			//Get the HTTP status code.
+			$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+			//Close the cURL handler.
+			curl_close($ch);
+
+			if($statusCode == 200){
+				return true;
+			} else{
+				return false;
+			}
+		}
 
                 $context = stream_context_create(array('ssl' => array(
                                 'verify_peer' => true,
@@ -238,8 +320,6 @@ class JchOptimizeAjax
 
                 $dest_stream = fopen($dest, 'wb');
 
-                
-
                 return stream_copy_to_stream($src_stream, $dest_stream);
         }
 
@@ -251,9 +331,9 @@ class JchOptimizeAjax
         {
                 $root = rtrim(JchPlatformPaths::rootPath(), '/\\');
 
-                $dir     = urldecode(JchPlatformUtility::get('dir', '', 'string', 'post'));
-                $view    = urldecode(JchPlatformUtility::get('view', '', 'string', 'post'));
-                $initial = urldecode(JchPlatformUtility::get('initial', '0', 'string', 'post'));
+                $dir     = urldecode(JchPlatformUtility::get('dir', '', 'string', 'get'));
+                $view    = urldecode(JchPlatformUtility::get('jchview', '', 'string', 'get'));
+                $initial = urldecode(JchPlatformUtility::get('initial', '0', 'string', 'get'));
 
                 $dir = JchPlatformUtility::decrypt($dir) . '/';
 
@@ -275,7 +355,7 @@ class JchOptimizeAjax
 
 
 
-                if (file_exists($root . $dir))
+                if (@file_exists($root . $dir))
                 {
                         $files = scandir($root . $dir);
 //                        $files = JchPlatformUtility::lsFiles($root . $dir, '\.(?:gif|jpe?g|png)$', FALSE);
@@ -294,30 +374,28 @@ class JchOptimizeAjax
 
                                 $response .= '<ul class="jqueryFileTree" ' . $display . '>';
 
+				$directories = array();
+				$imagefiles = array();
+
                                 foreach ($files as $file)
                                 {
-                                        if (file_exists($root . $dir . $file) && $file != '.' && $file != '..' && is_dir($root . $dir . $file))
+                                        if ($file != '.' && $file != '..' && is_dir($root . $dir . $file))
                                         {
-                                                $response .= '<li class="directory collapsed">'
+                                                $directories[] = '<li class="directory collapsed">'
                                                         . self::item($file, $dir, $view, 'dir') . '</li>';
                                         }
-                                }
                                 // All files
-                                if ($view != 'tree')
-                                {
-                                        foreach ($files as $file)
-                                        {
-                                                if (file_exists($root . $dir . $file) && preg_match('#\.(?:gif|jpe?g|png|GIF|JPE?G|PNG)$#', $file) && !is_dir($root . $dir . $file))
-                                                {
-                                                        $ext = preg_replace('/^.*\./', '', $file);
-                                                        $response .= '<li class="file ext_' . strtolower($ext) . '">'
-                                                                . self::item($file, $dir, $view, 'file')
-                                                                . '</li>';
-                                                }
-                                        }
+					elseif ($view != 'tree' && preg_match('#\.(?:gif|jpe?g|png|GIF|JPE?G|PNG)$#', $file) && @file_exists($root . $dir . $file) )
+					{
+						$ext = preg_replace('/^.*\./', '', $file);
+						$imagefiles[] = '<li class="file ext_' . strtolower($ext) . '">'
+							. self::item($file, $dir, $view, 'file')
+							. '</li>';
+
+					}
                                 }
 
-                                $response .= '</ul>';
+                                $response .= implode('', $directories) . implode('', $imagefiles) . '</ul>';
 
                                 if ($initial && $view == 'tree')
                                 {
@@ -363,8 +441,8 @@ class JchOptimizeAjax
                         {
                                 $html .= '<span><input type="checkbox" value="' . $encrypt_file . '"></span>';
                                 $html .= '<span>' . htmlentities($file) . '</span>'
-                                        . '<span><input type="text" pattern="[0-9]*" size="10" maxlength="5" name="width" ></span>'
-                                        . '<span><input type="text" pattern="[0-9]*" size="10" maxlength="5" name="height" ></span>';
+                                        . '<span><input type="text" size="10" maxlength="5" name="width" ></span>'
+                                        . '<span><input type="text" size="10" maxlength="5" name="height" ></span>';
                         }
                 }
 

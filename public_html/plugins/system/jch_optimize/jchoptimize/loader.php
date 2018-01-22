@@ -100,7 +100,7 @@ function loadJchOptimizeClass($sClass)
         }
 }
 
-spl_autoload_register('loadJchOptimizeClass');
+spl_autoload_register('loadJchOptimizeClass', true, true);
 
 
 

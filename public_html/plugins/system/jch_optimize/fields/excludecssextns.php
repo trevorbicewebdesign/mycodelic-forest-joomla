@@ -20,29 +20,13 @@
  */
 defined('_JEXEC') or die;
 
-if (version_compare(PHP_VERSION, '5.3.0', '<'))
-{
-        class JFormFieldExcludecssextns extends JFormFieldTextarea
-        {
-                public $type = 'excludecssextns';
-        }
-}
-else
-{
-        include_once dirname(__FILE__) . '/exclude.php';
+include_once dirname(__FILE__) . '/exclude.php';
 
-        class JFormFieldExcludecssextns extends JFormFieldExclude
-        {
-                public $type = 'excludecssextns';
-                protected $jch_params = 'excludeCssComponents';
+class JFormFieldExcludecssextns extends JFormFieldExclude
+{
 
-                /**
-                 * 
-                 * @return type
-                 */
-                protected function getFieldOptions()
-                {
-                        return $this->prepareFieldOptions('css', $this->jch_params, 'extension');
-                }
-        }
+        public $type = 'excludecssextns';
+	public $filetype = 'css';
+	public $filegroup = 'extension';
+
 }

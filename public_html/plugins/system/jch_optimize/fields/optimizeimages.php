@@ -54,9 +54,9 @@ else
                 protected function getInput()
                 {
                         $curl_enabled = function_exists('curl_version') && curl_version();
-                        $allow_url_fopen = (bool) ini_get('allow_url_fopen');
+                       // $allow_url_fopen = (bool) ini_get('allow_url_fopen');
                         
-                        if ($curl_enabled && $allow_url_fopen)
+                        if ($curl_enabled)// && $allow_url_fopen)
                         {
                                 if (JFactory::getApplication()->input->get('jchtask') == 'optimizeimages')
                                 {
@@ -75,7 +75,7 @@ else
                         else
                         {
                                 $header  = JText::_('Error');
-                                $message = !$allow_url_fopen ? JText::_('JCH_OPTIMIZE_IMAGE_NO_URL_FOPEN_MESSAGE') : '';
+                                //$message = !$allow_url_fopen ? JText::_('JCH_OPTIMIZE_IMAGE_NO_URL_FOPEN_MESSAGE') : '';
                                 $message = !$curl_enabled ? JText::_('JCH_OPTIMIZE_IMAGE_NO_CURL_MESSAGE'): $message;
 
                                 if (version_compare(JVERSION, '3.0', '<'))

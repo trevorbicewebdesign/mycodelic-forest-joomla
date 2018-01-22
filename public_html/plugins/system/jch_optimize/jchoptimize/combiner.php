@@ -111,7 +111,6 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
                 JCH_DEBUG ? JchPlatformProfiler::start('GetContents - ' . $sType, TRUE) : null;
 
                 $oCssParser   = $this->oCssParser;
-                $sCriticalCss = '';
                 $aSpriteCss   = array();
                 $aFontFace    = array();
 
@@ -145,33 +144,13 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
                                         $aSpriteCss = array();
                                 }
                         }
-
-                        if ($this->params->get('pro_optimizeCssDelivery_enable', '0'))
-                        {
-                                if (is_array($aSpriteCss) && !empty($aSpriteCss) && isset($aSpriteCss['needles']) && isset($aSpriteCss['replacements']))
-                                {
-                                        $this->$sType = str_replace($aSpriteCss['needles'], $aSpriteCss['replacements'], $this->$sType);
-                                }
-
-                                $oParser = $this->oParser;
-                                $oParser->params->set('pro_InlineScripts', '1');
-                                $oParser->params->set('pro_InlineStyles', '1');
-
-                                $sHtml = $oParser->cleanHtml();
-
-                                $aCssContents = $oCssParser->optimizeCssDelivery($this->$sType, $sHtml);
-                                $sCriticalCss .= $oCssParser->sortImports($aCssContents['criticalcss']);
-                                $aFontFace    = preg_split('#}\K[^@]*+#', $aCssContents['font-face'], -1, PREG_SPLIT_NO_EMPTY);
-                        }
                 }
 
                 $aContents = array(
                         'filemtime'   => JchPlatformUtility::unixCurrentDate(),
                         'etag'        => md5($this->$sType),
                         'file'        => $aContentsArray,
-                        'criticalcss' => $sCriticalCss,
                         'spritecss'   => $aSpriteCss,
-                        'font-face'   => $aFontFace
                 );
 
                 JCH_DEBUG ? JchPlatformProfiler::stop('GetContents - ' . $sType) : null;
@@ -190,7 +169,6 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
         public function combineFiles($aUrlArray, $sType, $oCssParser)
         {
                 $sContents = '';
-                $iLifetime = (int) $this->params->get('cache_lifetime', '1') * 24 * 60 * 60;
 
                 $this->bAsync    = FALSE;
                 $this->sAsyncContent = '';
@@ -225,7 +203,7 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
                                 $function = array($this, 'cacheContent');
                                 $args     = array($aUrl, $sType, $oFileRetriever, $oCssParser, TRUE);
 
-                                $sCachedContent = JchPlatformCache::getCallbackCache($aUrl['id'], $iLifetime, $function, $args);
+                                $sCachedContent = JchPlatformCache::getCallbackCache($aUrl['id'], $function, $args);
 
                                 $this->$sType .= $sCachedContent;
                                 
@@ -273,6 +251,18 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
 
                 if ($sType == 'css')
                 {
+                        if (function_exists('mb_convert_encoding'))
+                        {
+				$sEncoding = mb_detect_encoding($sContent);
+				
+				if($sEncoding === false)
+				{
+					$sEncoding = mb_internal_encoding();
+				}
+
+                                $sContent = mb_convert_encoding($sContent, 'utf-8', $sEncoding);
+                        }
+
                         $sImportContent = preg_replace('#@import\s(?:url\()?[\'"]([^\'"]+)[\'"](?:\))?#', '@import url($1)', $sContent);
 
                         if (is_null($sImportContent))
@@ -293,12 +283,6 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
                         $sContent = $oCssParser->correctUrl($sContent, $aUrl);
                         $sContent = $this->replaceImports($sContent, $aUrl);
                         $sContent = $oCssParser->handleMediaQueries($sContent, $aUrl['media']);
-                        
-
-                        if (function_exists('mb_convert_encoding'))
-                        {
-                                $sContent = mb_convert_encoding($sContent, 'utf-8');
-                        }
                 }
 
                 if ($sType == 'js' && trim($sContent) != '')
@@ -360,7 +344,7 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
 
                         if (is_null($sMinifiedContent) || $sMinifiedContent == '')
                         {
-                                JchOptimizeLogger::log(sprintf('Error occurred trying to minify: %s', $sUrl), $this->params);
+				JchOptimizeLogger::log(sprintf('Error occurred trying to minify: %s', $sUrl), $this->params); 
                                 $sMinifiedContent = $sContent;
                         }
 
@@ -416,13 +400,10 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
          */
         public function addErrorHandler($sContent, $aUrl)
         {
-                if (trim($sContent) != '')
-                {
-                        $sContent = 'try {' . $this->sLnEnd . $sContent . $this->sLnEnd . '} catch (e) {' . $this->sLnEnd;
-                        $sContent .= 'console.error(\'Error in ';
-                        $sContent .= isset($aUrl['url']) ? 'file:' . $aUrl['url'] : 'script declaration';
-                        $sContent .= '; Error:\' + e.message);' . $this->sLnEnd . '};';
-                }
+		$sContent = 'try {' . $this->sLnEnd . $sContent . $this->sLnEnd . '} catch (e) {' . $this->sLnEnd;
+		$sContent .= 'console.error(\'Error in ';
+		$sContent .= isset($aUrl['url']) ? 'file:' . $aUrl['url'] : 'script declaration';
+		$sContent .= '; Error:\' + e.message);' . $this->sLnEnd . '};';
 
                 return $sContent;
         }
@@ -492,7 +473,7 @@ class JchOptimizeCombiner extends JchOptimizeCombinerBase
 
                         $sImportFileContents = preg_replace_callback(
                                 "#(?>@?[^@'\"/]*+(?:{$u}|/|\()?)*?\K(?:@import\s*+(?:url\()?['\"]?([^\)'\"]+)['\"]?(?:\))?\s*+([^;]*);|\K$)#",
-                                array(__CLASS__, 'getImportFileContents'), $sContent
+                                array($this, 'getImportFileContents'), $sContent
                         );
 
                         if (is_null($sImportFileContents))

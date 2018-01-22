@@ -18,38 +18,14 @@
  *
  * If LICENSE file missing, see <http://www.gnu.org/licenses/>.
  */
-
 defined('_JEXEC') or die;
 
-if (version_compare(PHP_VERSION, '5.3.0', '<'))
+include_once dirname(__FILE__) . '/exclude.php';
+
+class JFormFieldExcludelazyloadclass extends JFormFieldExclude
 {
 
-        class JFormFieldExcludelazyloadclass extends JFormFieldTextarea
-        {
-
-                public $type = 'excludelazyloadclass';
-
-        }
-
-}
-else
-{
-        include_once dirname(__FILE__) . '/exclude.php';
-
-        class JFormFieldExcludelazyloadclass extends JFormFieldExclude
-        {
-
-                public $type = 'excludelazyloadclass';
-                protected $jch_params = 'pro_excludeLazyLoadClass';
-
-                /**
-                 * 
-                 * @return type
-                 */
-                protected function getFieldOptions()
-                {
-                        return $this->prepareFieldOptions('lazyload', $this->jch_params, 'class');
-                }
-        }
-
+        public $type = 'excludelazyloadclass';
+	public $filetype = 'lazyload';
+	public $filegroup = 'class';
 }

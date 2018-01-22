@@ -34,10 +34,9 @@ class JchOptimizeUrl
         {
                 $oUrl = clone JchPlatformUri::getInstance($sUrl);
 
-                if (preg_match('#^//#', $sUrl))
+                if (self::isProtocolRelative($sUrl))
                 {
-                        $oUri = JchPlatformUri::getInstance();
-                        $oUrl->setScheme($oUri->getScheme());
+                        $sUrl = self::toAbsolute($sUrl);
                 }
 
                 $sUrlBase = $oUrl->toString(array('scheme', 'user', 'pass', 'host', 'port', 'path'));
@@ -172,7 +171,7 @@ class JchOptimizeUrl
          * @param type $sUrl
          * @param type $sCurFile
          */
-        public static function toAbsolute($sUrl, $sCurFile)
+        public static function toAbsolute($sUrl, $sCurFile=null)
         {
                 $oUri = clone JchPlatformUri::getInstance($sCurFile);
                 

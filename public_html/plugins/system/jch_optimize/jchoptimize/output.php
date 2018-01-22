@@ -30,76 +30,86 @@ class JchOptimizeOutput
          * 
          * @return type
          */
-        public static function getCombinedFile()
+        public static function getCombinedFile($aGet=array(), $bSend=true)
         {
-                $aGet = self::getArray(array(
-                                'f'    => 'alnum',
-                                'd'    => 'int',
-                                'i'    => 'int',
-                                'type' => 'word'
-                ));
+		if (empty($aGet))
+		{
+			$aGet = self::getArray(array(
+					'f'    => 'alnum',
+					'i'    => 'int',
+					'type' => 'word'
+			));
+		}
 
-                $iLifetime = (int) $aGet['d'] * 24 * 60 * 60;
-
-                $aCache = JchPlatformCache::getCache($aGet['f'], $iLifetime);
+                $aCache = JchPlatformCache::getCache($aGet['f']);
 
                 if ($aCache === FALSE)
                 {
-                        die('File not found');
+			if($bSend)
+			{
+				header("HTTP/1.0 404 Not Found"); 
+
+				echo 'File not found';
+			}
+
+			return false;
                 }
 
-                $aTimeMFile = self::RFC1123DateAdd($aCache['filemtime'], '1 year');
+		if($bSend)
+		{
+			$aTimeMFile = self::RFC1123DateAdd($aCache['filemtime'], '1 year');
 
-                $sTimeMFile  = $aTimeMFile['filemtime'] . ' GMT';
-                $sExpiryDate = $aTimeMFile['expiry'] . ' GMT';
+			$sTimeMFile  = $aTimeMFile['filemtime'] . ' GMT';
+			$sExpiryDate = $aTimeMFile['expiry'] . ' GMT';
 
-                $sModifiedSinceTime = '';
-                $sNoneMatch = '';
+			$sModifiedSinceTime = '';
+			$sNoneMatch = '';
 
-                if (function_exists('apache_request_headers'))
-                {
-                        $headers = apache_request_headers();
-                        
-                        if (isset($headers['If-Modified-Since']))
-                        {
-                                $sModifiedSinceTime = strtotime($headers['If-Modified-Since']);
-                        }
-                        
-                        if (isset($headers['If-None-Match']))
-                        {
-                                $sNoneMatch = $headers['If-None-Match'];
-                        }
-                        
-                }
-                
-                if ($sModifiedSinceTime == '' && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']))
-                {
-                        $sModifiedSinceTime = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
-                }
-                
-                if ($sNoneMatch == '' && isset($_SERVER['HTTP_IF_NONE_MATCH']))
-                {
-                        $sNoneMatch = $_SERVER['HTTP_IF_NONE_MATCH'];
-                }
+			if (function_exists('apache_request_headers'))
+			{
+				$headers = apache_request_headers();
+				
+				if (isset($headers['If-Modified-Since']))
+				{
+					$sModifiedSinceTime = strtotime($headers['If-Modified-Since']);
+				}
+				
+				if (isset($headers['If-None-Match']))
+				{
+					$sNoneMatch = $headers['If-None-Match'];
+				}
+				
+			}
+			
+			if ($sModifiedSinceTime == '' && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']))
+			{
+				$sModifiedSinceTime = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
+			}
+			
+			if ($sNoneMatch == '' && isset($_SERVER['HTTP_IF_NONE_MATCH']))
+			{
+				$sNoneMatch = $_SERVER['HTTP_IF_NONE_MATCH'];
+			}
 
-                $sEtag = $aCache['etag'];
-                
-                if ($sModifiedSinceTime == strtotime($sTimeMFile) || trim($sNoneMatch) == $sEtag)
-                {
-                        // Client's cache IS current, so we just respond '304 Not Modified'.
-                        header('HTTP/1.1 304 Not Modified');
-                        header('Content-Length: 0');
+			$sEtag = $aCache['etag'];
+			
+			if ($sModifiedSinceTime == strtotime($sTimeMFile) || trim($sNoneMatch) == $sEtag)
+			{
+				// Client's cache IS current, so we just respond '304 Not Modified'.
+				header('HTTP/1.1 304 Not Modified');
+				header('Content-Length: 0');
 
-                        return;
-                }
-                else
-                {
-                        header('Last-Modified: ' . $sTimeMFile);
-                }
+				return;
+			}
+			else
+			{
+				header('Last-Modified: ' . $sTimeMFile);
+			}
+		}
 
                 $sFile = $aCache['file'][$aGet['i']];
 
-                $sFile = JchOptimizeOutput::getCachedFile($sFile, $iLifetime);
+                $sFile = JchOptimizeOutput::getCachedFile($sFile);
 
                 $aSpriteCss = $aCache['spritecss'];
 
@@ -110,11 +120,6 @@ class JchOptimizeOutput
                                 $sFile = str_replace($aSpriteCss['needles'], $aSpriteCss['replacements'], $sFile);
                         }
 
-                        if (isset($aCache['font-face']))
-                        {
-                                $sFile = str_replace($aCache['font-face'], '', $sFile);
-                        }
-
                         $oCssParser = new JchOptimizeCssParser();
                         $sFile      = $oCssParser->sortImports($sFile);
 
@@ -123,6 +128,11 @@ class JchOptimizeOutput
                                 $sFile = '@charset "utf-8";' . $sFile;
                         }
                 }
+
+		if (!$bSend)
+		{
+			return $sFile;
+		}
 
                 if ($aGet['type'] == 'css')
                 {
@@ -203,15 +213,14 @@ class JchOptimizeOutput
         /**
          * 
          * @param type $sContent
-         * @param type $iLifetime
          * @return type
          */
-        public static function getCachedFile($sContent, $iLifetime)
+        public static function getCachedFile($sContent)
         {
                 $sContent = preg_replace_callback('#\[\[JCH_([^\]]++)\]\]#',
-                                                  function($aM) use ($iLifetime)
-                {
-                        return JchPlatformCache::getCache($aM[1], $iLifetime);
+                                                  function($aM) 
+		{
+                        return JchPlatformCache::getCache($aM[1]);
                 }, $sContent);
 
                 return $sContent;
@@ -233,6 +242,8 @@ class JchOptimizeOutput
                 
                 foreach($array as $key => $value)
                 {
+			$_GET[$key] = isset($_GET[$key]) ? $_GET[$key] : '';
+			
                         switch($value)
                         {
                                 case 'alnum':

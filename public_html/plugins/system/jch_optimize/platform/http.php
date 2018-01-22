@@ -21,13 +21,12 @@
 class JchPlatformHttp implements JchInterfaceHttp
 {
 
-        protected $oHttpAdapter    = FALSE;
-        protected static $instance = FALSE;
+        protected $oHttpAdapter  = false;
 
         /**
          * 
          */
-        public function __construct()
+        public function __construct($aDrivers)
         {
                 jimport('joomla.http.factory');
 
@@ -43,7 +42,7 @@ class JchPlatformHttp implements JchInterfaceHttp
                 );
                 $oOptions = new JRegistry($aOptions);
 
-                $this->oHttpAdapter = JHttpFactory::getAvailableDriver($oOptions);
+                $this->oHttpAdapter = JHttpFactory::getAvailableDriver($oOptions, $aDrivers);
         }
 
         /**
@@ -64,7 +63,7 @@ class JchPlatformHttp implements JchInterfaceHttp
                 
                 $method = !isset($aPost) ? 'GET' : 'POST';
 
-                $oResponse = $this->oHttpAdapter->request($method, $oUri, $aPost, $aHeaders, 10, $sUserAgent);
+                $oResponse = $this->oHttpAdapter->request($method, $oUri, $aPost, $aHeaders, 60, $sUserAgent);
 
 
                 $return = array('body' => $oResponse->body, 'code' => $oResponse->code);
@@ -74,31 +73,10 @@ class JchPlatformHttp implements JchInterfaceHttp
 
         /**
          * 
-         * @return type
-         */
-        public static function getHttpAdapter()
-        {
-                if (!self::$instance)
-                {
-                        self::$instance = new JchPlatformHttp();
-                }
-
-                return self::$instance;
-        }
-
-        /**
-         * 
          */
         public function available()
         {
-                if ($this->oHttpAdapter === FALSE)
-                {
-                        return FALSE;
-                }
-                else
-                {
-                        return TRUE;
-                }
+                return $this->oHttpAdapter;
         }
 
 }

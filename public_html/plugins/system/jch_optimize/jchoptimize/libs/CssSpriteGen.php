@@ -150,12 +150,14 @@ class CssSpriteGen
                 {
                         JCH_DEBUG ? JchPlatformProfiler::start('CalculateSprite') : null;
                         
-                        $sFilePath = str_replace(JchOptimizeHelper::cookieLessDomain($this->params, '', TRUE), '', $sFile);
+			//Remove CDN domains if present
+			$aCdns = array_keys(JchOptimizeHelper::cookieLessDomain($this->params, '', '', true));
+                        $sFilePath = str_replace($aCdns, '', $sFile);
                         $sFilePath = JchOptimizeHelper::getFilepath($sFilePath);
 
                         $bFileExists = TRUE;
 
-                        if (file_exists($sFilePath))
+                        if (@file_exists($sFilePath))
                         {
 
                                 // do we want to scale down the source images
@@ -167,44 +169,50 @@ class CssSpriteGen
                                 $aPathParts = pathinfo($sFilePath);
                                 $sFileBaseName      = $aPathParts['basename'];
 
-                                $iImageType = exif_imagetype($sFilePath);
-                                $aImageInfo = getimagesize($sFilePath);
+                                $aImageInfo = @getimagesize($sFilePath);
+
+				if ($aImageInfo)
+				{
+					$iWidth  = $aImageInfo[0];
+					$iHeight = $aImageInfo[1];
+					$iImageType = $aImageInfo[2];
 
 
-                                $iWidth  = $aImageInfo[0];
-                                $iHeight = $aImageInfo[1];
+					// are we matching filenames against a regular expression
+					// if so it's likely not all images from the ZIP file will end up in the generated sprite image
+					if (!empty($this->aFormValues['file-regex']))
+					{
+						// forward slashes should be escaped - it's likely not doing this might be a security risk also
+						// one might be able to break out and change the modifiers (to for example run PHP code)
+						$this->aFormValues['file-regex'] = str_replace('/', '\/', $this->aFormValues['file-regex']);
 
+						// if the regular expression matches grab the first match and store for use as the class name
+						if (preg_match('/^' . $this->aFormValues['file-regex'] . '$/i', $sFileBaseName, $aMatches))
+						{
+							$sFileClass = $aMatches[1];
+						}
+						else
+						{
+							$sFileClass = '';
+						}
+					}
+					else
+					{ // not using regular expressions - set the class name to the base part of the filename (excluding extension)
+						$sFileClass = $aPathParts['basename'];
+					}
 
-                                // are we matching filenames against a regular expression
-                                // if so it's likely not all images from the ZIP file will end up in the generated sprite image
-                                if (!empty($this->aFormValues['file-regex']))
-                                {
-                                        // forward slashes should be escaped - it's likely not doing this might be a security risk also
-                                        // one might be able to break out and change the modifiers (to for example run PHP code)
-                                        $this->aFormValues['file-regex'] = str_replace('/', '\/', $this->aFormValues['file-regex']);
-
-                                        // if the regular expression matches grab the first match and store for use as the class name
-                                        if (preg_match('/^' . $this->aFormValues['file-regex'] . '$/i', $sFileBaseName, $aMatches))
-                                        {
-                                                $sFileClass = $aMatches[1];
-                                        }
-                                        else
-                                        {
-                                                $sFileClass = '';
-                                        }
-                                }
-                                else
-                                { // not using regular expressions - set the class name to the base part of the filename (excluding extension)
-                                        $sFileClass = $aPathParts['basename'];
-                                }
-
-                                // format the class name - it should only contain certain characters
-                                // this strips out any which aren't
-                                $sFileClass = $this->FormatClassName($sFileClass);
+					// format the class name - it should only contain certain characters
+					// this strips out any which aren't
+					$sFileClass = $this->FormatClassName($sFileClass);
+				}
+				else
+				{
+					$bFileExists = false;
+				}
                         }
                         else
                         {
-                                $bFileExists = FALSE;
+                                $bFileExists = false;
                         }
 
                         // the file also isn't valid if its extension doesn't match one of the image formats supported by the tool
@@ -213,7 +221,7 @@ class CssSpriteGen
                                 $bFileExists && !empty($sFileClass) && in_array(strtoupper($aPathParts['extension']), $this->aImageTypes)
                                 && in_array($iImageType, array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG))
                                 && substr($sFileBaseName, 0, 1) != '.'
-                                && $iWidth < 50 && $iHeight < 50
+                                && $iWidth < 50 && $iHeight < 50 && $iWidth > 0 && $iHeight > 0
                         )
                         {
                                 // grab the file extension
@@ -620,7 +628,10 @@ class CssSpriteGen
 
                 foreach ($this->aBackground as $background)
                 {
-                        $aCssBackground[] = @$this->aPosition[$background];
+			//if(!empty($background))
+			//{
+				$aCssBackground[] = @$this->aPosition[$background];
+			//}
                 }
 
                 return $aCssBackground;
@@ -703,11 +714,11 @@ class ImageHandlerImagick implements ImageHandlerInterface
                         // if no background colour use black
                         if (!empty($this->obj->aFormValues['background']))
                         {
-                                $oSprite->paintTransparentImage(new ImagickPixel("#$sBgColour"), 0.0, 0);
+                                $oSprite->transparentPaintImage(new ImagickPixel("#$sBgColour"), 0.0, 0, false);
                         }
                         else
                         {
-                                $oSprite->paintTransparentImage(new ImagickPixel("#000000"), 0.0, 0);
+                                $oSprite->transparentPaintImage(new ImagickPixel("#000000"), 0.0, 0, false);
                         }
                 }
 
@@ -790,17 +801,17 @@ class ImageHandlerGd implements ImageHandlerInterface
                 $oGD         = gd_info();
                 $aImageTypes = array();
                 // store supported formats for populating drop downs etc later
-                if (@$oGD['PNG Support'])
+                if (isset($oGD['PNG Support']))
                 {
                         $aImageTypes[] = 'PNG';
 
                         $this->aSpriteFormats[] = 'PNG';
                 }
-                if (@$oGD['GIF Create Support'])
+                if (isset($oGD['GIF Create Support']))
                 {
                         $aImageTypes[] = 'GIF';
                 }
-                if (@$oGD['JPG Support'] || @$oGD['JPEG Support'])
+                if (isset($oGD['JPG Support']) || isset($oGD['JPEG Support']))
                 {
                         $aImageTypes[] = 'JPG';
                 }

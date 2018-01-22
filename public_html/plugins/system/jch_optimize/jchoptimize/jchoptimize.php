@@ -19,8 +19,6 @@
  *
  * If LICENSE file missing, see <http://www.gnu.org/licenses/>.
  */
-
-
 // No direct access
 defined('_JCH_EXEC') or die('Restricted access');
 
@@ -33,7 +31,6 @@ class JchOptimize
 
         /** @var object   Plugin params * */
         public $params = null;
-        
         private $jit = 1;
 
         /**
@@ -43,14 +40,14 @@ class JchOptimize
         public function process($sHtml)
         {
                 JCH_DEBUG ? JchPlatformProfiler::start('Process', TRUE) : null;
-                
+
                 JCH_DEBUG ? JchPlatformProfiler::start('LoadClass') : null;
 
-                loadJchOptimizeClass(array('JchOptimizeBase', 'JchOptimizeParser', 'JchOptimizeFileRetriever', 
+                loadJchOptimizeClass(array('JchOptimizeBase', 'JchOptimizeParser', 'JchOptimizeFileRetriever',
                         'JchOptimizeLinkBuilder', 'JchOptimizeHelper'));
-                
+
                 JCH_DEBUG ? JchPlatformProfiler::stop('LoadClass', TRUE) : null;
-                
+
                 try
                 {
                         $oParser = new JchOptimizeParser($this->params, $sHtml, JchOptimizeFileRetriever::getInstance());
@@ -60,7 +57,7 @@ class JchOptimize
 
                         $oParser->runCookieLessDomain();
                         $oParser->lazyLoadImages();
-                
+
                         $this->params->set('isXhtml', $oLinkBuilder->isXhtml());
                         $this->params->set('isHtml5', $oParser->isHtml5());
                         $sOptimizedHtml = JchOptimizeHelper::minifyHtml($oParser->getHtml(), $this->params);
@@ -75,14 +72,14 @@ class JchOptimize
                 spl_autoload_unregister('loadJchOptimizeClass');
 
                 JCH_DEBUG ? JchPlatformProfiler::stop('Process', TRUE) : null;
-                
-                JCH_DEBUG ? JchPlatformProfiler::attachProfiler($sOptimizedHtml) : null;
 
-                if (version_compare(PHP_VERSION, '7', '>='))
+                JCH_DEBUG ? JchPlatformProfiler::attachProfiler($sOptimizedHtml, $oParser->bAmpPage) : null;
+
+                if (version_compare(PHP_VERSION, '7.0.0', '>='))
                 {
                         ini_set('pcre.jit', $this->jit);
                 }
-                
+
                 return $sOptimizedHtml;
         }
 
@@ -118,17 +115,24 @@ class JchOptimize
         private function __construct($oParams)
         {
                 loadJchOptimizeClass('JchPlatformSettings');
-                
+
                 ini_set('pcre.backtrack_limit', 1000000);
                 ini_set('pcre.recursion_limit', 100000);
-                
-                if (version_compare(PHP_VERSION, '7', '>='))
+
+                if (version_compare(PHP_VERSION, '7.0.0', '>='))
                 {
                         $this->jit = ini_get('pcre.jit');
                         ini_set('pcre.jit', 0);
                 }
 
-                $this->params = JchPlatformSettings::getInstance($oParams);
+                if ($oParams instanceof JchPlatformSettings)
+                {
+                        $this->params = $oParams;
+                }
+                else
+                {
+                        $this->params = JchPlatformSettings::getInstance($oParams);
+                }
         }
 
 }
