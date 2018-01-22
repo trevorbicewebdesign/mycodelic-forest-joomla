@@ -341,10 +341,6 @@ class JoomGalleryModelImage extends JoomGalleryModel
       // Set date of image
       $date = JFactory::getDate();
       $row->imgdate = $date->toSQL();
-	 
-	 print_r($row);
-	 
-	 die();
 
       // Make sure the record is valid
       if(!$row->check())

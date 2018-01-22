@@ -2216,12 +2216,6 @@ class JoomUpload extends JObject
     $date           = JFactory::getDate();
     $row->imgdate   = $date->toSQL();
 
-	// Trevor Bice - Hacked 9/8/2016 added EXIF date data instead of upload date
-	$path = "/home/trevorbi/mycodelicforest.org/public_html/images/joomgallery/originals/burning_man_2016_4/".$newfilename;
-	$exif_array = @exif_read_data($path, 'EXIF, IFD0, GPS', true);
-
-	$row->imgdate = $exif_array['EXIF']['DateTimeOriginal'];
-
     // Check whether images are approved directly if we are in frontend
     if($this->_site && $this->_config->get('jg_approve') == 1)
     {
