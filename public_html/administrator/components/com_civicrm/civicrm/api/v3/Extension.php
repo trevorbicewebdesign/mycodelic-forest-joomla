@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -39,27 +39,47 @@ define('API_V3_EXTENSION_DELIMITER', ',');
  *
  * @param array $params
  *   Input parameters.
- *   - key: string, eg "com.example.myextension"
- *   - keys: mixed; array of string, eg array("com.example.myextension1", "com.example.myextension2") or string with comma-delimited list
- *   Using 'keys' should be more performant than making multiple API calls with 'key'.
+ *    - key: string, eg "com.example.myextension"
+ *    - keys: array of string, eg array("com.example.myextension1", "com.example.myextension2")
+ *    - path: string, e.g. "/var/www/extensions/*"
+ *
+ * Using 'keys' should be more performant than making multiple API calls with 'key'
  *
  * @return array
- *   API result
  */
 function civicrm_api3_extension_install($params) {
   $keys = _civicrm_api3_getKeys($params);
-  if (count($keys) == 0) {
+  if (!$keys) {
     return civicrm_api3_create_success();
   }
 
   try {
-    CRM_Extension_System::singleton()->getManager()->install($keys);
+    $manager = CRM_Extension_System::singleton()->getManager();
+    $manager->install($manager->findInstallRequirements($keys));
   }
   catch (CRM_Extension_Exception $e) {
     return civicrm_api3_create_error($e->getMessage());
   }
 
   return civicrm_api3_create_success();
+}
+
+/**
+ * Spec function for getfields
+ * @param $fields
+ */
+function _civicrm_api3_extension_install_spec(&$fields) {
+  $fields['keys'] = array(
+    'title' => 'Extension Key(s)',
+    'api.aliases' => array('key'),
+    'type' => CRM_Utils_Type::T_STRING,
+    'description' => 'Fully qualified name of one or more extensions',
+  );
+  $fields['path'] = array(
+    'title' => 'Extension Path',
+    'type' => CRM_Utils_Type::T_STRING,
+    'description' => 'The path to the extension. May use wildcard ("*").',
+  );
 }
 
 /**
@@ -97,12 +117,13 @@ function civicrm_api3_extension_upgrade() {
  *
  * @param array $params
  *   Input parameters.
- *   - key: string, eg "com.example.myextension"
- *   - keys: mixed; array of string, eg array("com.example.myextension1", "com.example.myextension2") or string with comma-delimited list
- *     using 'keys' should be more performant than making multiple API calls with 'key'
+ *    - key: string, eg "com.example.myextension"
+ *    - keys: array of string, eg array("com.example.myextension1", "com.example.myextension2")
+ *    - path: string, e.g. "/var/www/vendor/foo/myext" or "/var/www/vendor/*"
+ *
+ * Using 'keys' should be more performant than making multiple API calls with 'key'
  *
  * @return array
- *   API result
  */
 function civicrm_api3_extension_enable($params) {
   $keys = _civicrm_api3_getKeys($params);
@@ -110,8 +131,17 @@ function civicrm_api3_extension_enable($params) {
     return civicrm_api3_create_success();
   }
 
-  CRM_Extension_System::singleton()->getManager()->enable($keys);
+  $manager = CRM_Extension_System::singleton()->getManager();
+  $manager->enable($manager->findInstallRequirements($keys));
   return civicrm_api3_create_success();
+}
+
+/**
+ * Spec function for getfields
+ * @param $fields
+ */
+function _civicrm_api3_extension_enable_spec(&$fields) {
+  _civicrm_api3_extension_install_spec($fields);
 }
 
 /**
@@ -119,12 +149,13 @@ function civicrm_api3_extension_enable($params) {
  *
  * @param array $params
  *   Input parameters.
- *                          - key: string, eg "com.example.myextension"
- *                          - keys: mixed; array of string, eg array("com.example.myextension1", "com.example.myextension2") or string with comma-delimited list
- *                            using 'keys' should be more performant than making multiple API calls with 'key'
+ *    - key: string, eg "com.example.myextension"
+ *    - keys: array of string, eg array("com.example.myextension1", "com.example.myextension2")
+ *    - path: string, e.g. "/var/www/vendor/foo/myext" or "/var/www/vendor/*"
+ *
+ * Using 'keys' should be more performant than making multiple API calls with 'key'
  *
  * @return array
- *   API result
  */
 function civicrm_api3_extension_disable($params) {
   $keys = _civicrm_api3_getKeys($params);
@@ -137,17 +168,27 @@ function civicrm_api3_extension_disable($params) {
 }
 
 /**
+ * Spec function for getfields
+ * @param $fields
+ */
+function _civicrm_api3_extension_disable_spec(&$fields) {
+  _civicrm_api3_extension_install_spec($fields);
+}
+
+/**
  * Uninstall an extension.
  *
  * @param array $params
  *   Input parameters.
- *                          - key: string, eg "com.example.myextension"
- *                          - keys: array of string, eg array("com.example.myextension1", "com.example.myextension2")
- *                            using 'keys' should be more performant than making multiple API calls with 'key'
- *                          - removeFiles: bool, whether to remove source tree; default: FALSE
+ *    - key: string, eg "com.example.myextension"
+ *    - keys: array of string, eg array("com.example.myextension1", "com.example.myextension2")
+ *    - path: string, e.g. "/var/www/vendor/foo/myext" or "/var/www/vendor/*"
+ *
+ * Using 'keys' should be more performant than making multiple API calls with 'key'
+ *
+ * @todo: removeFiles as optional param
  *
  * @return array
- *   API result
  */
 function civicrm_api3_extension_uninstall($params) {
   $keys = _civicrm_api3_getKeys($params);
@@ -155,9 +196,21 @@ function civicrm_api3_extension_uninstall($params) {
     return civicrm_api3_create_success();
   }
 
-  // TODO // $removeFiles = CRM_Utils_Array::value('removeFiles', $params, FALSE);
   CRM_Extension_System::singleton()->getManager()->uninstall($keys);
   return civicrm_api3_create_success();
+}
+
+/**
+ * Spec function for getfields
+ * @param $fields
+ */
+function _civicrm_api3_extension_uninstall_spec(&$fields) {
+  _civicrm_api3_extension_install_spec($fields);
+  //$fields['removeFiles'] = array(
+  //  'title' => 'Remove files',
+  //  'description' => 'Whether to remove the source tree. Default FALSE.',
+  //  'type' => CRM_Utils_Type::T_BOOLEAN,
+  //);
 }
 
 /**
@@ -173,13 +226,9 @@ function civicrm_api3_extension_uninstall($params) {
  *   API result
  */
 function civicrm_api3_extension_download($params) {
-  if (!array_key_exists('key', $params)) {
-    throw new API_Exception('Missing required parameter: key');
-  }
-
   if (!array_key_exists('url', $params)) {
     if (!CRM_Extension_System::singleton()->getBrowser()->isEnabled()) {
-      throw new API_Exception('Automatic downloading is diabled. Try adding parameter "url"');
+      throw new API_Exception('Automatic downloading is disabled. Try adding parameter "url"');
     }
     if ($reqs = CRM_Extension_System::singleton()->getBrowser()->checkRequirements()) {
       $first = array_shift($reqs);
@@ -205,9 +254,35 @@ function civicrm_api3_extension_download($params) {
   }
   CRM_Extension_System::singleton()->getCache()->flush();
   CRM_Extension_System::singleton(TRUE);
-  CRM_Extension_System::singleton()->getManager()->install(array($params['key']));
+  if (CRM_Utils_Array::value('install', $params, TRUE)) {
+    CRM_Extension_System::singleton()->getManager()->install(array($params['key']));
+  }
 
   return civicrm_api3_create_success();
+}
+
+/**
+ * Spec function for getfields
+ * @param $fields
+ */
+function _civicrm_api3_extension_download_spec(&$fields) {
+  $fields['key'] = array(
+    'title' => 'Extension Key',
+    'api.required' => 1,
+    'type' => CRM_Utils_Type::T_STRING,
+    'description' => 'Fully qualified name of the extension',
+  );
+  $fields['url'] = array(
+    'title' => 'Download URL',
+    'type' => CRM_Utils_Type::T_STRING,
+    'description' => 'Optional as the system can determine the url automatically for public extensions',
+  );
+  $fields['install'] = array(
+    'title' => 'Auto-install',
+    'type' => CRM_Utils_Type::T_STRING,
+    'description' => 'Automatically install the downloaded extension',
+    'api.default' => TRUE,
+  );
 }
 
 /**
@@ -222,9 +297,6 @@ function civicrm_api3_extension_download($params) {
  *   API result
  */
 function civicrm_api3_extension_refresh($params) {
-  $defaults = array('local' => TRUE, 'remote' => TRUE);
-  $params = array_merge($defaults, $params);
-
   $system = CRM_Extension_System::singleton(TRUE);
 
   if ($params['local']) {
@@ -243,6 +315,25 @@ function civicrm_api3_extension_refresh($params) {
 }
 
 /**
+ * Spec function for getfields
+ * @param $fields
+ */
+function _civicrm_api3_extension_refresh_spec(&$fields) {
+  $fields['local'] = array(
+    'title' => 'Rescan Local',
+    'api.default' => 1,
+    'type' => CRM_Utils_Type::T_BOOLEAN,
+    'description' => 'Whether to rescan the local filesystem (default TRUE)',
+  );
+  $fields['remote'] = array(
+    'title' => 'Rescan Remote',
+    'api.default' => 1,
+    'type' => CRM_Utils_Type::T_BOOLEAN,
+    'description' => 'Whether to rescan the remote repository (default TRUE)',
+  );
+}
+
+/**
  * Get a list of available extensions.
  *
  * @param array $params
@@ -251,50 +342,86 @@ function civicrm_api3_extension_refresh($params) {
  *   API result
  */
 function civicrm_api3_extension_get($params) {
+  $full_names = _civicrm_api3_getKeys($params, 'full_name');
+  $keys = _civicrm_api3_getKeys($params, 'key');
+  $keys = array_merge($full_names, $keys);
   $statuses = CRM_Extension_System::singleton()->getManager()->getStatuses();
   $mapper = CRM_Extension_System::singleton()->getMapper();
   $result = array();
   $id = 0;
   foreach ($statuses as $key => $status) {
-    //try {
-    //  $info = (array) $mapper->keyToInfo($key);
-    //} catch (CRM_Extension_Exception $e) {
+    try {
+      $obj = $mapper->keyToInfo($key);
+    }
+    catch (CRM_Extension_Exception $ex) {
+      CRM_Core_Session::setStatus(ts('Failed to read extension (%1). Please refresh the extension list.', array(1 => $key)));
+      continue;
+    }
+    $info = CRM_Extension_System::createExtendedInfo($obj);
+    $info['id'] = $id++; // backward compatibility with indexing scheme
+    if (!empty($keys)) {
+      if (in_array($key, $keys)) {
+        $result[] = $info;
+      }
+    }
+    else {
+      $result[] = $info;
+    }
+  }
+  $options = _civicrm_api3_get_options_from_params($params);
+  $returnFields = !empty($options['return']) ? $options['return'] : array();
+  if (!in_array('id', $returnFields)) {
+    $returnFields = array_merge($returnFields, array('id'));
+  }
+  return _civicrm_api3_basic_array_get('Extension', $params, $result, 'id', $returnFields);
+}
+
+/**
+ * Get a list of remotely available extensions.
+ *
+ * @param array $params
+ *
+ * @return array
+ *   API result
+ */
+function civicrm_api3_extension_getremote($params) {
+  $extensions = CRM_Extension_System::singleton()->getBrowser()->getExtensions();
+  $result = array();
+  $id = 0;
+  foreach ($extensions as $key => $obj) {
     $info = array();
     $info['id'] = $id++; // backward compatibility with indexing scheme
-    $info['key'] = $key;
-    //}
-    $info['status'] = $status;
+    $info = array_merge($info, (array) $obj);
     $result[] = $info;
   }
-  return _civicrm_api3_basic_array_get('Extension', $params, $result, 'id', array('id', 'key', 'status'));
+  return _civicrm_api3_basic_array_get('Extension', $params, $result, 'id', CRM_Utils_Array::value('return', $params, array()));
 }
 
 /**
  * Determine the list of extension keys.
  *
  * @param array $params
- *   API request params with 'key' or 'keys'.
+ * @param string $key
+ *   API request params with 'keys' or 'path'.
+ *   - keys: A comma-delimited list of extension names
+ *   - path: An absolute directory path. May append '*' to match all sub-directories.
  *
  * @return array
- *   Array of extension keys
- * @throws API_Exception
  */
-function _civicrm_api3_getKeys($params) {
-  if (array_key_exists('keys', $params) && is_array($params['keys'])) {
-    return $params['keys'];
+function _civicrm_api3_getKeys($params, $key = 'keys') {
+  if ($key == 'path') {
+    return CRM_Extension_System::singleton()->getMapper()->getKeysByPath($params['path']);
   }
-  elseif (array_key_exists('keys', $params) && is_string($params['keys'])) {
-    if ($params['keys'] == '') {
+  if (isset($params[$key])) {
+    if (is_array($params[$key])) {
+      return $params[$key];
+    }
+    if ($params[$key] == '') {
       return array();
     }
-    else {
-      return explode(API_V3_EXTENSION_DELIMITER, $params['keys']);
-    }
-  }
-  elseif (array_key_exists('key', $params)) {
-    return array($params['key']);
+    return explode(API_V3_EXTENSION_DELIMITER, $params[$key]);
   }
   else {
-    throw new API_Exception('Missing required parameter: key or keys');
+    return array();
   }
 }

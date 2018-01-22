@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,33 +28,33 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
- * This class generates form components for Extensions
- *
+ * This class generates form components for Extensions.
  */
 class CRM_Admin_Form_Extensions extends CRM_Admin_Form {
 
   /**
-   * For pre-processing
-   *
-   * @return void
+   * Form pre-processing.
    */
   public function preProcess() {
     parent::preProcess();
 
+    $mainPage = new CRM_Admin_Page_Extensions();
+    $localExtensionRows = $mainPage->formatLocalExtensionRows();
+    $this->assign('localExtensionRows', $localExtensionRows);
+
+    $remoteExtensionRows = $mainPage->formatRemoteExtensionRows($localExtensionRows);
+    $this->assign('remoteExtensionRows', $remoteExtensionRows);
+
     $this->_key = CRM_Utils_Request::retrieve('key', 'String',
       $this, FALSE, 0
     );
-
-    if (!CRM_Utils_Type::validate($this->_key, 'ExtensionKey')) {
+    if (!CRM_Utils_Type::validate($this->_key, 'ExtensionKey') && !empty($this->_key)) {
       throw new CRM_Core_Exception('Extension Key does not match expected standard');
     }
-
     $session = CRM_Core_Session::singleton();
     $url = CRM_Utils_System::url('civicrm/admin/extensions', 'reset=1&action=browse');
     $session->pushUserContext($url);
@@ -88,10 +88,6 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form {
 
   /**
    * Set default values for the form.
-   * the default values are retrieved from the database
-   *
-   *
-   * @return void
    */
   public function setDefaultValues() {
     $defaults = array();
@@ -100,8 +96,6 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form {
 
   /**
    * Build the form object.
-   *
-   * @return void
    */
   public function buildQuickForm() {
     switch ($this->_action) {
@@ -177,9 +171,6 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form {
 
   /**
    * Process the form submission.
-   *
-   *
-   * @return void
    */
   public function postProcess() {
     CRM_Utils_System::flushCache();
@@ -196,12 +187,12 @@ class CRM_Admin_Form_Extensions extends CRM_Admin_Form {
     }
 
     if ($this->_action & CRM_Core_Action::ADD) {
-      CRM_Extension_System::singleton()->getManager()->install(array($this->_key));
+      civicrm_api3('Extension', 'install', array('keys' => $this->_key));
       CRM_Core_Session::setStatus("", ts('Extension Installed'), "success");
     }
 
     if ($this->_action & CRM_Core_Action::ENABLE) {
-      CRM_Extension_System::singleton()->getManager()->enable(array($this->_key));
+      civicrm_api3('Extension', 'enable', array('keys' => $this->_key));
       CRM_Core_Session::setStatus("", ts('Extension Enabled'), "success");
     }
 

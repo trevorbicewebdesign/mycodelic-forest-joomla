@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,6 +27,9 @@
 
 /**
  * Metadata for an extension (e.g. the extension's "info.xml" file)
+ *
+ * @package CRM
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Extension_Info {
 
@@ -40,6 +43,19 @@ class CRM_Extension_Info {
   public $name = NULL;
   public $label = NULL;
   public $file = NULL;
+
+  /**
+   * @var array
+   *   Each item is a specification like:
+   *   array('type'=>'psr4', 'namespace'=>'Foo\Bar', 'path'=>'/foo/bar').
+   */
+  public $classloader = array();
+
+  /**
+   * @var array
+   *   Each item is they key-name of an extension required by this extension.
+   */
+  public $requires = array();
 
   /**
    * Load extension info an XML file.
@@ -81,6 +97,27 @@ class CRM_Extension_Info {
   }
 
   /**
+   * Build a reverse-dependency map.
+   *
+   * @param array $infos
+   *   The universe of available extensions.
+   *   Ex: $infos['org.civicrm.foobar'] = new CRM_Extension_Info().
+   * @return array
+   *   If "org.civicrm.api" is required by "org.civicrm.foo", then return
+   *   array('org.civicrm.api' => array(CRM_Extension_Info[org.civicrm.foo])).
+   *   Array(string $key => array $requiredBys).
+   */
+  public static function buildReverseMap($infos) {
+    $revMap = array();
+    foreach ($infos as $info) {
+      foreach ($info->requires as $key) {
+        $revMap[$key][] = $info;
+      }
+    }
+    return $revMap;
+  }
+
+  /**
    * @param null $key
    * @param null $type
    * @param null $name
@@ -99,7 +136,6 @@ class CRM_Extension_Info {
    * Copy attributes from an XML document to $this
    *
    * @param SimpleXMLElement $info
-   * @return void
    */
   public function parse($info) {
     $this->key = (string) $info->attributes()->key;
@@ -121,6 +157,22 @@ class CRM_Extension_Info {
           $this->urls[$urlAttr] = (string) $url;
         }
         ksort($this->urls);
+      }
+      elseif ($attr === 'classloader') {
+        $this->classloader = array();
+        foreach ($val->psr4 as $psr4) {
+          $this->classloader[] = array(
+            'type' => 'psr4',
+            'prefix' => (string) $psr4->attributes()->prefix,
+            'path' => (string) $psr4->attributes()->path,
+          );
+        }
+      }
+      elseif ($attr === 'requires') {
+        $this->requires = array();
+        foreach ($val->ext as $ext) {
+          $this->requires[] = (string) $ext;
+        }
       }
       else {
         $this->$attr = CRM_Utils_XML::xmlObjToArray($val);

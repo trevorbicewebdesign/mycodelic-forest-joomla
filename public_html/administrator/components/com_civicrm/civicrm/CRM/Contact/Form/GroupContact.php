@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,14 +28,11 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 
 /**
- * This class generates form components for groupContact
- *
+ * This class generates form components for groupContact.
  */
 class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
 
@@ -53,6 +50,23 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
    */
   protected $_contactId;
 
+  /**
+   * Explicitly declare the entity api name.
+   */
+  public function getDefaultEntity() {
+    return 'GroupContact';
+  }
+
+  /**
+   * Explicitly declare the form context.
+   */
+  public function getDefaultContext() {
+    return 'create';
+  }
+
+  /**
+   * Pre process form.
+   */
   public function preProcess() {
     $this->_contactId = $this->get('contactId');
     $this->_groupContactId = $this->get('groupContactId');
@@ -61,14 +75,22 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
 
   /**
    * Build the form object.
-   *
-   * @return void
    */
   public function buildQuickForm() {
     // get the list of all the groups
     if ($this->_context == 'user') {
       $onlyPublicGroups = CRM_Utils_Request::retrieve('onlyPublicGroups', 'Boolean', $this, FALSE);
-      $allGroups = CRM_Core_PseudoConstant::staticGroup($onlyPublicGroups);
+      $ids = CRM_Core_PseudoConstant::allGroup();
+      $heirGroups = CRM_Contact_BAO_Group::getGroupsHierarchy($ids);
+
+      $allGroups = array();
+      foreach ($heirGroups as $id => $group) {
+        // make sure that this group has public visibility
+        if ($onlyPublicGroups && $group['visibility'] == 'User and User Admin Only') {
+          continue;
+        }
+        $allGroups[$id] = $group;
+      }
     }
     else {
       $allGroups = CRM_Core_PseudoConstant::group();
@@ -101,10 +123,7 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
         $msg = ts('Add to a group');
       }
 
-      $this->add('select', 'group_id', '', $groupSelect, TRUE, array(
-          'class' => 'crm-select2 crm-action-menu action-icon-plus',
-          'placeholder' => $msg,
-        ));
+      $this->addField('group_id', array('class' => 'crm-action-menu fa-plus', 'placeholder' => $msg, 'options' => $groupSelect));
 
       $this->addButtons(array(
           array(
@@ -118,8 +137,7 @@ class CRM_Contact_Form_GroupContact extends CRM_Core_Form {
   }
 
   /**
-   *
-   * @return void
+   * Post process form.
    */
   public function postProcess() {
     $contactID = array($this->_contactId);

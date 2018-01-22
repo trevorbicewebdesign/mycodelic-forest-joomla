@@ -1,7 +1,7 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.5                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -21,7 +21,7 @@
  | GNU Affero General Public License or the licensing of CiviCRM,     |
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
-*/
+ */
 
 
 // Check to ensure this file is included in Joomla!
@@ -53,7 +53,7 @@ function civicrm_init() {
  */
 function civicrm_initialize() {
   // Check for php version and ensure its greater than minPhpVersion
-  $minPhpVersion = '5.3.3';
+  $minPhpVersion = '5.3.4';
   if (version_compare(PHP_VERSION, $minPhpVersion) < 0) {
     echo "CiviCRM requires PHP Version $minPhpVersion or greater. You are running PHP Version " . PHP_VERSION . "<p>";
     exit();
@@ -64,6 +64,10 @@ function civicrm_initialize() {
 
   require_once 'PEAR.php';
   $config = CRM_Core_Config::singleton();
+  // Set the time zone in both PHP and database
+  $joomlaUserTimezone = CRM_Core_Config::singleton()->userSystem->getTimeZoneString();
+  date_default_timezone_set($joomlaUserTimezone);
+  CRM_Core_Config::singleton()->userSystem->setMySQLTimeZone();
 }
 
 function plugin_init() {
@@ -74,13 +78,14 @@ function plugin_init() {
 
   // set page title
   JToolBarHelper::title('CiviCRM');
+  // We lose the PHP time zone default setting,so try to set it again.
+  $joomlaUserTimezone = CRM_Core_Config::singleton()->userSystem->getTimeZoneString();
+  date_default_timezone_set($joomlaUserTimezone);
 }
 
 function civicrm_invoke() {
   civicrm_initialize();
-
   plugin_init();
-
   $user = JFactory::getUser();
 
   /* bypass synchronize if running upgrade
@@ -115,4 +120,3 @@ function civicrm_invoke() {
   define('CIVICRM_UF_HEAD', TRUE);
   CRM_Core_Invoke::invoke($args);
 }
-

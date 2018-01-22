@@ -27,11 +27,13 @@
             <action name="civicrm.access_civicrm" title="CiviCRM: access CiviCRM" description="Master control for access to the main CiviCRM backend and API" />
             <action name="civicrm.access_contact_dashboard" title="CiviCRM: access Contact Dashboard" description="View Contact Dashboard (for themselves and visible contacts)" />
             <action name="civicrm.translate_civicrm" title="CiviCRM: translate CiviCRM" description="Allow User to enable multilingual" />
+            <action name="civicrm.manage_tags" title="CiviCRM: manage tags" description="Create and rename tags" />
             <action name="civicrm.administer_reserved_groups" title="CiviCRM: administer reserved groups" description="Edit and disable Reserved Groups (Needs Edit Groups)" />
             <action name="civicrm.administer_tagsets" title="CiviCRM: administer Tagsets" description="" />
             <action name="civicrm.administer_reserved_tags" title="CiviCRM: administer reserved tags" description="" />
             <action name="civicrm.administer_dedupe_rules" title="CiviCRM: administer dedupe rules" description="Create and edit rules, change the supervised and unsupervised rules" />
             <action name="civicrm.merge_duplicate_contacts" title="CiviCRM: merge duplicate contacts" description="Delete Contacts must also be granted in order for this to work." />
+            <action name="civicrm.force_merge_duplicate_contacts" title="CiviCRM: force merge duplicate contacts" description="Delete Contacts must also be granted in order for this to work." />
             <action name="civicrm.view_debug_output" title="CiviCRM: view debug output" description="View results of debug and backtrace" />
             <action name="civicrm.view_all_notes" title="CiviCRM: view all notes" description="View notes (for visible contacts) even if they're marked admin only" />
             <action name="civicrm.access_ajax_api" title="CiviCRM: access AJAX API" description="Allow API access even if Access CiviCRM is not granted" />
@@ -39,6 +41,10 @@
             <action name="civicrm.create_manual_batch" title="CiviCRM: create manual batch" description="Create an accounting batch (with Access to CiviContribute and View Own/All Manual Batches)" />
             <action name="civicrm.edit_own_manual_batches" title="CiviCRM: edit own manual batches" description="Edit accounting batches created by user" />
             <action name="civicrm.edit_all_manual_batches" title="CiviCRM: edit all manual batches" description="Edit all accounting batches" />
+            <action name="civicrm.close_own_manual_batches" title="CiviCRM: close own manual batches" description="Close accounting batches created by user (with Access to CiviContribute)" />
+            <action name="civicrm.close_all_manual_batches" title="CiviCRM: close all manual batches" description="Close all accounting batches (with Access to CiviContribute)" />
+            <action name="civicrm.reopen_own_manual_batches" title="CiviCRM: reopen own manual batches" description="Reopen accounting batches created by user (with Access to CiviContribute)" />
+            <action name="civicrm.reopen_all_manual_batches" title="CiviCRM: reopen all manual batches" description="Reopen all accounting batches (with Access to CiviContribute)" />
             <action name="civicrm.view_own_manual_batches" title="CiviCRM: view own manual batches" description="View accounting batches created by user (with Access to CiviContribute)" />
             <action name="civicrm.view_all_manual_batches" title="CiviCRM: view all manual batches" description="View all accounting batches (with Access to CiviContribute)" />
             <action name="civicrm.delete_own_manual_batches" title="CiviCRM: delete own manual batches" description="Delete accounting batches created by user" />
@@ -52,8 +58,10 @@
             <action name="civicrm.edit_own_api_keys" title="CiviCRM: edit own api keys" description="Edit user's own API keys" />
             <action name="civicrm.access_civireport" title="CiviReport: access CiviReport" description="View reports" />
             <action name="civicrm.access_report_criteria" title="CiviReport: access Report Criteria" description="Change report search criteria" />
+            <action name="civicrm.administer_private_reports" title="CiviReport: administer private reports" description="Edit all private reports" />
             <action name="civicrm.administer_reserved_reports" title="CiviReport: administer reserved reports" description="Edit all reports that have been marked as reserved" />
             <action name="civicrm.administer_reports" title="CiviReport: administer Reports" description="Manage report templates" />
+            <action name="civicrm.view_report_sql" title="CiviReport: view report sql" description="View sql used in CiviReports" />
             <action name="civicrm.access_civimail" title="CiviMail: access CiviMail" description="" />
             <action name="civicrm.access_civimail_subscribe_unsubscribe_pages" title="CiviMail: access CiviMail subscribe/unsubscribe pages" description="Subscribe/unsubscribe from mailing list group" />
             <action name="civicrm.delete_in_civimail" title="CiviMail: delete in CiviMail" description="Delete Mailing" />
@@ -61,11 +69,11 @@
             <action name="civicrm.access_civigrant" title="CiviGrant: access CiviGrant" description="View all grants" />
             <action name="civicrm.edit_grants" title="CiviGrant: edit grants" description="Create and update grants" />
             <action name="civicrm.delete_in_civigrant" title="CiviGrant: delete in CiviGrant" description="Delete grants" />
-            <action name="civicrm.delete_in_civicase" title="CiviCase: delete in CiviCase" description="Delete Cases" />
-            <action name="civicrm.administer_civicase" title="CiviCase: administer CiviCase" description="" />
-            <action name="civicrm.access_my_cases_and_activities" title="CiviCase: access my cases and activities" description="" />
-            <action name="civicrm.access_all_cases_and_activities" title="CiviCase: access all cases and activities" description="" />
-            <action name="civicrm.add_cases" title="CiviCase: add cases" description="" />
+            <action name="civicrm.delete_in_civicase" title="CiviCase: delete in CiviCase" description="Delete cases" />
+            <action name="civicrm.administer_civicase" title="CiviCase: administer CiviCase" description="Define case types, access deleted cases" />
+            <action name="civicrm.access_my_cases_and_activities" title="CiviCase: access my cases and activities" description="View and edit only those cases managed by this user" />
+            <action name="civicrm.access_all_cases_and_activities" title="CiviCase: access all cases and activities" description="View and edit all cases (for visible contacts)" />
+            <action name="civicrm.add_cases" title="CiviCase: add cases" description="Open a new case" />
             <action name="civicrm.access_civicontribute" title="CiviContribute: access CiviContribute" description="Record backend contributions (with edit contributions) and view all contributions (for visible contacts)" />
             <action name="civicrm.edit_contributions" title="CiviContribute: edit contributions" description="Record and update contributions" />
             <action name="civicrm.make_online_contributions" title="CiviContribute: make online contributions" description="" />

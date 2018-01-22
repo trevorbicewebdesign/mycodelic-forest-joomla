@@ -1,8 +1,8 @@
 {*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -142,7 +142,7 @@
                                                 {assign var=fieldHover value=$field|cat:"_hover"}
                               <td class="report-contents crm-report_{$field}">
                                   {if $row.$fieldLink}
-                                <a title="{$row.$fieldHover|escape} "href="{$row.$fieldLink}">
+                                <a title="{$row.$fieldHover|escape}" href="{$row.$fieldLink}">
                                   {/if}
 
                                   {if $row.$field eq 'Sub Total'}

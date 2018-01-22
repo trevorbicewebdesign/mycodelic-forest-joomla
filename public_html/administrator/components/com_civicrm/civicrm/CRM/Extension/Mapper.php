@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -42,16 +42,13 @@
  * module-extensions.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Extension_Mapper {
 
   /**
    * An URL for public extensions repository.
    */
-  //const DEFAULT_EXTENSIONS_REPOSITORY = 'http://civicrm.org/extdir/ver={ver}|cms={uf}';
 
   /**
    * Extension info file name.
@@ -344,6 +341,54 @@ class CRM_Extension_Mapper {
   }
 
   /**
+   * Get a list of extension keys, filtered by the corresponding file path.
+   *
+   * @param string $pattern
+   *   A file path. To search subdirectories, append "*".
+   *   Ex: "/var/www/extensions/*"
+   *   Ex: "/var/www/extensions/org.foo.bar"
+   * @return array
+   *   Array(string $key).
+   *   Ex: array("org.foo.bar").
+   */
+  public function getKeysByPath($pattern) {
+    $keys = array();
+
+    if (CRM_Utils_String::endsWith($pattern, '*')) {
+      $prefix = rtrim($pattern, '*');
+      foreach ($this->container->getKeys() as $key) {
+        $path = CRM_Utils_File::addTrailingSlash($this->container->getPath($key));
+        if (realpath($prefix) == realpath($path) || CRM_Utils_File::isChildPath($prefix, $path)) {
+          $keys[] = $key;
+        }
+      }
+    }
+    else {
+      foreach ($this->container->getKeys() as $key) {
+        $path = CRM_Utils_File::addTrailingSlash($this->container->getPath($key));
+        if (realpath($pattern) == realpath($path)) {
+          $keys[] = $key;
+        }
+      }
+    }
+
+    return $keys;
+  }
+
+  /**
+   * @return array
+   *   Ex: $result['org.civicrm.foobar'] = new CRM_Extension_Info(...).
+   * @throws \CRM_Extension_Exception
+   * @throws \Exception
+   */
+  public function getAllInfos() {
+    foreach ($this->container->getKeys() as $key) {
+      $this->keyToInfo($key);
+    }
+    return $this->infos;
+  }
+
+  /**
    * @param string $name
    *
    * @return bool
@@ -418,6 +463,8 @@ class CRM_Extension_Mapper {
     if ($this->cache) {
       $this->cache->delete($this->cacheKey . '/moduleFiles');
     }
+    // FIXME: How can code so code wrong be so right?
+    CRM_Extension_System::singleton()->getClassLoader()->refresh();
   }
 
 }

@@ -24,7 +24,7 @@ function civicrm_init() {
  */
 function civicrm_initialize() {
   // Check for php version and ensure its greater than minPhpVersion
-  $minPhpVersion = '5.3.3';
+  $minPhpVersion = '5.3.4';
   if (version_compare(PHP_VERSION, $minPhpVersion) < 0) {
     echo "CiviCRM requires PHP Version $minPhpVersion or greater. You are running PHP Version " . PHP_VERSION . "<p>";
     exit();
@@ -36,6 +36,11 @@ function civicrm_initialize() {
   require_once 'PEAR.php';
   $config = CRM_Core_Config::singleton();
 
+  // Set the time zone in both PHP and database
+  $joomlaUserTimezone = CRM_Core_Config::singleton()->userSystem->getTimeZoneString();
+  date_default_timezone_set($joomlaUserTimezone);
+  CRM_Core_Config::singleton()->userSystem->setMySQLTimeZone();
+
   // this is the front end, so let others know
   $config->userFrameworkFrontend = 1;
 }
@@ -45,10 +50,11 @@ function civicrm_invoke() {
 
   // check and ensure that we have a valid session
   if (!empty($_POST)) {
+    $urlStart = substr(stripslashes(CRM_Utils_Array::value('task', $_GET)), 0, 19);
     // the session should not be empty
     // however for standalone forms, it will not have any CiviCRM variables in the
     // session either, so dont check for it
-    if (count($_SESSION) <= 1) {
+    if (empty($_SESSION) && $urlStart != 'civicrm/payment/ipn') {
       $config = CRM_Core_Config::singleton();
       CRM_Utils_System::redirect($config->userFrameworkBaseURL);
     }
@@ -58,17 +64,21 @@ function civicrm_invoke() {
   // overrride the GET values if conflict
   if (!empty($_REQUEST['Itemid'])) {
     $component = JComponentHelper::getComponent('com_civicrm');
-    $app       = JFactory::getApplication();
-    $menu      = $app->getMenu();
-    $params    = $menu->getParams($app->input->get('Itemid'));
-    $args      = array('task', 'id', 'gid', 'pageId', 'action', 'csid', 'component');
-    $view      = CRM_Utils_Array::value('view', $_REQUEST);
+    $app = JFactory::getApplication();
+    $menu = $app->getMenu();
+    $params = $menu->getParams($app->input->get('Itemid'));
+    $args = array('task', 'id', 'gid', 'pageId', 'action', 'csid', 'component');
+    $view = CRM_Utils_Array::value('view', $_REQUEST);
     if ($view) {
       $args[] = 'reset';
     }
+
+    //look for menu item config in both request and params (backwards compatibility)
     foreach ($args as $a) {
-      $val = $params->get($a, NULL);
-      if ($val !== NULL && $view) {
+      $val = CRM_Utils_Array::value($a, $_REQUEST, NULL);
+      $valp = $params->get($a, NULL);
+      if (($val !== NULL || $valp !== NULL) && $view) {
+        $val = (!empty($val)) ? $val : $valp;
         $_REQUEST[$a] = $_GET[$a] = $val;
       }
     }
@@ -85,4 +95,3 @@ function civicrm_invoke() {
   define('CIVICRM_UF_HEAD', TRUE);
   CRM_Core_Invoke::invoke($args);
 }
-

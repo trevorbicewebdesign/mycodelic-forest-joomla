@@ -1,6 +1,6 @@
 <?php
 function civicrmVersion( ) {
-  return array( 'version'  => '4.6.33',
+  return array( 'version'  => '4.7.29',
                 'cms'      => 'Joomla',
                 'revision' => '' );
 }

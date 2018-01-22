@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.6                                                |
+ | CiviCRM version 4.7                                                |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2015                                |
+ | Copyright CiviCRM LLC (c) 2004-2017                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -30,9 +30,7 @@
  * uninstalling extensions.
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2015
- * $Id$
- *
+ * @copyright CiviCRM LLC (c) 2004-2017
  */
 class CRM_Extension_Manager {
   /**
@@ -121,7 +119,6 @@ class CRM_Extension_Manager {
    *
    * @param string $tmpCodeDir
    *   Path to a local directory containing a copy of the new (inert) code.
-   * @return void
    * @throws CRM_Extension_Exception
    */
   public function replace($tmpCodeDir) {
@@ -204,7 +201,6 @@ class CRM_Extension_Manager {
    *
    * @param array $keys
    *   List of extension keys.
-   * @return void
    * @throws CRM_Extension_Exception
    */
   public function install($keys) {
@@ -226,6 +222,11 @@ class CRM_Extension_Manager {
           $typeManager->onPreEnable($info);
           $this->_setExtensionActive($info, 1);
           $typeManager->onPostEnable($info);
+
+          // A full refresh would be preferrable but very slow. This at least allows
+          // later extensions to access classes from earlier extensions.
+          $this->statuses = NULL;
+          $this->mapper->refresh();
           break;
 
         case self::STATUS_UNINSTALLED:
@@ -233,6 +234,11 @@ class CRM_Extension_Manager {
           $typeManager->onPreInstall($info);
           $this->_createExtensionEntry($info);
           $typeManager->onPostInstall($info);
+
+          // A full refresh would be preferrable but very slow. This at least allows
+          // later extensions to access classes from earlier extensions.
+          $this->statuses = NULL;
+          $this->mapper->refresh();
           break;
 
         case self::STATUS_UNKNOWN:
@@ -249,7 +255,6 @@ class CRM_Extension_Manager {
 
     foreach ($keys as $key) {
       list ($info, $typeManager) = $this->_getInfoTypeHandler($key); // throws Exception
-      //print_r(array('post post?', $info, 'k' => $key, 'os'=> $origStatuses[$key]));
 
       switch ($origStatuses[$key]) {
         case self::STATUS_INSTALLED:
@@ -278,7 +283,6 @@ class CRM_Extension_Manager {
    *
    * @param array $keys
    *   List of extension keys.
-   * @return void
    * @throws CRM_Extension_Exception
    */
   public function enable($keys) {
@@ -290,7 +294,6 @@ class CRM_Extension_Manager {
    *
    * @param array $keys
    *   List of extension keys.
-   * @return void
    * @throws CRM_Extension_Exception
    */
   public function disable($keys) {
@@ -298,6 +301,13 @@ class CRM_Extension_Manager {
 
     // TODO: to mitigate the risk of crashing during installation, scan
     // keys/statuses/types before doing anything
+
+    sort($keys);
+    $disableRequirements = $this->findDisableRequirements($keys);
+    sort($disableRequirements); // This munges order, but makes it comparable.
+    if ($keys !== $disableRequirements) {
+      throw new CRM_Extension_Exception_DependencyException("Cannot disable extension due dependencies. Consider disabling all these: " . implode(',', $disableRequirements));
+    }
 
     foreach ($keys as $key) {
       switch ($origStatuses[$key]) {
@@ -339,7 +349,6 @@ class CRM_Extension_Manager {
    *
    * @param array $keys
    *   List of extension keys.
-   * @return void
    * @throws CRM_Extension_Exception
    */
   public function uninstall($keys) {
@@ -574,6 +583,98 @@ class CRM_Extension_Manager {
     else {
       return NULL;
     }
+  }
+
+  /**
+   * Build a list of extensions to install, in an order that will satisfy dependencies.
+   *
+   * @param array $keys
+   *   List of extensions to install.
+   * @return array
+   *   List of extension keys, including dependencies, in order of installation.
+   */
+  public function findInstallRequirements($keys) {
+    $infos = $this->mapper->getAllInfos();
+    $todoKeys = array_unique($keys); // array(string $key).
+    $doneKeys = array(); // array(string $key => 1);
+    $sorter = new \MJS\TopSort\Implementations\FixedArraySort();
+
+    while (!empty($todoKeys)) {
+      $key = array_shift($todoKeys);
+      if (isset($doneKeys[$key])) {
+        continue;
+      }
+      $doneKeys[$key] = 1;
+
+      /** @var CRM_Extension_Info $info */
+      $info = @$infos[$key];
+
+      if ($this->getStatus($key) === self::STATUS_INSTALLED) {
+        $sorter->add($key, array());
+      }
+      elseif ($info && $info->requires) {
+        $sorter->add($key, $info->requires);
+        $todoKeys = array_merge($todoKeys, $info->requires);
+      }
+      else {
+        $sorter->add($key, array());
+      }
+    }
+    return $sorter->sort();
+  }
+
+  /**
+   * Build a list of extensions to remove, in an order that will satisfy dependencies.
+   *
+   * @param array $keys
+   *   List of extensions to install.
+   * @return array
+   *   List of extension keys, including dependencies, in order of removal.
+   */
+  public function findDisableRequirements($keys) {
+    $INSTALLED = array(
+      self::STATUS_INSTALLED,
+      self::STATUS_INSTALLED_MISSING,
+    );
+    $installedInfos = $this->filterInfosByStatus($this->mapper->getAllInfos(), $INSTALLED);
+    $revMap = CRM_Extension_Info::buildReverseMap($installedInfos);
+    $todoKeys = array_unique($keys);
+    $doneKeys = array();
+    $sorter = new \MJS\TopSort\Implementations\FixedArraySort();
+
+    while (!empty($todoKeys)) {
+      $key = array_shift($todoKeys);
+      if (isset($doneKeys[$key])) {
+        continue;
+      }
+      $doneKeys[$key] = 1;
+
+      if (isset($revMap[$key])) {
+        $requiredBys = CRM_Utils_Array::collect('key',
+          $this->filterInfosByStatus($revMap[$key], $INSTALLED));
+        $sorter->add($key, $requiredBys);
+        $todoKeys = array_merge($todoKeys, $requiredBys);
+      }
+      else {
+        $sorter->add($key, array());
+      }
+    }
+    return $sorter->sort();
+  }
+
+  /**
+   * @param $infos
+   * @param $filterStatuses
+   * @return array
+   */
+  protected function filterInfosByStatus($infos, $filterStatuses) {
+    $matches = array();
+    foreach ($infos as $k => $v) {
+      if (in_array($this->getStatus($v->key), $filterStatuses)) {
+        $matches[$k] = $v;
+      }
+    }
+    return $matches;
   }
 
 }
