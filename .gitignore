@@ -9,6 +9,7 @@
 /public_html/cache/
 /public_html/logs/
 /public_html/components/com_sh404sef/cache/
+/public_html/donors/logs/error.php
 /public_html/t3-assets/
 *-cache-com_*
 *-cache-plg_*
