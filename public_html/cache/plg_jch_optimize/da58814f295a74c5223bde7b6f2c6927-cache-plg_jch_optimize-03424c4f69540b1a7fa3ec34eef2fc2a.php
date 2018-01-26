@@ -1,1 +1,0 @@
-<?php die("Access Denied"); ?>#x#a:2:{s:6:"result";s:273:"try{window.addEvent('domready',function(){});window.addEvent('load',function(){});window.addEvent('resize',function(){});jQuery(document).ready(function(){jQuery('#phone').mask('(000) 000-0000');});}catch(e){console.error('Error in script declaration; Error:'+e.message);};";s:6:"output";s:0:"";}
