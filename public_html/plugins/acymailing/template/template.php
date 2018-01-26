@@ -1,11 +1,12 @@
 <?php
 /**
  * @package	AcyMailing for Joomla!
- * @version	5.6.1
+ * @version	5.9.1
  * @author	acyba.com
- * @copyright	(C) 2009-2017 ACYBA S.A.R.L. All rights reserved.
+ * @copyright	(C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
+
 defined('_JEXEC') or die('Restricted access');
 ?><?php
 
@@ -44,7 +45,7 @@ class plgAcymailingTemplate extends JPlugin{
 			text-decoration: inherit !important;
 			font-size: inherit !important;
 			font-family: inherit !important;
-			font-weight: inherit !i mportant;
+			font-weight: inherit !important;
 			line-height: inherit !important;
 			}';
 
@@ -104,6 +105,7 @@ class plgAcymailingTemplate extends JPlugin{
 
 		if($addbody AND !strpos($email->body, '</body>')){
 			$before = '<html><head>'."\n";
+			if(!empty($template->header)) $before .= $template->header."\n";
 			$before .= '<meta http-equiv="Content-Type" content="text/html; charset='.strtolower($this->config->get('charset')).'" />'."\n";
 			$before .= '<meta name="viewport" content="width=device-width, initial-scale=1.0" />'."\n";
 			$before .= '<title>'.$email->subject.'</title>'."\n";
@@ -151,7 +153,7 @@ class plgAcymailingTemplate extends JPlugin{
 
 		if(!$email->sendHTML) return;
 
-		if((!acymailing_level(1) || acymailing_level(4)) && !empty($email->type) && in_array($email->type,array('news','followup'))){
+		if((!acymailing_level(1) || acymailing_level(4)) && !empty($email->type) && in_array($email->type, array('news', 'followup'))){
 			$pict = '<div style="text-align:center;margin:10px auto;display:block;"><a target="_blank" href="https://www.acyba.com/?utm_source=acymailing&utm_medium=e-mail&utm_content=img&utm_campaign=powered-by"><img alt="Powered by AcyMailing" src="media/com_acymailing/images/poweredby.png" /></a></div>';
 
 			if(strpos($email->body, '</body>')){
@@ -201,54 +203,76 @@ class plgAcymailingTemplate extends JPlugin{
 
 		$acypluginsHelper = acymailing_get('helper.acyplugins');
 		$acypluginsHelper->fixPictureDim($email->body);
-
-		$this->linksSEF($email);
 	}//endfct
 
-	public function linksSEF(&$email){
-		$acypluginsHelper = acymailing_get('helper.acyplugins');
-		$tags = $acypluginsHelper->extractTags($email, 'acyfrontsef');
+	public function acymailing_replacetags(&$email, $send = true){
+		$this->linksSEF($email);
+		$this->checkThumbnailYoutube($email);
+	}
 
-		if(empty($tags)) return;
+	public function linksSEF(&$email){
+		$results = array();
+		$altresults = array();
+		$found = preg_match_all('#(?:{|%7B)acyfrontsef(?:}|%7D)(.*)(?:{|%7B)/acyfrontsef(?:}|%7D)#Uis', $email->body, $results);
+		$found = preg_match_all('#(?:{|%7B)acyfrontsef(?:}|%7D)(.*)(?:{|%7B)/acyfrontsef(?:}|%7D)#Uis', $email->altbody, $altresults) || $found;
+
+		if(!$found) return;
+
+		$results[0] = array_merge($results[0], $altresults[0]);
+		$results[1] = array_merge($results[1], $altresults[1]);
+
+		$clearesults = array(0 => array(), 1 => array());
+		foreach($results[0] as $i => $val){
+			if(in_array($val, $clearesults[0])) continue;
+			$clearesults[0][] = $val;
+			$clearesults[1][] = $results[1][$i];
+		}
+		$results = $clearesults;
 
 		$urls = '';
 		$i = 0;
-		foreach($tags as $link => $SEFlink){
-			$urls .= '&urls['.$i.']='.base64_encode($SEFlink->id);
+		$passedResults = array(0 => array(), 1 => array());
+		foreach($results[1] as $key => $link){
+			$urls .= '&urls['.$i.']='.base64_encode($link);
+			$passedResults[0][] = $results[0][$key];
+			$passedResults[1][] = $link;
 			$i++;
+
+			if($i > 40){
+				$this->_callFrontURL($email, $urls, $passedResults);
+				$passedResults = array(0 => array(), 1 => array());
+				$urls = '';
+				$i = 0;
+			}
 		}
 
-		$sefLinks = acymailing_fileGetContent(JURI::root().'index.php?option=com_acymailing&ctrl=url&task=sef'.$urls);
+		if(!empty($urls)) $this->_callFrontURL($email, $urls, $passedResults);
+	}
+
+	private function _callFrontURL(&$email, $urls, $results){
+		$sefLinks = acymailing_fileGetContent(acymailing_rootURI().'index.php?option=com_acymailing&ctrl=url&task=sef'.$urls);
 		$newLinks = json_decode($sefLinks, true);
 
 		if($newLinks == null){
-			$otherarguments = '';
-			$liveParsed = parse_url(ACYMAILING_LIVE);
-			if(isset($liveParsed['path']) AND strlen($liveParsed['path']) > 0){
-				$mainurl = substr(ACYMAILING_LIVE, 0, strrpos(ACYMAILING_LIVE, $liveParsed['path'])).'/';
-				$otherarguments = trim(str_replace($mainurl, '', ACYMAILING_LIVE), '/');
-				if(strlen($otherarguments) > 0) $otherarguments .= '/';
-			}else{
-				$mainurl = ACYMAILING_LIVE;
-			}
-
 			if(!empty($sefLinks) && defined('JDEBUG') && JDEBUG) acymailing_enqueueMessage('Error trying to get the sef links: '.$sefLinks);
+
 			$newLinks = array();
-			foreach($tags as $oneLink){
-				$link = ltrim($oneLink->id, '/');
-				if(!empty($otherarguments) && strpos($link, $otherarguments) === false) $link = $otherarguments.$link;
-				$newLinks[$oneLink->id] = $mainurl.$link;
+			foreach($results[1] as $link){
+				$key = $link;
+				$link = ltrim($link, '/');
+				$mainurl = acymailing_mainURL($link);
+				$newLinks[$key] = $mainurl.$link;
 			}
 		}
 		$replacement = array();
-		if(!empty($newLinks)) {
-			foreach ($newLinks as $origin => $new) {
-				$replacement['%7Bacyfrontsef:' . $origin . '%7D'] = $new;
-				$replacement['{acyfrontsef:' . $origin . '}'] = $new;
-			}
-			$email->body = str_replace(array_keys($replacement), $replacement, $email->body);
-			$email->altbody = str_replace(array_keys($replacement), $replacement, $email->altbody);
+		if(empty($newLinks)) return;
+
+		foreach($results[1] as $key => $origin){
+			$replacement[$results[0][$key]] = $newLinks[$results[1][$key]];
 		}
+
+		$email->body = str_replace(array_keys($replacement), $replacement, $email->body);
+		$email->altbody = str_replace(array_keys($replacement), $replacement, $email->altbody);
 	}
 
 	public function _convertSpaces($matches){
@@ -274,5 +298,10 @@ class plgAcymailingTemplate extends JPlugin{
 		if(empty($replace)) return;
 
 		$body = str_replace(array_keys($replace), $replace, $body);
+	}
+
+	function checkThumbnailYoutube($mail){
+		$acypluginsHelper = acymailing_get('helper.acyplugins');
+		$mail->body = $acypluginsHelper->replaceVideos($mail->body);
 	}
 }//endclass

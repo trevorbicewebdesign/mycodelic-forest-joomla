@@ -6,7 +6,7 @@
 	<author>Acyba</author>
 	<authorEmail>dev@acyba.com</authorEmail>
 	<authorUrl>http://www.acyba.com</authorUrl>
-	<copyright>Copyright (C) 2009-2016 ACYBA SAS - All rights reserved..</copyright>
+	<copyright>Copyright (C) 2009-2017 ACYBA SAS - All rights reserved..</copyright>
 	<license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
 	<description>Subscribe / Unsubscribe Module for AcyMailing</description>
 	<files>
@@ -126,10 +126,6 @@
 			<option value="module">On the module itself</option>
 		</param>
 		<param name="itemid" size="10" type="text" default="" label="ACY_ITEMID" description="Menu ID used in the archive links coming from this module"/>
-		<param name="loadmootools" type="list" default="1" label="Use mootools" description="Select if you want the module to use Mootools or not">
-			<option value="0">No</option>
-			<option value="1">Yes</option>
-		</param>
 	</params>
 
 	<config>
@@ -245,11 +241,8 @@
 					<option value="module">On the module itself</option>
 				</field>
 				<field name="itemid" size="10" type="text" default="" label="ACY_ITEMID" description="Menu ID used in the archive links coming from this module"/>
-				<field name="loadmootools" type="list" default="1" label="Use mootools" description="Select if you want the module to use Mootools or not">
-					<option value="0">No</option>
-					<option value="1">Yes</option>
-				</field>
 			</fieldset>
 		</fields>
 	</config>
 </extension>
+

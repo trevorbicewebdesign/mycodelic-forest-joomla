@@ -203,7 +203,6 @@ tr.ui-sortable-helper{
 	white-space: pre-wrap !important;
 }
 
-/* Popup: delete area confirmation */
 .confirmCancel{
 	color: #6190b9;
 	padding: 10px 15px 10px 25px;
@@ -282,3 +281,8 @@ tr.ui-sortable-helper{
 	height: 60px;
 }
 
+div[name="emojipopup"] .cke_dialog_ui_vbox_child div.cke_dialog_ui_html{
+	height: 250px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}

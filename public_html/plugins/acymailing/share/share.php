@@ -1,11 +1,12 @@
 <?php
 /**
  * @package	AcyMailing for Joomla!
- * @version	5.6.1
+ * @version	5.9.1
  * @author	acyba.com
- * @copyright	(C) 2009-2017 ACYBA S.A.R.L. All rights reserved.
+ * @copyright	(C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
+
 defined('_JEXEC') or die('Restricted access');
 ?><?php
 
@@ -22,10 +23,9 @@ class plgAcymailingShare extends JPlugin{
 
 	function acymailing_getPluginType(){
 
-		$app = JFactory::getApplication();
-		if($this->params->get('frontendaccess') == 'none' && !$app->isAdmin()) return;
+		if($this->params->get('frontendaccess') == 'none' && !acymailing_isAdmin()) return;
 		$onePlugin = new stdClass();
-		$onePlugin->name = JText::sprintf('SOCIAL_SHARE', '...');
+		$onePlugin->name = acymailing_translation_sprintf('SOCIAL_SHARE', '...');
 		$onePlugin->function = 'acymailingtagshare_show';
 		$onePlugin->help = 'plugin-share';
 
@@ -33,40 +33,69 @@ class plgAcymailingShare extends JPlugin{
 	}
 
 	function _getPictures($folder){
-		$allFolders = JFolder::folders($folder);
+		$allFolders = acymailing_getFolders($folder);
 		foreach($allFolders as $oneFolder){
 			$this->_getPictures($folder.DS.$oneFolder);
 		}
-		$allFiles = JFolder::files($folder, $this->regex);
+		$allFiles = acymailing_getFiles($folder, $this->regex);
 		foreach($allFiles as $oneFile){
 			$this->pictresults[substr($oneFile, 0, 4)][$oneFile.filesize($folder.DS.$oneFile)] = $folder.DS.$oneFile;
 		}
 	}
 
 	function acymailingtagshare_show(){
-
+		$uploadFolders = acymailing_getFilesFolder('upload', true);
+		$uploadFolder = acymailing_getVar('string', 'currentFolder', $uploadFolders[0]);
+		$uploadPath = acymailing_cleanPath(ACYMAILING_ROOT.trim(str_replace('/', DS, trim($uploadFolder)), DS));
+		$uploadedFile = acymailing_getVar('array', 'socialfile', array(), 'files');
+		
+		if(!empty($uploadedFile) && !empty($uploadedFile['name'])){
+			$uploadedFile['name'] = acymailing_getVar('string', 'socialchoice').substr($uploadedFile['name'], strrpos($uploadedFile['name'], '.'));
+			acymailing_importFile($uploadedFile, $uploadPath, true, 150);
+		}
+		
+		
 		$networks = array();
 		$networks['facebook'] = 'Facebook';
 		$networks['linkedin'] = 'LinkedIn';
 		$networks['twitter'] = 'Twitter';
-		$networks['hyves'] = 'Hyves';
 		$networks['google'] = 'Google+';
-		$networks['print'] = JText::_('ACY_PRINT');
+		$networks['print'] = acymailing_translation('ACY_PRINT');
 
 		$k = 0;
-		jimport('joomla.filesystem.folder');
+		
 		$this->regex = '('.implode('|', array_keys($networks)).').*(png|gif|jpeg|jpg)';
 		$this->_getPictures(ACYMAILING_MEDIA);
 
-		echo '<br style="clear:both;">';
+		$socialList = array();
+		$socialList[] = acymailing_selectOption('facebook', 'Facebook');
+		$socialList[] = acymailing_selectOption('linkedIn', 'LinkedIn');
+		$socialList[] = acymailing_selectOption('twitter', 'Twitter');
+		$socialList[] = acymailing_selectOption('google', 'Google+');
+		$socialChoice = acymailing_select($socialList, 'socialchoice', 'size="1" style="width:100px;"');
+?>
+		<br style="clear:both;">
+
+		<div class="onelineblockoptions">
+			<span class="acyblocktitle"><?php echo acymailing_translation('UPLOAD_NEW_IMAGE'); ?></span>
+
+			<table>
+				<tr>
+					<td style="padding: 5px;"><?php echo $socialChoice; ?></td>
+					<td style="padding: 5px;"><input type="file" name="socialfile"></td>
+					<td style="padding: 5px;"><input class="acymailing_button_grey" type="submit" value="Upload"></td>
+				</tr>
+			</table>
+		</div>
+<?php
 		foreach($networks as $name => $desc){
 			$shortName = substr($name, 0, 4);
 			if(empty($this->pictresults[$shortName])) continue;
 
-			if($desc == JText::_('ACY_PRINT')){
+			if($desc == acymailing_translation('ACY_PRINT')){
 				$legendTxt = $desc;
 			}else{
-				$legendTxt = JText::sprintf('SOCIAL_SHARE', $desc);
+				$legendTxt = acymailing_translation_sprintf('SOCIAL_SHARE', $desc);
 			}
 
 			echo '<div class="onelineblockoptions">
@@ -75,10 +104,10 @@ class plgAcymailingShare extends JPlugin{
 				$imgPath = preg_replace('#^'.preg_quote(ACYMAILING_ROOT, '#').'#i', ACYMAILING_LIVE, $onePict);
 				$imgPath = str_replace(DS, '/', $imgPath);
 
-				if($desc == JText::_('ACY_PRINT')){
-					$insertedtag = '<a target="_blank" href="{print:newsletter}" title="'.JText::_('ACY_PRINT').'" ><img src="'.$imgPath.'" alt="'.$desc.'" /></a>';
+				if($desc == acymailing_translation('ACY_PRINT')){
+					$insertedtag = '<a target="_blank" href="{print:newsletter}" title="'.acymailing_translation('ACY_PRINT').'" ><img src="'.$imgPath.'" alt="'.$desc.'" /></a>';
 				}else{
-					$insertedtag = '<a target="_blank" href="{sharelink:'.$name.'}" title="'.JText::sprintf('SOCIAL_SHARE', $desc).'" ><img src="'.$imgPath.'" alt="'.$desc.'" /></a>';
+					$insertedtag = '<a target="_blank" href="{sharelink:'.$name.'}" title="'.acymailing_translation_sprintf('SOCIAL_SHARE', $desc).'" ><img src="'.$imgPath.'" alt="'.$desc.'" /></a>';
 				}
 
 				echo '<img style="max-width:200px;cursor:pointer;padding:5px;" onclick="setTag(\''.htmlentities($insertedtag).'\');insertTag();" src="'.$imgPath.'" />';
@@ -88,8 +117,13 @@ class plgAcymailingShare extends JPlugin{
 		}
 	}
 
-
 	function acymailing_replacetags(&$email, $send = true){
+		if(acymailing_getVar('none', 'task', '') == 'replacetags') return;
+		$this->_print($email, $send);
+		$this->_shareButtons($email, $send);
+	}
+
+	function _shareButtons(&$email, $send = true){
 		$match = '#(?:{|%7B)(share|sharelink):(.*)(?:}|%7D)#Ui';
 		$variables = array('body', 'altbody');
 		$found = false;
@@ -126,20 +160,17 @@ class plgAcymailingShare extends JPlugin{
 				$link = '';
 				if($tag->network == 'facebook'){
 					$link = 'http://www.facebook.com/sharer.php?u='.urlencode($archiveLink).'&t='.urlencode($email->subject);
-					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.JText::sprintf('SOCIAL_SHARE', 'Facebook').'"><img alt="Facebook" src="'.ACYMAILING_LIVE.$this->params->get('picturefb', 'media/com_acymailing/images/facebookshare.png').'" /></a>';
+					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.acymailing_translation_sprintf('SOCIAL_SHARE', 'Facebook').'"><img alt="Facebook" src="'.ACYMAILING_LIVE.$this->params->get('picturefb', 'media/com_acymailing/images/facebookshare.png').'" /></a>';
 				}elseif($tag->network == 'twitter'){
-					$text = JText::sprintf('SHARE_TEXT', $archiveLink);
+					$text = acymailing_translation_sprintf('SHARE_TEXT', $archiveLink);
 					$link = 'http://twitter.com/home?status='.urlencode($text);
-					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.JText::sprintf('SOCIAL_SHARE', 'Twitter').'"><img alt="Twitter" src="'.ACYMAILING_LIVE.$this->params->get('picturetwitter', 'media/com_acymailing/images/twittershare.png').'" /></a>';
+					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.acymailing_translation_sprintf('SOCIAL_SHARE', 'Twitter').'"><img alt="Twitter" src="'.ACYMAILING_LIVE.$this->params->get('picturetwitter', 'media/com_acymailing/images/twittershare.png').'" /></a>';
 				}elseif($tag->network == 'linkedin'){
 					$link = 'http://www.linkedin.com/shareArticle?mini=true&url='.urlencode($archiveLink).'&title='.urlencode($email->subject);
-					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.JText::sprintf('SOCIAL_SHARE', 'LinkedIn').'"><img alt="LinkedIn" src="'.ACYMAILING_LIVE.$this->params->get('picturelinkedin', 'media/com_acymailing/images/linkedin.png').'" /></a>';
-				}elseif($tag->network == 'hyves'){
-					$link = 'http://www.hyves-share.nl/button/respect/?hc_hint=1&url='.urlencode($archiveLink).'&title='.urlencode($email->subject);
-					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.JText::sprintf('SOCIAL_SHARE', 'Hyves').'"><img alt="Hyves" src="'.ACYMAILING_LIVE.$this->params->get('picturehyves', 'media/com_acymailing/images/hyvesshare.png').'" /></a>';
+					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.acymailing_translation_sprintf('SOCIAL_SHARE', 'LinkedIn').'"><img alt="LinkedIn" src="'.ACYMAILING_LIVE.$this->params->get('picturelinkedin', 'media/com_acymailing/images/linkedin.png').'" /></a>';
 				}elseif($tag->network == 'google'){
 					$link = 'https://plus.google.com/share?url='.urlencode($archiveLink);
-					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.JText::sprintf('SOCIAL_SHARE', 'Google+').'"><img alt="Google+" src="'.ACYMAILING_LIVE.$this->params->get('picturegoogleplus', 'media/com_acymailing/images/google_plusshare.png').'" /></a>';
+					$tags[$tagname] = '<a target="_blank" href="'.$link.'" title="'.acymailing_translation_sprintf('SOCIAL_SHARE', 'Google+').'"><img alt="Google+" src="'.ACYMAILING_LIVE.$this->params->get('picturegoogleplus', 'media/com_acymailing/images/google_plusshare.png').'" /></a>';
 				}
 
 				if($allresults[1][$numres] == 'sharelink'){
@@ -158,14 +189,14 @@ class plgAcymailingShare extends JPlugin{
 		$email->altbody = str_replace(array_keys($tags), '', $email->altbody);
 	}
 
-	function acymailing_replaceusertags(&$email, &$user, $send = true){
+	private function _print(&$email, $send = true){
 		$variables = array('subject', 'body', 'altbody');
 		$acypluginsHelper = acymailing_get('helper.acyplugins');
 		$tags = $acypluginsHelper->extractTags($email, 'print');
 
 		$archiveLink = acymailing_frontendLink('index.php?option=com_acymailing&ctrl=archive&task=view&mailid='.$email->mailid, true, $this->params->get('template', 'component') == 'component' ? true : false);
 		$addkey = (!empty($email->key)) ? '&key='.$email->key : '';
-		$adduserkey = (!empty($user->key)) ? '&subid='.$user->subid.'-'.$user->key : '';
+		$adduserkey = '&subid={subtag:subid}-{subtag:key}';
 		$link = $archiveLink.'&print=1'.$addkey.$adduserkey;
 
 		foreach($variables as $var){

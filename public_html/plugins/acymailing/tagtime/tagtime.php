@@ -1,11 +1,12 @@
 <?php
 /**
  * @package	AcyMailing for Joomla!
- * @version	5.6.1
+ * @version	5.9.1
  * @author	acyba.com
- * @copyright	(C) 2009-2017 ACYBA S.A.R.L. All rights reserved.
+ * @copyright	(C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
+
 defined('_JEXEC') or die('Restricted access');
 ?><?php
 
@@ -22,10 +23,9 @@ class plgAcymailingTagtime extends JPlugin{
 
 	function acymailing_getPluginType(){
 
-		$app = JFactory::getApplication();
-		if($this->params->get('frontendaccess') == 'none' && !$app->isAdmin()) return;
+		if($this->params->get('frontendaccess') == 'none' && !acymailing_isAdmin()) return;
 		$onePlugin = new stdClass();
-		$onePlugin->name = JText::_('ACY_TIME');
+		$onePlugin->name = acymailing_translation('ACY_TIME');
 		$onePlugin->function = 'acymailingtagtime_show';
 		$onePlugin->help = 'plugin-tagtime';
 
@@ -50,7 +50,7 @@ class plgAcymailingTagtime extends JPlugin{
 
 		$k = 0;
 		foreach($others as $tagname => $tag){
-			$text .= '<tr style="cursor:pointer" class="row'.$k.'" onclick="setTag(\''.$tagname.'\');insertTag();" ><td class="acytdcheckbox"></td><td>'.$tag.'</td><td>'.acymailing_getDate(time(), JText::_($tag)).'</td></tr>';
+			$text .= '<tr style="cursor:pointer" class="row'.$k.'" onclick="setTag(\''.$tagname.'\');insertTag();" ><td class="acytdcheckbox"></td><td>'.$tag.'</td><td>'.acymailing_getDate(time(), acymailing_translation($tag)).'</td></tr>';
 			$k = 1 - $k;
 		}
 
@@ -102,7 +102,7 @@ class plgAcymailingTagtime extends JPlugin{
 				if(!empty($parameter->remove)) $time -= intval($parameter->remove);
 
 				if(empty($parameter->format) OR is_numeric($parameter->format)){
-					$tags[$oneTag] = acymailing_getDate($time, JText::_('DATE_FORMAT_LC'.$parameter->format));
+					$tags[$oneTag] = acymailing_getDate($time, acymailing_translation('DATE_FORMAT_LC'.$parameter->format));
 				}else{
 					$tags[$oneTag] = acymailing_getDate($time, $parameter->format);
 				}

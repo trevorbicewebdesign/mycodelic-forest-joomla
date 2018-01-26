@@ -1,11 +1,12 @@
 <?php
 /**
  * @package	AcyMailing for Joomla!
- * @version	5.6.1
+ * @version	5.9.1
  * @author	acyba.com
- * @copyright	(C) 2009-2017 ACYBA S.A.R.L. All rights reserved.
+ * @copyright	(C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
+
 defined('_JEXEC') or die('Restricted access');
 ?><?php
 
@@ -20,10 +21,9 @@ class plgAcymailingOnline extends JPlugin{
 
 	function acymailing_getPluginType(){
 
-		$app = JFactory::getApplication();
-		if($this->params->get('frontendaccess') == 'none' && !$app->isAdmin()) return;
+		if($this->params->get('frontendaccess') == 'none' && !acymailing_isAdmin()) return;
 		$onePlugin = new stdClass();
-		$onePlugin->name = JText::_('WEBSITE_LINKS');
+		$onePlugin->name = acymailing_translation('WEBSITE_LINKS');
 		$onePlugin->function = 'acymailingtagonline_show';
 		$onePlugin->help = 'plugin-online';
 
@@ -34,9 +34,9 @@ class plgAcymailingOnline extends JPlugin{
 
 		$others = array();
 		$config = acymailing_config();
-		$others['readonline'] = array('default' => JText::_('VIEW_ONLINE', true), 'desc' => JText::_('VIEW_ONLINE_LINK'));
+		$others['readonline'] = array('default' => acymailing_translation('VIEW_ONLINE', true), 'desc' => acymailing_translation('VIEW_ONLINE_LINK'));
 		if($config->get('forward', true)){
-			$others['forward'] = array('default' => JText::_('FORWARD_FRIEND', true), 'desc' => JText::_('FORWARD_FRIEND_LINK'));
+			$others['forward'] = array('default' => acymailing_translation('FORWARD_FRIEND', true), 'desc' => acymailing_translation('FORWARD_FRIEND_LINK'));
 		}
 
 		?>
@@ -72,11 +72,11 @@ class plgAcymailingOnline extends JPlugin{
 			//-->
 		</script>
 		<?php
-		echo JText::_('FIELD_TEXT').' : <input type="text" name="tagtext" size="100px" onchange="setOnlineTag();" /><br /><br />';
+		echo acymailing_translation('FIELD_TEXT').' : <input type="text" name="tagtext" size="100px" onchange="setOnlineTag();" /><br /><br />';
 		$radios = array();
-		$radios[] = JHTML::_('select.option', "standard", JText::_('IN_TEMPLATE'));
-		$radios[] = JHTML::_('select.option', "notemplate", JText::_('WITHOUT_TEMPLATE'));
-		echo JHTML::_('acyselect.radiolist', $radios, 'template', 'size="1" onclick="setOnlineTag();"', 'value', 'text', 'notemplate');
+		$radios[] = acymailing_selectOption("standard", acymailing_translation('IN_TEMPLATE'));
+		$radios[] = acymailing_selectOption("notemplate", acymailing_translation('WITHOUT_TEMPLATE'));
+		echo acymailing_radio($radios, 'template', 'size="1" onclick="setOnlineTag();"', 'value', 'text', 'notemplate');
 		echo '<div class="onelineblockoptions">
 				<table class="acymailing_table" cellpadding="1">';
 		$k = 0;
@@ -87,10 +87,13 @@ class plgAcymailingOnline extends JPlugin{
 		echo '</table></div>';
 	}
 
-	function acymailing_replaceusertags(&$email, &$user, $send = true){
+	function acymailing_replacetags(&$email, $send = true){
+		if(acymailing_getVar('none', 'task', '') == 'replacetags') return;
+
 		$match = '#(?:{|%7B)(readonline|forward)([^}]*)(?:}|%7D)(.*)(?:{|%7B)/(readonline|forward)(?:}|%7D)#Uis';
 		$variables = array('body', 'altbody');
 		$found = false;
+		$results = array();
 		foreach($variables as $var){
 			if(empty($email->$var)) continue;
 			$found = preg_match_all($match, $email->$var, $results[$var]) || $found;
@@ -123,7 +126,7 @@ class plgAcymailingOnline extends JPlugin{
 				}
 
 				$addkey = (!empty($email->key) && $this->params->get('addkey', 'yes') == 'yes') ? '&key='.$email->key : '';
-				$adduserkey = (!empty($user->key) && $this->params->get('adduserkey', 'yes') == 'yes') ? '&subid='.$user->subid.'-'.$user->key : '';
+				$adduserkey = $this->params->get('adduserkey', 'yes') == 'yes' ? '&subid={subtag:subid}-{subtag:key}' : '';
 				$tmpl = ($tag->template == 'notemplate') ? '&tmpl=component' : '';
 				$item = empty($tag->itemid) ? '' : '&Itemid='.$tag->itemid;
 				$lang = empty($email->language) ? '' : '&lang='.$email->language;
