@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.1.3756
- * @date        2017-12-22
+ * @version      4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -1929,7 +1929,7 @@ class Com_Sh404sefInstallerScript
         `hits` INT(11) NOT NULL DEFAULT '0',
         PRIMARY KEY (`id`),
         KEY `newurl` (`newurl` (190)),
-        KEY `alias` (`pageid`),
+        KEY `alias` (`pageid` (190)),
         KEY `type` (`type`)
         ) DEFAULT CHARSET=" . $this->charset . ";",
 
@@ -1994,12 +1994,14 @@ class Com_Sh404sefInstallerScript
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
         `url` VARCHAR(191) NOT NULL DEFAULT '',
         `routed_url` VARCHAR(191) NOT NULL DEFAULT '',
+        `rank` INT(11) NOT NULL DEFAULT '0',
         `source_url` VARCHAR(191) NOT NULL DEFAULT '',
         `source_routed_url` VARCHAR(333) NOT NULL DEFAULT '',
         `trace` VARCHAR(10000) NOT NULL DEFAULT '',
         `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         PRIMARY KEY (`id`),
         KEY `url` (`url`),
+        KEY `rank` (`rank`),
         KEY `routed_url` (`routed_url`),
         KEY `source_url` (`source_url`)
         ) DEFAULT CHARSET=" . $this->charset . ";",
@@ -2334,7 +2336,6 @@ class Com_Sh404sefInstallerScript
 		{
 			// updating
 			$subQueries['#__sh404sef_metas'][] = 'modify `metatitle` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
-			$subQueries['#__sh404sef_metas'][] = 'modify `metadesc` varchar(512) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
 			$subQueries['#__sh404sef_metas'][] = 'modify `metakey` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
 		}
 
@@ -2347,7 +2348,7 @@ class Com_Sh404sefInstallerScript
 		//   `hits` INT(11) NOT NULL DEFAULT '0',
 		//   PRIMARY KEY (`id`),
 		//   KEY `newurl` (`newurl` (190)),
-		//   KEY `alias` (`pageid`),
+		//   KEY `alias` (`pageid` (190)),
 		//   KEY `type` (`type`)
 		//   ) DEFAULT CHARSET=utf8;",
 		//
@@ -2376,6 +2377,8 @@ class Com_Sh404sefInstallerScript
 			$subQueries['#__sh404sef_pageids'][] = 'modify `newurl` varchar(1024)';
 			$subQueries['#__sh404sef_pageids'][] = 'DROP INDEX `newurl`';
 			$subQueries['#__sh404sef_pageids'][] = 'add index `newurl` (`newurl`(190))';
+			$subQueries['#__sh404sef_pageids'][] = 'DROP INDEX `alias`';
+			$subQueries['#__sh404sef_pageids'][] = 'add index `alias` (`pageid`(190))';
 
 			$subQueries['#__sh404sef_hits_shurls'] = array();
 			$subQueries['#__sh404sef_hits_shurls'][] = 'modify `url` varchar(1024)';
@@ -2385,6 +2388,38 @@ class Com_Sh404sefInstallerScript
 
 		// 4.13.0: expanded max meta description length from 255 to 512 chars
 		$subQueries['#__sh404sef_metas'][] = 'modify `metadesc` varchar(512) CHARACTER SET ' . $this->charset . ' collate ' . $this->collation . '';
+
+		// 4.13.2 URL src also stores URL rank
+		//	"CREATE TABLE IF NOT EXISTS `#__sh404sef_urls_src` (
+		//`id` INT(11) NOT NULL AUTO_INCREMENT,
+		//   `url` VARCHAR(191) NOT NULL DEFAULT '',
+		//   `routed_url` VARCHAR(191) NOT NULL DEFAULT '',
+		//   `rank` INT(11) NOT NULL DEFAULT '0',
+		//   `source_url` VARCHAR(191) NOT NULL DEFAULT '',
+		//   `source_routed_url` VARCHAR(333) NOT NULL DEFAULT '',
+		//   `trace` VARCHAR(10000) NOT NULL DEFAULT '',
+		//   `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+		//   PRIMARY KEY (`id`),
+		//   KEY `url` (`url`),
+		//   KEY `rank` (`rank`),
+		//   KEY `routed_url` (`routed_url`),
+		//   KEY `source_url` (`source_url`)
+		//   ) DEFAULT CHARSET=" . $this->charset . ";",
+		if (method_exists($db, 'getTableFields'))
+		{
+			$columns = $db->getTableFields('#__sh404sef_urls_src');
+			$columns = empty($columns['#__sh404sef_urls_src']) ? array() : $columns['#__sh404sef_urls_src'];
+		}
+		else
+		{
+			$columns = $db->getTableColumns('#__sh404sef_urls_src');
+		}
+		$subqueries['#__sh404sef_urls_src'] = array();
+		if (empty($columns['rank']))
+		{
+			$subQueries['#__sh404sef_urls_src'][] = "add `rank` INT(11) NOT NULL DEFAULT '0'";
+			$subQueries['#__sh404sef_urls_src'][] = 'add index `rank` (`rank`)';
+		}
 
 		// apply changes
 		if (!empty($subQueries))

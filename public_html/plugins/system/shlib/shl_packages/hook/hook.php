@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier 2017
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.659
- * @date        2017-12-22
+ * @version      0.3.1.661
+ * @date        2018-01-15
  */
 
 defined('_JEXEC') or die;

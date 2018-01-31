@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.1.3756
- * @date        2017-12-22
+ * @version      4.13.2.3783
+ * @date        2018-01-25
  */
 
 // no direct access
@@ -886,6 +886,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	private function _extensionsParseHacks(&$jRouter, &$uri, &$vars)
 	{
 		$app = JFactory::getApplication();
+		$hasJRequest = class_exists('JRequest');
 
 		// Some extensions have not updated to J 3.0 API
 		// or use hacks to delay updating
@@ -897,6 +898,12 @@ class Sh404sefClassRouterInternal extends JRouterSite
 			foreach ($vars as $key => $value)
 			{
 				$app->input->set($key, $value);
+
+				// Extensions such as Mijoshop can't live without that.
+				if ($hasJRequest)
+				{
+					JRequest::setVar($key, $value);
+				}
 			}
 		}
 
@@ -1320,16 +1327,33 @@ class Sh404sefClassRouterInternal extends JRouterSite
 							$uri->setPath(JString::substr($path, Jstring::strlen($this->_guessedLanguageCode) + 1));
 						}
 
+						// Joomla always strip a trailing slash in URLs. Let's do that too, to reduce chances of
+						// hitting routing bugs in some extensions (DOCMan comes to mind)
+						$uri->setPath(
+							JString::rtrim(
+								$uri->getPath(),
+								'/'
+							)
+						);
+
 						// use parent parser
 						$vars = parent::_parseSefRoute($uri);
-
-						if (!empty($vars['Itemid']) || !empty($vars['option']))
+						$routerVars = Sh404sefFactory::getPageInfo()->router->getVars();
+						if (
+							!empty($vars['Itemid'])
+							||
+							!empty($vars['option'])
+							||
+							!empty($routerVars['Itemid'])
+							||
+							!empty($routerVars['option'])
+						)
 						{
 							// if we found something, raise a flag
 							self::$parsedWithJoomlaRouter = true;
 
 							// collect vars that may have been stored by J! such as Itemid
-							$vars = array_merge(Sh404sefFactory::getPageInfo()->router->getVars(), $vars);
+							$vars = array_merge($routerVars, $vars);
 							$this->setVars(array());
 
 							if (Sh404sefFactory::getConfig()->shRedirectJoomlaSefToSef)
@@ -1832,6 +1856,43 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		{
 			return;
 		}
+
+		// only redirect if not alreadya "use Joomla router" type of component
+		if (
+			!empty(Sh404sefFactory::getConfig()->useJoomlaRouter)
+			&&
+			in_array(
+				wbLTrim($option, 'com_'),
+				Sh404sefFactory::getConfig()->useJoomlaRouter
+			)
+		)
+		{
+			return;
+		}
+
+		// Joomla router will return incoherent data when the URL does not exist (ie: site.com/xxxx when parsed will return some variables, Itemid and option)
+		// try to catch some of that non-sense
+		if (
+			'com_content' == wbArrayGet($vars, 'option')
+			&&
+			'article' == wbArrayGet($vars, 'view')
+		)
+		{
+			// is this an actual article id?
+			$articleId = wbArrayGet($vars, 'id');
+			if (empty($articleId))
+			{
+				return;
+			}
+			// does this article exist and is published?
+			$article = JTable::getInstance('content');
+			$loaded = $article->load($articleId);
+			if (empty($loaded))
+			{
+				return;
+			}
+		}
+
 		$dest = Sh404sefHelperUrl::buildUrl($vars, $option);
 		$target = $this->checkRedirect($dest, Sh404sefFactory::getPageInfo()->currentSefUrl);
 		if (!empty($target))

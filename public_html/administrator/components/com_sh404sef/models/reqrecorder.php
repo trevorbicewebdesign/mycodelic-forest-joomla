@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.1.3756
- * @date        2017-12-22
+ * @version     4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -76,7 +76,8 @@ class Sh404sefModelReqrecorder
 		$record['referrer'] = is_null($referrer) ? (empty($_SERVER['HTTP_REFERER']) ? '' : $_SERVER['HTTP_REFERER']) : $referrer;
 		$record['referrer_domain'] = empty($record['referrer']) ? '' : $this->_getDomain($record['referrer']);
 		$record['user_agent'] = empty($_SERVER['HTTP_USER_AGENT']) ? '' : $_SERVER['HTTP_USER_AGENT'];
-		$record['ip_address'] = empty($_SERVER['REMOTE_ADDR']) ? '-' : $_SERVER['REMOTE_ADDR'];
+		$record['ip_address'] = ShlSystem_Http::getVisitorIpAddress();
+		$record['ip_address'] = empty($record['ip_address']) ? '-' : $record['ip_address'];
 		$record['datetime'] = ShlSystem_Date::getSiteNow('Y-m-d H:i:s');
 		if (is_null($isInternal))
 		{

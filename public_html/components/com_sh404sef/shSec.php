@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.1.3756
- * @date        2017-12-22
+ * @version      4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -30,7 +30,7 @@ function shDoSecurityChecks($query = '', $fullCheck = true)
 	$shQuery = empty($query) ? (empty($_SERVER['QUERY_STRING']) ? '' : $_SERVER['QUERY_STRING']) : $query;
 
 	// IP checks
-	$ip = empty($_SERVER['REMOTE_ADDR']) ? '' : $_SERVER['REMOTE_ADDR'];
+	$ip = ShlSystem_Http::getVisitorIpAddress();
 	$uAgent = empty($_SERVER['HTTP_USER_AGENT']) ? '' : $_SERVER['HTTP_USER_AGENT'];
 
 	// ip White/Black listing
@@ -494,7 +494,7 @@ function shDoHoneyPotCheck($ip)
 			$logData['DATE'] = ShlSystem_Date::getSiteNow('Y-m-d');
 			$logData['TIME'] = ShlSystem_Date::getSiteNow('H:i:s');
 			$logData['CAUSE'] = 'Honey Pot but user clicked';
-			$logData['C-IP'] = empty($_SERVER['REMOTE_ADDR']) ? '-' : $_SERVER['REMOTE_ADDR'];
+			$logData['C-IP'] = ShlSystem_Http::getVisitorIpAddress();
 			if ($_SERVER['REMOTE_ADDR'] != 'localhost' && $_SERVER['REMOTE_ADDR'] != '::1')
 			{
 				$name = getHostByAddr($_SERVER['REMOTE_ADDR']) . '-';
@@ -578,7 +578,7 @@ function sh_ozh_httpbl_check($ip)
 		$logData['DATE'] = ShlSystem_Date::getSiteNow('Y-m-d');
 		$logData['TIME'] = ShlSystem_Date::getSiteNow('H:i:s');
 		$logData['CAUSE'] = 'Debug: project Honey Pot response';
-		$logData['C-IP'] = empty($_SERVER['REMOTE_ADDR']) ? '-' : $_SERVER['REMOTE_ADDR'];
+		$logData['C-IP'] = ShlSystem_Http::getVisitorIpAddress();
 		if ($_SERVER['REMOTE_ADDR'] != 'localhost' && $_SERVER['REMOTE_ADDR'] != '::1')
 		{
 			$name = getHostByAddr($_SERVER['REMOTE_ADDR']) . '-';

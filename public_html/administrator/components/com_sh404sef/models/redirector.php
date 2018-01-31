@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.1.3756
- * @date        2017-12-22
+ * @version     4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -503,7 +503,11 @@ class Sh404sefModelRedirector
 		}
 
 		$redirectTarget = $this->prepareUrlForRedirect($redirectTarget);
-		if ($redirectTarget != $incomingUrl)
+		if (
+			$redirectTarget != $incomingUrl
+			||
+			$aliasRecord->target_type == self::TARGET_TYPE_CANONICAL
+		)
 		{
 			return $redirectTarget;
 		}

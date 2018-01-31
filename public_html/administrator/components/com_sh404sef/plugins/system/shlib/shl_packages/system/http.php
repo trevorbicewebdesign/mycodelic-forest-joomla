@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier 2017
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.659
- * @date                2017-12-22
+ * @version     0.3.1.661
+ * @date                2018-01-15
  */
 
 // no direct access
@@ -171,5 +171,27 @@ class ShlSystem_Http
 			header('Location: ' . $target);
 		}
 		exit();
+	}
+
+	/**
+	 * Collect a visitor IP address, including best guesses when site is behind a proxy.
+	 *
+	 * @return string
+	 */
+	public static function getVisitorIpAddress()
+	{
+		if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
+		{
+			$ip = $_SERVER['HTTP_CLIENT_IP'];
+		}
+		elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
+		{
+			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+		}
+		else
+		{
+			$ip = empty($_SERVER['REMOTE_ADDR']) ? '' : $_SERVER['REMOTE_ADDR'];
+		}
+		return $ip;
 	}
 }

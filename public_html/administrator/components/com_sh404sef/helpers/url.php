@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.1.3756
- * @date        2017-12-22
+ * @version      4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -26,6 +26,7 @@ class Sh404sefHelperUrl
 
 	static public $buildingNonSef = '';
 	static public $buildingSef    = '';
+	static public $buildingRank   = 0;
 
 	public static function buildUrl($elements, $option = 'com_sh404sef')
 	{
@@ -554,13 +555,14 @@ class Sh404sefHelperUrl
 		return $bits[0];
 	}
 
-	public static function storeUrlSourceData($nonsef, $sef)
+	public static function storeUrlSourceData($nonsef, $sef, $rank)
 	{
 		self::$buildingNonSef = $nonsef;
 		self::$buildingSef = $sef;
+		self::$buildingRank = $rank;
 	}
 
-	public static function storeUrlSource($nonsef = null, $sef = null, $currentNonSef = null, $currentSef = null, $trace = null)
+	public static function storeUrlSource($nonsef = null, $sef = null, $rank = null, $currentNonSef = null, $currentSef = null, $trace = null)
 	{
 		if (Sh404sefFactory::getConfig()->logUrlsSource)
 		{
@@ -572,13 +574,39 @@ class Sh404sefHelperUrl
 			$data['source_url'] = is_null($currentNonSef) ? $pageInfo->currentNonSefUrl : $currentNonSef;
 			$data['source_url'] = self::sortURL($data['source_url']);
 
+			$data['rank'] = empty($rank) ? self::$buildingRank : $rank;
+			/**
+			 * Filter the data recorded when log url source is enabled. Returning an empty variable will
+			 * prevent the recording.
+			 *
+			 * @api
+			 * @package sh404SEF\filter\logging
+			 * @var sh404sef_store_url_source_data
+			 * @since   4.13.3
+			 *
+			 * @param array $data The data to be recorded.
+			 *
+			 * @return array
+			 */
+			$data = ShlHook::filter(
+				'sh404sef_store_url_source_data',
+				$data
+			);
+			if (empty($data))
+			{
+				return;
+			}
+
 			// have a record for same sef/non-sef pair created on same page?
 			$found = ShlDbHelper::count(
-				'#__sh404sef_urls_src', 'id', array(
-					                      'url'        => $data['url'],
-					                      'routed_url' => $data['routed_url'],
-					                      'source_url' => $data['source_url']
-				                      )
+				'#__sh404sef_urls_src',
+				'id',
+				array(
+					'url'        => $data['url'],
+					'routed_url' => $data['routed_url'],
+					'source_url' => $data['source_url'],
+					'rank'       => $data['rank']
+				)
 			);
 
 			if (empty($found))

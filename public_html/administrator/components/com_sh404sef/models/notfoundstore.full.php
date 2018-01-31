@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.1.3756
- * @date        2017-12-22
+ * @version     4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -29,6 +29,7 @@ class Sh404sefModelNotfoundstore
 	 *
 	 * @param string $extension
 	 *            extension name, with com_ - ie com_content
+	 *
 	 * @return object instance of Sh404sefModelCategories
 	 */
 	public static function getInstance()
@@ -44,7 +45,7 @@ class Sh404sefModelNotfoundstore
 	public function store($reqPath, $config)
 	{
 		// normalize
-		$reqPath = rawurldecode(JString::ltrim($reqPath, '/'));
+		$reqPath = rawurldecode($reqPath);
 		if (!empty($config->shRewriteMode) && JString::substr($reqPath, 0, 10) == 'index.php/')
 		{
 			$reqPath = JString::substr($reqPath, 10);
@@ -101,13 +102,13 @@ class Sh404sefModelNotfoundstore
 				}
 
 				$updatedRecord = empty($notFoundRecord) ? array(
-					'id' => 0,
-					'cpt' => 0,
-					'rank' => 0,
-					'oldurl' => $reqPath,
-					'newurl' => '',
-					'option' => '',
-					'dateadd' => ShlSystem_Date::getUTCNow('Y-m-d'),
+					'id'            => 0,
+					'cpt'           => 0,
+					'rank'          => 0,
+					'oldurl'        => $reqPath,
+					'newurl'        => '',
+					'option'        => '',
+					'dateadd'       => ShlSystem_Date::getUTCNow('Y-m-d'),
 					'referrer_type' => Sh404sefHelperUrl::IS_UNKNOWN, // allow displaying a warning in 404 list, w/o having to do a join
 				) : $notFoundRecord;
 
@@ -118,7 +119,8 @@ class Sh404sefModelNotfoundstore
 				// find if internal request
 				$isInternal = Sh404sefHelperUrl::IS_EXTERNAL;
 				$referrer = empty($_SERVER['HTTP_REFERER']) ? '' : $_SERVER['HTTP_REFERER'];
-				if(!empty($referrer)) {
+				if (!empty($referrer))
+				{
 					$isInternal = Sh404sefHelperUrl::isInternal($referrer);
 				}
 

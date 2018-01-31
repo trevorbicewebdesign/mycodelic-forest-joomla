@@ -1,7 +1,45 @@
                                sh404sef changelog                               
 
-                        (2017-12-22 19:30 - build #3756)                        
+                        (2018-01-25 12:34 - build #3783)                        
 
+
+
+--------------------------------------------------------------------------------
+ [ 2018-01-25 ] Version 4.13.2
+--------------------------------------------------------------------------------
+
+
+    [chg]    Now showing an information message when saving aliases from the
+             SEF URL manager for a single record, and one of thoses aliases
+             cannot be saved as it already exists.
+    [chg]    Do not remove initial slash when recording a 404, may hide some
+             useful information
+    [chg]    Create longer description when automatically generating meta
+             description, around 250 characters.
+    [chg]    Remove {field} and {fieldgroup} tags from automatically generated
+             meta description
+    [chg]    Analytics IP exclusion now operates on servers behind proxies
+    [chg]    When using Joomla router for an extension, remove any trailing
+             slash on the path as can hit routing bugs in some extensions
+             (DOCMan)
+    [chg]    URL source recording now also records a new URL duplication rank
+    [chg]    Limit alias index size on shURL database table, for systems which
+             enforce index size limits
+    [chg]    Added back using JRequest for extensions not compliant with
+             Joomla API such as Mijoshop.
+    [chg]    Added a filter on the data to be recorded when Record URL source
+             is enabled. May be used to reduce/filter the volume of data
+             recorded.
+    [chg]    Added more sanitization to the '301 redirect from Joomla SEF'
+             feature, to account for Joomla router parsing invalid URLs.
+
+    [bug]    Canonical URLs set to the same page are not inserted into the
+             page.
+    [bug]    Canonical created from the URL manager since version 4.13 may not
+             be taken into account in some cases.
+    [bug]    Can have 404 errors on some links on some components, if set to
+             'Use Joomla router', '301 redirect from Joomla SEF' is enabled
+             and some combination of menu items configuration.
 
 
 --------------------------------------------------------------------------------

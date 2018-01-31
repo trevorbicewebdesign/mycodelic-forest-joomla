@@ -6,7 +6,7 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @date        2017-12-22
+ * @date        2018-01-25
  */
 
 defined('JPATH_BASE') or die;

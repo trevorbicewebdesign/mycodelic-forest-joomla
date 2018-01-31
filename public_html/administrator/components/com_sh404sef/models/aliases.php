@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.1.3756
- * @date        2017-12-22
+ * @version     4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -129,7 +129,7 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		}
 
 		// return true if no error
-		$error = $this->getError();
+		$error = $this->getErrors();
 
 		return empty($error);
 	}
@@ -161,6 +161,14 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		}
 
 		// insert or update
+		$sourceUrl = Sh404sefHelperGeneral::getSefFromNonSef(
+			$sourceUrl
+		);
+		$sourceUrl = wbLTrim(
+			$sourceUrl,
+			JUri::root()
+		);
+		$sourceUrl = empty($sourceUrl) ? '/' : $sourceUrl;
 		$this->saveFromInput(
 			$sourceUrl,
 			$canonicalTarget,

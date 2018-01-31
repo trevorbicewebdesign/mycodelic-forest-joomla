@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.1.3756
- * @date        2017-12-22
+ * @version      4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -950,7 +950,7 @@ class sef_404
 							Sh404sefHelperCache::addSefUrlToCache($nonSefUrl, $finalSefUrl, $nonSefUrlType);
 
 							// store optional data
-							Sh404sefHelperUrl::storeUrlSourceData($nonSefUrl, $finalSefUrl);
+							Sh404sefHelperUrl::storeUrlSourceData($nonSefUrl, $finalSefUrl, $rank);
 
 							// create shURL : get a shURL model, and ask url creation
 							$model = ShlMvcModel_Base::getInstance('pageids', 'Sh404sefModel');
@@ -997,7 +997,7 @@ class sef_404
 							Sh404sefHelperCache::addSefUrlToCache($nonSefUrl, $finalSefUrl, sh404SEF_URLTYPE_AUTO);
 
 							// store optional data
-							Sh404sefHelperUrl::storeUrlSourceData($nonSefUrl, $finalSefUrl);
+							Sh404sefHelperUrl::storeUrlSourceData($nonSefUrl, $finalSefUrl, $rank = 0);
 						}
 						else
 						{
@@ -1031,7 +1031,7 @@ class sef_404
 							Sh404sefHelperCache::addSefUrlToCache($nonSefUrl, $finalSefUrl, sh404SEF_URLTYPE_AUTO);
 
 							// store optional data
-							Sh404sefHelperUrl::storeUrlSourceData($nonSefUrl, $finalSefUrl);
+							Sh404sefHelperUrl::storeUrlSourceData($nonSefUrl, $finalSefUrl, 0);
 
 							// create shURL : get a shURL model, and ask url creation
 							$model = ShlMvcModel_Base::getInstance('pageids', 'Sh404sefModel');

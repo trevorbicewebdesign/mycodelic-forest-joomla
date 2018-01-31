@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.1.3756
- * @date        2017-12-22
+ * @version      4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -586,13 +586,13 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 
 		// save the canonical: if new/modified, add it. If empty, remove it
 		$sourceUrl = $this->_url->newurl == sh404SEF_HOMEPAGE_CODE ? '/' : $this->_url->newurl;
-		$status = $model->saveCanonical($this->_data['canonical'], $sourceUrl);
-		if (!$status)
+		$Canonicalstatus = $model->saveCanonical($this->_data['canonical'], $sourceUrl);
+		if (!$Canonicalstatus)
 		{
 			$this->setError($model->getError());
 		}
 
-		return $status;
+		return $status && $Canonicalstatus;
 	}
 
 	/**

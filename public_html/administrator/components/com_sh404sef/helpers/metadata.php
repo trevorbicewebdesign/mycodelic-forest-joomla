@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.1.3756
- * @date        2017-12-22
+ * @version      4.13.2.3783
+ * @date        2018-01-25
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -221,8 +221,8 @@ class Sh404sefHelperMetadata
 		 *
 		 * @api
 		 * @package sh404SEF\filter\metadata
-		 * @var auto_fallback_description
-		 * @since   4.10.2
+		 * @var sh404sef_auto_fallback_description
+		 * @since   4.11.3
 		 *
 		 * @param string    $context The context from onPrepareContent.
 		 * @param string    $content The raw text from onPrepareContent.
@@ -232,7 +232,7 @@ class Sh404sefHelperMetadata
 		 * @return array
 		 */
 		self::$filteredAutoDesc = ShlHook::filter(
-			'auto_fallback_description',
+			'sh404sef_auto_fallback_description',
 			self::$autoDesc,
 			$context,
 			$content,
@@ -256,14 +256,35 @@ class Sh404sefHelperMetadata
 			'#{\s*wbamp[^}]+}#uUi',
 			'#{\s*sh404sef_[^}]*}#us',
 			'#{\s*module[^}]*}#iuUs',
+			'#{(field|fieldgroup)\s+(.*?)}#uUi',
 			'#{\s*snippet[^}]*}#iuUs',
 			'#{\s*tip[^}]*}#iuUs',
 			'#{\s*rsform[^}]*}#iuUs',
 			'#{\s*phocagallery[^}]*}#iuUs',
 			'#{(.*?)}(.*?){/(.*?)}#us',
-			'#\[(.*?)\](.*?)\[/(.*?)\]#us',
+			'#\[(.*?)\](.*?)\[/(.*?)\]#us'
 		);
-		foreach($expressions as $expression)
+
+		/**
+		 * Filter a list of regular expressions that will be used to remove unwanted content in automatically generated meta description.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\metadata
+		 * @var sh404sef_auto_fallback_description
+		 * @since   4.13.2
+		 *
+		 * @param array  $expressions List of regular expressions, ready to use in preg_replace.
+		 * @param string $content The original content from which description should be extracted.
+		 *
+		 * @return array
+		 */
+		$expressions = ShlHook::filter(
+			'sh404sef_auto_fallback_description_cleanup_regexp',
+			$expressions,
+			$content
+		);
+
+		foreach ($expressions as $expression)
 		{
 			$content = preg_replace($expression, '', $content);
 		}
@@ -276,9 +297,14 @@ class Sh404sefHelperMetadata
 			$content
 		);
 		$content = html_entity_decode($content, ENT_COMPAT, 'UTF-8');
-		$content = trim($content);
+		$content = JString::trim($content);
 
-		$description = JHtml::_('string.abridge', $content, 160, 160);
+		$description = JHtml::_(
+			'string.abridge',
+			$content,
+			Sh404sefFactory::getPConfig()->metaDataSpecs['metadesc']['warningNumber'],
+			Sh404sefFactory::getPConfig()->metaDataSpecs['metadesc']['warningNumber']
+		);
 
 		return $description;
 	}
