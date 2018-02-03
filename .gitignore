@@ -1,5 +1,8 @@
 *.lck
 *.LCK
+/public_html/media/civicrm/upload/cache/
+/public_html/media/civicrm/ConfigAndLog/
+/public_html/media/civicrm/templates_c/Cached*
 /public_html/configuration.php
 /public_html/Joomla_3.6.5-Stable-Full_Package.zip
 /public_html/site-mycodelicforest.org-20160323-222433.zip
