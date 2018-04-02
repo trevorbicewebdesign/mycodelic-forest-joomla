@@ -1,6 +1,6 @@
 /**
  * @package    AcyMailing for Joomla!
- * @version    5.9.1
+ * @version    5.9.6
  * @author     acyba.com
  * @copyright  (C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license    GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -33,7 +33,7 @@ var templateShown = false;
 var urlAcyeditor;
 var boutonTags = "toolbar-tag";
 var boutonMediaBrowser = "toolbar-popup-Acymediabrowser";
-var acyVersion = "5.9.1";
+var acyVersion = "5.9.6";
 var pasteType = "plain";
 var acyEnterMode = "br";
 var urlSite = "";
@@ -994,7 +994,7 @@ function CreationZone(id, element , texteSuppression, titleSuppression, titleEdi
 
 		if(element.tagName == "TR"){
 			if(acyJquery(element).hasClass("acyeditor_delete")){
-				var elementTDEditables = acyJquery(element).find(" > td:not(td.acyeditor_text), > td:not(td.acyeditor_picture)");
+				var elementTDEditables = acyJquery(element).find("td:not(td.acyeditor_text), td:not(td.acyeditor_picture)");
 				if(elementTDEditables.length == 0){
 					elementTDEditables = element.children;
 				}

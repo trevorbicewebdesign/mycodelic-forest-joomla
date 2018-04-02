@@ -1,7 +1,7 @@
 <?php
 /**
  * @package	AcyMailing for Joomla!
- * @version	5.9.1
+ * @version	5.9.6
  * @author	acyba.com
  * @copyright	(C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -327,12 +327,26 @@ function acymailing_getUserVar($key, $request, $default = null, $type = 'none'){
 function acymailing_getCMSConfig($varname, $default = null){
     if(ACYMAILING_J30) {
         $acyapp = acymailing_getGlobal('app');
-        return $acyapp->getCfg($varname, $default);
+        $result = $acyapp->getCfg($varname, $default);
+    }else{
+        $conf = JFactory::getConfig();
+        $val = $conf->getValue('config.'.$varname);
+
+        $result = empty($val) ? $default : $val;
     }
 
-    $conf = JFactory::getConfig();
-    $val = $conf->getValue('config.'.$varname);
-    return empty($val) ? $default : $val;
+    if ($varname == 'list_limit') {
+        $possibilities = array(5, 10, 15, 20, 25, 30, 50, 100);
+        $closest = 5;
+        foreach ($possibilities as $possibility) {
+            if (abs($result - $closest) > abs($result - $possibility)) {
+                $closest = $possibility;
+            }
+        }
+        $result = $closest;
+    }
+
+    return $result;
 }
 
 function acymailing_redirect($url, $msg = '', $msgType = 'message'){

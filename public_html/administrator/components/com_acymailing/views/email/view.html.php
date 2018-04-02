@@ -1,7 +1,7 @@
 <?php
 /**
  * @package	AcyMailing for Joomla!
- * @version	5.9.1
+ * @version	5.9.6
  * @author	acyba.com
  * @copyright	(C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -82,6 +82,13 @@ class EmailViewEmail extends acymailingView{
 			window.document.getElementById("attachmentsdiv"+attachmentNb).style.display = "";
 			attachmentNb++;
 		}';
+
+		$script .= "function deleteAttachment(i){
+			document.getElementById('attachments'+i+'selection').innerHTML = '';
+			document.getElementById('attachments'+i+'suppr').style.display = 'none';
+			document.getElementById('attachments'+i).value = '';
+			return;
+		}";
 
 		$script .= '
 			document.addEventListener("DOMContentLoaded", function(){

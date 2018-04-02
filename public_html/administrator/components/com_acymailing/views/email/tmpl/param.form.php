@@ -1,7 +1,7 @@
 <?php
 /**
  * @package	AcyMailing for Joomla!
- * @version	5.9.1
+ * @version	5.9.6
  * @author	acyba.com
  * @copyright	(C) 2009-2018 ACYBA S.A.R.L. All rights reserved.
  * @license	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -146,7 +146,7 @@ defined('_JEXEC') or die('Restricted access');
 			<?php
 			$uploadfileType = acymailing_get('type.uploadfile');
 			for($i = 0; $i < 10; $i++){
-				echo '<div'.($i == 0 ? '' : ' style="display:none;"').' id="attachmentsdiv'.$i.'">'.$uploadfileType->display(false, 'attachments', $i).'</div>';
+				echo '<div'.($i == 0 ? '' : ' style="display:none;"').' id="attachmentsdiv'.$i.'">'.$uploadfileType->display(false, 'attachments', $i).'<a style="display:none" href="javascript:void(0);" id="attachments'.$i.'suppr" onclick="deleteAttachment('.$i.');"><span class="hasTooltip acyicon-delete" title="Delete" ></span></a></div>';
 			}
 			?>
 		</div>
