@@ -1,9 +1,9 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @build-date      2016/12/24
+ * @build-date      2018/03/13
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -42,6 +42,14 @@ class plgSocialProfilesKunena extends SocialProfilePlugin
             case "FACEBOOK":
                 $value = str_replace('http://www.facebook.com/', '', $value);
                 $value = str_replace('https://www.facebook.com/', '', $value);
+                break;
+            case "LINKEDIN":
+                $value = str_replace('https://www.linkedin.com/in/', '', $value);
+                $value = str_replace('http://www.linkedin.com/in/', '', $value);
+                break;
+            case "vk":
+                if(substr($value, 0, 15) !== 'https://vk.com/')
+                    $value = 'https://vk.com/' . $value;
                 break;
             case "birthdate":
                 $value = new JDate($value);
@@ -138,12 +146,10 @@ class plgSocialProfilesKunena extends SocialProfilePlugin
         $kunenaFields[] = (object)array('id' => "location", "name" => "Location");
         $kunenaFields[] = (object)array('id' => "FACEBOOK", "name" => "Facebook URL");
         $kunenaFields[] = (object)array('id' => "LINKEDIN", "name" => "LinkedIn URL");
-        $kunenaFields[] = (object)array('id' => "ICQ", "name" => "ICQ");
-        $kunenaFields[] = (object)array('id' => "AIM", "name" => "AIM");
-        $kunenaFields[] = (object)array('id' => "YIM", "name" => "YIM");
-        $kunenaFields[] = (object)array('id' => "MSN", "name" => "MSN");
-        $kunenaFields[] = (object)array('id' => "SKYPE", "name" => "Skype");
-        $kunenaFields[] = (object)array('id' => "GTALK", "name" => "GTalk");
+        $kunenaFields[] = (object)array('id' => "google", "name" => "Google URL");
+        $kunenaFields[] = (object)array('id' => "instagram", "name" => "Instagram Username");
+        $kunenaFields[] = (object)array('id' => "twitter", "name" => "Twitter Username");
+        $kunenaFields[] = (object)array('id' => "vk", "name" => "VK Username");
         $kunenaFields[] = (object)array('id' => "websitename", "name" => "Website Name");
         $kunenaFields[] = (object)array('id' => "websiteurl", "name" => "Website URL");
 

@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -93,6 +93,19 @@ class JFBConnectControllerLogin extends JFBConnectController
                 }
             }
 
+            //check if user registration is turn off
+            //!allowUserRegistration and !social_registration => registration not allowed
+            //!allowUserRegistration and social_registration => registration allowed
+            //allowUserRegistration and !social_registration => registration not allowed
+            // JComponentHelper::getParams('com_users')->get('allowUserRegistration') check is not needed since
+            // we prioritized the JFBConnect social registration config
+            if(JFBCFactory::config()->getSetting('social_registration') == 0 && !$jUserId)
+            {
+                JFBCFactory::log(JText::_('COM_JFBCONNECT_MSG_USER_REGISTRATION_DISABLED'), 'notice');
+                $app->redirect(JRoute::_('index.php?option=com_users&view=login', false));
+                return false;
+            }
+
             // Check if no mapping, and Automatic Registration is set. If so, auto-create the new user.
             if (!$jUserId && JFBCFactory::config()->getSetting('automatic_registration'))
             { # User is not in system, should create their account automatically
@@ -134,8 +147,8 @@ class JFBConnectControllerLogin extends JFBConnectController
         if (!$provider->initialRegistration || ($jUser->get('block') == 0 && $provider->initialRegistration))
         {
             $options = array('silent' => 1, 'provider' => $provider, 'provider_user_id' => $providerUserId); // Disable other authentication messages
-            // hack for J3.2.0 bug. Should remove after 3.2.1 is available.
             $password = $provider->secretKey;
+            $_SERVER['REQUEST_METHOD'] = 'POST'; // Classify our authentication request as a POST to avoid a lot of SEF issues
             $loginSuccess = $app->login(array('username' => $provider->appId, 'password' => $password), $options);
         }
 

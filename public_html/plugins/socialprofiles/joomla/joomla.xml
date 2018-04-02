@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="1.6" type="plugin" group="socialprofiles" method="upgrade" client="site">
     <name>Social Profiles - Joomla</name>
-    <version>7.0.0</version>
-    <creationDate>2016/12/24</creationDate>
+    <version>7.2.2</version>
+    <creationDate>2018/03/13</creationDate>
     <author>SourceCoast | www.sourcecoast.com</author>
     <authorEmail>support@sourcecoast.com</authorEmail>
     <authorUrl>http://www.sourcecoast.com</authorUrl>
-    <copyright>Copyright (C) 2010-2015 SourceCoast. All rights reserved.</copyright>
+    <copyright>Copyright (C) 2010-2018 SourceCoast. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description>Joomla registration and User - Profile social network integration for JFBConnect</description>
     <files>
@@ -19,6 +19,7 @@
         <language tag="el-GR">el-GR.plg_socialprofiles_joomla.ini</language>
         <language tag="en-GB">en-GB.plg_socialprofiles_joomla.ini</language>
         <language tag="es-ES">es-ES.plg_socialprofiles_joomla.ini</language>
+        <language tag="fa-IR">fa-IR.plg_socialprofiles_joomla.ini</language>
         <language tag="is-IS">is-IS.plg_socialprofiles_joomla.ini</language>
         <language tag="it-IT">it-IT.plg_socialprofiles_joomla.ini</language>
         <language tag="nb-NO">nb-NO.plg_socialprofiles_joomla.ini</language>

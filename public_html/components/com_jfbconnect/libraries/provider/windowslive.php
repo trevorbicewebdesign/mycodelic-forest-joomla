@@ -1,8 +1,10 @@
 <?php
 /**
- * @package        JFBConnect
- * @copyright (C) 2009-2013 by Source Coast - All rights reserved
- * @license http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
+ * @package         SourceCoast Extensions
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
+ * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 // Check to ensure this file is included in Joomla!
 if (!(defined('_JEXEC') || defined('ABSPATH'))) {     die('Restricted access'); };

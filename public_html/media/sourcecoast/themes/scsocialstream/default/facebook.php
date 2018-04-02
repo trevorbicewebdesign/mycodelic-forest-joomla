@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 $message = $this->makeClickableLinks($this->message);
 
@@ -16,13 +16,13 @@ echo
             echo '<div class="provider">';
             if($stream->options->get('show_post'))
                 echo '<a href="'.$this->link.'" target="_blank">';
-            echo '<img src="' . JUri::root(true) . '/media/sourcecoast/images/provider/facebook/icon.png" />';
+            echo '<img src="' . JUri::root(true) . '/media/sourcecoast/images/provider/facebook/icon.png" alt="Facebook Login"/>';
             if($stream->options->get('show_post'))
                 echo '</a>';
             echo '</div>';
         }
         echo '<div class="author-details">
-                <div class="author-image"><img src="'.JFBCFactory::provider('facebook')->profile->getAvatarUrl($this->authorID,false,null).'" /></div>
+                <div class="author-image"><img src="'.JFBCFactory::provider('facebook')->profile->getAvatarUrl($this->authorID,false,null).'" alt="Author"/></div>
                 <span class="screen-name">' . $this->authorScreenName . '</span>';
         if ($stream->options->get('show_date'))
             echo '<div class="date">' . $date . '</div>';
@@ -55,7 +55,7 @@ else if ($showLink == 'full' && ($hasPageInfo || $hasPicture))
         <div class="preview span12">
             <div class="title"><a href="<?php echo $this->thumbLink; ?>" target="_blank" rel="nofollow"><?php echo $this->thumbTitle; ?></a></div>
             <?php if ($this->thumbPicture)
-                echo '<div class="image"><img src="' . $this->thumbPicture . '"/></div>';
+                echo '<div class="image"><img src="' . $this->thumbPicture . '" alt="Post Thumbnail"/></div>';
             if ($this->thumbCaption)
                 echo '<div class="caption"><a href="' . $this->thumbLink . '" target="_blank" rel="nofollow">' . $this->thumbCaption . '</a></div>';
             if ($this->thumbDescription)
@@ -78,7 +78,7 @@ if (is_array($this->comments) && $stream->options->get('show_comments'))
         echo '<div class="row-fluid">
           <div class="span12 comment">
               <div>
-                <span class="from text-left"><img src="https://graph.facebook.com/' . $comment['from']['id'] . '/picture" width="25" /> ' . $comment['from']['name'] . '</span>
+                <span class="from text-left"><img src="https://graph.facebook.com/' . $comment['from']['id'] . '/picture" width="25" alt="Comment Thumbnail"/> ' . $comment['from']['name'] . '</span>
                 <span class="date text-right">' . $date . '</span>
               </div>
               <div class="message">' . $comment['message'] . '</div>

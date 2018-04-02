@@ -1,9 +1,9 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @build-date      2016/12/24
+ * @build-date      2018/03/13
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -77,6 +77,8 @@ class plgSocialProfilesCommunityBuilder extends SocialProfilePlugin
 
     protected function getRegistrationForm($profileData)
     {
+        JFBConnectUtilities::loadLanguage('plg_socialprofiles_communitybuilder', JPATH_ADMINISTRATOR);
+
         $html = "";
         //Get register field forms
         $showRegistrationFields = $this->settings->get('registration_show_fields');
@@ -123,7 +125,7 @@ class plgSocialProfilesCommunityBuilder extends SocialProfilePlugin
                     if ($className == 'CBfield_date')
                         $fieldOut = str_replace('type="text"', 'type="hidden"', $fieldOut);
 
-                    $required = ($cbField->required ? '<span class="star">&nbsp;*</span>' : '');
+                    $required = ($cbField->required ? '<span class="star">&nbsp;'.JText::_('COM_JFBCONNECT_COMMUNITYBUILDER_NORMAL_REGISTRATION_REQUIRED_LABEL').'</span>' : '');
 
                     $html .= $field->getFieldTitle($cbFields[$cbField->fieldid], $cbUser, 'htmledit', 'register') . $required . "<br/>";
                     $html .= $fieldOut . "<br/>";
@@ -264,16 +266,25 @@ class plgSocialProfilesCommunityBuilder extends SocialProfilePlugin
             "UPDATE #__comprofiler " .
             "SET approved = " . ($adminApproval ? 0 : 1) . ", " .
             "	confirmed = " . ($confirmation ? 0 : 1) . ", " .
-            "	cbactivation = '" . $cbactivation . "' " .
+            "	cbactivation = '" . $cbactivation . "'" .
             "WHERE user_id = " . $jUser->id
         );
         $this->db->execute();
         // Reload user again.  Could just set the values written above directly, but it's nice to know the db txn succeeeded.
-        $cbUser->load($jUser->id);
+        //$cbUser->load($jUser->id); /* If called, filled out fields from login register will be blank in profile after creating user*/
+
+        // These fields have been saved to the database, but need to update the in-memory object before we call activateUser so it knows how to handle emails
+        $cbUser->approved = $adminApproval ? 0 : 1;
+        $cbUser->confirmed = $confirmation ? 0 : 1;
+        $cbUser->activation = $cbactivation;
 
         // Trigger OnBeforeActivate/onUserActive plugins.
         // Send Welcome email and notify admins of new user.
         activateUser($cbUser, 0, "UserRegistration", true, true, true);
+
+        /* If set before activateUser, this gets reset */
+        $this->db->setQuery("UPDATE #__comprofiler SET `canvasapproved` = 1 WHERE user_id = " . $jUser->id);
+        $this->db->execute();
     }
 
     protected function saveProfileField($fieldId, $value)
@@ -348,38 +359,43 @@ class plgSocialProfilesCommunityBuilder extends SocialProfilePlugin
         $this->db->setQuery($query);
         $this->db->execute();
 
+        /* Create a thumbnail image */
+        $this->setImage('tn'.$avatarFileName, $this->getAvatarPath() . '/' . $socialAvatar, $ueConfig['thumbWidth'], $ueConfig['thumbHeight']);
+
         return true;
     }
 
     protected function setCoverPhoto($cover)
+    {
+        $fileName						=	'canvas_' . uniqid( $this->joomlaId . '_' );
+
+        try {
+            $this->setImage($fileName, $cover->get('path'), 1280, 640);
+            $this->setImage('tn' . $fileName, $cover->get('path'), 320, 640);
+
+            $query = 'UPDATE #__comprofiler SET `canvas` = ' . $this->db->quote($fileName . '.jpg') . ', `canvasapproved` = 1 WHERE id = ' . $this->joomlaId;
+            $this->db->setQuery($query);
+            $this->db->execute();
+        } catch ( Exception $e ) {
+        }
+    }
+
+    protected function setImage($fileName, $srcPath, $thumbWidth, $thumbHeight)
     {
         global $_CB_framework;
 
         $conversionType					=	(int) ( isset( $ueConfig['conversiontype'] ) ? $ueConfig['conversiontype'] : 0 );
         $imageSoftware					=	( $conversionType == 5 ? 'gmagick' : ( $conversionType == 1 ? 'imagick' : 'gd' ) );
         $imagePath						=	$_CB_framework->getCfg( 'absolute_path' ) . '/images/comprofiler/';
-        $fileName						=	'canvas_' . uniqid( $this->joomlaId . '_' );
 
         try {
-            //$image						=	new \CBLib\Image\Image( $imageSoftware, $this->_getImageFieldParam( $field, 'avatarResizeAlways', 1 ), $this->_getImageFieldParam( $field, 'avatarMaintainRatio', 1 ) );
             $image						=	new \CBLib\Image\Image( $imageSoftware, 1, 1 );
 
             $image->setName( $fileName );
-            $image->setSource( $cover->get('path') );
+            $image->setSource( $srcPath);
             $image->setDestination( $imagePath );
+            $image->processImage( $thumbWidth, $thumbHeight );
 
-            //$image->processImage( $this->_getImageFieldParam( $field, 'avatarWidth', 200 ), $this->_getImageFieldParam( $field, 'avatarHeight', 500 ) );
-            $image->processImage( 1280, 640 );
-
-            $newFileName				=	$image->getCleanFilename();
-
-            $image->setName( 'tn' . $fileName );
-
-            $image->processImage( 320, 640 );
-
-            $query = 'UPDATE #__comprofiler SET `canvas` = ' . $this->db->quote($fileName . '.jpg') . ', `canvasapproved` = 1 WHERE id = ' . $this->joomlaId;
-            $this->db->setQuery($query);
-            $this->db->execute();
         } catch ( Exception $e ) {
         }
     }

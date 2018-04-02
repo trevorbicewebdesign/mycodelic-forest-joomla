@@ -28,6 +28,10 @@ div.header.icon-48-jfbconnect {
     width: 300px;
 }
 
+.sourcecoast #adminForm .config_setting.note {
+    margin-top: 20px;
+}
+
 .sourcecoast.channel .config_setting {
     width: 150px;
 }
@@ -44,7 +48,8 @@ div.header.icon-48-jfbconnect {
     width:200px;
 }
 
-.sourcecoast.channel #adminForm select.autopost_select {
+.sourcecoast.channel #adminForm select.autopost_select,
+.sourcecoast #adminForm select#social_graph_skip_components {
     width:auto;
 }
 

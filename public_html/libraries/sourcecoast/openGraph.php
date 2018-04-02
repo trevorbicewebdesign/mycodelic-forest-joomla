@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         SourceCoast Extensions
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -125,7 +125,8 @@ class OpenGraphLibrary
         $skipTags = explode(',', $skipGraphFields);
         foreach ($skipTags as $tag)
         {
-            $tags[] = OpenGraphUtilities::getTagName($tag);
+            if(!empty($tag))
+                $tags[] = OpenGraphUtilities::getTagName($tag);
         }
         return $tags;
     }
@@ -153,6 +154,12 @@ class OpenGraphLibrary
         return $contents;
     }
 
+    public function addOpenGraphTag($name, $value, $isFinal, $priority = PRIORITY_NORMAL, $origin = 'jfbconnect')
+    {
+        $this->addTwitterTags($name, $value, $priority, $origin);
+        $this->addOpenGraphTagEx($name, $value, $isFinal, $priority, $origin);
+    }
+
     /*
      * This method adds a tag to the list of all open graph tags
      * we will eventually add to the page content.
@@ -164,7 +171,7 @@ class OpenGraphLibrary
      * - content plugin - auto-generate description
      * - users add this manually to articles, etc
      */
-    public function addOpenGraphTag($name, $value, $isFinal, $priority = PRIORITY_NORMAL, $origin = 'jfbconnect')
+    public function addOpenGraphTagEx($name, $value, $isFinal, $priority = PRIORITY_NORMAL, $origin = 'jfbconnect')
     {
         $isUsingNewValue = true;
 
@@ -224,7 +231,7 @@ class OpenGraphLibrary
     {
         if (!array_key_exists($name, $this->openGraphTags))
         {
-            $this->addOpenGraphTag($name, $value, false, $priority, 'Auto-generated');
+            $this->addOpenGraphTagEx($name, $value, false, $priority, 'Auto-generated');
         }
         else
         {
@@ -269,9 +276,11 @@ class OpenGraphLibrary
 
         $title = OpenGraphUtilities::getCurrentPageTitleTag();
         $this->addDefaultGraphTag('og:title', $title, PRIORITY_NORMAL);
+        $this->addDefaultGraphTag('twitter:title', $title, PRIORITY_NORMAL);
 
         $desc = OpenGraphUtilities::getCurrentDescriptionTag();
         $this->addDefaultGraphTag('og:description', $desc, PRIORITY_NORMAL);
+        $this->addDefaultGraphTag('twitter:description', $desc, PRIORITY_NORMAL);
 
         $type = OpenGraphUtilities::getCurrentPageTypeTag();
         $this->addDefaultGraphTag('og:type', $type, PRIORITY_NORMAL);
@@ -295,11 +304,24 @@ class OpenGraphLibrary
             $graphValue = JFBConnectUtilities::trimNBSP($keyValue[1]);
             //$graphValue = trim($keyValue[1]);
 
+            $this->addTwitterTags($graphName, $graphValue, $priority, $origin);
+
             if ($isDefault)
                 $this->addDefaultGraphTag($graphName, $graphValue, $priority);
             else
-                $this->addOpenGraphTag($graphName, $graphValue, false, $priority, $origin);
+                $this->addOpenGraphTagEx($graphName, $graphValue, false, $priority, $origin);
         }
+    }
+
+    private function addTwitterTags($graphName, $graphValue, $priority, $origin)
+    {
+        $twitter_card_enabled = JFBCFactory::config()->get('social_graph_twitter_cards_enabled');
+
+        //Add twitter title and description if encounterning og versions
+        if(($graphName == 'og:title' || $graphName == 'title') && $twitter_card_enabled)
+            $this->addOpenGraphTagEx('twitter:title', $graphValue, false, $priority, $origin);
+        else if(($graphName == 'og:description' || $graphName == 'description') && $twitter_card_enabled)
+            $this->addOpenGraphTagEx('twitter:description', $graphValue, false, $priority, $origin);
     }
 }
 
@@ -321,8 +343,9 @@ class OpenGraphTag
         $this->addValue($value, $isFinal, $priority);
 
         // og:image and any custom namespace tags are allowed multiple times
-        $this->allowsMultiple = ($name == 'og:image' && JFBCFactory::config()->get('social_graph_multiple_images')) ||
-            (strpos($name, 'og:') === false && strpos($name, 'fb:') === false);
+        $this->allowsMultiple = (($name == 'og:image' || $name == 'twitter:image') && JFBCFactory::config()->get('social_graph_multiple_images')) ||
+            (strpos($name, 'og:') === false && strpos($name, 'fb:') === false && strpos($name, 'twitter:') === false)
+        ;
     }
 
     function addValue($value, $isFinal, $priority)
@@ -372,12 +395,12 @@ class OpenGraphTag
             }
 
             // Basic Twitter Card support
-            if($this->name == 'og:title' && !in_array('twitter:title', $skipGraphFields) && $twitter_card_enabled)
-                $graphValue .= '<meta name="twitter:title" content="' . $tagValue . '"/>' . CARRIAGE_RETURN;
-            else if($this->name == 'og:description' && !in_array('twitter:description', $skipGraphFields) && $twitter_card_enabled)
-                $graphValue .= '<meta name="twitter:description" content="' . $tagValue . '"/>' . CARRIAGE_RETURN;
-            else if($this->name == 'og:image' && strpos($graphValue, 'og:image')===false && !in_array('twitter:image', $skipGraphFields) && in_array($card_type, array('summary', 'summary_large_image', 'player')) && $twitter_card_enabled)
-                $graphValue .= '<meta name="twitter:image" content="' . $tagValue . '"/>' . CARRIAGE_RETURN;
+            //if($this->name == 'og:title' && !in_array('twitter:title', $skipGraphFields) && $twitter_card_enabled)
+            //    $graphValue .= '<meta name="twitter:title" content="' . $tagValue . '"/>' . CARRIAGE_RETURN;
+            //else if($this->name == 'og:description' && !in_array('twitter:description', $skipGraphFields) && $twitter_card_enabled)
+            //    $graphValue .= '<meta name="twitter:description" content="' . $tagValue . '"/>' . CARRIAGE_RETURN;
+            /*else */if($this->name == 'og:image' && strpos($graphValue, 'og:image')===false && !in_array('twitter:image', $skipGraphFields) && in_array($card_type, array('summary', 'summary_large_image', 'player')) && $twitter_card_enabled)
+            $graphValue .= '<meta name="twitter:image" content="' . $tagValue . '"/>' . CARRIAGE_RETURN;
 
             //Add twitter first, so only first image is added to twitter
             $graphValue .= '<meta property="' . $this->name . '" content="' . $tagValue . '"/>' . CARRIAGE_RETURN;

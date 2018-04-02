@@ -14,7 +14,7 @@
                 </field>
             </fieldset>
             <fieldset name="widget_search_settings" addfieldpath="/components/com_jfbconnect/libraries/provider/amazon/fields/">
-                <field name="default_search_category" type="amazoncategories" default="" label="COM_JFBCONNECT_WIDGET_AMAZON_CATEGORY_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_DEFAULT_CATEGORY_DESCRIPTION" />
+                <field name="default_search_category" type="amazoncategories" default="" label="COM_JFBCONNECT_WIDGET_AMAZON_CATEGORY_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_CATEGORY_DESCRIPTION" />
                 <field name="default_search_key" type="text" label="COM_JFBCONNECT_WIDGET_AMAZON_KEYWORDS_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_KEYWORDS_DESCRIPTION"/>
                 <field name="search_type" default="1" type="radio" label="COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SHOW_SEARCH_RESULTS_IN_WIDGET_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SHOW_SEARCH_RESULTS_IN_WIDGET_DESCRIPTION">
                     <option value="search_box">JNO</option>
@@ -22,15 +22,15 @@
                 </field>
             </fieldset>
             <fieldset name="widget_amazon_com_settings">
-                <field name="size" type="list" default="auto" label="COM_JFBCONNECT_WIDGET_AMAZON_SIZE_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_AD_SIZE_DESCRIPTION">
+                <field name="size" type="list" default="auto" label="COM_JFBCONNECT_WIDGET_AMAZON_SIZE_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_SIZE_DESCRIPTION">
                     <option value="auto">COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_SIZE_OPTION_AUTO</option>
 <!--                    <option value="300x250">COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_SIZE_OPTION_300_X_250_MEDIUM_RECTANGLE</option>
                     <option value="336x280">COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_SIZE_OPTION_336_X_280_MEDIUM_RECTANGLE</option>
                     <option value="160x600">COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_SIZE_OPTION_160_X_600_MEDIUM_RECTANGLE</option>-->
                     <option value="custom">COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_SIZE_OPTION_CUSTOM</option>
                 </field>
-                <field name="width" type="text" label="COM_JFBCONNECT_WIDGET_AMAZON_WIDTH_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_WIDTH_DESCRIPTION"/>
-                <field name="height" type="text" label="COM_JFBCONNECT_WIDGET_AMAZON_HEIGHT_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_HEIGHT_DESCRIPTION"/>
+                <field name="width" type="text" label="COM_JFBCONNECT_WIDGET_AMAZON_WIDTH_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_WIDTH_DESCRIPTION"/>
+                <field name="height" type="text" label="COM_JFBCONNECT_WIDGET_AMAZON_HEIGHT_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_HEIGHT_DESCRIPTION"/>
                 <field name="theme" type="list" default="light" label="COM_JFBCONNECT_WIDGET_AMAZON_THEME_LABEL" description="COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_THEME_DESCRIPTION" onchange="var color; if(this.value == 'light') {color='#ffffff'; }else{color='#000000';}; jfbcJQuery('#jform_params_widget_settings_backgroundhue').val(color); jfbcJQuery('.minicolors-swatch span').css('background-color', color);">
                     <option value="light">COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_THEME_OPTION_LIGHT</option>
                     <option value="dark">COM_JFBCONNECT_WIDGET_AMAZON_SEARCH_SELECT_THEME_OPTION_DARK</option>

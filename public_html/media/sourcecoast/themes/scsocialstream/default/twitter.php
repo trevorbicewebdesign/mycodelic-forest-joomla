@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 // Do some formatting on the text to turn links, hashtags and mentions into links
 $message = $this->makeClickableLinks($this->message);
@@ -21,13 +21,13 @@ echo
             echo '<div class="provider">';
             if($stream->options->get('show_post'))
                 echo '<a href="'.$this->link.'" target="_blank">';
-            echo '<img src="' . JUri::root(true) . '/media/sourcecoast/images/provider/twitter/icon.png" />';
+            echo '<img src="' . JUri::root(true) . '/media/sourcecoast/images/provider/twitter/icon.png" alt="Twitter Login"/>';
             if($stream->options->get('show_post'))
                 echo '</a>';
             echo '</div>';
         }
      echo '<div class="author-details">
-        <div class="author-image"><img src="' . $this->authorImage . '"/></div>
+        <div class="author-image"><img src="' . $this->authorImage . '" alt="Author"/></div>
         <span class="screen-name">' . $this->authorScreenName . '</span><span class="author-name">' . $this->authorName . '</span>';
     if ($stream->options->get('show_date'))
         echo '<div class="date">' . $date . '</div>';
@@ -59,7 +59,7 @@ else if ($showLink == 'full' && ($hasPageInfo || $hasPicture))
         <div class="preview span12">
             <div class="title"><a href="<?php echo $this->thumbLink; ?>" target="_blank" rel="nofollow"><?php echo $this->thumbTitle; ?></a></div>
             <?php if ($this->thumbPicture)
-                echo '<div class="image"><img src="' . $this->thumbPicture . '"/></div>';
+                echo '<div class="image"><img src="' . $this->thumbPicture . '" alt="Post Thumbnail"/></div>';
             if ($this->thumbCaption)
                 echo '<div class="caption"><a href="' . $this->thumbLink . '" target="_blank" rel="nofollow">' . $this->thumbCaption . '</a></div>';
             if ($this->thumbDescription)

@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         SourceCoast Extensions
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -325,11 +325,11 @@ class OpenGraphPlugin extends JPlugin
         $articleText = JFBConnectUtilities::trimNBSP($contentText);
         $articleText = strip_tags($articleText);
         $articleText = preg_replace('/\s+/', ' ', $articleText);
-        $articleText = str_replace('{K2Splitter}', '', $articleText);
         JFBConnectUtilities::stripSystemTags($articleText, 'JFBC');
         JFBConnectUtilities::stripSystemTags($articleText, 'JLinked');
         JFBConnectUtilities::stripSystemTags($articleText, 'SC');
         JFBConnectUtilities::stripSystemTags($articleText, 'loadposition');
+        $articleText = str_replace(array('{K2Splitter}','{', '}'), '', $articleText);
         $articleText = trim($articleText);
 
         $addEllipsis = false;
@@ -463,11 +463,20 @@ class OpenGraphPlugin extends JPlugin
         return $activity;
     }
 
-    public function autopublish($ogType, $articleId, $link, $isPending = false)
+    public function autopublish($ogType, $articleId, $link, $isPending = false, $language = null)
     {
         //Need to make an AJAX call to front-end to get the SEF URL
         $http = JHttpFactory::getHttp();
-        $sef = $http->get(JUri::root() . 'index.php?option=com_jfbconnect&task=ajax.sef&url=' . base64_encode($link));
+
+        $langParam = "";
+        if (!is_null($language))
+        {
+            $langCodes   = JLanguageHelper::getLanguages('lang_code');
+            $sefLang = $langCodes[$language]->sef;
+            $langParam = '&lang=' . $sefLang;
+        }
+
+        $sef = $http->get(JUri::root() . 'index.php?option=com_jfbconnect' . $langParam . '&task=ajax.sef&url=' . base64_encode($link));
 
         if($sef->code == 303)
         {
@@ -478,6 +487,8 @@ class OpenGraphPlugin extends JPlugin
 
         if ($sef && $sef->code == 200)
             $link = $sef->body;
+        else
+            $link = JUri::root() . $link;
 
         $objectType = $this->getLayout($ogType);
 

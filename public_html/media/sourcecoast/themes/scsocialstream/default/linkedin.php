@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 $message = $this->makeClickableLinks($this->message);
 ?>
@@ -14,7 +14,7 @@ $message = $this->makeClickableLinks($this->message);
             <?php if($stream->options->get('show_post')):?>
             <a target="_blank" href="<?php echo $this->link;?>">
             <?php endif;?>
-                <img src="<?php echo JUri::root(true);?>/media/sourcecoast/images/provider/linkedin/icon.png">
+                <img src="<?php echo JUri::root(true);?>/media/sourcecoast/images/provider/linkedin/icon.png" alt="LinkedIn Login" />
             <?php if($stream->options->get('show_post')):?>
             </a>
             <?php endif;?>
@@ -60,7 +60,7 @@ else if ($showLink == 'full' && ($hasPageInfo || $hasPicture))
         <div class="preview span12">
             <div class="title"><a href="<?php echo $this->thumbLink; ?>" target="_blank" rel="nofollow"><?php echo $this->thumbTitle; ?></a></div>
             <?php if ($this->thumbPicture)
-                echo '<div class="image"><img src="' . $this->thumbPicture . '"/></div>';
+                echo '<div class="image"><img src="' . $this->thumbPicture . '" alt="Post Thumbnail"/></div>';
             if ($this->thumbCaption)
                 echo '<div class="caption"><a href="' . $this->thumbLink . '" target="_blank" rel="nofollow">' . $this->thumbCaption . '</a></div>';
             if ($this->thumbDescription)

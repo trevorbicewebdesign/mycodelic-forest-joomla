@@ -129,7 +129,7 @@ div.scsocialbuttons.vertical >div {
     width:100% !important;
 }
 
-.jfbclike iframe, .jfbcsend iframe {
+.jfbclike iframe {
     max-width:none !important;
 }
 

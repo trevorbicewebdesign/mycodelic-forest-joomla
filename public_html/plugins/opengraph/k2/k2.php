@@ -1,9 +1,9 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @build-date      2016/12/24
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -435,8 +435,9 @@ class plgOpenGraphK2 extends OpenGraphPlugin
 
             if($value == 1) //TODO: should be "1"?
             {
-                $link = 'index.php?option=com_k2&view=item&id='.$item->id;
-                $this->autopublish($ogObjects, $item->id, $link, $isPending);
+                require_once(JPATH_SITE . '/components/com_k2/helpers/route.php');
+                $link = K2HelperRoute::getItemRoute($item->id . ":" . urlencode($item->alias), $item->catid);
+                $this->autopublish($ogObjects, $item->id, $link, $isPending, $item->language);
             }
             else if($isPending)
             {

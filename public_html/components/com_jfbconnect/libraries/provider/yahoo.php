@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -18,24 +18,24 @@ class JFBConnectProviderYahoo extends JFBConnectProvider
         $this->usernamePrefix = "yh_";
         parent::__construct();
     }
-
-    function setupAuthentication()
+    
+    public function setupAuthentication()
     {
         $options = new JRegistry();
-        $options->def('accessTokenURL', 'https://api.login.yahoo.com/oauth/v2/get_token');
-        $options->def('authenticateURL', 'https://api.login.yahoo.com/oauth/v2/request_auth');
-        $options->def('authoriseURL', 'https://api.login.yahoo.com/oauth/v2/request_auth');
-        $options->def('requestTokenURL', 'https://api.login.yahoo.com/oauth/v2/get_request_token');
-        $options->set('consumer_key', $this->appId);
-        $options->set('consumer_secret', $this->secretKey);
-        $options->set('callback', JURI::base() . 'index.php?option=com_jfbconnect&task=authenticate.callback&provider=yahoo&state=' . JSession::getFormToken());
-        $options->set('sendheaders', true); // Enabled for now. Should probably switch to force the redirect so we can just detect if user is logged in
+        $options->set('authurl', 'https://api.login.yahoo.com/oauth2/request_auth');
+        $options->set('tokenurl', 'https://api.login.yahoo.com/oauth2/get_token');
+        $options->set('nonce', $this->generateNonce());
 
-        $headers = array();
-        $headers['Content-Type'] = 'application/xml';
-        $options->set('headers', $headers);
+		$scope = 'openid'; /* Note: do not set sdpp-w, etc here as this breaks older applications and is not necessary */
+		$options->set('scope', $scope);	
 
-        $this->client = new JFBConnectProviderYahooOauth1($options);
+        $currentLanguage = JFactory::getLanguage();
+        $requestparams['language'] = $currentLanguage->getTag();
+        $requestparams['nonce'] = $options->get('nonce');
+        $requestparams['prompt'] = 'consent';
+        $options->set('requestparams', $requestparams);
+
+        $this->client = new JFBConnectAuthenticationOauth2($options);
 
         $token = JFactory::getApplication()->getUserState('com_jfbconnect.' . strtolower($this->name) . '.token', null);
         if ($token)
@@ -43,6 +43,7 @@ class JFBConnectProviderYahoo extends JFBConnectProvider
             $token = (array)json_decode($token);
             $this->client->setToken($token);
         }
+        $this->client->initialize($this);
     }
 
     /* getProviderUserId
@@ -51,25 +52,31 @@ class JFBConnectProviderYahoo extends JFBConnectProvider
     */
     function getProviderUserId()
     {
-        $app = JFactory::getApplication();
-        if ($app->getUserState('com_jfbconnect.yahoo.provider_id', null) == null)
+        if ($this->get('providerUserId', null) == null)
         {
-            $token = $this->client->getToken();
-            if (empty($token))
-                return false;
-
-            $creds = $this->client->verifyCredentials();
-            if ($creds->code == 200)
-            {
-                $id = $creds->body->guid;
-            }
-
+            $profile = $this->profile->fetchProfile('me', 'guid');
+            $id = $profile->get('guid');
             if (!empty($id))
-                $app->setUserState('com_jfbconnect.yahoo.provider_id', $id);
-
+                $this->set('providerUserId', $id);
             else
-                $app->setUserState('com_jfbconnect.yahoo.provider_id', null);
+                $this->set('providerUserId', null);
         }
-        return $app->getUserState('com_jfbconnect.yahoo.provider_id');
+        return $this->get('providerUserId');
     }
+    
+	/**
+	 * Method used to generate the current nonce.
+	 *
+	 * @return  string  The current nonce.
+	 *
+	 * @since   13.1
+	 */
+	function generateNonce()
+	{
+		$mt = microtime();
+		$rand = mt_rand();
+
+		// The md5s look nicer than numbers.
+		return md5($mt . $rand);
+	}    
 }

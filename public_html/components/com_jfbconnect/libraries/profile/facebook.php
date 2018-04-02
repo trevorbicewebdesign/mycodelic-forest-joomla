@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -34,7 +34,7 @@ class JFBConnectProfileFacebook extends JFBConnectProfile
                 'political' => 'Basic Info - Political View', // user_religion_politics
                 'religion' => 'Basic Info - Religious Views', // user_religion_politics
                 'about' => 'Basic Info - About Me', // only get it in the user page
-                'bio' => 'Basic Info - Bio', // user_about_me
+                'bio' => 'Basic Info - Bio', // user_about_me  /* DEPRECATED Graph 2.8 */
                 'interested_in' => 'Basic Info - Interested In',
 //                'profile_blurb' => 'Basic Info - Profile Blurb', // user_about_me
                 'quotes' => 'Basic Info - Favorite Quotes', // user_about_me
@@ -190,7 +190,7 @@ class JFBConnectProfileFacebook extends JFBConnectProfile
         if (!empty($fields))
         {
             $colFields = implode(",", $fields);
-            $data = JFBCFactory::provider('facebook')->api('/v2.2/' . $fbUserId . '?fields=' . $colFields);
+            $data = JFBCFactory::provider('facebook')->api('/v2.5/' . $fbUserId . '?fields=' . $colFields);
             $profile->loadObject($data);
         }
         return $profile;
@@ -198,19 +198,34 @@ class JFBConnectProfileFacebook extends JFBConnectProfile
 
     public function fetchStatus($providerUserId)
     {
-        $response = JFBCFactory::provider('facebook')->api('/v2.4/me/feed');
-        if (!isset($response['data'][0]))
-            return;
-        $socialStatus = $response['data'][0]['message'];
+        //get the privacy field to check if the status is EVERYONE
+        $response = JFBCFactory::provider('facebook')->api('/v2.5/me/feed/?fields=message,privacy');
+        $socialStatus = '';
+
+        if($response['data']){
+            foreach($response['data'] as $k=>$data)
+            {
+                if($data['privacy']['value'] == 'EVERYONE')
+                {
+                    $socialStatus .= $data['message'];
+                    $id = $data['id'];
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+        }
+
+        if(empty($socialStatus)) return;
 
         //TODO: add config?
-        $id = $response['data'][0]['id'];
         $xplode = explode('_', $id); // $xplode[0] - user id , $xplode[1] - post id
         $socialStatus .= '<br /><a target="_blank" href="https://www.facebook.com/'.$xplode[0].'/posts/'.$xplode[1].'">'.JText::_('COM_JFBCONNECT_FACEBOOK_STATUS_VIEW_ORIGINAL_POST').'</a>';
 
         return $socialStatus;
     }
-
 
     // Created for parity with JLinked/SourceCoast library
     // nullForDefault - If the avatar is the default image for the social network, return null instead

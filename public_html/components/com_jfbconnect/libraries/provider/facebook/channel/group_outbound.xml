@@ -29,6 +29,25 @@
                 <option value="0">JNO</option>
                 <option value="1">JYES</option>
             </field>
+            <field name="post_as_page"
+                   type="radio"
+                   label="COM_JFBCONNECT_CHANNEL_FACEBOOK_POST_AS_PAGE_LABEL"
+                   description="COM_JFBCONNECT_CHANNEL_FACEBOOK_POST_AS_PAGE_DESCRIPTION"
+                   default="1"
+                   labelclass="config_setting"
+                   class="btn-group"
+                    >
+                <option value="0">JNO</option>
+                <option value="1">JYES</option>
+            </field>
+            <field name="page_id"
+                   type="facebookpagelist"
+                   label="COM_JFBCONNECT_CHANNEL_FACEBOOK_PAGE_ID_LABEL"
+                   description="COM_JFBCONNECT_CHANNEL_FACEBOOK_PAGE_ID_DESCRIPTION"
+                   default=""
+                   labelclass="config_setting"
+                   class="facebook"
+                    />
             <field name="size_image"
                    type="list"
                    label="COM_JFBCONNECT_CHANNEL_FACEBOOK_SIZE_IMAGE_LABEL"

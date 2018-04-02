@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="1.6" type="module" method="upgrade" client="site">
     <name>JFBC Social Share</name>
-    <version>7.0.0</version>
-    <creationDate>2016/12/24</creationDate>
+    <version>7.2.5</version>
+    <creationDate>2018/03/13</creationDate>
     <author>SourceCoast | www.sourcecoast.com</author>
     <authorEmail>support@sourcecoast.com</authorEmail>
     <authorUrl>http://www.sourcecoast.com</authorUrl>
-    <copyright>Copyright (C) 2011-2015 SourceCoast. All rights reserved.</copyright>
+    <copyright>Copyright (C) 2011-2018 SourceCoast. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description>This is the Social Sharing module that goes with the JFBConnect component, which lets users share pages from your site back to their social network with one click.</description>
     <files>
@@ -15,80 +15,83 @@
         <filename>mod_jfbcsocialshare.xml</filename>
         <filename>tmpl/default.php</filename>
     </files>
+    <languages folder="translations">
+        <language tag="en-GB">en-GB.mod_jfbcsocialshare.ini</language>
+    </languages>
     <config>
         <fields name="params">
             <fieldset name="basic">
-                <field name="url" type="text" label="URL to Share" description="The URL to share, defaults to current page" />
-                <field name="layout_style" type="list" label="Layout" description="Determines the size and amount of social context next to the button" default="box_count">
-                    <option value="standard">Standard</option>
-                    <option value="box_count">Box Count</option>
-                    <option value="button_count">Button Count</option>
-                    <option value="button">Button</option>
+                <field name="show_mobile" class="btn-group" type="radio" label="MOD_JFBCSOCIALSHARE_SHOW_MOBILE_LABEL" description="MOD_JFBCSOCIALSHARE_SHOW_MOBILE_DESC" default="1">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
                 </field>
-                <field name="orientation" type="list" label="Orientation" description="Determines whether the buttons are vertically or horizontally oriented" default="horizontal">
-                    <option value="horizontal">Horizontal</option>
-                    <option value="vertical">Vertical</option>
+                <field name="url" type="text" label="MOD_JFBCSOCIALSHARE_URL_TO_SHARE_LABEL" description="MOD_JFBCSOCIALSHARE_URL_TO_SHARE_DESC" />
+                <field name="layout_style" type="list" label="MOD_JFBCSOCIALSHARE_LAYOUT_LABEL" description="MOD_JFBCSOCIALSHARE_LAYOUT_DESC" default="box_count">
+                    <option value="standard">MOD_JFBCSOCIALSHARE_LAYOUT_OPTION_STANDARD</option>
+                    <option value="box_count">MOD_JFBCSOCIALSHARE_LAYOUT_OPTION_BOX_COUNT</option>
+                    <option value="button_count">MOD_JFBCSOCIALSHARE_LAYOUT_OPTION_BUTTON_COUNT</option>
+                    <option value="button">MOD_JFBCSOCIALSHARE_LAYOUT_OPTION_BUTTON</option>
                 </field>
-                <field name="position" type="list" label="Position" description="Choose whether the buttons show as a standard fixed module or float to the side/top of the screen" default="fixed">
-                    <option value="absolute">Fixed</option>
-                    <option value="fixed">Float</option>
+                <field name="orientation" type="list" label="MOD_JFBCSOCIALSHARE_ORIENTATION_LABEL" description="MOD_JFBCSOCIALSHARE_ORIENTATION_DESC" default="horizontal">
+                    <option value="horizontal">MOD_JFBCSOCIALSHARE_ORIENTATION_OPTION_HORIZONTAL</option>
+                    <option value="vertical">MOD_JFBCSOCIALSHARE_ORIENTATION_OPTION_VERTICAL</option>
                 </field>
-                <field name="margin" type="text" label="Margin" description="Set the margin around the entire set of buttons" default="" />
-                <field name="padding" type="text" label="Padding" description="Set the padding around the entire set of buttons" default="" />
-                <field name="background_color" type="color" label="Background Color" description="Set the background color" default="" />
-                <field name="float_position_top" type="text" label="Float Position from Top" description="Set the position from top in px when 'Float' Position is set. Using a number greater than 3000 will float to the bottom of the screen" default="" />
-                <field name="float_position_left" type="text" label="Float Position from Left" description="Set the position from the left in px when 'Float' Position is set. Using a number greater than 3000 will float to the right of the screen" default="" />
+                <field name="position" type="list" label="MOD_JFBCSOCIALSHARE_POSITION_LABEL" description="MOD_JFBCSOCIALSHARE_POSITION_DESC" default="fixed">
+                    <option value="absolute">MOD_JFBCSOCIALSHARE_POSITION_OPTION_FIXED</option>
+                    <option value="fixed">MOD_JFBCSOCIALSHARE_POSITION_OPTION_FLOAT</option>
+                </field>
+                <field name="margin" type="text" label="MOD_JFBCSOCIALSHARE_MARGIN_LABEL" description="MOD_JFBCSOCIALSHARE_MARGIN_DESC" default="" />
+                <field name="padding" type="text" label="MOD_JFBCSOCIALSHARE_PADDING_LABEL" description="MOD_JFBCSOCIALSHARE_PADDING_DESC" default="" />
+                <field name="background_color" type="color" label="MOD_JFBCSOCIALSHARE_BACKGROUND_COLOR_LABEL" description="MOD_JFBCSOCIALSHARE_BACKGROUND_COLOR_DESC" default="" />
+                <field name="float_position_top" type="text" label="MOD_JFBCSOCIALSHARE_FLOAT_POSITION_FROM_TOP_LABEL" description="MOD_JFBCSOCIALSHARE_FLOAT_POSITION_FROM_TOP_DESC" default="" />
+                <field name="float_position_left" type="text" label="MOD_JFBCSOCIALSHARE_FLOAT_POSITION_FROM_LEFT_LABEL" description="MOD_JFBCSOCIALSHARE_FLOAT_POSITION_FROM_LEFT_DESC" default="" />
             </fieldset>
-            <fieldset name="facebook" label="Facebook Options">
-                <field name="facebook_enable" type="radio" label="Show Facebook Like" description="Show Facebook Like button" default="1">
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
+            <fieldset name="facebook" label="MOD_JFBCSOCIALSHARE_FACEBOOK_OPTIONS_LABEL">
+                <field name="facebook_enable" class="btn-group" type="radio" label="MOD_JFBCSOCIALSHARE_SHOW_FACEBOOK_LIKE_LABEL" description="MOD_JFBCSOCIALSHARE_SHOW_FACEBOOK_LIKE_DESC" default="1">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
                 </field>
-                <field name="facebook_share_enable" type="radio" label="Show Facebook Share" description="Show Facebook Share button" default="0">
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
+                <field name="facebook_share_enable" class="btn-group" type="radio" label="MOD_JFBCSOCIALSHARE_SHOW_FACEBOOK_SHARE_LABEL" description="MOD_JFBCSOCIALSHARE_SHOW_FACEBOOK_SHARE_DESC" default="0">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
                 </field>
-                <field name="facebook_show_faces" type="radio" label="Show Faces" description="Show profile pictures below the Like Button" default="1">
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
+                <field name="facebook_show_faces" class="btn-group" type="radio" label="MOD_JFBCSOCIALSHARE_SHOW_FACES_LABEL" description="MOD_JFBCSOCIALSHARE_SHOW_FACES_DESC" default="1">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
                 </field>
-                <field name="facebook_width" type="text" label="Width" description="The width of the Like Button frame, in pixels" default="450" />
-                <field name="facebook_height" type="text" label="Height" description="The height of the Like Button frame, in pixels" default="80" />
-                <field name="facebook_verb_to_display" type="list" label="Verb to Display" description="The verb to display in the Like Button" default="like">
-                    <option value="like">Like</option>
-                    <option value="recommend">Recommend</option>
+                <field name="facebook_width" type="text" label="MOD_JFBCSOCIALSHARE_WIDTH_LABEL" description="MOD_JFBCSOCIALSHARE_WIDTH_DESC" default="450" />
+                <field name="facebook_height" type="text" label="MOD_JFBCSOCIALSHARE_HEIGHT_LABEL" description="MOD_JFBCSOCIALSHARE_HEIGHT_DESC" default="80" />
+                <field name="facebook_verb_to_display" type="list" label="MOD_JFBCSOCIALSHARE_VERB_TO_DISPLAY_LABEL" description="MOD_JFBCSOCIALSHARE_VERB_TO_DISPLAY_DESC" default="like">
+                    <option value="like">MOD_JFBCSOCIALSHARE_VERB_TO_DISPLAY_OPTION_LIKE</option>
+                    <option value="recommend">MOD_JFBCSOCIALSHARE_VERB_TO_DISPLAY_OPTION_RECOMMEND</option>
                 </field>
-                <field name="facebook_color_scheme" type="list" label="Color Scheme" description="The Like Button color scheme" default="light">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
+                <field name="facebook_color_scheme" type="list" label="MOD_JFBCSOCIALSHARE_COLOR_SCHEME_LABEL" description="MOD_JFBCSOCIALSHARE_COLOR_SCHEME_DESC" default="light">
+                    <option value="light">MOD_JFBCSOCIALSHARE_COLOR_SCHEME_OPTION_LIGHT</option>
+                    <option value="dark">MOD_JFBCSOCIALSHARE_COLOR_SCHEME_OPTION_DARK</option>
                 </field>
-                <field name="facebook_ref" type="text" label="Ref" description="A label for tracking referrals to Facebook. Specifying the ref attribute will add the 'fb_ref' parameter to the referrer URL when a user clicks a link from the plugin." default="" />
-                <field name="facebook_kid_directed_site" type="radio" label="Kid Directed Site" description="If your web site or online service, or a portion of your service, is directed to children under 13 you must enable this" default="0">
-                    <option value="0">No</option>
-                    <option value="1">Yes</option>
-                </field>
-            </fieldset>
-            <fieldset name="linkedin" label="LinkedIn Options">
-                <field name="linkedin_enable" type="radio" label="Show LinkedIn Share" description="Show LinkedIn Share button" default="1">
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
-                </field>
-                <field name="linkedin_show_zero" type="radio" label="Show Zero" description="Whether to show a zero or a placeholder in the counter if there are no shares. Shows a 0 digit if layout is 'Button Count'. Shows a LinkedIn Icon if layout is 'Box Count'" default="0">
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
+                <field name="facebook_ref" type="text" label="MOD_JFBCSOCIALSHARE_REF_LABEL" description="MOD_JFBCSOCIALSHARE_REF_DESC" default="" />
+                <field name="facebook_kid_directed_site" class="btn-group" type="radio" label="MOD_JFBCSOCIALSHARE_KID_DIRECTED_SITE_LABEL" description="MOD_JFBCSOCIALSHARE_KID_DIRECTED_SITE_DESC" default="0">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
                 </field>
             </fieldset>
-            <fieldset name="google" label="Google Options">
-                <field name="google_enable" type="radio" label="Show Google +1" description="Show Google +1 button" default="1">
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
+            <fieldset name="linkedin" label="MOD_JFBCSOCIALSHARE_LINKEDIN_OPTIONS_LABEL">
+                <field name="linkedin_enable" type="radio" class="btn-group" label="MOD_JFBCSOCIALSHARE_SHOW_LINKEDIN_SHARE_LABEL" description="MOD_JFBCSOCIALSHARE_SHOW_LINKEDIN_SHARE_DESC" default="1">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
                 </field>
-                <field name="google_width" type="text" label="Width" description="Width of +1 button" default=""/>
             </fieldset>
-            <fieldset name="twitter" label="Twitter Options">
-                <field name="twitter_enable" type="radio" label="Show Twitter Share" description="Show Twitter Share button" default="1">
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
+            <fieldset name="google" label="MOD_JFBCSOCIALSHARE_GOOGLE_OPTIONS_LABEL">
+                <field name="google_enable" class="btn-group" type="radio" label="MOD_JFBCSOCIALSHARE_SHOW_GOOGLE_PLUS_LABEL" description="Show Google +1 button" default="1">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
+                </field>
+                <field name="google_width" type="text" label="MOD_JFBCSOCIALSHARE_WIDTH_LABEL" description="MOD_JFBCSOCIALSHARE_WIDTH_GOOGLE_PLUS_BUTTON_DESC" default=""/>
+            </fieldset>
+            <fieldset name="twitter" label="MOD_JFBCSOCIALSHARE_TWITTER_OPTIONS_LABEL">
+                <field name="twitter_enable" class="btn-group" type="radio" label="MOD_JFBCSOCIALSHARE_SHOW_TWITTER_SHARE_LABEL" description="MOD_JFBCSOCIALSHARE_SHOW_TWITTER_SHARE_DESC" default="1">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
                 </field>
             </fieldset>
             <fieldset name="advanced">
@@ -97,14 +100,14 @@
                        type="textarea"
                        rows="5"
                        cols="40"
-                       label="Intro Text"
-                       description="This is the text or HTML that is displayed above the social content."
+                       label="MOD_JFBCSOCIALSHARE_INTRO_TEXT_LABEL"
+                       description="MOD_JFBCSOCIALSHARE_INTRO_TEXT_DESC"
                        default=""
                        filter="safehtml" />
-                <field name="showPoweredByLink" type="radio" label="Show Powered By Link" description="Show 'Powered By' link" default="2">
-                    <option value="2">Use Global</option>
-                    <option value="0">Hide</option>
-                    <option value="1">Show</option>
+                <field name="showPoweredByLink" type="radio" label="Show Powered By Link" description="MOD_JFBCSOCIALSHARE_SHOW_POWERED_BY_LINK_DESC" default="2">
+                    <option value="2">JGLOBAL_USE_GLOBAL</option>
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
                 </field>
             </fieldset>
         </fields>

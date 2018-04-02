@@ -2,11 +2,11 @@
 <extension version="1.6" type="module" method="upgrade" client="site">
     <name>SCSocial Find Us</name>
     <version>7.0.0</version>
-    <creationDate>2016/12/24</creationDate>
+    <creationDate>2018/03/13</creationDate>
     <author>SourceCoast | www.sourcecoast.com</author>
     <authorEmail>support@sourcecoast.com</authorEmail>
     <authorUrl>http://www.sourcecoast.com</authorUrl>
-    <copyright>Copyright (C) 2014-2015 SourceCoast. All rights reserved.</copyright>
+    <copyright>Copyright (C) 2014-2018 SourceCoast. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description>This is the Social Find Us module that goes with the JFBConnect component, which lets users share their social network pages.</description>
     <files>

@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -177,7 +177,7 @@ class JFBConnectProfileGoogle extends JFBConnectProfile
     // Created for parity with JLinked/SourceCoast library
     // nullForDefault - If the avatar is the default image for the social network, return null instead
     // Prevents the default avatars from being imported
-    function getAvatarUrl($providerUserId, $nullForDefault = false, $params = null)
+    function getAvatarUrl($providerUserId, $nullForDefault = true, $params = null)
     {
         if (!$params)
             $params = new JRegistry();
@@ -188,17 +188,18 @@ class JFBConnectProfileGoogle extends JFBConnectProfile
         if ($avatarUrl === false)
         {
             $profile = $this->fetchProfile($providerUserId, 'image');
-            $avatarUrl = $profile->get('image.url', null);
-            // Check for default image
-            if ($avatarUrl)
+            $profileA = $profile->toArray();
+           // $avatarUrl = $profile->get('image.url', null);
+            $avatarUrl = isset($profileA['image']['url']) ? $profileA['image']['url'] : null;
+
+            if($avatarUrl)
             {
-                if ($nullForDefault)
-                {
-                    $http = new JHttp();
-                    $avatar = $http->get($avatarUrl);
-                    if ($avatar->code == 200 && $avatar->headers['Content-Length'] == 946)
-                        $avatarUrl = null;
-                }
+                $isDefaultAvatar = isset($profileA['image']['isDefault']) ? $profileA['image']['isDefault'] : true;
+
+                // Check for default image
+                if($nullForDefault && $isDefaultAvatar)
+                    $avatarUrl = null;
+
                 if ($avatarUrl)
                     $avatarUrl = str_replace("?sz=50", "?sz=" . $width, $avatarUrl); // get a suitably large image to be resized
 

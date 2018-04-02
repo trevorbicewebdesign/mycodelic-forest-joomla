@@ -291,7 +291,7 @@ abstract class JFBCBaseFacebook
             $this->trustForwarded = true;
         }
         if (isset($config['allowSignedRequest'])
-                && !$config['allowSignedRequest']
+            && !$config['allowSignedRequest']
         )
         {
             $this->allowSignedRequest = false;
@@ -461,10 +461,10 @@ abstract class JFBCBaseFacebook
             return false;
         }
 
-        $response_params = array();
-        parse_str($access_token_response, $response_params);
-
-        if (!isset($response_params['access_token']))
+//        $response_params = array();
+        $token = json_decode($access_token_response);
+//        parse_str($token, $response_params);
+        if (!isset($token->access_token))
         {
             return false;
         }
@@ -472,7 +472,7 @@ abstract class JFBCBaseFacebook
         $this->destroySession();
 
         $this->setPersistentData(
-            'access_token', $response_params['access_token']
+            'access_token', $token->access_token
         );
     }
 
@@ -664,8 +664,8 @@ abstract class JFBCBaseFacebook
         // the cached access token has changed.
         $access_token = $this->getAccessToken();
         if ($access_token &&
-                $access_token != $this->getApplicationAccessToken() &&
-                !($user && $persisted_access_token == $access_token)
+            $access_token != $this->getApplicationAccessToken() &&
+            !($user && $persisted_access_token == $access_token)
         )
         {
             $user = $this->getUserFromAccessToken();
@@ -908,12 +908,12 @@ abstract class JFBCBaseFacebook
             // need to circumvent json_decode by calling _oauthRequest
             // directly, since response isn't JSON format.
             $access_token_response =
-                    $this->_oauthRequest(
-                        $this->getUrl('graph', '/oauth/access_token'),
-                        $params = array('client_id' => $this->getAppId(),
-                            'client_secret' => $this->getAppSecret(),
-                            'redirect_uri' => $redirect_uri,
-                            'code' => $code));
+                $this->_oauthRequest(
+                    $this->getUrl('graph', '/oauth/access_token'),
+                    $params = array('client_id' => $this->getAppId(),
+                        'client_secret' => $this->getAppSecret(),
+                        'redirect_uri' => $redirect_uri,
+                        'code' => $code));
         }
         catch (JFBCFacebookApiException $e)
         {
@@ -927,14 +927,15 @@ abstract class JFBCBaseFacebook
             return false;
         }
 
-        $response_params = array();
-        parse_str($access_token_response, $response_params);
-        if (!isset($response_params['access_token']))
+//        $response_params = array();
+        $token = json_decode($access_token_response);
+//        parse_str($token, $response_params);
+        if (!isset($token->access_token))
         {
             return false;
         }
 
-        return $response_params['access_token'];
+        return $token->access_token;
     }
 
     /**
@@ -966,7 +967,7 @@ abstract class JFBCBaseFacebook
 
         $method = strtolower($params['method']);
         if ($method === 'auth.expiresession' ||
-                $method === 'auth.revokeauthorization'
+            $method === 'auth.revokeauthorization'
         )
         {
             $this->destroySession();
@@ -1211,7 +1212,7 @@ abstract class JFBCBaseFacebook
         $data = json_decode(self::base64UrlDecode($payload), true);
 
         if (!isset($data['algorithm'])
-                || strtoupper($data['algorithm']) !== self::SIGNED_REQUEST_ALGORITHM
+            || strtoupper($data['algorithm']) !== self::SIGNED_REQUEST_ALGORITHM
         )
         {
             self::errorLog(
@@ -1414,14 +1415,14 @@ abstract class JFBCBaseFacebook
         }
         /*apache + variants specific way of checking for https*/
         if (isset($_SERVER['HTTPS']) &&
-                ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] == 1)
+            ($_SERVER['HTTPS'] === 'on' || $_SERVER['HTTPS'] == 1)
         )
         {
             return 'https';
         }
         /*nginx way of checking for https*/
         if (isset($_SERVER['SERVER_PORT']) &&
-                ($_SERVER['SERVER_PORT'] === '443')
+            ($_SERVER['SERVER_PORT'] === '443')
         )
         {
             return 'https';
@@ -1440,7 +1441,7 @@ abstract class JFBCBaseFacebook
         // to the current hostname
         $metadata = $this->getMetadataCookie();
         if (array_key_exists('base_domain', $metadata) &&
-                !empty($metadata['base_domain'])
+            !empty($metadata['base_domain'])
         )
         {
             return trim($metadata['base_domain'], '.');
@@ -1483,10 +1484,10 @@ abstract class JFBCBaseFacebook
 
         // use port if non default
         $port =
-                isset($parts['port']) &&
-                (($protocol === 'http://' && $parts['port'] !== 80) ||
-                        ($protocol === 'https://' && $parts['port'] !== 443))
-                        ? ':' . $parts['port'] : '';
+            isset($parts['port']) &&
+            (($protocol === 'http://' && $parts['port'] !== 80) ||
+                ($protocol === 'https://' && $parts['port'] !== 443))
+                ? ':' . $parts['port'] : '';
 
         // rebuild
         return $protocol . $parts['host'] . $port . $parts['path'] . $query;
@@ -1508,7 +1509,7 @@ abstract class JFBCBaseFacebook
         foreach (self::$DROP_QUERY_PARAMS as $drop_query_param)
         {
             if ($param === $drop_query_param ||
-                    strpos($param, $drop_query_param . '=') === 0
+                strpos($param, $drop_query_param . '=') === 0
             )
             {
                 return false;
@@ -1539,8 +1540,8 @@ abstract class JFBCBaseFacebook
             case 'Exception':
                 $message = $e->getMessage();
                 if ((strpos($message, 'Error validating access token') !== false) ||
-                        (strpos($message, 'Invalid OAuth access token') !== false) ||
-                        (strpos($message, 'An active access token must be used') !== false)
+                    (strpos($message, 'Invalid OAuth access token') !== false) ||
+                    (strpos($message, 'An active access token must be used') !== false)
                 )
                 {
                     $this->destroySession();
@@ -1665,7 +1666,7 @@ abstract class JFBCBaseFacebook
             if (!empty($pair[0]))
             {
                 $metadata[urldecode($pair[0])] =
-                        (count($pair) > 1) ? urldecode($pair[1]) : '';
+                    (count($pair) > 1) ? urldecode($pair[1]) : '';
             }
         }
 

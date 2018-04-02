@@ -44,7 +44,14 @@ if (version_compare($jVersion->getShortVersion(), '3.0.0', '>='))
             $options[CURLOPT_NOBODY] = ($method === 'HEAD');
 
             // Initialize the certificate store
-            $options[CURLOPT_CAINFO] = $this->options->get('curl.certpath', JPATH_LIBRARIES . '/joomla/http/transport/cacert.pem');
+            $pemFile = null;
+            if (JFile::exists(JPATH_LIBRARIES . '/src/Http/Transport/cacert.pem'))
+                $pemFile = JPATH_LIBRARIES . '/src/Http/Transport/cacert.pem';
+            else if (JFile::exists(JPATH_LIBRARIES . '/Joomla/http/transport/cacert.pem'))
+                $pemFile = JPATH_LIBRARIES . '/joomla/http/transport/cacert.pem';
+
+            if (!is_null($pemFile))
+                $options[CURLOPT_CAINFO] = $this->options->get('curl.certpath', $pemFile);
 
             // If data exists let's encode it and make sure our Content-type header is set.
             if (isset($data))
@@ -274,7 +281,14 @@ else
             $options[CURLOPT_NOBODY] = ($method === 'HEAD');
 
             // Initialize the certificate store
-            $options[CURLOPT_CAINFO] = $this->options->get('curl.certpath', JPATH_LIBRARIES . '/joomla/http/transport/cacert.pem');
+            $pemFile = null;
+            if (JFile::exists(JPATH_LIBRARIES . '/src/http/transport/cacert.pem'))
+                $pemFile = JPATH_LIBRARIES . '/src/http/transport/cacert.pem';
+            else if (JFile::exists(JPATH_LIBRARIES . '/Joomla/http/transport/cacert.pem'))
+                $pemFile = JPATH_LIBRARIES . '/Joomla/http/transport/cacert.pem';
+
+            if (!is_null($pemFile))
+                $options[CURLOPT_CAINFO] = $this->options->get('curl.certpath', $pemFile);
 
             // If data exists let's encode it and make sure our Content-type header is set.
             if (isset($data))

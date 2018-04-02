@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 if (!(defined('_JEXEC') || defined('ABSPATH'))) {     die('Restricted access'); };
@@ -37,6 +37,7 @@ class JFBConnectModelConfig extends JModelLegacy
 
         'login_use_popup' => '1',
         'automatic_registration' => '1',
+        'social_registration' => '1',
         'registration_component' => 'jfbconnect',
         'registration_generate_username' => '0',
         'auto_username_format' => '0', //0 = fb_, 1=first.last, 2=firlas, 3=email
@@ -47,6 +48,7 @@ class JFBConnectModelConfig extends JModelLegacy
         'registration_show_email' => '0',
         'registration_show_name' => '1',
         'registration_usegroups' => '',
+        'registration_domain' => '',
         'registration_display_mode' => 'horizontal',
         'registration_send_new_user_email' => '1',
         'joomla_skip_newuser_activation' => '1',
@@ -183,6 +185,8 @@ class JFBConnectModelConfig extends JModelLegacy
         'social_k2_blog_like_intro_text' => '',
         'social_graph_fields' => '',
         'social_graph_skip_fields' => '',
+        'social_graph_skip_components' => '',
+        'social_graph_turn_off_all' => '0',
         'social_graph_multiple_images' => '1',
         'social_graph_image_size' => '0',
         'social_graph_twitter_cards_enabled' => '1', //0=No, 1=Yes
@@ -218,7 +222,8 @@ class JFBConnectModelConfig extends JModelLegacy
 
     //add multi select values here or serialize values in DB
     private $serializeSettings = array(
-        'registration_usegroups'
+        'registration_usegroups',
+        'social_graph_skip_components'
     );
 
     function __construct()
@@ -231,7 +236,7 @@ class JFBConnectModelConfig extends JModelLegacy
 
     function store()
     {
-        $row = & $this->getTable();
+        $row = & $this->getTable("JFBConnectConfig", "Table");
         $data = JRequest::get('post');
         if (!$row->bind($data))
         {
@@ -265,7 +270,7 @@ class JFBConnectModelConfig extends JModelLegacy
         $this->_db->setQuery($query);
         $settingId = $this->_db->loadResult();
 
-        $row = $this->getTable();
+        $row = $this->getTable("JFBConnectConfig", "Table");
         $row->id = $settingId;
         $row->setting = $setting;
         $row->value = $value;
@@ -306,7 +311,13 @@ class JFBConnectModelConfig extends JModelLegacy
             foreach($this->serializeSettings as $serializeSetting)
             {
                 if(array_key_exists($serializeSetting, $settings))
+                {
                     $settings[$serializeSetting] = @unserialize($settings[$serializeSetting]);
+                    if ($settings[$serializeSetting] === false && $settings[$serializeSetting] !== 'b:0;') {
+                        // woops, that didn't appear to be anything serialized
+                        $settings[$serializeSetting] = array();
+                    }
+                }
             }
 
             $this->settings->loadArray($settings);
@@ -319,7 +330,7 @@ class JFBConnectModelConfig extends JModelLegacy
         if (!$this->settings)
         {
             $this->settings = new JRegistry();
-            $query = "SELECT setting,value FROM " . $this->table . ' WHERE setting LIKE %social_graph%';
+            $query = "SELECT setting,value FROM " . $this->table . " WHERE setting LIKE '%social_graph%'";
             $this->_db->setQuery($query);
             $settings = $this->_db->loadAssocList('setting', 'value');
 
@@ -385,7 +396,7 @@ class JFBConnectModelConfig extends JModelLegacy
     function delete()
     {
         $cids = JRequest::getVar('cid', array(0), 'post', 'array');
-        $row = & $this->getTable();
+        $row = & $this->getTable("JFBConnectConfig", "Table");
         if (count($cids))
         {
             foreach ($cids as $cid)

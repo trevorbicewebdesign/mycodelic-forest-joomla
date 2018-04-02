@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 class JFBConnectProviderFacebookChannelProfile extends JFBConnectChannel
@@ -58,7 +58,7 @@ class JFBConnectProviderFacebookChannelProfile extends JFBConnectChannel
         {
             $params = array();
             $params['access_token'] = JFBCFactory::usermap()->getUserAccessToken($this->options->get('user_id'), 'facebook');
-            $feed = $this->provider->api('me/feed?fields=message,from,updated_time,name,link,caption,description,comments,picture,full_picture', $params, true, 'GET');
+            $feed = $this->provider->api( $uid . '/feed?fields=message,from,updated_time,name,link,caption,description,comments,picture,full_picture,privacy', $params, true, 'GET' );
             JFBCFactory::cache()->store($feed, 'facebook.profile.feed.' . $uid);
         }
 
@@ -72,6 +72,8 @@ class JFBConnectProviderFacebookChannelProfile extends JFBConnectChannel
             {
 //                if(array_key_exists('message', $data))
 //                {
+                if($data['privacy']['value'] != 'EVERYONE') continue;
+
                     $post = new JFBConnectPost();
 
                     if(isset($data['actions'][0]))

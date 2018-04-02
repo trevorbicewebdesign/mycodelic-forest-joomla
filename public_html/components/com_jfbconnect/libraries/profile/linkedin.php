@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -33,6 +33,10 @@ class JFBConnectProfileLinkedin extends JFBConnectProfile
             'specialties' => 'Specialities (Short description)',
             //'specialties' => 'Basic Info - Specialties',
             'positions' => 'Current Position',
+            'positions.company' => 'Current Position - Company',
+            'positions.title' => 'Current Position - Title',
+            'positions.summary' => 'Current Position - Summary',
+            'positions.date' => 'Current Position - Date Range',
             'picture-url' => 'Profile Picture URL',
             'site-standard-profile-request' => 'Authenticated Profile URL',
             'public-profile-url' => 'Public Profile URL',
@@ -182,13 +186,13 @@ class JFBConnectProfileDataLinkedin extends JFBConnectProfileData
         switch ($valueParts[0])
         {
             case 'positions':
-                return $this->getPosition($element, $index);
+                return $this->getPosition($element, $index, $valueParts);
         }
 
         return $value;
     }
 
-    private function getPosition($element, $index)
+    private function getPosition($element, $index, $valueParts)
     {
         if (!property_exists($element->values, $index))
             return null;
@@ -196,11 +200,24 @@ class JFBConnectProfileDataLinkedin extends JFBConnectProfileData
         $position = $element->values->$index;
         $dateString = $this->getDateRange($position);
 
-        $newValue = $position->title . ' at ' . $position->company->name;
-        $newValue .= ': ' . $dateString;
-        if ($position->summary)
-            $newValue .= '. ' . $position->summary;
-
+        if(isset($valueParts[1]))
+        {
+            if($valueParts[1] == 'company')
+                $newValue = $position->company->name;
+            else if($valueParts[1] == 'title')
+                $newValue = $position->title;
+            else if($valueParts[1] == 'summary')
+                $newValue = $position->summary;
+            else if($valueParts[1] == 'date')
+                $newValue = $dateString;
+        }
+        else
+        {
+            $newValue = $position->title . ' at ' . $position->company->name;
+            $newValue .= ': ' . $dateString;
+            if ($position->summary)
+                $newValue .= '. ' . $position->summary;
+        }
         return $newValue;
     }
 

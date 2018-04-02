@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // no direct access
@@ -22,6 +22,9 @@ if (!class_exists('JFBCFactory'))
     echo "JFBConnect not enabled. Please enable.";
     return;
 }
+
+$showMobile = $params->get('show_mobile'); //Yes - desktop & mobile //No - desktop only
+if(!$showMobile && JFactory::getApplication()->client->mobile) return;
 
 require_once(dirname(__FILE__) . '/helper.php');
 $helper = new modJFBCSocialShareHelper($params);
@@ -68,7 +71,6 @@ $facebookWidth = $helper->addPxToString($facebookWidth);
 
 //LinkedIn
 $linkedinEnable = $params->get('linkedin_enable');
-$linkedinShowZero = $params->get('linkedin_show_zero');
 
 //Google
 $googleEnable = $params->get('google_enable');

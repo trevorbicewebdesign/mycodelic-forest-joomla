@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 if (!(defined('_JEXEC') || defined('ABSPATH'))) {     die('Restricted access'); };
@@ -73,6 +73,12 @@ class JFBConnectModelLoginRegister extends JModelLegacy
             // Save the data in the session.
             $app->setUserState('com_users.registration.data', $requestData);
 
+            return false;
+        }
+
+        if(!$this->isValidRegistrationDomain($formData['email1']))
+        {
+            JFBCFactory::log(JText::_('COM_JFBCONNECT_MSG_REG_DOMAIN'));
             return false;
         }
 
@@ -222,6 +228,12 @@ class JFBConnectModelLoginRegister extends JModelLegacy
         $newEmail = $profile->get('email');
         $fullname = $profile->get('full_name');
 
+        if(!$this->isValidRegistrationDomain($newEmail))
+        {
+            JFBCFactory::log(JText::_('COM_JFBCONNECT_MSG_REG_DOMAIN'));
+            JFactory::getApplication()->redirect('index.php');
+        }
+
         $user['fullname'] = $fullname;
         $user['email'] = $newEmail;
 
@@ -293,7 +305,6 @@ class JFBConnectModelLoginRegister extends JModelLegacy
 
         $instance = JUser::getInstance();
 
-
         // Default to Registered.
         //$defaultUserGroup = $config->get('new_usertype', 2);
         $instance->set('usertype', 'deprecated');
@@ -363,6 +374,20 @@ class JFBConnectModelLoginRegister extends JModelLegacy
             $useractivation = $params->get('useractivation');
             return $useractivation;
         }
+    }
+
+    private function isValidRegistrationDomain($email)
+    {
+        $validDomain = JFBCFactory::config()->getSetting('registration_domain');
+        if (!empty($validDomain))
+        {
+            if(strpos($validDomain, '@') === false) //add @ if not found
+                $validDomain = '@'.$validDomain;
+
+            if (strpos($email, $validDomain) === false)
+                return false;
+        }
+        return true;
     }
 
     private function sendNewUserEmails(&$user, $providerName)
@@ -502,7 +527,7 @@ class JFBConnectModelLoginRegister extends JModelLegacy
             );
 
             // get all admin users
-            $query = 'SELECT name, email, sendEmail' .
+            $query = 'SELECT id, name, email, sendEmail' .
                     ' FROM #__users' .
                     ' WHERE sendEmail=1';
 
@@ -513,13 +538,17 @@ class JFBConnectModelLoginRegister extends JModelLegacy
             // Send mail to all superadministrators id
             foreach ($rows as $row)
             {
-                $return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $row->email, $emailSubject, $emailBodyAdmin);
-
-                // Check for an error.
-                if ($return !== true)
+                $usercreator = JFactory::getUser($row->id);
+                if ($usercreator->authorise('core.create', 'com_users'))
                 {
-                    $this->setError(JText::_('COM_USERS_REGISTRATION_ACTIVATION_NOTIFY_SEND_MAIL_FAILED'));
-                    return false;
+                    $return = JFactory::getMailer()->sendMail($data['mailfrom'], $data['fromname'], $row->email, $emailSubject, $emailBodyAdmin);
+
+                    // Check for an error.
+                    if ($return !== true)
+                    {
+                        $this->setError(JText::_('COM_USERS_REGISTRATION_ACTIVATION_NOTIFY_SEND_MAIL_FAILED'));
+                        return false;
+                    }
                 }
             }
         }

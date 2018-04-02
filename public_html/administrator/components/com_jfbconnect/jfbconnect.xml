@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="component" version="1.6.0" method="upgrade" client="site">
     <name>COM_JFBCONNECT</name>
-    <version>7.1.2</version>
-    <creationDate>2016/12/24</creationDate>
+    <version>7.2.5</version>
+    <creationDate>2018/03/13</creationDate>
     <author>SourceCoast | www.sourcecoast.com</author>
     <authorEmail>support@sourcecoast.com</authorEmail>
     <authorUrl>http://www.sourcecoast.com</authorUrl>
-    <copyright>Copyright (C) 2009-2015 SourceCoast. All rights reserved.</copyright>
+    <copyright>Copyright (C) 2009-2018 SourceCoast. All rights reserved.</copyright>
     <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
     <description></description>
     <scriptfile>install.php</scriptfile>
@@ -159,8 +159,6 @@
         <filename>libraries/provider/facebook/widget/embeddedposts.xml</filename>
         <filename>libraries/provider/facebook/widget/embeddedvideos.php</filename>
         <filename>libraries/provider/facebook/widget/embeddedvideos.xml</filename>
-        <filename>libraries/provider/facebook/widget/follow.php</filename>
-        <filename>libraries/provider/facebook/widget/follow.xml</filename>
         <filename>libraries/provider/facebook/widget/like.php</filename>
         <filename>libraries/provider/facebook/widget/like.xml</filename>
         <filename>libraries/provider/facebook/widget/likebox.php</filename>
@@ -173,8 +171,6 @@
         <filename>libraries/provider/facebook/widget/request.xml</filename>
         <filename>libraries/provider/facebook/widget/save.php</filename>
         <filename>libraries/provider/facebook/widget/save.xml</filename>
-        <filename>libraries/provider/facebook/widget/send.php</filename>
-        <filename>libraries/provider/facebook/widget/send.xml</filename>
         <filename>libraries/provider/facebook/widget/share.php</filename>
         <filename>libraries/provider/facebook/widget/share.xml</filename>
         <filename>libraries/provider/github/config/config.xml</filename>
@@ -187,8 +183,6 @@
         <filename>libraries/provider/google/widget/embeddedposts.xml</filename>
         <filename>libraries/provider/google/widget/follow.php</filename>
         <filename>libraries/provider/google/widget/follow.xml</filename>
-        <filename>libraries/provider/google/widget/hangout.php</filename>
-        <filename>libraries/provider/google/widget/hangout.xml</filename>
         <filename>libraries/provider/google/widget/login.php</filename>
         <filename>libraries/provider/google/widget/login.xml</filename>
         <filename>libraries/provider/google/widget/pagebadge.php</filename>
@@ -221,8 +215,6 @@
         <filename>libraries/provider/linkedin/widget/login.xml</filename>
         <filename>libraries/provider/linkedin/widget/member.php</filename>
         <filename>libraries/provider/linkedin/widget/member.xml</filename>
-        <filename>libraries/provider/linkedin/widget/recommend.php</filename>
-        <filename>libraries/provider/linkedin/widget/recommend.xml</filename>
         <filename>libraries/provider/linkedin/widget/share.php</filename>
         <filename>libraries/provider/linkedin/widget/share.xml</filename>
         <filename>libraries/provider/meetup/widget.php</filename>
@@ -254,9 +246,27 @@
         <filename>libraries/provider/twitter/widget/oembed.xml</filename>
         <filename>libraries/provider/twitter/widget/share.php</filename>
         <filename>libraries/provider/twitter/widget/share.xml</filename>
+        <filename>libraries/provider/twitter/widget/timeline.php</filename>
+        <filename>libraries/provider/twitter/widget/timeline.xml</filename>
         <filename>libraries/provider/vk/config/config.xml</filename>
+        <filename>libraries/provider/vk/widget/comments.php</filename>
+        <filename>libraries/provider/vk/widget/comments.xml</filename>
+        <filename>libraries/provider/vk/widget/community.php</filename>
+        <filename>libraries/provider/vk/widget/community.xml</filename>
+        <filename>libraries/provider/vk/widget/like.php</filename>
+        <filename>libraries/provider/vk/widget/like.xml</filename>
         <filename>libraries/provider/vk/widget/login.php</filename>
         <filename>libraries/provider/vk/widget/login.xml</filename>
+        <filename>libraries/provider/vk/widget/poll.php</filename>
+        <filename>libraries/provider/vk/widget/poll.xml</filename>
+        <filename>libraries/provider/vk/widget/post.php</filename>
+        <filename>libraries/provider/vk/widget/post.xml</filename>
+        <filename>libraries/provider/vk/widget/recommendations.php</filename>
+        <filename>libraries/provider/vk/widget/recommendations.xml</filename>
+        <filename>libraries/provider/vk/widget/share.php</filename>
+        <filename>libraries/provider/vk/widget/share.xml</filename>
+        <filename>libraries/provider/vk/widget/subscribe.php</filename>
+        <filename>libraries/provider/vk/widget/subscribe.xml</filename>
         <filename>libraries/provider/windowslive/config/config.xml</filename>
         <filename>libraries/provider/windowslive/widget/login.php</filename>
         <filename>libraries/provider/windowslive/widget/login.xml</filename>
@@ -305,6 +315,7 @@
         <language tag="el-GR">el-GR.com_jfbconnect.ini</language>
         <language tag="en-GB">en-GB.com_jfbconnect.ini</language>
         <language tag="es-ES">es-ES.com_jfbconnect.ini</language>
+        <language tag="fa-IR">fa-IR.com_jfbconnect.ini</language>
         <language tag="fr-FR">fr-FR.com_jfbconnect.ini</language>
         <language tag="he-IL">he-IL.com_jfbconnect.ini</language>
         <language tag="hu-HU">hu-HU.com_jfbconnect.ini</language>
@@ -431,6 +442,7 @@
             <file>models/fields/channeloutboundproviders.php</file>
             <file>models/fields/channeloutboundtypes.php</file>
             <file>models/fields/channelusers.php</file>
+            <file>models/fields/enabledcomponents.php</file>
             <file>models/fields/providerloginbutton.php</file>
             <file>models/fields/buttonstype.php</file>
             <file>models/fields/socialbuttons.php</file>
@@ -438,8 +450,9 @@
             <file>models/forms/config.xml</file>
             <file>models/forms/channeledit.xml</file>
             <file>models/forms/opengraph_settings.xml</file>
-            <file>tables/config.php</file>
             <file>tables/channel.php</file>
+            <file>tables/config.php</file>
+            <file>tables/jfbconnectconfig.php</file>
             <file>tables/jfbconnectnotification.php</file>
             <file>tables/jfbconnectopengraphaction.php</file>
             <file>tables/jfbconnectopengraphobject.php</file>
@@ -519,6 +532,8 @@
             <language tag="en-GB">en-GB.com_jfbconnect.ini</language>
             <language tag="es-ES">es-ES.com_jfbconnect.sys.ini</language>
             <language tag="es-ES">es-ES.com_jfbconnect.ini</language>
+            <language tag="fa-IR">fa-IR.com_jfbconnect.sys.ini</language>
+            <language tag="fa-IR">fa-IR.com_jfbconnect.ini</language>
             <language tag="fr-FR">fr-FR.com_jfbconnect.sys.ini</language>
             <language tag="fr-FR">fr-FR.com_jfbconnect.ini</language>
             <language tag="he-IL">he-IL.com_jfbconnect.sys.ini</language>

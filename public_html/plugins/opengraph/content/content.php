@@ -1,9 +1,9 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @build-date      2016/12/24
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -55,10 +55,13 @@ class plgOpenGraphContent extends OpenGraphPlugin
         }
         else if ($view == 'category')
         {
-            JModelLegacy::addIncludePath(JPATH_SITE . '/components/com_content/models');
-            $contentModel = JModelLegacy::getInstance('Category', 'ContentModel');
-            $category = $contentModel->getCategory();
-            $catId = $category->id;
+            if (isset($queryVars['catid']) && $queryVars['catid'] && $this->isValidCategory($queryVars['catid'])) //JReviews
+                $catId = $queryVars['catid'];
+            else if (isset($queryVars['id']) && $queryVars['id'] && $this->isValidCategory($queryVars['id'])) //Joomla category blog
+                $catId = $queryVars['id'];
+            else
+                return null;
+
             $object = $this->getBestCategory($objectTypes, $catId);
         }
         return $object;
@@ -70,7 +73,12 @@ class plgOpenGraphContent extends OpenGraphPlugin
         if ($objectTypes)
         {
             $bestDistance = 99999;
-            $this->db->setQuery("SELECT lft, rgt FROM #__categories WHERE id = " . $catId);
+            $query = $this->db->getQuery(true);
+            $query->select("lft, rgt");
+            $query->from("#__categories");
+            $query->where("id=". $query->quote($catId));
+            $this->db->setQuery($query);
+
             $catLoc = $this->db->loadObject();
             foreach ($objectTypes as $type)
             {
@@ -219,9 +227,32 @@ class plgOpenGraphContent extends OpenGraphPlugin
     public function isValidArticle($id)
     {
         list($id, $alias) = array_pad(explode(':', $id, 2), 2, '');
-        $this->db->setQuery("SELECT * FROM #__content WHERE id=" . $id);
+        if (!is_numeric($id))
+            return false;
+
+        $query = $this->db->getQuery(true);
+        $query->select("*");
+        $query->from("#__content");
+        $query->where("id=". $query->quote($id));
+        $this->db->setQuery($query);
+
         $article = $this->db->loadObject();
         if(!$article)
+            return false;
+        else
+            return true;
+    }
+
+    public function isValidCategory($catid)
+    {
+        $query = $this->db->getQuery(true);
+        $query->select("*");
+        $query->from("#__categories");
+        $query->where("id=". $query->quote($catid));
+        $this->db->setQuery($query);
+
+        $category = $this->db->loadObject();
+        if(!$category)
             return false;
         else
             return true;
@@ -316,12 +347,29 @@ class plgOpenGraphContent extends OpenGraphPlugin
 
     /************* AUTO-POST *******************/
 
+    protected function tryGetArticle($id)
+    {
+        list($articleId, $alias) = array_pad(explode(':', $id, 2), 2, '');
+        $this->db->setQuery("SELECT * FROM #__content WHERE id=" . $articleId);
+        $article = $this->db->loadObject();
+        return $article;
+    }
+
     static $autopostArticle = null;
     public function onContentAfterSave($context, $article, $isNew)
     {
-        if(get_class($article) == 'JTableContent')
+        if(is_object($article) && ($context == 'com_content.article' || $context == 'com_content.form'))
         {
             $this->tryAutoPublish($article, $article->state);
+        }
+        else if(is_array($article) && $context == 'com_jreviews.listing')
+        {
+            if(isset($article['Listing']))
+            {
+                $article = $this->tryGetArticle($article['Listing']['listing_id']);
+                if($article)
+                    $this->tryAutoPublish($article, $article->state);
+            }
         }
     }
 
@@ -336,6 +384,15 @@ class plgOpenGraphContent extends OpenGraphPlugin
             {
                 $article = $contentModel->getItem($pk);
                 $this->tryAutoPublish($article, $value);
+            }
+        }
+        else if($context == 'com_jreviews.listing')
+        {
+            foreach($pks as $pk)
+            {
+                $article = $this->tryGetArticle($pk);
+                if($article)
+                    $this->tryAutoPublish($article, $value);
             }
         }
     }

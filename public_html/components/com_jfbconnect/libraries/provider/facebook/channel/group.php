@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 class JFBConnectProviderFacebookChannelGroup extends JFBConnectChannel
@@ -18,6 +18,31 @@ class JFBConnectProviderFacebookChannelGroup extends JFBConnectChannel
         $this->inbound = true;
         $this->requiredScope[] = 'user_managed_groups';
         $this->postSuccessMessage = 'COM_JFBCONNECT_CHANNELS_FACEBOOK_GROUP_POST_SUCCESS';
+    }
+
+    // manipulate the input data in some way (retrieve an access token, etc)
+    public function onBeforeSave($data)
+    {
+        //get page access token
+        // set $newData['token'] to page access token
+        $jid = $data['attribs']['user_id'];
+        $uid = JFBCFactory::usermap()->getProviderUserId($jid, 'facebook');
+        $pageId = $data['attribs']['page_id'];
+        $pageAccessToken = '';
+        $params = array();
+        $params['access_token'] = JFBCFactory::usermap()->getUserAccessToken($jid, 'facebook');
+        $accounts = $this->provider->api($uid . '/accounts', $params, true, 'GET');
+        foreach($accounts['data'] as $account)
+        {
+            if($account['id'] == $pageId)
+            {
+                $pageAccessToken = $account['access_token'];
+                break;
+            }
+        }
+        $data['attribs']['page_access_token'] = $pageAccessToken;
+
+        return $data;
     }
 
     public function onAfterSave($newData, $oldData)
@@ -112,7 +137,12 @@ class JFBConnectProviderFacebookChannelGroup extends JFBConnectChannel
         $link = $data->get('link', '');
 
         $params = array();
-        $params['access_token'] = JFBCFactory::usermap()->getUserAccessToken($this->options->get('user_id'), 'facebook');
+        if($this->options->get('post_as_page'))
+        {
+            $params['access_token'] = $this->options->get('page_access_token');
+        }
+        else
+            $params['access_token'] = JFBCFactory::usermap()->getUserAccessToken($this->options->get('user_id'), 'facebook');
         $params['message'] = $message;
         $params['link'] = $link;
 

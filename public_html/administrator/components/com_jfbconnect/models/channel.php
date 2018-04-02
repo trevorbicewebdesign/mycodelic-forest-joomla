@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 jimport('joomla.application.component.modeladmin');
@@ -62,8 +62,8 @@ class JFBConnectModelChannel extends JModelAdmin
 
         //Add autosave option. Need to wait for ID to be populated here.
         $autopost = new JFBConnectModelAutopost($data['id']);
-        $autopostObjects = $data['autopost_objects'];
-        $autopostPlugins = $data['autopost_plugins'];
+        $autopostObjects = (isset($data['autopost_objects'])?$data['autopost_objects']:array());
+        $autopostPlugins = (isset($data['autopost_plugins'])?$data['autopost_plugins']:array());
         $autopostData = array_merge((array)$autopostObjects, (array)$autopostPlugins);
         $autopost->setData($autopostData);
 

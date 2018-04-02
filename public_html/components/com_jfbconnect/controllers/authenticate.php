@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.1.2
- * @build-date      2016/12/24
+ * @version         Release v7.2.5
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -74,6 +74,14 @@ class JFBConnectControllerAuthenticate extends JFBConnectController
             $provider->setSessionToken();
             require_once(JPATH_COMPONENT . '/controllers/login.php');
             $loginController = new JFBConnectControllerLogin();
+
+            // Set the users.login.form.redirect for the LanguageFilter plugin or anything else that expects it
+            // Doesn't really matter where it goes as we redirect separately later, but this helps ensure compatibility with extensions
+            // that are expected it to be set
+            $lang = substr(JFactory::getLanguage()->getDefault(), 0, 2);
+            $url = rtrim(Juri::base(), '/') . JRoute::_('index.php?lang=' . $lang);
+            JFactory::getApplication()->setUserState('users.login.form.return', $url);
+
             // This will redirect the user on successful login, or return false if not
             $loginController->login($provider);
         }

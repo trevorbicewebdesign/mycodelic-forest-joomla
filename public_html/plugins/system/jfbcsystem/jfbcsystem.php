@@ -1,9 +1,9 @@
 <?php
 /**
  * @package         JFBConnect
- * @copyright (c)   2009-2015 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @build-date      2016/12/24
+ * @build-date      2018/03/13
  */
 
 // Check to ensure this file is included in Joomla!
@@ -170,7 +170,7 @@ class plgSystemJFBCSystem extends JPlugin
 
     public function onAfterRender()
     {
-        if (!JFactory::getApplication()->isAdmin())
+        if (!JFactory::getApplication()->isAdmin() && JFactory::getDocument()->getType() == 'html')
         {
             $this->doTagReplacements();
 
@@ -263,7 +263,10 @@ class plgSystemJFBCSystem extends JPlugin
         }
 
         $contents = JFBCFactory::easytags()->replaceWidgetTags($contents);
-        $contents = JFBCFactory::easytags()->replaceGraphTags($contents);
+
+        if(!JFBCFactory::config()->get('social_graph_turn_off_all'))
+            $contents = JFBCFactory::easytags()->replaceGraphTags($contents);
+
         $contents = JFBCFactory::easytags()->replaceJSPlaceholders($contents);
 
         JResponse::setBody($contents);
