@@ -22,7 +22,7 @@ CREATE TABLE `jos_schemas` (
 LOCK TABLES `jos_schemas` WRITE;
 /*!40000 ALTER TABLE `jos_schemas` DISABLE KEYS */;
 INSERT INTO `jos_schemas` (`extension_id`, `version_id`) VALUES (21,'3.5.1');
-INSERT INTO `jos_schemas` (`extension_id`, `version_id`) VALUES (700,'3.8.4-2018-01-16');
+INSERT INTO `jos_schemas` (`extension_id`, `version_id`) VALUES (700,'3.8.6-2018-02-14');
 INSERT INTO `jos_schemas` (`extension_id`, `version_id`) VALUES (10121,'3.3.0');
 INSERT INTO `jos_schemas` (`extension_id`, `version_id`) VALUES (10182,'2.0.2');
 INSERT INTO `jos_schemas` (`extension_id`, `version_id`) VALUES (10362,'4.2.0beta3');

@@ -47,7 +47,9 @@ INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('706b7862699fe45df1606569fb13f2cf',0,1,'1522638686',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('7770a02b98be2d7050951edd0fd0f7e9',1,1,'1522638781',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('867e21d39bd7bcc6b1a9d66695bda2e3',0,1,'1522639136',NULL,0,'');
+INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('8763017a573cdfe4ae0155fc402f83b8',0,1,'1522639581',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('8b22c65e352a868e8db350539f1fb223',1,1,'1522638421',NULL,0,'');
+INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('8cd7b4444baffce8530d19d94b051687',0,1,'1522639887',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('97e16643a9a346e8c47818f2c9212b22',1,1,'1522638241',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('995de5adfc840ae801355059cd4ec0f3',1,1,'1522639202',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('9a2e8ff1b17b26031c837ca24e287efe',1,1,'1522638481',NULL,0,'');
@@ -63,6 +65,7 @@ INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('e7b704e20aa8e24139e7ee3ad52f73e4',1,1,'1522638961',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('ef7e4f8bfedf29d602feee104cf5ffca',1,1,'1522639381',NULL,0,'');
 INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('f0456b72d9fbb911fda77534d5e58278',1,1,'1522639021',NULL,0,'');
+INSERT INTO `jos_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `userid`, `username`) VALUES ('fa3d9a170e5f0a57bd26a250202f8184',1,0,'1522637511',NULL,43,'Trailblazer');
 /*!40000 ALTER TABLE `jos_session` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

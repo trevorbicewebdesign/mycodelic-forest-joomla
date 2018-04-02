@@ -33,7 +33,6 @@ CREATE TABLE `jos_updates` (
 
 LOCK TABLES `jos_updates` WRITE;
 /*!40000 ALTER TABLE `jos_updates` DISABLE KEYS */;
-INSERT INTO `jos_updates` (`update_id`, `update_site_id`, `extension_id`, `name`, `description`, `element`, `type`, `folder`, `client_id`, `version`, `data`, `detailsurl`, `infourl`, `extra_query`) VALUES (1,1,700,'Joomla','','joomla','file','',0,'3.8.6','','https://update.joomla.org/core/sts/extension_sts.xml','','');
 /*!40000 ALTER TABLE `jos_updates` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
