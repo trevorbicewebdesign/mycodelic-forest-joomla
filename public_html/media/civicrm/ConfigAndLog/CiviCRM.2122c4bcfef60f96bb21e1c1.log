@@ -1,2 +1,58 @@
-Jan 22 01:02:44  [info] Creating canary table
+Apr 01 17:49:01  [info] $Fatal Error Details = Array
+(
+    [message] =>  is not of type String
+    [code] => 
+)
+
+
+Apr 01 17:49:01  [info] $backTrace = #0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/CRM/Core/Error.php(336): CRM_Core_Error::backtrace("backTrace", TRUE)
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/CRM/Core/DAO.php(1456): CRM_Core_Error::fatal(" is not of type String")
+#2 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/CRM/Core/DAO.php(1301): CRM_Core_DAO::composeQuery("\nSELECT v.id, v.label, v.value, v.name, v.weight, v.description\nFROM   civi...", (Array:2), TRUE)
+#3 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/CRM/Core/OptionGroup.php(613): CRM_Core_DAO::executeQuery("\nSELECT v.id, v.label, v.value, v.name, v.weight, v.description\nFROM   civi...", (Array:2))
+#4 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/CRM/Report/Utils/Report.php(423): CRM_Core_OptionGroup::getRowValues("report_template", NULL, "value")
+#5 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/api/v3/Job.php(224): CRM_Report_Utils_Report::processReport((Array:3))
+#6 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/Civi/API/Provider/MagicFunctionProvider.php(89): civicrm_api3_job_mail_report((Array:3))
+#7 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/Civi/API/Kernel.php(169): Civi\API\Provider\MagicFunctionProvider->invoke((Array:9))
+#8 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/Civi/API/Kernel.php(100): Civi\API\Kernel->runRequest((Array:9))
+#9 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/api/api.php(23): Civi\API\Kernel->runSafe("Job", "mail_report", (Array:3), NULL)
+#10 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/CRM/Core/JobManager.php(145): civicrm_api("Job", "mail_report", (Array:3))
+#11 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/CRM/Core/JobManager.php(79): CRM_Core_JobManager->executeJob(Object(CRM_Core_ScheduledJob))
+#12 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(42): CRM_Core_JobManager->execute()
+#13 {main}
+
+
+Apr 01 20:50:03  [warning] Deprecated function, use CRM_Core_PseudoConstant::getKey
+Array
+(
+    [civi.tag] => deprecated
+)
+
+
+Apr 01 20:50:03  [warning] Deprecated function, use CRM_Core_PseudoConstant::getKey
+Array
+(
+    [civi.tag] => deprecated
+)
+
+
+Apr 01 20:50:03  [warning] Deprecated function, use CRM_Core_PseudoConstant::getKey
+Array
+(
+    [civi.tag] => deprecated
+)
+
+
+Apr 01 20:50:03  [warning] Deprecated function, use CRM_Core_PseudoConstant::getKey
+Array
+(
+    [civi.tag] => deprecated
+)
+
+
+Apr 01 20:50:04  [warning] Deprecated function, use CRM_Core_PseudoConstant::getKey
+Array
+(
+    [civi.tag] => deprecated
+)
+
 
