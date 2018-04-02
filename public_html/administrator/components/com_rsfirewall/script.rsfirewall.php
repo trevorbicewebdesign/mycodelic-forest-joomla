@@ -779,11 +779,9 @@ class com_rsfirewallInstallerScript
 				<b class="install-not-ok">Error installing!</b>
 				<?php } ?>
 			</p>
-			<h2>Changelog v2.11.11</h2>
+			<h2>Changelog v2.11.14</h2>
 			<ul class="version-history">
-				<li><span class="version-new">New</span> Joomla! 3.8.3 hashes.</li>
-				<li><span class="version-fixed">Fix</span> In some cases the File Manager could not list folders and files.</li>
-				<li><span class="version-fixed">Fix</span> Some filenames with UTF-8 characters were incorrectly seen as threats.</li>
+				<li><span class="version-fixed">Fix</span> Changing a protected user could generate a Fatal Error if information was stored incorrectly in the database.</li>
 			</ul>
 			<p>
 			<a class="btn btn-primary btn-large" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>

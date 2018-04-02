@@ -67,7 +67,7 @@ class RsfirewallController extends JControllerLegacy
 		$input = JFactory::getApplication()->input;
 		$cid   = $input->get('cid', '', 'array');
 		
-		array_map('intval', $cid);
+		$cid = array_map('intval', $cid);
 		
 		if ($cid) {
 			$model = $this->getModel('rsfirewall');

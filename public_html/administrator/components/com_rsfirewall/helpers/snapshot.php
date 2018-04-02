@@ -55,12 +55,29 @@ abstract class RSFirewallSnapshot
 		return $return;
 	}
 	
-	public static function modified($current, $snapshot) {
-		foreach ($snapshot as $key => $value) {
-			if ($key == 'user_id') continue;
-			if ($key == 'adjacent') continue;
+	public static function modified($current, $snapshot)
+	{
+		foreach ($snapshot as $key => $value)
+		{
+			if ($key == 'user_id')
+			{
+				continue;
+			}
+			if ($key == 'adjacent')
+			{
+				continue;
+			}
+			if ($key == 'params')
+			{
+				if (!is_string($value))
+				{
+					$value = json_encode($value);
+				}
+			}
 			if ($current->$key != $value)
+			{
 				return array('key' => $key, 'value' => $current->$key, 'snapshot' => $value);
+			}
 		}
 		
 		return false;
@@ -84,6 +101,12 @@ abstract class RSFirewallSnapshot
 			$query->insert('#__users')
 				  ->set($db->qn('id').'='.$db->q($snapshot->user_id))
 				  ->set($db->qn('registerDate').'='.$db->q(JFactory::getDate()->toSql()));
+		}
+		
+		// Weird case where this isn't right
+		if (!is_string($snapshot->params))
+		{
+			$snapshot->params = json_encode($snapshot->params);
 		}
 		
 		$query->set($db->qn('name').'='.$db->q($snapshot->name))

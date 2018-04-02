@@ -391,7 +391,7 @@ class RsfirewallModelConfiguration extends JModelAdmin
 
 				if (empty($data['configuration_update_code']))
 				{
-					unset($contents['code']);
+					$contents['code'] = $this->getConfig()->get('code');
 				}
 
 				// Override configuration data
@@ -525,10 +525,15 @@ class RsfirewallModelConfiguration extends JModelAdmin
 						foreach ($value as $user_id)
 						{
 							$user_id = (int) $user_id;
-							$user    = JFactory::getUser($user_id);
+							// get the user from the database - this way we avoid the JUser error showing up if the user doesn't exist
+							$query 	= $db->getQuery(true);
+							$query->select('*')
+								->from($db->qn('#__users'))
+								->where($db->qn('id').' = '.$db->q($user_id));
+							$user = $db->setQuery($query)->loadObject();
 
 							// Don't save users that cannot be loaded
-							if ($user->id == $user_id && $user_id && strlen($user->username))
+							if ($user && strlen($user->username))
 							{
 								$table = JTable::getInstance('Snapshots', 'RsfirewallTable');
 								$table->bind(array(

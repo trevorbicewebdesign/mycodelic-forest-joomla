@@ -286,4 +286,16 @@ INSERT INTO [#__rsfirewall_hashes] ([file], [hash], [type]) VALUES
 ('administrator/index.php', '305bc33e7a896251c5012998fa5595f3', '3.8.3'),
 ('index.php', '898aa0ff256f99e6b45e9bc5f7bc995e', '3.8.3'),
 ('plugins/authentication/joomla/joomla.php', '229656e45a0c84ce66e9931949065eac', '3.8.3'),
-('plugins/user/joomla/joomla.php', '75690d0d9d2b9fb8f69806fe5ff3d4b0', '3.8.3');
+('plugins/user/joomla/joomla.php', '75690d0d9d2b9fb8f69806fe5ff3d4b0', '3.8.3'),
+('administrator/index.php', '0a7dbe91d13815d631a35bce7cd37500', '3.8.4'),
+('index.php', 'f0574964d073eaca66212ca4cce708ca', '3.8.4'),
+('plugins/authentication/joomla/joomla.php', '51f7c0e479a55b081896fa411d9d28ee', '3.8.4'),
+('plugins/user/joomla/joomla.php', 'f15a19ea4c56cb6fa761e4ab4ed1773f', '3.8.4'),
+('administrator/index.php', '0a7dbe91d13815d631a35bce7cd37500', '3.8.5'),
+('index.php', 'f0574964d073eaca66212ca4cce708ca', '3.8.5'),
+('plugins/authentication/joomla/joomla.php', '51f7c0e479a55b081896fa411d9d28ee', '3.8.5'),
+('plugins/user/joomla/joomla.php', 'f15a19ea4c56cb6fa761e4ab4ed1773f', '3.8.5'),
+('administrator/index.php', '0a7dbe91d13815d631a35bce7cd37500', '3.8.6'),
+('index.php', 'f0574964d073eaca66212ca4cce708ca', '3.8.6'),
+('plugins/authentication/joomla/joomla.php', '51f7c0e479a55b081896fa411d9d28ee', '3.8.6'),
+('plugins/user/joomla/joomla.php', 'f15a19ea4c56cb6fa761e4ab4ed1773f', '3.8.6');
