@@ -32,8 +32,7 @@ class RSFormProFormLayoutBootstrap4 extends RSFormProFormLayout
 		$this->addjQuery();
 
 		// Load Javascript
-		$this->addScript('com_rsform/frameworks/bootstrap4/popper.min.js');
-		$this->addScript('com_rsform/frameworks/bootstrap4/bootstrap.min.js');
+		$this->addScript('com_rsform/frameworks/bootstrap4/bootstrap.bundle.min.js');
 
 		// Set the script for the tooltips
 		$script = array();
@@ -46,6 +45,6 @@ class RSFormProFormLayoutBootstrap4 extends RSFormProFormLayout
 
     public function generateButton($goto)
     {
-        return '<button type="button" class="rsform-submit-button btn btn-primary" name="continue" onclick="'.$goto.'">'.JText::_('RSFP_THANKYOU_BUTTON').'</button>';
+        return '<button type="button" class="rsform-submit-button rsform-thankyou-button btn btn-primary" name="continue" onclick="'.$goto.'">'.JText::_('RSFP_THANKYOU_BUTTON').'</button>';
     }
 }

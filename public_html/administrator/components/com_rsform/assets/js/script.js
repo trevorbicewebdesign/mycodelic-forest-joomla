@@ -2,8 +2,6 @@ if (typeof RSFormPro != 'object') {
 	var RSFormPro = {};
 }
 
-RSFormPro.initCodeMirror = false;
-
 RSFormPro.$ = jQuery;
 
 function initRSFormPro() {
@@ -31,8 +29,6 @@ function initRSFormPro() {
 			}
 		});
 	});
-
-	jQuery("#rsform_tab2").hide();
 
 	jQuery("#properties").click(function () {
 		jQuery("#rsform_tab2").show();
@@ -131,7 +127,7 @@ function tidyOrder(update_php) {
 	var orders = document.getElementsByName('order[]');
 	var cids = document.getElementsByName('cid[]');
 	for (i = 0; i < orders.length; i++) {
-		params.push('cid_' + cids[i].value + '=' + parseInt(i + 1));
+		params.push('cid[' + cids[i].value + ']=' + parseInt(i + 1));
 
 		if (orders[i].value != i + 1)
 			must_update_php = true;
@@ -197,8 +193,6 @@ function tidyOrderMp(update_php) {
 
 		//Send the proper header information along with the request
 		xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xml.setRequestHeader("Content-length", params.length);
-		xml.setRequestHeader("Connection", "close");
 
 		xml.send(params);
 		xml.onreadystatechange = function () {
@@ -326,19 +320,18 @@ function changeDirectoryAutoGenerateLayout(formId, value) {
 			if (value == 1) {
 				document.getElementById('rsform_layout_msg').style.display = 'none';
 				document.getElementById('ViewLayout').readOnly = true;
-				if (typeof(window.codemirror_html) != 'undefined') {
-					if (typeof(window.codemirror_html.ViewLayout) != 'undefined') {
-						window.codemirror_html.ViewLayout.setOption('readOnly', true);
-					}
+				
+				if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
+				{
+					Joomla.editors.instances['ViewLayout'].setOption('readOnly', true);
 				}
 			}
 			else {
 				document.getElementById('rsform_layout_msg').style.display = '';
 				document.getElementById('ViewLayout').readOnly = false;
-				if (typeof(window.codemirror_html) != 'undefined') {
-					if (typeof(window.codemirror_html.ViewLayout) != 'undefined') {
-						window.codemirror_html.ViewLayout.setOption('readOnly', false);
-					}
+				if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
+				{
+					Joomla.editors.instances['ViewLayout'].setOption('readOnly', false);
 				}
 			}
 
@@ -392,7 +385,7 @@ function changeFormAutoGenerateLayout(formId, value) {
 	};
 
 	RSFormPro.$.post(url, data, function (response, status, jqXHR) {
-		var hasCodeMirror = typeof window.codemirror_html != 'undefined' && typeof window.codemirror_html.formLayout != 'undefined';
+		var hasCodeMirror = typeof Joomla.editors.instances['formLayout'] != 'undefined';
 
 		value = Boolean(parseInt(value));
 
@@ -400,7 +393,7 @@ function changeFormAutoGenerateLayout(formId, value) {
 		jQuery('#formLayout').prop('readonly', value);
 
 		if (hasCodeMirror) {
-			window.codemirror_html.formLayout.setOption('readOnly', value);
+			Joomla.editors.instances['formLayout'].setOption('readOnly', value);
 		}
 
 		stateDone();
@@ -424,12 +417,12 @@ function generateLayout(formId, alert) {
 	};
 
 	RSFormPro.$.post(url, data, function (response, status, jqXHR) {
-		var hasCodeMirror = typeof window.codemirror_html != 'undefined' && typeof window.codemirror_html.formLayout != 'undefined';
+		var hasCodeMirror = typeof Joomla.editors.instances['formLayout'] != 'undefined';
 
 		jQuery('#formLayout').val(response);
-
-		if (hasCodeMirror) {
-			window.codemirror_html.formLayout.setValue(response);
+		if (hasCodeMirror)
+		{
+			Joomla.editors.instances['formLayout'].setValue(response);
 		}
 
 		stateDone();
@@ -451,10 +444,9 @@ function generateDirectoryLayout(formId, alert) {
 	xml.onreadystatechange = function () {
 		if (xml.readyState == 4) {
 			document.getElementById('ViewLayout').value = xml.responseText;
-			if (typeof(window.codemirror_html) != 'undefined') {
-				if (typeof(window.codemirror_html.ViewLayout) != 'undefined') {
-					window.codemirror_html.ViewLayout.setValue(xml.responseText);
-				}
+			if (typeof Joomla.editors.instances['ViewLayout'] != 'undefined')
+			{
+				Joomla.editors.instances['ViewLayout'].setValue(xml.responseText);
 			}
 			stateDone();
 		}
@@ -807,8 +799,6 @@ function mpConnect() {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {
 		if (xmlHttp.readyState == 4) {
@@ -905,8 +895,6 @@ function mpColumns(table) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -934,8 +922,6 @@ function mappingdelete(formid, mid) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -963,8 +949,6 @@ function ShowMappings(formid) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1024,8 +1008,6 @@ function mappingWhere(table) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1053,8 +1035,6 @@ function removeEmail(id, fid, type) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1082,8 +1062,6 @@ function updateemails(fid, type) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1092,75 +1070,6 @@ function updateemails(fid, type) {
 		}
 	};
 	xmlHttp.send(params);
-}
-
-function initCodeMirror() {
-	if (!RSFormPro.initCodeMirror || typeof(CodeMirror) == 'undefined')
-		return false;
-
-	var codemirrors = [];
-	codemirrors['js'] = jQuery('.codemirror-js');
-	codemirrors['css'] = jQuery('.codemirror-css');
-	codemirrors['php'] = jQuery('.codemirror-php');
-	codemirrors['html'] = jQuery('.codemirror-html');
-
-	// js
-	for (var i = 0; i < codemirrors['js'].length; i++) {
-		CodeMirror.fromTextArea(codemirrors['js'][i], {
-			lineNumbers   : true,
-			matchBrackets : true,
-			mode          : "text/html",
-			indentUnit    : 4,
-			indentWithTabs: true,
-			enterMode     : "keep",
-			tabMode       : "shift"
-		});
-	}
-
-	// css
-	for (var i = 0; i < codemirrors['css'].length; i++) {
-		var editor = CodeMirror.fromTextArea(codemirrors['css'][i], {
-			lineNumbers   : true,
-			matchBrackets : true,
-			mode          : "text/html",
-			indentUnit    : 4,
-			indentWithTabs: true,
-			enterMode     : "keep",
-			tabMode       : "shift"
-		});
-	}
-
-	// php
-	for (var i = 0; i < codemirrors['php'].length; i++) {
-		CodeMirror.fromTextArea(codemirrors['php'][i], {
-			lineNumbers   : true,
-			matchBrackets : true,
-			mode          : "application/x-httpd-php-open",
-			indentUnit    : 4,
-			indentWithTabs: true,
-			enterMode     : "keep",
-			tabMode       : "shift"
-		});
-	}
-
-	// html
-	if (codemirrors['html'].length > 0) {
-		window.codemirror_html = {};
-	}
-	for (var i = 0; i < codemirrors['html'].length; i++) {
-		var codeMirrorType = jQuery(codemirrors['html'][i]).attr('id');
-		window.codemirror_html[codeMirrorType] = CodeMirror.fromTextArea(codemirrors['html'][i], {
-			lineNumbers   : true,
-			matchBrackets : true,
-			mode          : "text/html",
-			indentUnit    : 4,
-			indentWithTabs: true,
-			enterMode     : "keep",
-			tabMode       : "shift",
-			matchTags     : {bothTags: true},
-			readOnly      : jQuery(codemirrors['html'][i]).attr('readonly')
-		});
-	}
 }
 
 function conditionDelete(formid, cid) {
@@ -1173,8 +1082,6 @@ function conditionDelete(formid, cid) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1195,8 +1102,6 @@ function showConditions(formid) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1218,9 +1123,11 @@ function openRSModal(href, type, size) {
 	window.open(href, type, 'width=' + width + ', height=' + height + ',scrollbars=1');
 }
 
-function rsfp_add_calculation(formId) {
+function addCalculation(formId) {
 	if (document.getElementById('rsfp_expression').value == '')
+	{
 		return;
+	}
 
 	stateLoading();
 
@@ -1237,8 +1144,6 @@ function rsfp_add_calculation(formId) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1290,7 +1195,7 @@ function rsfp_add_calculation(formId) {
 				a.setAttribute('class', 'btn btn-danger btn-mini');
 				a.setAttribute('type', 'button');
 				a.onclick = function () {
-					rsfp_remove_calculation(response[0]);
+					removeCalculation(response[0]);
 				};
 
 				var img = document.createElement('i');
@@ -1324,7 +1229,7 @@ function rsfp_add_calculation(formId) {
 
 				jQuery('#rsfp_calculations').tableDnD({
 					onDragClass: 'rsform_dragged',
-					onDragStop     : function (table, row) {
+					onDragStop: function (table, row) {
 						tidyOrderCalculationsDir();
 					}
 				});
@@ -1338,7 +1243,12 @@ function rsfp_add_calculation(formId) {
 	xmlHttp.send(params);
 }
 
-function rsfp_remove_calculation(id) {
+function removeCalculation(id) {
+	if (!confirm(Joomla.JText._('RSFP_DELETE_SURE_CALCULATION')))
+	{
+		return;
+	}
+	
 	stateLoading();
 
 	params = 'id=' + id + '&tmpl=component&randomTime=' + Math.random();
@@ -1348,8 +1258,6 @@ function rsfp_remove_calculation(id) {
 
 	//Send the proper header information along with the request
 	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xmlHttp.setRequestHeader("Content-length", params.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 
 	xmlHttp.onreadystatechange = function () {//Call a function when the state changes.
 		if (xmlHttp.readyState == 4) {
@@ -1386,8 +1294,6 @@ function tidyOrderCalculationsDir() {
 
 	//Send the proper header information along with the request
 	xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xml.setRequestHeader("Content-length", params.length);
-	xml.setRequestHeader("Connection", "close");
 
 	xml.send(params);
 	xml.onreadystatechange = function () {
@@ -1417,5 +1323,4 @@ RSFormPro.Post.deleteField = function () {
 	jQuery(this).parents('tr').remove();
 };
 
-jQuery(document).ready(initCodeMirror);
 jQuery(document).ready(initRSFormPro);

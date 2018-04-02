@@ -111,30 +111,76 @@ class RSFormProHelper
 		return $class;
 	}
 
-	public static function loadCodeMirror() {
-		if (RSFormProHelper::getConfig('global.codemirror')) {
-			$document 	= JFactory::getDocument();
-			$root		= JUri::root(true).'/administrator/components/com_rsform/assets/codemirror';
-
-			// Load CodeMirror
-			$document->addScript($root.'/lib/codemirror.js');
-			$document->addScriptDeclaration('RSFormPro.initCodeMirror = true;');
-
-			// Load modes
-			$modes = array('xml', 'javascript', 'css', 'htmlmixed', 'clike', 'php');
-			foreach ($modes as $mode) {
-				$document->addScript("$root/mode/$mode/$mode.js");
-			}
-
-			// Load addons
-			$document->addScript($root.'/addon/fold/xml-fold.js');
-			$document->addScript($root.'/addon/selection/active-line.js');
-			$document->addScript($root.'/addon/edit/matchbrackets.js');
-			$document->addScript($root.'/addon/edit/matchtags.js');
-
-			// Load CSS
-			$document->addStyleSheet($root.'/lib/codemirror.css');
+	public static function showEditor($name, $html, $options = array())
+	{
+		if (!isset($options['syntax']))
+		{
+			$options['syntax'] = 'html';
 		}
+		if (!isset($options['readonly']))
+		{
+			$options['readonly'] = false;
+		}
+		if (!isset($options['id']))
+		{
+			$options['id'] = null;
+		}
+		
+		$use_editor = RSFormProHelper::getConfig('global.codemirror');
+		$editor = 'codemirror';
+
+		if ($use_editor)
+		{
+			$plugin = JPluginHelper::getPlugin('editors', $editor);
+			if (empty($plugin))
+			{
+				$use_editor = false;
+			}
+			else
+			{
+				if (!is_string($plugin->params) && is_callable(array($plugin->params, 'toString')))
+				{
+					$plugin->params = $plugin->params->toString();
+				}
+			}
+		}
+		
+		if ($use_editor)
+		{
+            $jversion = new JVersion;
+            if ($jversion->isCompatible('3.8.0'))
+			{
+				$instance = new \Joomla\CMS\Editor\Editor($editor);
+			}
+			else
+			{
+				$instance = new JEditor($editor);
+			}
+			
+			$html = $instance->display($name, static::htmlEscape($html), '100%', 300, 75, 20, $buttons = false, $options['id'], $asset = null, $author = null, array('syntax' => $options['syntax'], 'readonly' => $options['readonly']));
+			
+			if ($options['syntax'] == 'php')
+			{
+				$name = preg_replace('/jform\[(.*?)\]/', '$1', $name);
+				JFactory::getDocument()->addScriptDeclaration("jQuery(function(){Joomla.editors.instances['$name'].setOption('mode', 'text/x-php');});");
+			}
+		}
+		else
+		{
+			if (empty($options['id']))
+			{
+				$options['id'] = $name;
+			}
+			$readonly = '';
+			if (!empty($options['readonly']))
+			{
+				$readonly = 'readonly';
+			}
+			
+			$html = '<textarea class="' . $options['classes'] . '" ' . $readonly . ' rows="20" cols="75" name="' . static::htmlEscape($name) . '" id="' . static::htmlEscape($options['id']) . '">' . static::htmlEscape($html) . '</textarea>';
+		}
+		
+		return $html;
 	}
 
 	public static function getComponentId($name, $formId=0)
@@ -302,7 +348,7 @@ class RSFormProHelper
 		}
 		
 		// Must process form
-		$post = JRequest::getVar('form', array(), 'post', 'none', JREQUEST_ALLOWRAW);
+		$post = $mainframe->input->post->get('form', array(), 'array');
 		if (isset($post['formId']) && $post['formId'] == $formId)
 		{
 			$invalid = RSFormProHelper::processForm($formId);
@@ -316,10 +362,8 @@ class RSFormProHelper
 			}
 		}
 
-
-		$get = $mainframe->input->get->get('form', array(), 'array');
-
 		// Default - show the form
+		$get = $mainframe->input->get->get('form', array(), 'array');
 		return RSFormProHelper::showForm($formId, $get);
 	}
 
@@ -772,6 +816,7 @@ class RSFormProHelper
 		$components = $db->loadObjectList();
 		$properties 	   = array();
 		$uploadFields 	   = array();
+		$hiddenFields	   = array();
 		$multipleFields    = array();
 		$textareaFields    = array();
 		$freetextFields	   = array();
@@ -840,6 +885,8 @@ class RSFormProHelper
 					$textareaFields[] = $component->ComponentId;
 			} elseif ($component->ComponentTypeId == RSFORM_FIELD_FREETEXT) {
 				$freetextFields[] = $component->ComponentId;
+			} elseif (in_array($component->ComponentTypeId, array(RSFORM_FIELD_HIDDEN, RSFORM_FIELD_TICKET))) {
+				$hiddenFields[] = $component->ComponentId;
 			}
 
 			$properties[$component->ComponentId][$component->PropertyName] = $component->PropertyValue;
@@ -863,7 +910,15 @@ class RSFormProHelper
 		{
 			// {component:caption}
 			$placeholders[] = '{'.$property['NAME'].':caption}';
-			$values[] = isset($property['CAPTION']) ? $property['CAPTION'] : '';
+			// Hidden fields don't have a caption
+			if (in_array($ComponentId, $hiddenFields))
+			{
+				$values[] = $property['NAME'];
+			}
+			else
+			{
+				$values[] = isset($property['CAPTION']) ? $property['CAPTION'] : '';
+			}
 
 			// {component:description}
 			$placeholders[] = '{'.$property['NAME'].':description}';
@@ -1181,7 +1236,7 @@ class RSFormProHelper
 
 		if (is_array($componentTypeId))
 		{
-            array_map('intval', $componentTypeId);
+            $componentTypeId = array_map('intval', $componentTypeId);
             $db->setQuery("SELECT ComponentId FROM #__rsform_components WHERE ComponentTypeId IN (".implode(',', $componentTypeId).") AND FormId='".$formId."' AND Published='1'");
 		}
 		else
@@ -1558,7 +1613,7 @@ class RSFormProHelper
 		$CSSClass 	= $form->CSSClass ? ' class="'.RSFormProHelper::htmlEscape(trim($form->CSSClass)).'"' : '';
 		$CSSId 		= $form->CSSId ? ' id="'.RSFormProHelper::htmlEscape(trim($form->CSSId)).'"' : '';
 		$CSSName 	= $form->CSSName ? ' name="'.RSFormProHelper::htmlEscape(trim($form->CSSName)).'"' : '';
-		$u 			= $form->CSSAction ? RSFormProHelper::htmlEscape($form->CSSAction) : $u;
+		$u 			= $form->CSSAction ? $form->CSSAction : $u;
 		$CSSAdditionalAttributes = $form->CSSAdditionalAttributes ? ' '.trim($form->CSSAdditionalAttributes) : '';
 
 		if (!empty($pages))
@@ -1704,10 +1759,15 @@ class RSFormProHelper
 					}
 
 					$formLayout .= "\n"."if (items) {";
-					$formLayout .= "\n"."if (".implode($condition->condition == 'all' ? '&&' : '||', $condition_vars).")";
-					$formLayout .= "\n"."rsfp_setDisplay(items, '".($condition->action == 'show' ? '' : 'none')."');";
-					$formLayout .= "\n".'else';
-					$formLayout .= "\n"."rsfp_setDisplay(items, '".($condition->action == 'show' ? 'none' : '')."');";
+					$formLayout .= "\n"."if (".implode($condition->condition == 'all' ? '&&' : '||', $condition_vars).") {";
+					$formLayout .= "\n"."displayValue = '".($condition->action == 'show' ? '' : 'none')."';";
+					$formLayout .= "\n".'} else {';
+					$formLayout .= "\n"."displayValue = '".($condition->action == 'show' ? 'none' : '')."';";
+					$formLayout .= "\n".'}';
+					$formLayout .= "\n".'rsfp_setDisplay(items, displayValue);';
+					$formLayout .= "\n"."if (displayValue == 'none') {";
+					$formLayout .= "\n"."RSFormPro.resetValues(rsfp_getFieldsByName(".$formId.", '".addslashes($condition->ComponentName)."'));";
+					$formLayout .= "\n"."}";
 					$formLayout .= "\n"."}";
 				}
 				$formLayout .= "\n".'}';
@@ -2059,6 +2119,7 @@ class RSFormProHelper
 							$options = array(
 								'driver' => isset($mapping->driver) ? $mapping->driver : 'mysql',
 								'host' => $mapping->host,
+								'port' => $mapping->port,
 								'user' => $mapping->username,
 								'password' => $mapping->password,
 								'database' => $mapping->database
@@ -2790,7 +2851,7 @@ class RSFormProHelper
 
 	public static function translateIcon()
 	{
-		return '<a href="javascript:void(0)" title="'.JText::_('RSFP_THIS_ITEM_IS_TRANSLATABLE').'" style="color:#3071a9"><span class="rsficon rsficon-flag"></span></a>';
+		return '<span class="rsficon rsficon-flag" title="' . JText::_('RSFP_THIS_ITEM_IS_TRANSLATABLE') . '" style="color:#3071a9"></span>';
 	}
 
 	public static function mappingsColumns($config, $method, $row = null)

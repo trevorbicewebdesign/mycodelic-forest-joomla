@@ -365,6 +365,23 @@ RSFormPro.getValue = function(formId, name) {
 							case 'NUMBER':
 							case 'HIDDEN':
 								if (!element.name || element.name != 'form[' + name + ']') continue;
+								
+								if (typeof RSFormPro.YUICalendar != 'undefined' &&
+									typeof RSFormPro.YUICalendar.calendars[formId] != 'undefined' &&
+									typeof RSFormPro.YUICalendar.calendars[formId][name] != 'undefined')
+									{
+										var selectedDate = new Date(RSFormPro.YUICalendar.calendars[formId][name].getSelectedDates()[0]);
+										return (selectedDate.getTime() / 1000).toString();
+									}
+								
+								if (typeof RSFormPro.jQueryCalendar != 'undefined' &&
+									typeof RSFormPro.jQueryCalendar.calendars[formId] != 'undefined' &&
+									typeof RSFormPro.jQueryCalendar.calendars[formId][name] != 'undefined')
+									{
+										var selectedDate = Date.parseDate(RSFormPro.jQueryCalendar.calendars[formId][name].currentDate, RSFormPro.jQueryCalendar.calendars[formId][name].hiddenFormat);
+										return (selectedDate.getTime() / 1000).toString();
+									}
+								
 								return element.value;
 								break;
 
@@ -434,6 +451,95 @@ RSFormPro.getElementByType = function(formId, type) {
 
 	return elements;
 };
+
+RSFormPro.resettingValues = false;
+
+RSFormPro.resetValues = function(items) {
+	if (RSFormPro.resettingValues)
+	{
+		return;
+	}
+
+	RSFormPro.resettingValues = true;
+	var element, tagName;
+	try
+	{
+		for (var i = 0; i < items.length; i++)
+		{
+			element = items[i];
+			tagName = element.tagName || element.nodeName;
+
+			switch (tagName)
+			{
+				case 'INPUT':
+					if (element.type)
+					{
+						switch (element.type.toUpperCase())
+						{
+							case 'CHECKBOX':
+							case 'RADIO':
+								element.checked = element.defaultChecked;
+								
+								RSFormPro.triggerEvent(element, 'change');
+							break;
+							
+							case 'NUMBER':
+							case 'TEXT':
+								element.value = element.defaultValue;
+								
+								RSFormPro.triggerEvent(element, 'change');
+								RSFormPro.triggerEvent(element, 'input');
+							break;
+						}
+					}
+				break;
+				
+				case 'TEXTAREA':
+					element.value = element.defaultValue;
+					
+					RSFormPro.triggerEvent(element, 'change');
+					RSFormPro.triggerEvent(element, 'input');
+				break;
+
+				case 'SELECT':
+					if (element.options)
+					{
+						for (var o = 0; o < element.options.length; o++)
+						{
+							element.options[o].selected = element.options[o].defaultSelected;
+						}
+					}
+					
+					RSFormPro.triggerEvent(element, 'change');
+				break;
+			}
+		}
+	}
+	catch (err) {}
+
+	RSFormPro.resettingValues = false;
+}
+
+RSFormPro.triggerEvent = function(element, type) {
+	try {
+		var event;
+		if (document.createEvent) {
+			event = document.createEvent("HTMLEvents");
+			event.initEvent(type, true, true);
+		} else {
+			event = document.createEventObject();
+			event.eventType = type;
+		}
+
+		event.eventName = type;
+
+		if (document.createEvent) {
+			element.dispatchEvent(event);
+		} else {
+			element.fireEvent("on" + event.eventType, event);
+		}
+	} catch (e) {}
+}
 
 RSFormPro.isChecked = function(formId, name, value) {
 	var isChecked 	= false;
@@ -536,9 +642,9 @@ RSFormPro.getFieldsByName = function(formId, name) {
 			if (element.name && (
 					// single fields
 					element.name == 'form[' + name + ']' ||
-						// multiple fields
+					// multiple fields
 					element.name == 'form[' + name + '][]' ||
-						// new field - Birthday field
+					// new field - Birthday field
 					element.name == 'form[' + name + '][d]' ||
 					element.name == 'form[' + name + '][m]' ||
 					element.name == 'form[' + name + '][y]'
@@ -551,7 +657,10 @@ RSFormPro.getFieldsByName = function(formId, name) {
 				// for calendar
 				if (element.id && element.id.indexOf('txtcal') > -1) {
 					var suffix = element.id.replace('txtcal', '');
-					results.push(document.getElementById('btn' + suffix));
+					if (document.getElementById('btn' + suffix))
+					{
+						results.push(document.getElementById('btn' + suffix));
+					}
 				}
 				// for labels (radio, checkbox)
 				var labels = form.getElementsByTagName('label');
@@ -565,6 +674,21 @@ RSFormPro.getFieldsByName = function(formId, name) {
 
 	return results;
 };
+
+RSFormPro.showCounter = function(element, id) {
+	var current = element.value.length;
+	var result;
+	if (element.maxLength > 0)
+	{
+		result = current + '/' + element.maxLength;
+	}
+	else
+	{
+		result = current;
+	}
+	
+	document.getElementById('rsfp-counter-' + id).innerText = result;
+}
 
 /*HTML5 simulators*/
 
@@ -719,17 +843,10 @@ RSFormPro.Conditions = {
 		if (typeof form != 'undefined') {
 			for (var i = 0; i < form.elements.length; i++) {
 				var element = form.elements[i];
-				var tagName = element.tagName || element.nodeName;
 				if (element.name && (element.name == 'form[' + name + ']' || element.name == 'form[' + name + '][]')) {
-					if (tagName == 'SELECT') {
-						RSFormProUtils.addEvent(element, 'change', function() {
-							fnCondition();
-						});
-					} else {
-						RSFormProUtils.addEvent(element, 'click', function() {
-							fnCondition();
-						});
-					}
+					RSFormProUtils.addEvent(element, 'change', function() {
+						fnCondition();
+					});
 				}
 			}
 		}
@@ -759,13 +876,21 @@ RSFormPro.Conditions = {
 /* Calculation functions */
 
 RSFormPro.Calculations = {
+	toDays: function(seconds) {
+		return Math.round(parseFloat(seconds) / 86400);
+	},
+	toHours: function(seconds) {
+		return Math.round(parseFloat(seconds) / 86400 * 24);
+	},
 	addEvents: function(formId, fields) {
+		RSFormProUtils.addEvent(window, 'load', function(){
+			RSFormPro.Calculations._addEvents(formId, fields);
+		});
+	},
+	_addEvents: function(formId, fields) {
 		var func 		= window["rsfp_Calculations" + formId];
 		var thefields	= fields ? fields : RSFormProPrices;
-
-		// Detect IE8.
-		var isIE8 = navigator.userAgent.match(/MSIE 8\.0/);
-		var event = 'click';
+		var event 		= 'change';
 		
 		var resetElements = RSFormPro.getElementByType(formId, 'reset');
 		if (resetElements.length > 0)
@@ -790,11 +915,41 @@ RSFormPro.Calculations = {
 				tagName = objects[i].tagName || objects[i].nodeName;
 
 				if (tagName == 'INPUT' || tagName == 'SELECT') {
-					// IE8 fix.
-					if (tagName == 'INPUT' && isIE8 && objects[i].type && objects[i].type.toLowerCase() == 'checkbox') {
-						event = 'click';
-					} else {
-						event = 'change';
+					event = 'change';
+					if (tagName == 'INPUT' && typeof objects[i].type == 'string') {
+						switch (objects[i].type.toUpperCase())
+						{
+							default:
+								event = 'change';
+							break;
+							
+							case 'NUMBER':
+							case 'TEXT':
+								event = 'input';
+								
+								if (typeof RSFormPro.jQueryCalendar != 'undefined' &&
+									typeof RSFormPro.jQueryCalendar.calendars[formId] != 'undefined' &&
+									typeof RSFormPro.jQueryCalendar.calendars[formId][field] != 'undefined')
+									{
+										RSFormPro.jQueryCalendar.calendars[formId][field].calendarInstance.setOptions({onChangeDateTime: function() {
+											if (typeof func == "function") {
+												func();
+											}
+										}});
+									}
+								
+								if (typeof RSFormPro.YUICalendar != 'undefined' &&
+									typeof RSFormPro.YUICalendar.calendars[formId] != 'undefined' &&
+									typeof RSFormPro.YUICalendar.calendars[formId][field] != 'undefined')
+									{
+										RSFormPro.YUICalendar.calendars[formId][field].selectEvent.subscribe(function() {
+											if (typeof func == "function") {
+												func();
+											}
+										}, RSFormPro.YUICalendar.calendars[formId][field], true);
+									}
+							break;
+						}
 					}
 
 					RSFormProUtils.addEvent(objects[i], event, function() {
@@ -898,38 +1053,68 @@ RSFormPro.Ajax = {
 
 			ids = data.response[1].split(',');
 			var doScroll = false;
-			for (i = 0; i < ids.length; i++) {
+			var doFocus = false;
+			for (i = 0; i < ids.length; i++)
+			{
 				id = parseInt(ids[i]);
-				if (!isNaN(id) && typeof formComponents[id] != 'undefined') {
-					formComponent = RSFormPro.getFieldsByName(formId, formComponents[id]);
-					if (formComponent && formComponent.length > 0) {
-						for (j = 0; j < formComponent.length; j++) {
-							if (formComponent[j]) {
-								RSFormProUtils.addClass(formComponent[j], 'rsform-error');
+				
+				if (isNaN(id))
+				{
+					continue;
+				}
+				
+				if (typeof formComponents[id] == 'undefined')
+				{
+					continue;
+				}
+				
+				formComponent = RSFormPro.getFieldsByName(formId, formComponents[id]);
+				if (!formComponent || formComponent.length < 1)
+				{
+					continue;
+				}
+				
+				for (j = 0; j < formComponent.length; j++)
+				{
+					if (formComponent[j])
+					{
+						RSFormProUtils.addClass(formComponent[j], 'rsform-error');
 
-								if (!doScroll) {
-									doScroll = true;
-								}	
-								if (typeof data.parentErrorClass != 'undefined' && data.parentErrorClass.length > 0) {
-									try {
-										elementBlock = RSFormPro.getBlock(formId, RSFormProUtils.getAlias(formComponents[id]));
-										RSFormProUtils.addClass(elementBlock[0], data.parentErrorClass);
-									} catch (err) {}
-								}
-								if (typeof data.fieldErrorClass != 'undefined' && data.fieldErrorClass.length > 0) {
-									try {
-										results = RSFormPro.getFieldsByName(formId, formComponents[id]);
-										if (results.length > 0)
-										{
-											for (var r = 0; r < results.length; r++)
-											{
-												RSFormProUtils.addClass(results[r], data.fieldErrorClass);
-											}
-										}
-									} catch (err) {}
+						if (!doScroll)
+						{
+							doScroll = true;
+						}
+						
+						if (typeof data.parentErrorClass != 'undefined' && data.parentErrorClass.length > 0)
+						{
+							try
+							{
+								elementBlock = RSFormPro.getBlock(formId, RSFormProUtils.getAlias(formComponents[id]));
+								RSFormProUtils.addClass(elementBlock[0], data.parentErrorClass);
+							}
+							catch (err) {}
+						}
+						try
+						{
+							results = RSFormPro.getFieldsByName(formId, formComponents[id]);
+							if (results.length > 0)
+							{
+								for (var r = 0; r < results.length; r++)
+								{									
+									if (typeof data.fieldErrorClass != 'undefined' && data.fieldErrorClass.length > 0)
+									{
+										RSFormProUtils.addClass(results[r], data.fieldErrorClass);
+									}
+									
+									if (!doFocus)
+									{
+										results[r].focus();
+										doFocus = true;
+									}
 								}
 							}
 						}
+						catch (err) {}
 					}
 				}
 			}

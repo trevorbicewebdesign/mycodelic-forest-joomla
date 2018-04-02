@@ -7,7 +7,6 @@
 
 // no direct access
 defined( '_JEXEC' ) or die( 'Restricted access' );
-jimport('joomla.application.component.controller');
 
 class RsformControllerDirectory extends RsformController
 {
@@ -40,7 +39,7 @@ class RsformControllerDirectory extends RsformController
 		$active = $menu->getActive();
 		$formId = $params->get('formId');
 		$cids 	= $app->input->get('cid', array(), 'array');
-		array_map('intval', $cids);
+		$cids = array_map('intval', $cids);
 		
 		$fields  = RSFormProHelper::getDirectoryFields($formId);
 		$headers = RSFormProHelper::getDirectoryStaticHeaders();
