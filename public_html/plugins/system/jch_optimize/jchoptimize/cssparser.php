@@ -229,7 +229,9 @@ class JchOptimizeCssParser extends JchOptimizeCssParserBase
                                         }
                                         else
                                         {
-                                                $sMediaQuery .= $aParentMediaQuery['media_type'] . ' and ' . $aChildMediaQuery['media_type'];
+						//Two seperate media types are nested so we combine them to form an unknown type
+						//so the media query is treated as false but still syntactically correct
+                                                $sMediaQuery .= $aParentMediaQuery['media_type'] . $aChildMediaQuery['media_type'];
                                         }
                                 }
 
@@ -491,7 +493,7 @@ $r = "#(?>[^{}'\"/(]*+(?:{$this->u})?)+?(?:(?<b>{(?>[^{}'\"/(]++|{$this->u}|(?&b
                 $c = self::BLOCK_COMMENTS . '|' . self::LINE_COMMENTS;
 
                 $r =  "(?:\s*+(?>$c)\s*+)*+\K"
-                        . "((?>[^{}@/]*+(?:/(?![*/]))?)*?)(?>{[^{}]*+}|(@[^{};]*+)(?>({((?>[^{}]++|(?3))*+)})|;?)|$)";
+                        . "((?>[^{}@/]*+(?:/(?![*/])|(?<=\\\\)[{}@/])?)*?)(?>{[^{}]*+}|(@[^{};]*+)(?>({((?>[^{}]++|(?3))*+)})|;?)|$)";
 
 		return $r;
         }
@@ -624,69 +626,107 @@ $r = "#(?>[^{}'\"/(]*+(?:{$this->u})?)+?(?:(?<b>{(?>[^{}'\"/(]++|{$this->u}|(?&b
                 }
 
 		//we're inside a @media rule or global css
-		//remove pseudo-selectos
-                $sSelectors = preg_replace('#:not\([^)]+\)|::?[a-zA-Z0-9(\[\])-]+#', '', $aMatches[1]);
-                $aSelectors = explode(',', $sSelectors);
-                $aFoundSels = array();
+		//remove pseudo-selectors
+                $sSelectorGroup = preg_replace('#:not\([^)]+\)|::?[a-zA-Z0-9(\[\])-]+#', '', $aMatches[1]);
+		//Split selector groups into individual selector chains
+                $aSelectorChains = array_filter(explode(',', $sSelectorGroup));
+                $aFoundSelectorChains = array();
 
-                foreach ($aSelectors as $sSelector)
+		//Iterate through each selector chain 
+                foreach ($aSelectorChains as $sSelectorChain)
                 {
-                        $aTargetSelector = preg_split('#[^>+~ \[]*+(?:\[[^\]]*\])?\K[>+~ ]*+#', trim($sSelector), -1, PREG_SPLIT_NO_EMPTY);
+			//If Selector chain is already in critical css just go ahead and add this group
+			if(strpos($sCriticalCss, $sSelectorChain) !== false)
+			{
+				$sCriticalCss .= $aMatches[0];
 
-                        $bFoundSel = TRUE;
+				return '';
+			}
 
-                        foreach ($aTargetSelector as $sTargetSelector)
+			//Split selector chain into simple selectors
+                        $aSimpleSelectors = preg_split('#[ >+]#', trim($sSelectorChain), -1, PREG_SPLIT_NO_EMPTY);
+
+		//We'll do a quick check first if all parts of each simple selector is found in the HTML
+			//Iterate through each simple selector
+                        foreach ($aSimpleSelectors  as $sSimpleSelector)
                         {
-                                if (preg_match('#([a-z0-9]*)(?:([.\#]([_a-z0-9-]+))|(\[([_a-z0-9-]+)(?:[~|^$*]?=["\']?([^\]"\']+))?))*#i',
-                                               $sTargetSelector, $aS))
+				//Match the simple selector into its components
+				if (preg_match('#([a-z0-9]*)(?:([.\#]((?:[_a-z0-9-]|\\\\[^\r\n\f0-9a-z])+))|
+					(\[((?:[_a-z0-9-]|\\\\[^\r\n\f0-9a-z])+)(?:[~|^$*]?=["\']?([^\]"\']+))?\]))*#i',
+                                               $sSimpleSelector, $aS))
                                 {
+					//Elements
                                         if (isset($aS[1]) && $aS[1] != '')
                                         {
                                                 $sNeedle = '<' . $aS[1];
+
+						if (isset($sNeedle) && strpos($sHtml, $sNeedle) === false)
+						{
+							//Element part of selector not found, 
+							//abort and check next selector chain
+							continue 2;
+						}
                                         }
 
+					//Attribute selectors 
                                         if (isset($aS[4]) && $aS[4] != '')
                                         {
-                                                $sNeedle = isset($aS[6]) ? $aS[6] : $aS[5] . '="';
+						//If the value of the attribute is set we'll look for that
+						//otherwise just look for the attribute
+                                                $sNeedle = isset($aS[6]) ? $aS[6] : $aS[5];// . '="';
+
+						if (isset($sNeedle) && strpos($sHtml, str_replace('\\', '', $sNeedle)) === false)
+						{
+							//Attribute part of selector not found, 
+							//abort and check next selector chain
+							continue 2;
+						}
                                         }
 
+					//Ids or Classes
                                         if (isset($aS[2]) && $aS[2] != '')
                                         {
                                                 $sNeedle = ' ' . $aS[3] . ' ';
+
+						if (isset($sNeedle) && strpos($sHtml, str_replace('\\', '', $sNeedle)) === false)
+						{
+							//Id or class part of selector not found, 
+							//abort and check next selector chain
+							continue 2;
+						}
                                         }
 
-                                        if (isset($sNeedle) && strpos($sHtml, $sNeedle) === FALSE)
-                                        {
-                                                $bFoundSel = FALSE;
-
-                                                break;
-                                        }
                                 }
+
                         }
-                        if ($bFoundSel)
-                        {
-                                $aFoundSels[] = $sSelector;
-                        }
+			//If we get to this point then we've found a simple selector that has all parts in the 
+			//HTML. Let's save this selector chain and refine its search with Xpath.
+			$aFoundSelectorChains[] = $sSelectorChain;
                 }
 
-                if (empty($aFoundSels))
+		//If no valid selector chain was found in the group then we eliminate this selector group from the critical CSS
+                if (empty($aFoundSelectorChains))
                 {
                         $this->_debug('', '', 'afterSelectorNotFound');
 
                         return '';
                 }
 
-                $sFoundSels = implode(',', $aFoundSels);
+		//Group the found selector chains
+                $sFoundSelectorGroup = implode(',', array_unique($aFoundSelectorChains));
+		//remove any backslash used for escaping
+		//$sFoundSelectorGroup = str_replace('\\', '', $sFoundSelectorGroup);
 
-                $this->_debug($sFoundSels, '', 'afterSelectorFound');
+                $this->_debug($sFoundSelectorGroup, '', 'afterSelectorFound');
 
-                $sXPath = $this->convertCss2XPath($sFoundSels);
+		//Convert the selector group to Xpath
+                $sXPath = $this->convertCss2XPath($sFoundSelectorGroup);
 
                 $this->_debug($sXPath, '', 'afterConvertCss2XPath');
 
                 if ($sXPath)
                 {
-                        $aXPaths = array_unique(explode(' | ', $sXPath));
+                        $aXPaths = array_unique(explode(' | ', str_replace('\\', '', $sXPath)));
 
                         foreach ($aXPaths as $sXPathValue)
                         {
@@ -700,7 +740,8 @@ $r = "#(?>[^{}'\"/(]*+(?:{$this->u})?)+?(?:(?<b>{(?>[^{}'\"/(]++|{$this->u}|(?&b
 //                                        echo "\n\n";
 //                                }
 
-                                if ($oElement !== FALSE && $oElement->length)
+				//Match found! Add to critical CSS
+                                if ($oElement !== false && $oElement->length)
                                 {
                                         $sCriticalCss .= $aMatches[0];
 
@@ -735,8 +776,8 @@ $r = "#(?>[^{}'\"/(]*+(?:{$this->u})?)+?(?:(?<b>{(?>[^{}'\"/(]++|{$this->u}|(?&b
                 $sSelectorRegex = '#(?!$)'
                         . '([>+~, ]?)' //separator
                         . '([*a-z0-9]*)' //element
-                        . '(?:(([.\#])([_a-z0-9-]+))(([.\#])([_a-z0-9-]+))?|'//class or id
-                        . '(\[([_a-z0-9-]+)(([~|^$*]?=)["\']?([^\]"\']+)["\']?)?\]))*' //attribute
+                        . '(?:(([.\#])((?:[_a-z0-9-]|\\\\[^\r\n\f0-9a-z])+))(([.\#])((?:[_a-z0-9-]|\\\\[^\r\n\f0-9a-z])+))?|'//class or id
+                        . '(\[((?:[_a-z0-9-]|\\\\[^\r\n\f0-9a-z])+)(([~|^$*]?=)["\']?([^\]"\']+)["\']?)?\]))*' //attribute
                         . '#i';
 
                 return preg_replace_callback($sSelectorRegex, array($this, '_tokenizer'), $sSelector) . '[1]';

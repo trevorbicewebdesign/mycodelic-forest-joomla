@@ -2,12 +2,12 @@
 <extension version="3.3.0" type="plugin" group="system" method="upgrade">
         <name>PLG_SYSTEM_JCH_OPTIMIZE</name>
         <author>Samuel Marshall</author>
-        <creationDate>November 2017</creationDate>
+        <creationDate>April 2018</creationDate>
         <copyright>Copyright (C) 2017 Samuel Marshall. All rights reserved.</copyright>
         <license>GNU/GPLv3 http://www.gnu.org/copyleft/gpl.html</license>
         <authorEmail>sdmarshall73@gmail.com</authorEmail>
         <authorUrl>http://www.jch-optimize.net</authorUrl>
-        <version>5.2.2</version>
+        <version>5.2.3</version>
         <variant>PRO</variant>
         <description>JCH_OPTIMIZE_DESCRIPTION</description>
         <files>
@@ -520,6 +520,15 @@
 				      label="JCH_PLUGINSELECTION_LABEL"
 				      description="JCH_PLUGINSELECTION_DESC">
 			      </field> -->
+				<field name="menuexcludedurl"
+					type="excludeurl"
+                                       rows="3" 
+                                       default="" 
+                                       cols="20" 
+					label="JCH_MENUEXCLUDEDURL_LABEL"
+					description="JCH_MENUEXCLUDEDURL_DESC"
+					>
+				</field>
 			      <field name="menuexcluded"
 				      type="menuselection"
 				      label="JCH_MENUSELECTION_LABEL"

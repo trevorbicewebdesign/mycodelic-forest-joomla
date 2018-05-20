@@ -304,6 +304,16 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
         }
 
         /**
+         * Determine if document is of XHTML doctype
+         * 
+         * @return boolean
+         */
+        public static function isXhtml($sHtml)
+        {
+                return (bool) preg_match('#^\s*+(?:<!DOCTYPE(?=[^>]+XHTML)|<\?xml.*?\?>)#i', trim($sHtml));
+        }
+
+        /**
          * If parameter is set will minify HTML before sending to browser; 
          * Inline CSS and JS will also be minified if respective parameters are set
          * 
@@ -329,8 +339,9 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
                                 $aOptions['jsMinifier'] = array('JchOptimize\JS_Optimize', 'optimize');
                         }
 
+			$aOptions['jsonMinifier'] = array('JchOptimize\JSON_Optimize', 'optimize');
                         $aOptions['minifyLevel'] = $oParams->get('html_minify_level', 2);
-                        $aOptions['isXhtml']     = (bool) $oParams->get('isXhtml', false);
+                        $aOptions['isXhtml']     = self::isXhtml($sHtml);
                         $aOptions['isHtml5']     = (bool) $oParams->get('isHtml5', false);
 
                         $sHtmlMin = HTML_Optimize::optimize($sHtml, $aOptions);
@@ -583,18 +594,19 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
 	 */
         private static function selectDomain(&$aDomain, $sPath)
         {
-		$i = 0;
+		//If no domain is matched to a configured file type then we'll just return the file
+		$sCdnUrl = false;
 
-		while (count($aDomain) > $i) 
+		for ($i=0; count($aDomain) > $i; $i++) 
 		{
-			list($sDomain, $sStaticFiles) = each($aDomain);
+			$sStaticFiles = current($aDomain);
+			$sDomain = key($aDomain);
+			next($aDomain);
 
 			if(current($aDomain) === false)
 			{
 				reset($aDomain);
 			}
-
-			$i++;
 
 			if (preg_match('#\.(?>' . $sStaticFiles . ')#i', $sPath))
 			{
@@ -603,9 +615,6 @@ class JchOptimizeHelper extends JchOptimizeHelperBase
 
 				break;
 			}
-
-			//If no domain is matched to a configured file type then we'll just return the file
-			$sCdnUrl = false;
 		}
 
                 return $sCdnUrl;

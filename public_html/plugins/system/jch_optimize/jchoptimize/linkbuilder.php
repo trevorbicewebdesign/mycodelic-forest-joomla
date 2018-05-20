@@ -315,7 +315,7 @@ class JchOptimizeLinkBuilder extends JchOptimizelinkBuilderBase
         {
                 JCH_DEBUG ? JchPlatformProfiler::start('RunCronTasks') : null;
 
-                $sId = md5($this->oParser->sFileHash . 'CRONTASKS');
+                $sId = md5('CRONTASKS');
 
                 $aArgs = array($this->oParser);
 
@@ -532,7 +532,7 @@ class JchOptimizeLinkBuilder extends JchOptimizelinkBuilderBase
         {
                 $bCached   = JchPlatformCache::getCallbackCache($sId, $aFunction, $aArgs);
 
-                if ($bCached === FALSE)
+		if ($bCached === FALSE) 
                 {
                         throw new Exception('Error creating cache file');
                 }
@@ -568,7 +568,7 @@ class JchOptimizeLinkBuilder extends JchOptimizelinkBuilderBase
          */
         protected function cleanScript($sScript)
         {
-                if (!$this->isXhtml())
+                if (!JchOptimizeHelper::isXhtml($this->oParser->sHtml))
                 {
                         $sScript = str_replace(array('<script type="text/javascript"><![CDATA[', ']]></script>'),
                                                array('<script type="text/javascript">', '</script>'), $sScript);
@@ -635,7 +635,7 @@ class JchOptimizeLinkBuilder extends JchOptimizelinkBuilderBase
                 if ($this->params->get('pro_loadAsynchronous', '0'))
                 {
 			$attr = $iIndex == 0 ? 'async' : 'defer'; 
-			$sAsyncAttribute = $this->isXhtml() ? ' ' . $attr . '="' . $attr . '" ' : ' ' . $attr . ' ';
+			$sAsyncAttribute = JchOptimizeHelper::isXhtml($this->oParser->sHtml) ? ' ' . $attr . '="' . $attr . '" ' : ' ' . $attr . ' ';
 
                         return $sAsyncAttribute;
                 }

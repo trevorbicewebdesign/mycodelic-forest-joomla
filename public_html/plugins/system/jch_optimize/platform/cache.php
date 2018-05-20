@@ -37,9 +37,11 @@ class JchPlatformCache implements JchInterfaceCache
                 $oCache = self::getCacheObject('output');
                 $aCache = $oCache->get($id);
 
-                if ($aCache === FALSE)
+                if ($aCache === false)
                 {
-                        return FALSE;
+			$oCache->clean('plg_jch_optimize');
+
+                        return false;
                 }
 
                 return $aCache['result'];
@@ -56,8 +58,10 @@ class JchPlatformCache implements JchInterfaceCache
         public static function getCallbackCache($id, $function, $args)
         {
                 $oCache = self::getCacheObject('callback');
+                $oCache->get($function, $args, $id);
 
-                return $oCache->get($function, $args, $id);
+		//Joomla! doesn't check if the cache is stored so we gotta check ourselves
+		return self::getCache($id);
         }
 
         /**
@@ -106,6 +110,10 @@ class JchPlatformCache implements JchInterfaceCache
 			$oStaticCache = JCache::getInstance('output', $options);
 			$oStaticCache->gc();
 		}
+
+		//Delete page cache
+		$oJcache = JCache::getInstance();
+		$oJcache->clean('page');
         }
 
 }

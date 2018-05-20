@@ -30,7 +30,7 @@ if (!defined('JCH_PLUGIN_DIR'))
 
 if (!defined('JCH_VERSION'))
 {
-        define('JCH_VERSION', '5.2.2');
+        define('JCH_VERSION', '5.2.3');
 }
 
 include_once(dirname(__FILE__) . '/jchoptimize/loader.php');
@@ -51,12 +51,14 @@ class plgSystemJCH_Optimize extends JPlugin
                 $user   = JFactory::getUser();
                 
                 $menuexcluded = $this->params->get('menuexcluded', array());
+                $menuexcludedurl = $this->params->get('menuexcludedurl', array());
 
                 if (($app->getName() != 'site') || (JFactory::getDocument()->getType() != 'html')
                         || ($app->input->get('jchbackend', '', 'int') == 1)
                         || ($config->get('offline') && $user->guest)
                         || $this->isEditorLoaded()
-                        || in_array($app->input->get('Itemid', '', 'int'), $menuexcluded))
+                        || in_array($app->input->get('Itemid', '', 'int'), $menuexcluded)
+			|| JchOptimizeHelper::findExcludes($menuexcludedurl, JchPlatformUri::getInstance()->toString()))
                 {
                         return FALSE;
                 }

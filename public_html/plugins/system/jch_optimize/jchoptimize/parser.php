@@ -201,7 +201,7 @@ class JchOptimizeParser extends JchOptimizeBase
                 $i  = $this->ifRegex();
                 $ns = '<noscript\b[^>]*+>(?><?[^<]*+)*?</noscript\s*+>';
 
-                $sRegex = "#(?>(?:<(?!!))?[^<]*+(?:$i|$ns|<!)?)*?\K(?:$j|$c|\K$)#six";
+                $sRegex = "#(?>(?:<(?!(?:!--|noscript\b)))?[^<]*+(?:$i|$ns|<!)?)*?\K(?:$j|$c|\K$)#six";
 
 
                 JCH_DEBUG ? JchPlatformProfiler::stop('InitSearch', TRUE) : null;
@@ -713,9 +713,10 @@ URLREGEX;
 			{
 				$dir  = trim(JchPlatformUri::base(true), '/');
 			}
-
+			//This part should match the scheme and host of a local file
+			$localhost = '(?=(\s*+(?:(?:https?:)?//' . $host . ')?)(?!http|//))';
                         $match = '(?!data:image|[\'"])'
-                                . '(?=(\s*+(?:(?:https?:)?//' . $host . ')?)(?!http|//))'
+                                . $localhost
 				. '(?=(?<=")\1((?>\.?[^\.>"?]*+)*?\.(?>' . $sf . '))["?]'
 				. '|(?<=\')\1((?>\.?[^\.>\'?]*+)*?\.(?>' . $sf . '))[\'?]'
 				. '|(?<=\()\1((?>\.?[^\.>)?]*+)*?\.(?>' . $sf . '))[)?]'
@@ -723,8 +724,10 @@ URLREGEX;
 				. '((?<=\()[^)]*+|' . $u . ')';
 
 			$l = '(?:xlink:)?href|(?:data-)?src';
-			$x = "(?:<(?:link|script|(?:amp-)?ima?ge?|a))(?>\s*+$a)*?\s*+" 
-				. "(?:(?:(?:$l)\s*+=\s*+[\"']?|style[^>(]*+(?<=url)\(['\"]?))";
+			$x = "(?:(?:<(?:link|script|(?:amp-)?ima?ge?|a))(?>\s*+$a)*?\s*+" 
+				. "(?:(?:(?:$l)\s*+=\s*+[\"']?"
+				. "|style[^>(]*+(?<=url)\(['\"]?))";
+			$x .= "|<source(?>\s*+$a)*?\s*+srcset\s*+=\s*+[\"']?)";
 			$s = '<script\b(?:(?! src\*?=)[^>])*+>(?><?[^<]*+)*?</script\s*+>';
 
 			$sRegex = '#(?:(?=[^<>]++>)(?>[\'"(\s]?[^\'"(\s>]*+)*?\s*+'
@@ -734,14 +737,7 @@ URLREGEX;
                         $sProcessedFullHtml = preg_replace_callback($sRegex,
                                                                     function($m) use ($dir)
                         {
-				$m_array = array_filter($m);
-				array_pop($m_array);
-				$sPath = array_pop($m_array);
-
-				if(substr($sPath, 0, 1) != '/')
-				{
-					$sPath = '/'. $dir . '/' . $sPath;
-				}
+				$sPath = $this->fixRelPath($m, $dir);
 
 				return JchOptimizeHelper::cookieLessDomain($this->params, $sPath, $m[0]);
 
@@ -754,12 +750,42 @@ URLREGEX;
                                 return;
                         }
 
-			$this->setFullHtml($sProcessedFullHtml);
+			$sRegex2 = "#(?:(?><?[^<]*+)*?(?:<img(?>\s*+$a)*?\s*+srcset\s*+=\s*+[\"']?\K$u|\K$))#iS";
+
+			$sProcessedFullHtml2 = preg_replace_callback($sRegex2, function($m2) use ($dir, $localhost, $sf)
+			{
+				$sRegex3 = '#\s?' . $localhost . '\s?\K\1(((?>\.?[^.?,]*+)?\.(?>' . $sf . ')))#iS';
+
+				return preg_replace_callback($sRegex3, function ($m3) use ($dir) 
+				{
+					$sPath = $this->fixRelPath($m3, $dir);
+
+					return JchOptimizeHelper::cookieLessDomain($this->params, $sPath, $m3[0]);
+
+				}, $m2[0]);
+
+			}, $sProcessedFullHtml);
+
+			$this->setFullHtml($sProcessedFullHtml2);
 
                         JCH_DEBUG ? JchPlatformProfiler::stop('RunCookieLessDomain', TRUE) : null;
                 }
         }
 
+	private function fixRelPath($m, $dir)
+	{
+		$m_array = array_filter($m);
+		array_pop($m_array);
+		$sPath = array_pop($m_array);
+
+		if(substr($sPath, 0, 1) != '/')
+		{
+			$sPath = '/'. $dir . '/' . $sPath;
+		}
+
+
+		return $sPath;
+	}
         /**
          * 
          * @param type $m

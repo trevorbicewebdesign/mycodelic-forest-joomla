@@ -34,7 +34,7 @@ class JFormFieldAjax extends JFormField
 
 		if (!defined('JCH_VERSION'))
 		{
-			define('JCH_VERSION', '5.2.2');
+			define('JCH_VERSION', '5.2.3');
 		}
 
 		static $cnt = 1;

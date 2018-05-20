@@ -54,10 +54,7 @@ class JFormFieldJchdescription extends JFormField
                                 break;
                         case 'support':
                                 $header      = JText::_('JCH_HEADER_SUPPORT');
-                                $description = '<p>' . JText::sprintf('JCH_SUPPORT_DOCUMENTATION', 'https://www.jch-optimize.net/documentation.html',
-                                                                      'https://www.jch-optimize.net/documentation/tutorials.html') . '</p>'
-                                        . '<p>' . JText::sprintf('JCH_SUPPORT_PLUGIN_OPTIONS', 'https://www.jch-optimize.net/documentation/plugin-options.html') . '</p>'
-                                        . '<p>' . JText::sprintf('JCH_SUPPORT_FAQ_GUIDE', 'https://www.jch-optimize.net/documentation/troubleshooting-guide.html') . '</p>'
+                                $description = '<p>' . JText::sprintf('JCH_SUPPORT_DOCUMENTATION', 'https://www.jch-optimize.net/documentation.html') . '</p>'
                                         . '<p>' . JText::sprintf('JCH_SUPPORT_REQUESTS', 'https://www.jch-optimize.net/subscribe/levels.html', 'https://www.jch-optimize.net/forum.html') . '</p>';
                                
                                 break;
@@ -69,7 +66,7 @@ class JFormFieldJchdescription extends JFormField
                         
                         case 'version':
                                 $header = '';
-                                $description = '<h4>(Version 5.2.2)</h4>';
+                                $description = '<h4>(Version 5.2.3)</h4>';
                                 break;
                         
                         default:
