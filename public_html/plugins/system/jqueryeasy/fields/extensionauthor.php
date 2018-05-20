@@ -9,8 +9,8 @@ defined('_JEXEC') or die ;
 
 jimport('joomla.form.formfield');
 
-class JFormFieldExtensionAuthor extends JFormField {
-		
+class JFormFieldExtensionAuthor extends JFormField 
+{
 	public $type = 'ExtensionAuthor';
 	
 	protected function getLabel() 
@@ -29,7 +29,9 @@ class JFormFieldExtensionAuthor extends JFormField {
 	{
 		$html = '<div style="padding-top: 5px; overflow: inherit">';
 		
-		$html .= 'Olivier Buisard @ <a href="http://www.simplifyyourweb.com" target="_blank">Simplify Your Web</a>';
+		$html .= 'Olivier Buisard @ <a href="http://www.simplifyyourweb.com" target="_blank">';
+		$html .= '<img alt="Simplify Your Web" src="'.JURI::root().'plugins/system/jqueryeasy/images/SimplifyYourWeb_24.png">';
+		$html .= '</a>';
 		
 		$html .= '</div>';
 		

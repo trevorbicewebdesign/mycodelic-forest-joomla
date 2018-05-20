@@ -9,8 +9,8 @@ defined('_JEXEC') or die ;
 
 jimport('joomla.form.formfield');
 
-class JFormFieldExtensionVersion extends JFormField {
-		
+class JFormFieldExtensionVersion extends JFormField 
+{		
 	public $type = 'ExtensionVersion';
 	
 	protected $version;

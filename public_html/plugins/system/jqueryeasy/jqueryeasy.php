@@ -4,10 +4,8 @@
  * @license		GNU General Public License version 3 or later; see LICENSE.txt
 */
 
-// no direct access
 defined( '_JEXEC' ) or die;
 
-// import library dependencies
 jimport('joomla.plugin.plugin');
 jimport('joomla.filesystem.file');
 
@@ -21,12 +19,10 @@ class plgSystemJqueryeasy extends JPlugin
 		
 		$this->_enabled = true;
 		
-        $this->_jqpath = '';
-		$this->_jquipath = '';
-		$this->_jquicsspath = '';		
-		$this->_jqnoconflictpath = '';
-		
-		$this->_jqmigratepath = '';
+		$this->_versioning = $this->params->get('versioning', false);
+		if (version_compare(JVERSION, '3.2', 'lt')) {
+			$this->_versioning = false;
+		}
 		
 		$this->_supplement_scripts = array();
 		$this->_supplement_stylesheets = array();
@@ -37,32 +33,38 @@ class plgSystemJqueryeasy extends JPlugin
 		$this->_usejQuery = false;
 		$this->_usejQueryUI = false;
 		
+		$this->_jqpath = '';
+		$this->_jquipath = '';
+		$this->_jquicsspath = '';
+		$this->_jqnoconflictpath = '';
+		
+		$this->_jqmigratepath = '';
+		
 		$this->_timeafterroute = 0;
 		$this->_timebeforerender = 0;
 		$this->_timeafterrender = 0;
-		
-		$this->_jquery_loaded_by_template = false;
-		$this->_jqueryui_loaded_by_template = false;
-		$this->_bootstrap_loaded_by_template = false;
 		
 		$this->_back_compat_path = false;
 	} 
 	
 	function onAfterRoute()
 	{
-		if (JFactory::getDocument()->getType() !== 'html') { 
+		$app = JFactory::getApplication();
+		
+		if ($app->isAdmin()) {
+			return;
+		}
+		
+		$doc = JFactory::getDocument();
+		
+		if ($doc->getType() !== 'html') { 
 			// put here so JFactory::getDocument() does not break feeds (will break if used in any function before onAfterRoute)
 			// https://groups.google.com/forum/?fromgroups#!topic/joomla-dev-general/S0GYKhLm92A
 			$this->_enabled = false;
 			return;
 		}
 		
-        $app = JFactory::getApplication();		
-		$doc = JFactory::getDocument();
-		
-		if ($app->isAdmin()) {
-			return;
-		}
+		$time_start = microtime(true);
 		
 		$this->_showreport = $this->params->get('showreport', 0);
 		
@@ -70,8 +72,6 @@ class plgSystemJqueryeasy extends JPlugin
 			$user = JFactory::getUser();
 			$this->_showreport = $user->authorise('core.admin') ? true : false;
 		}
-				
-		$time_start = microtime(true);
 				
 		$suffix = 'frontend';
 		
@@ -142,23 +142,17 @@ class plgSystemJqueryeasy extends JPlugin
 			}
 		}
 		
-		// set jQuery variables
-
-		switch ($this->params->get('jqueryin'.$suffix, 0)) {
-			case 1: $this->_usejQuery = true; break;
-			case 2: $this->_usejQuery = true; $this->_usejQueryUI = true; break;
-			default: break;
-		}
-		
 		// BEGIN prepare spaces to fill with script
 		
 		$javascript = trim( (string) $this->params->get('addjavascript'.$suffix, ''));
 		if (!empty($javascript)) {
 			$this->_supplement_scripts = array_map('trim', (array) explode("\n", $javascript));
-			$i = 0;
-			foreach($this->_supplement_scripts as $path) {
-				$doc->addScript("ADD_SCRIPT_HERE".$i);
-				$i++;
+			foreach($this->_supplement_scripts as $i => $path) {
+				if (JUri::isInternal(JUri::base().$path) || JUri::isInternal($path)) {
+					self::addScript($i.'ADD_SCRIPT_HERE', $this->_versioning);
+				} else {
+					self::addScript($i.'ADD_SCRIPT_HERE');
+				}
 			}
 		}
 		
@@ -168,7 +162,7 @@ class plgSystemJqueryeasy extends JPlugin
 		
 		$javascript_declaration = trim( (string) $this->params->get('addjavascriptdeclaration'.$suffix, ''));
 		if (!empty($javascript_declaration)) {
-			$doc->addScriptDeclaration("ADD_SCRIPT_DECLARATION_HERE");
+			$doc->addScriptDeclaration('ADD_SCRIPT_DECLARATION_HERE');
 		}
 		
 		// END prepare spaces to fill with scripts declarations
@@ -178,199 +172,264 @@ class plgSystemJqueryeasy extends JPlugin
 		$css = trim( (string) $this->params->get('addcss'.$suffix, ''));
 		if (!empty($css)) {
 			$this->_supplement_stylesheets = array_map('trim', (array) explode("\n", $css));
-			$i = 0;
-			foreach($this->_supplement_stylesheets as $path) {
-				$doc->addStyleSheet("ADD_STYLESHEET_HERE".$i);
-				$i++;
+			foreach($this->_supplement_stylesheets as $i => $path) {
+				if (JUri::isInternal(JUri::base().$path) || JUri::isInternal($path)) {
+					self::addStyleSheet($i.'ADD_STYLESHEET_HERE', $this->_versioning);
+				} else {
+					self::addStyleSheet($i.'ADD_STYLESHEET_HERE');
+				}
 			}
 		}
 		
 		$css_declaration = trim( (string) $this->params->get('addcssdeclaration'.$suffix, ''));
 		if (!empty($css_declaration)) {
-			$doc->addStyleDeclaration("ADD_STYLESHEET_DECLARATION_HERE");
+			$doc->addStyleDeclaration('ADD_STYLESHEET_DECLARATION_HERE');
 		}	
 		
 		// END prepare spaces to fill with stylesheets and stylesheets declarations
-
-		$time_end = microtime(true);
-		$this->_timeafterroute = $time_end - $time_start;
 		
-		if (!$this->_usejQuery) {
-			return;
-		}	
+		// protocole
 		
-        $jQueryVersion = $this->params->get('jqueryversion'.$suffix, '1.8');		
-		$jQuerySubversion = trim($this->params->get('jquerysubversion'.$suffix, ''));
+		$protocole = $this->params->get('whichhttp'.$suffix, 'https');
+		$protocole = ($protocole == 'none') ? '' : $protocole.':';
 		
-		$values_that_do_not_need_subversion = array("joomla", "local", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8");
-		if ($jQuerySubversion == '' && !in_array($jQueryVersion, $values_that_do_not_need_subversion)) {
-			$jQuerySubversion = '0';
-		}
+		// compression
 		
-		if ($jQuerySubversion != '') {
-			$jQuerySubversion = '.'.$jQuerySubversion;
-		} 
-        		
-		$jQueryHTTP = $this->params->get('whichhttp'.$suffix, 'https');
-		$jQueryHTTP = ($jQueryHTTP == 'none') ? '' : $jQueryHTTP.':';
-		
-		$jQueryCompressed = '';
+		$compressed = '';
 		if ($this->params->get('compression'.$suffix, 'compressed') == 'compressed') {
-			$jQueryCompressed = '.min';
+			$compressed = '.min';
 		}
 		
-		// jQuery path
+		// set jQuery variables
 		
-		if ($jQueryVersion == 'joomla') {
-			$this->_jqpath = JURI::root(true).'/media/jui/js/jquery'.$jQueryCompressed.'.js';
-		} else {	        
-	        if ($jQueryVersion == 'local') {
-	        	$localVersionPath = trim($this->params->get('localversion'.$suffix, ''));
-	        	if ($localVersionPath) {         		
-	        		if (JFile::exists(JPATH_ROOT.$localVersionPath)) {
-	        		//if (JFile::exists($_SERVER['DOCUMENT_ROOT'].JURI::root(true).$localVersionPath)) {
-	        			$this->_jqpath = JURI::root(true).$localVersionPath;
-	        		} else {
-	        			if ($this->_showreport) {
-	        				$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localVersionPath);
-	        			}
+		switch ($this->params->get('jqueryin'.$suffix, 0)) {
+			case 1: $this->_usejQuery = true; break;
+			case 2: $this->_usejQuery = true; $this->_usejQueryUI = true; break;
+			default: break;
+		}
+		
+		// jQuery
+		
+		if ($this->_usejQuery) 
+		{		
+	        $jQueryVersion = $this->params->get('jqueryversion'.$suffix, '1.8');	        
+			
+			// jQuery path
+			
+			if ($jQueryVersion == 'joomla') {
+				$this->_jqpath = JURI::root(true).'/media/jui/js/jquery'.$compressed.'.js';
+			} else {	        
+		        if ($jQueryVersion == 'local') {
+		        	$localVersionPath = trim($this->params->get('localversion'.$suffix, ''));
+		        	if ($localVersionPath) {         		
+		        		if (JFile::exists(JPATH_ROOT.$localVersionPath)) {
+		        		//if (JFile::exists($_SERVER['DOCUMENT_ROOT'].JURI::root(true).$localVersionPath)) {
+		        			$this->_jqpath = JURI::root(true).$localVersionPath;
+		        		} else {
+		        			if ($this->_showreport) {
+		        				$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localVersionPath);
+		        			}
+		        		}
+		        	} else {
+		        		if ($this->_showreport) {
+		        			$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALFILE', 'jQuery');
+		        		}
+		        	}
+		        } else {
+		        	
+		        	$jQuerySubversion = trim($this->params->get('jquerysubversion'.$suffix, ''));
+		        	
+		        	$values_that_do_not_need_subversion = array('1.3', '1.4', '1.5', '1.6', '1.7', '1.8');
+		        	if ($jQuerySubversion == '' && !in_array($jQueryVersion, $values_that_do_not_need_subversion)) {
+		        		$jQuerySubversion = '0';
+		        	}
+		        	
+		        	if ($jQuerySubversion != '') {
+		        		$jQuerySubversion = '.'.$jQuerySubversion;
+		        	}
+		        	
+		        	$this->_jqpath = $protocole.'//ajax.googleapis.com/ajax/libs/jquery/'.$jQueryVersion.$jQuerySubversion.'/jquery'.$compressed.'.js';
+		        }
+			}
+			
+	        if (!empty($this->_jqpath)) {
+	        	if ($jQueryVersion == 'joomla' || $jQueryVersion == 'local') {
+	        		self::addScript('JQEASY_JQLIB', $this->_versioning);	
+	        	} else {
+	        		self::addScript('JQEASY_JQLIB');
+	        	}
+	        }	
+			
+			// jQuery Migrate
+			
+	        $migrateVersion = $this->params->get('migrateversion'.$suffix, 'none');
+	        if ($migrateVersion != 'none') {
+	        	
+	        	$migrate_is_unnecessary = false;
+	        	
+	        	if ($jQueryVersion == 'joomla') {
+	        		if (version_compare(JVERSION, '3.2', 'lt')) {
+	        			$migrate_is_unnecessary = true;
 	        		}
+	        	} else if ($jQueryVersion == '1.3' || $jQueryVersion == '1.4' || $jQueryVersion == '1.5' || $jQueryVersion == '1.6' || $jQueryVersion == '1.7' || $jQueryVersion == '1.8') {
+	        		$migrate_is_unnecessary = true;
+	        	}
+	        	
+	        	if (!$migrate_is_unnecessary) {
+			        if ($migrateVersion == 'joomla') {
+			        	$this->_jqmigratepath = JURI::root(true).'/media/jui/js/jquery-migrate'.$compressed.'.js';
+			        } else {
+			        	if ($migrateVersion == 'local') {
+			        		$localPathMigrate = trim($this->params->get('localpathmigrate'.$suffix, ''));
+			        		if ($localPathMigrate) {
+			        			if (JFile::exists(JPATH_ROOT.$localPathMigrate)) {
+			        				$this->_jqmigratepath = JURI::root(true).$localPathMigrate;
+			        			} else {
+			        				if ($this->_showreport) {
+			        					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localPathMigrate);
+			        				}
+			        			}
+			        		} else {
+			        			if ($this->_showreport) {
+			        				$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALFILE', 'Migrate');
+			        			}
+			        		}        		
+			        	} else {
+			        		
+			        		if ($migrateVersion == '3.0.0') { // for backward compatibility
+			        			$migrateVersion = '3.0';
+			        		}
+			        		
+			        		$migrateSubversion = trim($this->params->get('migratesubversion'.$suffix, ''));
+			        		
+			        		$values_that_do_not_need_subversion = array('1.2.1', '1.3.0', '1.4.1');
+			        		
+			        		if (in_array($migrateVersion, $values_that_do_not_need_subversion)) {
+			        			$migrateSubversion = '';
+			        		} else if ($migrateSubversion == '') { // missing sub-version
+			        			$migrateSubversion = '0';
+			        		}
+			        		
+			        		if ($migrateSubversion != '') {
+			        			$migrateSubversion = '.'.$migrateSubversion;
+			        		} 			        		
+			        		
+			        		$this->_jqmigratepath = $protocole.'//code.jquery.com/jquery-migrate-'.$migrateVersion.$migrateSubversion.$compressed.'.js';
+			        	}        
+			        }
 	        	} else {
 	        		if ($this->_showreport) {
-	        			$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALFILE', 'jQuery');
+	        			$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_MIGRATEUNNECESSARY');
 	        		}
 	        	}
-	        } else {
-	        	$this->_jqpath = $jQueryHTTP.'//ajax.googleapis.com/ajax/libs/jquery/'.$jQueryVersion.$jQuerySubversion.'/jquery'.$jQueryCompressed.'.js';
-	        }
-		}
-		
-        if (!empty($this->_jqpath)) {
-        	$doc->addScript("JQEASY_JQLIB");	
-        }	
-		
-		// jQuery Migrate
-		
-        $migrateVersion = $this->params->get('migrateversion'.$suffix, 'none');
-        if ($migrateVersion != 'none') {
-	        if ($migrateVersion == 'joomla') {
-	        	$this->_jqmigratepath = JURI::root(true).'/media/jui/js/jquery-migrate'.$jQueryCompressed.'.js';
-	        } else {
-	        	if ($migrateVersion == 'local') {
-	        		$localPathMigrate = trim($this->params->get('localpathmigrate'.$suffix, ''));
-	        		if ($localPathMigrate) {
-	        			if (JFile::exists(JPATH_ROOT.$localPathMigrate)) {
-	        				$this->_jqmigratepath = JURI::root(true).$localPathMigrate;
-	        			} else {
-	        				if ($this->_showreport) {
-	        					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localPathMigrate);
-	        				}
-	        			}
-	        		} else {
-	        			if ($this->_showreport) {
-	        				$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALFILE', 'Migrate');
-	        			}
-	        		}        		
-	        	} else {
-	        		$this->_jqmigratepath = $jQueryHTTP.'//code.jquery.com/jquery-migrate-'.$migrateVersion.$jQueryCompressed.'.js';
-	        	}        
-	        }
-			
-	        if (!empty($this->_jqmigratepath)) {
-	        	$doc->addScript("JQEASY_JQMIGRATELIB");	
-	        }	
-        }	
-		
-        // no conflict path
-        
-		$addjQueryNoConflict = $this->params->get('addnoconflict'.$suffix, 2);
-		if ($addjQueryNoConflict == 1) {
-        	$doc->addScriptDeclaration("JQEASY_JQNOCONFLICT");
-		} else if ($addjQueryNoConflict == 2) {
-			$doc->addScript("JQEASY_JQNOCONFLICT");
-			 if ($jQueryVersion == 'joomla') {
-			 	$this->_jqnoconflictpath = JURI::root(true)."/media/jui/js/jquery-noconflict.js";
-			 } else {
-			 	$this->_jqnoconflictpath = JURI::root(true)."/plugins/system/jqueryeasy/jquerynoconflict.js";
-			 }
-		}	
-		
-		$time_end = microtime(true);
-		$this->_timeafterroute = $time_end - $time_start;
-		
-		if (!$this->_usejQueryUI) {
-			return;
-		}
-					
-		$jQueryUIVersion = $this->params->get('jqueryuiversion'.$suffix, '1.9');
-		$jQueryUISubversion = trim($this->params->get('jqueryuisubversion'.$suffix, ''));
-		
-		$values_that_do_not_need_subversion = array("joomla", "local", "1.7", "1.8");
-		if ($jQueryUISubversion == '' && !in_array($jQueryUIVersion, $values_that_do_not_need_subversion)) {
-			$jQueryUISubversion = '0';
-		}
 				
-		if ($jQueryUISubversion != '') {
-			$jQueryUISubversion = '.'.$jQueryUISubversion;
-		} 
-		
-		$jQueryUITheme = $this->params->get('jqueryuitheme'.$suffix, 'none');
-		
-		// jQuery UI path
-		
-		if ($jQueryUIVersion == 'joomla') {
-			$this->_jquipath = JURI::root(true).'/media/jui/js/jquery.ui.core'.$jQueryCompressed.'.js';
-		} else {
-			if ($jQueryUIVersion == 'local') {
-				$localVersionPath = trim($this->params->get('localuiversion'.$suffix, ''));
-				if ($localVersionPath) {
-					if (JFile::exists(JPATH_ROOT.$localVersionPath)) {
-						$this->_jquipath = JURI::root(true).$localVersionPath;
-					} else {
-						if ($this->_showreport) {
-							$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localVersionPath);
-						}
-					}
-				} else {
-					if ($this->_showreport) {
-						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALFILE', 'jQuery UI');
-					}
-				}
-			} else {
-				$this->_jquipath = $jQueryHTTP.'//ajax.googleapis.com/ajax/libs/jqueryui/'.$jQueryUIVersion.$jQueryUISubversion.'/jquery-ui'.$jQueryCompressed.'.js';
-			}
-		}
-		
-		if (!empty($this->_jquipath)) {
-			$doc->addScript("JQEASY_JQUILIB");
-		}
-		
-		// jQuery UI CSS path
-		
-		if ($jQueryUITheme != 'none') {				
-			if ($jQueryUITheme == 'custom' || $jQueryUIVersion == 'joomla' || $jQueryUIVersion == 'local') {
-				$localVersionPath = trim($this->params->get('jqueryuithemecustom'.$suffix, ''));
-				if ($localVersionPath) {
-					if (JFile::exists(JPATH_ROOT.$localVersionPath)) {
-						$this->_jquicsspath = JURI::root(true).$localVersionPath;
-					} else {
-						if ($this->_showreport) {
-							$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localVersionPath);
-						}
-					}
-				} else {
-					if ($this->_showreport) {
-						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALCSSFILE');
-					}
-				}
-			} else {
-				$this->_jquicsspath = $jQueryHTTP.'//ajax.googleapis.com/ajax/libs/jqueryui/'.$jQueryUIVersion.$jQueryUISubversion.'/themes/'.$jQueryUITheme.'/jquery-ui.css';
+		        if (!empty($this->_jqmigratepath)) {
+		        	if ($migrateVersion == 'joomla' || $migrateVersion == 'local') {
+		        		self::addScript('JQEASY_JQMIGRATELIB', $this->_versioning);	
+		        	} else {
+		        		self::addScript('JQEASY_JQMIGRATELIB');
+		        	}
+		        }	
+	        }	
+			
+	        // no conflict path
+	        
+			$addjQueryNoConflict = $this->params->get('addnoconflict'.$suffix, 2);
+			if ($addjQueryNoConflict == 1) {
+	        	$doc->addScriptDeclaration('JQEASY_JQNOCONFLICT');
+			} else if ($addjQueryNoConflict == 2) {
+				self::addScript('JQEASY_JQNOCONFLICT', $this->_versioning);
+				 if ($jQueryVersion == 'joomla') {
+				 	$this->_jqnoconflictpath = JURI::root(true).'/media/jui/js/jquery-noconflict.js';
+				 } else {
+				 	$this->_jqnoconflictpath = JURI::root(true).'/plugins/system/jqueryeasy/jquerynoconflict.js';
+				 }
 			}
 			
-			if (!empty($this->_jquicsspath)) {
-				$doc->addStyleSheet("JQEASY_JQUICSS");
-			}
-		}
+			// jQuery UI
+						
+			if ($this->_usejQueryUI) 
+			{						
+				$jQueryUIVersion = $this->params->get('jqueryuiversion'.$suffix, '1.9');
+				
+				$jQueryUISubversion = trim($this->params->get('jqueryuisubversion'.$suffix, ''));
+				
+				$values_that_do_not_need_subversion = array('1.7', '1.8');
+				if ($jQueryUISubversion == '' && !in_array($jQueryUIVersion, $values_that_do_not_need_subversion)) {
+					$jQueryUISubversion = '0';
+				}
+						
+				if ($jQueryUISubversion != '') {
+					$jQueryUISubversion = '.'.$jQueryUISubversion;
+				} 
+				
+				$jQueryUITheme = $this->params->get('jqueryuitheme'.$suffix, 'none');
+				
+				// jQuery UI path
+				
+				if ($jQueryUIVersion == 'joomla') {
+					$this->_jquipath = JURI::root(true).'/media/jui/js/jquery.ui.core'.$compressed.'.js';
+				} else {
+					if ($jQueryUIVersion == 'local') {
+						$localVersionPath = trim($this->params->get('localuiversion'.$suffix, ''));
+						if ($localVersionPath) {
+							if (JFile::exists(JPATH_ROOT.$localVersionPath)) {
+								$this->_jquipath = JURI::root(true).$localVersionPath;
+							} else {
+								if ($this->_showreport) {
+									$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localVersionPath);
+								}
+							}
+						} else {
+							if ($this->_showreport) {
+								$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALFILE', 'jQuery UI');
+							}
+						}
+					} else {
+						$this->_jquipath = $protocole.'//ajax.googleapis.com/ajax/libs/jqueryui/'.$jQueryUIVersion.$jQueryUISubversion.'/jquery-ui'.$compressed.'.js';
+					}
+				}
+				
+				if (!empty($this->_jquipath)) {
+					if ($jQueryUIVersion == 'joomla' || $jQueryUIVersion == 'local') {
+						self::addScript('JQEASY_JQUILIB', $this->_versioning);
+					} else {
+						self::addScript('JQEASY_JQUILIB');
+					}
+				}
+				
+				// jQuery UI CSS path
+				
+				if ($jQueryUITheme != 'none') {				
+					if ($jQueryUITheme == 'custom' || $jQueryUIVersion == 'joomla' || $jQueryUIVersion == 'local') {
+						$localVersionPath = trim($this->params->get('jqueryuithemecustom'.$suffix, ''));
+						if ($localVersionPath) {
+							if (JFile::exists(JPATH_ROOT.$localVersionPath)) {
+								$this->_jquicsspath = JURI::root(true).$localVersionPath;
+							} else {
+								if ($this->_showreport) {
+									$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_COULDNOTFINDFILE', JPATH_ROOT.$localVersionPath);
+								}
+							}
+						} else {
+							if ($this->_showreport) {
+								$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_EMPTYLOCALCSSFILE');
+							}
+						}
+					} else {
+						$this->_jquicsspath = $protocole.'//ajax.googleapis.com/ajax/libs/jqueryui/'.$jQueryUIVersion.$jQueryUISubversion.'/themes/'.$jQueryUITheme.'/jquery-ui.css';
+					}
+					
+					if (!empty($this->_jquicsspath)) {
+						if ($jQueryUITheme == 'custom' || $jQueryUIVersion == 'joomla' || $jQueryUIVersion == 'local') {
+							self::addStyleSheet('JQEASY_JQUICSS', $this->_versioning);
+						} else {
+							self::addStyleSheet('JQEASY_JQUICSS');
+						}
+					}
+				}
+			} // END jQuery UI
+		} // END jQuery
 
 		$time_end = microtime(true);
 		$this->_timeafterroute = $time_end - $time_start;
@@ -378,120 +437,155 @@ class plgSystemJqueryeasy extends JPlugin
 	
 	function onBeforeRender()
 	{
-		if (!$this->_enabled) {
-			return;
-		}
-		
 		$app = JFactory::getApplication();
-		$doc = JFactory::getDocument();	
 		
 		if ($app->isAdmin()) {
 			return;
 		}
 		
+		if (!$this->_enabled) {
+			return;
+		}		
+		
+		$doc = JFactory::getDocument();	
+		
 		$time_start = microtime(true);
-		
-		//$jquery_from_jui = array();
-		
+				
 		// check if jQuery and Bootstrap are used in the template (nothing in $headerdata before 'onBeforeRender' other than what has been added in the plugin)
-		$headerdata = $doc->getHeadData();
-		$scripts = $headerdata['scripts'];
-		//$media_quoted_path = preg_quote('media/jui/js/', '/');
-		$jquery_quoted_path = preg_quote('media/jui/js/jquery', '/');
-		$jqueryui_quoted_path = preg_quote('media/jui/js/jquery.ui', '/');
-		$bootstrap_quoted_path = preg_quote('media/jui/js/bootstrap', '/');
+		if ($this->_showreport) {
 		
-		foreach ($scripts as $url => $type) {
-			if (preg_match('#'.$jquery_quoted_path.'#s', $url)) {
-				if ($this->_showreport && !$this->_jquery_loaded_by_template) {
-					$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_JQUERYLOADEDBYTEMPLATE');
-				}
-				$this->_jquery_loaded_by_template = true;
-			}
+			$headerdata = $doc->getHeadData();
+			$scripts = $headerdata['scripts'];
 			
-			if (preg_match('#'.$jqueryui_quoted_path.'#s', $url)) {
-				if ($this->_showreport && !$this->_jqueryui_loaded_by_template) {
-					$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_JQUERYUILOADEDBYTEMPLATE');
-				}
-				$this->_jqueryui_loaded_by_template = true;
-			}
+			$jquery_quoted_path = preg_quote('media/jui/js/jquery', '/');
+			$jqueryui_quoted_path = preg_quote('media/jui/js/jquery.ui', '/');
+			$bootstrap_quoted_path = preg_quote('media/jui/js/bootstrap', '/');
 			
-			if (preg_match('#'.$bootstrap_quoted_path.'#s', $url)) {
-				if ($this->_showreport && !$this->_bootstrap_loaded_by_template) {
-					$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_BOOTSTRAPLOADEDBYTEMPLATE');
-				}
-				$this->_bootstrap_loaded_by_template = true;
-			}
+			$jquery_loaded_by_template = false;
+			$jqueryui_loaded_by_template = false;
+			$bootstrap_loaded_by_template = false;
 			
-			// TODO do I really need to do that? probably never going to be used
-			// keep every jquery scripts except the jQuery and jQuery UI libraries and jquery-noconflict.js
-			// will need to re-inject those into the page once the cleanup has been done
-			//if (preg_match('#'.$media_quoted_path.'#s', $url)) {
-				//if (preg_match('#jquery#s', $url)) {
-					//$jquery_from_jui[$url] = $type;
-				//}
-			//}	
-		}	
+			foreach ($scripts as $url => $type) {
+				if (preg_match('#'.$jquery_quoted_path.'#s', $url)) {
+					if (!$jquery_loaded_by_template) {
+						$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_JQUERYLOADEDBYTEMPLATE');
+						$jquery_loaded_by_template = true;
+					}
+				}
+				
+				if (preg_match('#'.$jqueryui_quoted_path.'#s', $url)) {
+					if (!$jqueryui_loaded_by_template) {
+						$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_JQUERYUILOADEDBYTEMPLATE');
+						$jqueryui_loaded_by_template = true;
+					}
+				}
+				
+				if (preg_match('#'.$bootstrap_quoted_path.'#s', $url)) {
+					if (!$bootstrap_loaded_by_template) {
+						$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_BOOTSTRAPLOADEDBYTEMPLATE');
+						$bootstrap_loaded_by_template = true;
+					}
+				}
+			}
+		}
 
 		// at this point, jQuery and MooTools libraries are loaded in the wrong order, if jQuery is enabled
 		// we have jQuery, MooTools and other libraries loaded in that order
 		// take all 'media/system/js' libraries and put them in front of all others	
 		
-		$headerdata = $doc->getHeadData();
-		$scripts = $headerdata['scripts'];
-		$headerdata['scripts'] = array();
+		$headerdata = $doc->getHeadData();		
 				
 		$ignore_caption = $this->params->get('disablecaptions', 0);
-		$library_needing_mootools_present = false;
+		$disable_mootools = $this->params->get('disablemootools', 0);
 		
-		$js_needing_mootools = array("mooRainbow.js", "mootree.js");
-		$js_to_ignore = array("mootools-core.js", "mootools-more.js"); // uncompressed versions are not taken into account because used for debug
-
-		// make sure we start with all jQuery scripts
-		foreach ($scripts as $url => $type) {
+		$library_needing_mootools_present = false;		
+		$js_needing_mootools = array('mooRainbow.js', 'mootree.js'); // TODO ? add modal.js
+		
+		// make sure we start with all jQuery Easy scripts
+		
+		$scripts_jqeasy = array();
+		
+		foreach ($headerdata['scripts'] as $url => $type) {
 			if (preg_match('#JQEASY_#s', $url)) {
-				$headerdata['scripts'][$url] = $type;
-				unset($scripts[$url]);
+				$scripts_jqeasy[$url] = $type;
 			}
-		}	
+		}		
 		
-		// then with MooTools and all system scripts	
-		$quoted_path = preg_quote('media/system/js/', '/');	
-		foreach ($scripts as $url => $type) {
-			if (preg_match('#'.$quoted_path.'#s', $url)) {	
+		if (!empty($scripts_jqeasy)) {
+			
+			$scripts = $headerdata['scripts'];
+			$headerdata['scripts'] = array();
 				
-				foreach ($js_needing_mootools as $library) {
-					if (preg_match('#'.$quoted_path.$library.'#s', $url)) {
-						$library_needing_mootools_present = true;
+			foreach ($scripts_jqeasy as $url_jqeasy => $type_jqeasy) {
+				$headerdata['scripts'][$url_jqeasy] = $type_jqeasy;
+				unset($scripts[$url_jqeasy]);
+			}	
+			
+			// then with MooTools and all system scripts
+			
+			$quoted_path = preg_quote('media/system/js/', '/');	
+			foreach ($scripts as $url => $type) {
+				if (preg_match('#'.$quoted_path.'#s', $url)) {	
+					
+					if ($disable_mootools) {
+						foreach ($js_needing_mootools as $library) {
+							if (preg_match('#'.$quoted_path.$library.'#s', $url)) {
+								$library_needing_mootools_present = true;
+								break;
+							}
+						}
+					}
+					
+					if ($ignore_caption && preg_match('#'.$quoted_path.'caption#s', $url)) {
+						$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDCAPTIONLIBRARY');
+					} else {
+						$headerdata['scripts'][$url] = $type;
+					}
+					
+					unset($scripts[$url]);
+				}
+			}
+			
+			// make sure we follow with all media/jui/js scripts
+			
+			$quoted_path = preg_quote('media/jui/js/', '/');
+			foreach ($scripts as $url => $type) {
+				if (preg_match('#'.$quoted_path.'#s', $url)) {
+					$headerdata['scripts'][$url] = $type;
+					unset($scripts[$url]);
+				}
+			}
+			
+			// remaining scripts
+			
+			foreach ($scripts as $url => $type) {
+				$headerdata['scripts'][$url] = $type;
+			}
+			
+			if ($this->_showreport) {
+				$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_REORDEREDLIBRARIES');
+			}
+		} else {
+			$quoted_path = preg_quote('media/system/js/', '/');
+			
+			if ($disable_mootools) {
+				foreach ($headerdata['scripts'] as $url => $type) {
+					foreach ($js_needing_mootools as $library) {
+						if (preg_match('#'.$quoted_path.$library.'#s', $url)) {
+							$library_needing_mootools_present = true;
+							break 2;
+						}
 					}
 				}
-				
+			}
+			
+			foreach ($headerdata['scripts'] as $url => $type) {				
 				if ($ignore_caption && preg_match('#'.$quoted_path.'caption#s', $url)) {
-					//unset($headerdata['scripts'][$url]);
-				} else {
-					$headerdata['scripts'][$url] = $type;
+					unset($headerdata['scripts'][$url]);
+					$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDCAPTIONLIBRARY');
+					break;
 				}
-				
-				unset($scripts[$url]);
 			}
-		}
-		
-		// make sure we follow with all media/jui/js scripts
-		$quoted_path = preg_quote('media/jui/js/', '/');
-		foreach ($scripts as $url => $type) {
-			if (preg_match('#'.$quoted_path.'#s', $url)) {
-				$headerdata['scripts'][$url] = $type;
-				unset($scripts[$url]);
-			}
-		}
-		
-		// remaining scripts
-		foreach ($scripts as $url => $type) {
-			$headerdata['scripts'][$url] = $type;
-		}
-		
-		if ($this->_showreport) {
-			$this->_verbose_array[] = JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_REORDEREDLIBRARIES');
 		}
 	
 		// get rid of MooTools only if :
@@ -501,13 +595,17 @@ class plgSystemJqueryeasy extends JPlugin
 		// + tmpl != component (component.php used to get images from editor for instance)
 		// + not in specified pages
 		
-		if ($this->params->get('disablemootools', 0) && !$library_needing_mootools_present) {
+		if ($disable_mootools && !$library_needing_mootools_present) {
+			
 			// $_GET['view'] available if SEF URLs set to yes or not
 			if ($app->input->get('view', '') == 'form') { 
 				// do nothing
 			} else if ($app->input->get('tmpl', '') == 'component') {
 				// do nothing
 			} else {
+				
+				$js_to_ignore = array('mootools-core.js', 'mootools-more.js'); // uncompressed versions are not taken into account because used for debug
+				
 				foreach ($headerdata['scripts'] as $url => $type) {
 					$ignore = false;
 					foreach ($js_to_ignore as $library) {
@@ -572,50 +670,51 @@ class plgSystemJqueryeasy extends JPlugin
 	}
 		
 	function onAfterRender()
-	{
-		if (!$this->_enabled) {
+	{		
+		if (JFactory::getApplication()->isAdmin()) {
 			return;
 		}
 		
-		$app = JFactory::getApplication();		
-		
-		if ($app->isAdmin()) {
+		if (!$this->_enabled) {
 			return;
 		}
 		
 		$time_start = microtime(true);
 		
-		$suffix = $app->isAdmin() ? 'backend' : 'frontend';	
-		
 		$body = JResponse::getBody();
 		
-		if ($this->_usejQuery) {
+		$suffix = 'frontend';
 		
-			$remainingScripts = trim( (string) $this->params->get('stripremainingscripts'.$suffix, ''));
-			if ($remainingScripts) {
-				$remainingScripts = array_map('trim', (array) explode("\n", $remainingScripts));
-				foreach ($remainingScripts as $script) {
-					$quoted_script = preg_quote($script, '/'); // prepares for regexp					
-					$count = 0;
-					$body = preg_replace('#<script[^>]*'.$quoted_script.'[^>]*></script>#', '', $body, -1, $count);
-					if ($count > 0 && $this->_showreport) {
-						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_STRIPPEDREMAININGSCRIPT', $script, $count);
-					}
+		$remove_empty_scripts = false;
+		$remove_empty_links = false;
+		
+		$remainingScripts = trim( (string) $this->params->get('stripremainingscripts'.$suffix, ''));
+		if ($remainingScripts) {
+			$remainingScripts = array_map('trim', (array) explode("\n", $remainingScripts));
+			foreach ($remainingScripts as $script) {
+				$quoted_script = preg_quote($script, '/'); // prepares for regexp
+				$count = 0;
+				$body = preg_replace('#<script[^>]*'.$quoted_script.'[^>]*></script>#', '', $body, -1, $count);
+				if ($count > 0 && $this->_showreport) {
+					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_STRIPPEDREMAININGSCRIPT', $script, $count);
 				}
 			}
-			
-			$remainingStylesheets = trim( (string) $this->params->get('stripremainingcss'.$suffix, ''));
-			if ($remainingStylesheets) {
-				$remainingStylesheets = array_map('trim', (array) explode("\n", $remainingStylesheets));
-				foreach ($remainingStylesheets as $stylesheet) {
-					$quoted_stylesheet = preg_quote($stylesheet, '/'); // prepares for regexp
-					$count = 0;
-					$body = preg_replace('#<link[^>]*'.$quoted_stylesheet.'[^>]*/>#', '', $body, -1, $count);
-					if ($count > 0 && $this->_showreport) {
-						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_STRIPPEDREMAININGCSS', $stylesheet, $count);
-					}
+		}
+		
+		$remainingStylesheets = trim( (string) $this->params->get('stripremainingcss'.$suffix, ''));
+		if ($remainingStylesheets) {
+			$remainingStylesheets = array_map('trim', (array) explode("\n", $remainingStylesheets));
+			foreach ($remainingStylesheets as $stylesheet) {
+				$quoted_stylesheet = preg_quote($stylesheet, '/'); // prepares for regexp
+				$count = 0;
+				$body = preg_replace('#<link[^>]*'.$quoted_stylesheet.'[^>]*/>#', '', $body, -1, $count);
+				if ($count > 0 && $this->_showreport) {
+					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_STRIPPEDREMAININGCSS', $stylesheet, $count);
 				}
 			}
+		}
+		
+		if ($this->_usejQuery) {
 			
 			$removejQueryNoConflict = $this->params->get('removenoconflict'.$suffix, 1);
 			if ($removejQueryNoConflict) {
@@ -649,12 +748,15 @@ class plgSystemJqueryeasy extends JPlugin
 				
 				// remove potential jquery-noconflict.js (different combinations)
 				
-				$regexp = 'src="([\\\/a-zA-Z0-9_:\.-~]*)jquery[.-]*no[.-]*[cC]onflict\.js(.*?)"';
+				$regexp = 'src="([\\\/a-zA-Z0-9_:\.~-]*)jquery[.-]*no[.-]*[cC]onflict([0-9\.-]|min)*?.js(.*?)"';
 				
 				$count = 0;
-				$body = preg_replace('#'.$regexp.'#', 'GARBAGE', $body, -1, $count);
-				if ($count > 0 && $this->_showreport) {
-					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDNOCONFLICTSCRIPTS', $count);
+				$body = preg_replace('#'.$regexp.'#', 'GARBAGE', $body, -1, $count);				
+				if ($count > 0) {
+					$remove_empty_scripts = true;
+					if ($this->_showreport) {
+						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDNOCONFLICTSCRIPTS', $count);
+					}
 				}
 			}
 			
@@ -670,13 +772,16 @@ class plgSystemJqueryeasy extends JPlugin
 				$ignoreScripts = array_map('trim', (array) explode("\n", $ignoreScripts));
 			}
 			
-			$regexp = 'src="([\\\/a-zA-Z0-9_:\.-~]*)jquery([0-9\.-]|latest|core|min|pack)*?.js(.*?)"';
+			$regexp = 'src="([\\\/a-zA-Z0-9_:\.~-]*)jquery([0-9\.-]|latest|core|min|pack)*?.js(.*?)"';
 
 			if (empty($ignoreScripts) && $add_when_missing && $replace_when_unique) { // faster this way
 				$count = 0;
 				$body = preg_replace('#'.$regexp.'#', 'GARBAGE', $body, -1, $count); // find jQuery versions
-				if ($count > 0 && $this->_showreport) {
-					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERY', $count);
+				if ($count > 0) {
+					$remove_empty_scripts = true;
+					if ($this->_showreport) {
+						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERY', $count);
+					}
 				}
 			} else {			
 				$matches = array();
@@ -713,6 +818,7 @@ class plgSystemJqueryeasy extends JPlugin
 						}
 						if (!$ignore) { // remove the library
 							$body = preg_replace('#'.$quoted_match.'#', 'GARBAGE', $body, 1);
+							$remove_empty_scripts = true;
 							if ($this->_showreport) {
 								if ($nbr_of_matches == 1 && !$replace_when_unique) {
 									// do not show any message
@@ -728,9 +834,10 @@ class plgSystemJqueryeasy extends JPlugin
 			// use jQuery version set in the plugin			
 			if (!empty($this->_jqpath)) {
 				if ($do_not_add_libraries) {
-					$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQLIB#', 'GARBAGE', $body, 1);
+					$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQLIB#', 'GARBAGE', $body, 1);
+					$remove_empty_scripts = true;
 				} else {
-					$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQLIB#', $this->_jqpath, $body, 1);
+					$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQLIB#', $this->_jqpath, $body, 1);
 					if ($this->_showreport) {
 						if ($move_unique_library) {
 							$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_MOVEDJQUERY', $this->_jqpath);
@@ -747,24 +854,27 @@ class plgSystemJqueryeasy extends JPlugin
 			
 			// remove all references to Migrate scripts
 			
-			$regexp = 'src="([\\\/a-zA-Z0-9_:\.-~]*)jquery([0-9\.-])*?migrate([0-9\.-]|latest|core|min|pack)*?.js(.*?)"';
+			$regexp = 'src="([\\\/a-zA-Z0-9_:\.~-]*)jquery([0-9\.-])*?migrate([0-9\.-]|latest|core|min|pack)*?.js(.*?)"';
 			
 			$count = 0;
 			$body = preg_replace('#'.$regexp.'#', 'GARBAGE', $body, -1, $count); // find Migrate versions
-			if ($count > 0 && $this->_showreport) {
-				$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDMIGRATE', $count);
+			if ($count > 0) {
+				$remove_empty_scripts = true;
+				if ($this->_showreport) {
+					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDMIGRATE', $count);
+				}
 			}
 			
 			// use jQuery Migrate
 			if (!empty($this->_jqmigratepath)) {
-				$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQMIGRATELIB#', $this->_jqmigratepath, $body, 1);
+				$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQMIGRATELIB#', $this->_jqmigratepath, $body, 1);
 				if ($this->_showreport) {
 					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_ADDEDJQUERYMIGRATE', '<a href="'.$this->_jqmigratepath.'" target="_blank">'.$this->_jqmigratepath.'</a>');
 				}
 			}
 					
 			// replace deleted occurences
-			$addjQueryNoConflict = $this->params->get('addnoconflict'.$suffix, 2);			
+			$addjQueryNoConflict = $this->params->get('addnoconflict'.$suffix, 2);
 			if ($addjQueryNoConflict == 1) {
 	        	if ($do_not_add_libraries) {
 	        		$body = preg_replace('#JQEASY_JQNOCONFLICT#', '', $body, 1);
@@ -776,9 +886,10 @@ class plgSystemJqueryeasy extends JPlugin
 	        	}
 	        } elseif ($addjQueryNoConflict == 2) {
 	        	if ($do_not_add_libraries) {
-	        		$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQNOCONFLICT#', 'GARBAGE', $body, 1);	        		
+	        		$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQNOCONFLICT#', 'GARBAGE', $body, 1);	        		
+	        		$remove_empty_scripts = true;
 	        	} else {
-		        	$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQNOCONFLICT#', $this->_jqnoconflictpath, $body, 1); // add jquerynoconflict.js   
+		        	$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQNOCONFLICT#', $this->_jqnoconflictpath, $body, 1); // add jquerynoconflict.js   
 		        	if ($this->_showreport) {
 		        		$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_ADDEDNOCONFLICTSCRIPT', $this->_jqnoconflictpath);
 		        	}
@@ -800,7 +911,7 @@ class plgSystemJqueryeasy extends JPlugin
 				
 				// remove all other references to jQuery UI library
 				
-				$regexp = 'src="([\\\/a-zA-Z0-9_:\.-~]*)jquery[.-]*ui([0-9\.-]|latest|core|custom|min|pack)*?.js(.*?)"';
+				$regexp = 'src="([\\\/a-zA-Z0-9_:\.~-]*)jquery[.-]*ui([0-9\.-]|latest|core|custom|min|pack)*?.js(.*?)"';
 				
 				if (!$replace_when_unique) {
 					$matches = array();
@@ -812,6 +923,7 @@ class plgSystemJqueryeasy extends JPlugin
 								$this->_jquipath = rtrim(substr($match[0], 5), '"');
 								$quoted_match = preg_quote($match[0], '/'); // prepares for regexp
 								$body = preg_replace('#'.$quoted_match.'#', 'GARBAGE', $body, 1);
+								$remove_empty_scripts = true;
 								$move_unique_libraryui = true;
 								if ($this->_showreport) {
 									$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_KEEPINGUNIQUELIBRARYUI', $this->_jquipath);
@@ -821,6 +933,7 @@ class plgSystemJqueryeasy extends JPlugin
 							foreach ($matches as $match) {
 								$quoted_match = preg_quote($match[0], '/'); // prepares for regexp
 								$body = preg_replace('#'.$quoted_match.'#', 'GARBAGE', $body, 1);
+								$remove_empty_scripts = true;
 								if ($this->_showreport) {
 									$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERYUILIBRARY', rtrim(substr($match[0], 5), '"'));
 								}
@@ -830,17 +943,21 @@ class plgSystemJqueryeasy extends JPlugin
 				} else { // faster this way
 					$count = 0;
 					$body = preg_replace('#'.$regexp.'#', 'GARBAGE', $body, -1, $count); // find jQuery UI versions
-					if ($count > 0 && $this->_showreport) {
-						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERYUI', $count);
+					if ($count > 0) {						
+						$remove_empty_scripts = true;
+						if ($this->_showreport) {
+							$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERYUI', $count);
+						}
 					}
 				}
 				
 				// use jQuery UI version set in the plugin
 				if (!empty($this->_jquipath)) {
 					if ($do_not_add_libraries) {
-						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQUILIB#', 'GARBAGE', $body, 1);
+						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQUILIB#', 'GARBAGE', $body, 1);
+						$remove_empty_scripts = true;
 					} else {
-						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQUILIB#', $this->_jquipath, $body, 1);
+						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQUILIB#', $this->_jquipath, $body, 1);
 						if ($this->_showreport) {
 							if ($move_unique_libraryui) {
 								$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_MOVEDJQUERYUI', $this->_jquipath);
@@ -857,7 +974,7 @@ class plgSystemJqueryeasy extends JPlugin
 			
 				// remove all other references to jQuery UI stylesheets
 				
-				$regexp = 'href="([\\\/a-zA-Z0-9_:\.-~]*)jquery[.-]*ui([0-9\.-]|latest|core|custom|min|pack)*?.css(.*?)"';
+				$regexp = 'href="([\\\/a-zA-Z0-9_:\.~-]*)jquery[.-]*ui([0-9\.-]|latest|core|custom|min|pack)*?.css(.*?)"';
 				
 				if (!$replace_when_unique) {
 					$matches = array();
@@ -869,6 +986,7 @@ class plgSystemJqueryeasy extends JPlugin
 								$this->_jquicsspath = rtrim(substr($match[0], 5), '"');
 								$quoted_match = preg_quote($match[0], '/'); // prepares for regexp
 								$body = preg_replace('#'.$quoted_match.'#', 'GARBAGE', $body, 1);
+								$remove_empty_links = true;
 								$move_unique_cssui = true;
 								if ($this->_showreport) {
 									$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_KEEPINGUNIQUECSSUI', $this->_jquicsspath);
@@ -878,6 +996,7 @@ class plgSystemJqueryeasy extends JPlugin
 							foreach ($matches as $match) {
 								$quoted_match = preg_quote($match[0], '/'); // prepares for regexp
 								$body = preg_replace('#'.$quoted_match.'#', 'GARBAGE', $body, 1);
+								$remove_empty_links = true;
 								if ($this->_showreport) {
 									$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERYUICSSLINK', rtrim(substr($match[0], 5), '"'));
 								}
@@ -887,17 +1006,21 @@ class plgSystemJqueryeasy extends JPlugin
 				} else { // faster this way
 					$count = 0;
 					$body = preg_replace('#'.$regexp.'#', 'GARBAGE', $body, -1, $count); // find jQuery UI CSS versions
-					if ($count > 0 && $this->_showreport) {
-						$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERYUICSS', $count);
+					if ($count > 0) {
+						$remove_empty_links = true;
+						if ($this->_showreport) {
+							$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDJQUERYUICSS', $count);
+						}
 					}
 				}
 				
 				// use jQuery UI CSS set in the plugin
 				if (!empty($this->_jquicsspath)) {
 					if ($do_not_add_libraries) {
-						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQUICSS#', 'GARBAGE', $body, 1);
+						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQUICSS#', 'GARBAGE', $body, 1);
+						$remove_empty_links = true;
 					} else {
-						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)JQEASY_JQUICSS#', $this->_jquicsspath, $body, 1);
+						$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)JQEASY_JQUICSS#', $this->_jquicsspath, $body, 1);
 						if ($this->_showreport) {
 							if ($move_unique_cssui) {
 								$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_MOVEDJQUERYUICSS', $this->_jquicsspath);
@@ -913,16 +1036,11 @@ class plgSystemJqueryeasy extends JPlugin
 						}
 					}
 				}
-
-				// remove all obsolete link tags
-				$count = 0;
-				$body = preg_replace('#<link[^>]*GARBAGE[^>]*/>#', '', $body, -1, $count); // remove newly empty stylesheets
-				if ($count > 0 && $this->_showreport) {
-					$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDEMPTYLINKTAGS', $count);
-				}
 			}
-			
-			// remove all obsolete script tags
+		} // END if $this->jQuery 
+		
+		// remove all obsolete script tags
+		if ($remove_empty_scripts) {
 			$count = 0;
 			$body = preg_replace('#<script[^>]*GARBAGE[^>]*></script>#', '', $body, -1, $count); // remove newly empty scripts
 			if ($count > 0 && $this->_showreport) {
@@ -930,6 +1048,16 @@ class plgSystemJqueryeasy extends JPlugin
 			}
 		}
 		
+		// remove all obsolete link tags
+		if ($remove_empty_links) {
+			$count = 0;
+			$body = preg_replace('#<link[^>]*GARBAGE[^>]*/>#', '', $body, -1, $count); // remove newly empty stylesheets
+			if ($count > 0 && $this->_showreport) {
+				$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_REMOVEDEMPTYLINKTAGS', $count);
+			}
+		}
+		
+		// TODO should this be done at the same time as the removal of JCaption?
 		// remove newly empty script left after removal of new JCaption('img.caption');
 		if ($this->params->get('disablecaptions', 0)) {
 			if ($this->_showreport) {
@@ -959,7 +1087,7 @@ class plgSystemJqueryeasy extends JPlugin
 		
 		if (!empty($this->_supplement_scripts)) {
 			foreach($this->_supplement_scripts as $path) {
-				$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)ADD_SCRIPT_HERE([0-9]*)#', $path, $body, 1);
+				$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)ADD_SCRIPT_HERE#', $path, $body, 1);
 	        	if ($this->_showreport) {
 	        		$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_ADDEDSCRIPT', $path);
 	        	}
@@ -977,7 +1105,7 @@ class plgSystemJqueryeasy extends JPlugin
 			
 		if (!empty($this->_supplement_stylesheets)) {
 			foreach($this->_supplement_stylesheets as $path) {
-				$body = preg_replace('#([\\\/a-zA-Z0-9_:\.-~]*)ADD_STYLESHEET_HERE([0-9]*)#', $path, $body, 1);
+				$body = preg_replace('#([\\\/a-zA-Z0-9_:\.~-]*)ADD_STYLESHEET_HERE#', $path, $body, 1);
 	        	if ($this->_showreport) {
 	        		$this->_verbose_array[] = JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERBOSE_ADDEDSTYLESHEET', $path);
 	        	}
@@ -1004,49 +1132,95 @@ class plgSystemJqueryeasy extends JPlugin
 		$time_end = microtime(true);
 		$this->_timeafterrender = $time_end - $time_start;
 			
-		// output the results (verbose or not)
+		// show the report
 		
-		$output = $body;
-		
-		if ($this->_showreport) {
-			
-			$pattern = '#</body>#';
-			$replacement = '<div id="jqueryeasy_report" style="z-index:10000; position: absolute; top: 0; left: 0;">'.chr(13);
-			
-			$replacement .= '<style type="text/css">#jqueryeasy_report code { white-space: normal; word-break: break-all; }</style>'.chr(13);	
-			
-			$replacement .= '<dl style="padding: 15px; margin: 20px; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; -moz-box-shadow: 0px 0px 8px #000; -webkit-box-shadow: 0px 0px 8px #000; box-shadow: 0px 0px 8px #000; background: #fff; background: rgba(255, 255, 255, .9);">'.chr(13);
-			$replacement .= '<button type="button" class="close" data-dismiss="alert">&times;</button>'.chr(13);
-				
-			$replacement .= '<dt style="padding: 5px; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; margin-bottom: 10px; text-align: center;">'.chr(13);
-			$replacement .= ' - '.JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_JQUERYEASY').' - '.chr(13);
-			$replacement .= '</dt>'.chr(13);
-			
-			if (!empty($this->_verbose_array)) {
-				foreach ($this->_verbose_array as $verbose) {
-					
-					switch (substr($verbose, 0, 3)) {
-						case 'INF': $color = '#3A87AD'; $label = '<span class="label label-info">&nbsp;</span>&nbsp;'; break;
-						case 'DEL': $color = '#E38808'; $label = '<span class="label label-warning">&nbsp;</span>&nbsp;'; break;
-						case 'ERR': $color = '#B94A48'; $label = '<span class="label label-important">&nbsp;</span>&nbsp;'; break;
-						case 'ADD': $color = '#468847'; $label = '<span class="label label-success">&nbsp;</span>&nbsp;'; break;
-						default: $color = '#48484C'; $label = '<span class="label">&nbsp;</span>&nbsp;'; break;
-					}
-								
-					$replacement .= '<dd style="color: '.$color.';">'.$label.substr($verbose, 4).'</dd>'.chr(13);
-				}
-			} else {
-				$replacement .= '<dd>'.JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_NOCHANGESMADE').'</dd>'.chr(13);
-			}
-			
-			$replacement .= '<dd style="padding-top: 10px">'.JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_EXECUTIONTIME').': '.($this->_timeafterroute + $this->_timebeforerender + $this->_timeafterrender).'</dd>'.chr(13);
-						
-			$output = preg_replace($pattern, $replacement.'</dl>'.chr(13).'</div>'.chr(13).'</body>', $output, 1);
+		if ($this->_showreport) {			
+			$body = self::addReport($body, $this->_verbose_array, $this->_timeafterroute + $this->_timebeforerender + $this->_timeafterrender);
 		}
 				
-		JResponse::setBody($output);
+		JResponse::setBody($body);
 		
 		return true;
+	}
+	
+	static protected function addReport($body, $comments = array(), $execution_time = 0)
+	{
+		$replacement = array();
+		
+		$replacement[] = '<style type="text/css">#jqueryeasy_report code { white-space: normal; word-break: break-all; }</style>'.chr(13);
+		
+		$replacement[] = '<div id="jqueryeasy_report" style="z-index: 10000; display: block; overflow: hidden; position: fixed; top: 10px; left: 0; right: 0; width: 90%; max-width: 976px; margin: 0 auto; padding: 8px; box-sizing: border-box;">';
+		
+		$replacement[] = '<div style="position: relative; overflow: hidden; max-width: 960px; margin: 0 auto; border-radius: 4px; box-shadow: 0px 0px 8px #000; background: #fff; background: rgba(255, 255, 255, .9);">';
+		
+		// header
+		
+		$replacement[] = '<div style="position: relative; display: table; width: 100%; background-color: #d1ecf1; border-bottom: 1px dashed #0c5460;">';
+		
+		$replacement[] = '<span style="display: table-cell; padding: 5px 10px; color: #0c5460; font-weight: bold; font-size: 12px;">'.JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_JQUERYEASY').'</span>';
+		
+		$replacement[] = '<a href="" onclick="document.getElementById(\'jqueryeasy_report\').style.display = \'none\'; return false;" style="display: table-cell; text-align: right; font-size: 12px; padding: 5px 10px;">'.\JText::_('JCANCEL').'</a>';
+		
+		$replacement[] = '</div>';
+		
+		// end header
+		
+		$replacement[] = '<dl style="padding: 0; margin: 15px; overflow: auto; max-height: 200px; max-height: 50vh">';
+		
+		$replacement[] = '<dt style="position: absolute; top: -9999px; left: -9999px;">'.JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_JQUERYEASY').'</dt>';
+		
+		if (!empty($comments)) {
+			foreach ($comments as $comment) {
+				
+				switch (substr($comment, 0, 3)) {
+					case 'INF': $color = '#0c5460'; $bgcolor = '#d1ecf1'; $label = '<span class="label" style="display: inline-block; background-color: '.$bgcolor.'; width: 15px; margin: 1px 5px 1px 0;">&nbsp;</span>'; break;
+					case 'DEL': $color = '#856404'; $bgcolor = '#fff3cd'; $label = '<span class="label" style="display: inline-block; background-color: '.$bgcolor.'; width: 15px; margin: 1px 5px 1px 0;">&nbsp;</span>'; break;
+					case 'ERR': $color = '#721c24'; $bgcolor = '#f8d7da'; $label = '<span class="label" style="display: inline-block; background-color: '.$bgcolor.'; width: 15px; margin: 1px 5px 1px 0;">&nbsp;</span>'; break;
+					case 'ADD': $color = '#155724'; $bgcolor = '#d4edda'; $label = '<span class="label" style="display: inline-block; background-color: '.$bgcolor.'; width: 15px; margin: 1px 5px 1px 0;">&nbsp;</span>'; break;
+					default: $color = '#1b1e21'; $bgcolor = '#d6d8d9'; $label = '<span class="label" style="display: inline-block; background-color: '.$bgcolor.'; width: 15px; margin: 1px 5px 1px 0;">&nbsp;</span>'; break;
+				}
+				
+				$replacement[] = '<dd style="color: '.$color.'; margin-bottom: 6px;">'.$label.substr($comment, 4).'</dd>';
+			}
+		} else {
+			$replacement[] = '<dd>'.JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_NOCHANGESMADE').'</dd>';
+		}
+		
+		$replacement[] = '</dl>';
+		
+		// footer
+		
+		$replacement[] = '<div style="position: relative; display: table; width: 100%; background-color: #d1ecf1; border-top: 1px dashed #0c5460;">';
+		
+		$replacement[] = '<span style="display: table-cell; padding: 5px 10px; color: #0c5460; font-size: 12px;">'.JText::_('PLG_SYSTEM_JQUERYEASY_VERBOSE_EXECUTIONTIME').': '.number_format($execution_time, 4).'</span>';
+		
+		$replacement[] = '</div>';
+		
+		// end footer
+		
+		$replacement[] = '</div>';
+		
+		$replacement[] = '</div>';
+		
+		return preg_replace('#</body>#', implode('', $replacement).chr(13).'</body>', $body, 1);
+	}
+	
+	static protected function addScript($url, $useversion = false, $type = 'text/javascript', $defer = false, $async = false) 
+	{		
+		if (/*version_compare(JVERSION, '3.2.0', 'ge') && */$useversion) {
+			JFactory::getDocument()->addScriptVersion($url, null, $type, $defer, $async);
+		} else {
+			JFactory::getDocument()->addScript($url, $type, $defer, $async);
+		}
+	}
+	
+	static protected function addStyleSheet($url, $useversion = false, $type = 'text/css', $media = null, $attribs = array()) 
+	{		
+		if (/*version_compare(JVERSION, '3.2.0', 'ge') && */$useversion) {
+			JFactory::getDocument()->addStyleSheetVersion($url, null, $type, $media, $attribs);
+		} else {
+			JFactory::getDocument()->addStyleSheet($url, $type, $media, $attribs);
+		}
 	}	
 	
 	static protected function path_compare($uri, $path, $use_backward_compatibility)

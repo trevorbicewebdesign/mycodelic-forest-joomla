@@ -13,29 +13,13 @@ class JFormFieldThemes extends JFormField {
 		
 	public $type = 'Themes';
 
-	/**
-	 * Method to get the field options.
-	 *
-	 * @return	array	The field option objects.
-	 * @since	1.6
-	 */
-	protected function getLabel() {
-		
-		$html = '';
-		
-		$html .= '<div style="clear: both;"></div>';
-		
-		return $html;
+	protected function getLabel() 
+	{		
+		return '';
 	}
 
-	/**
-	 * Method to get the field input markup.
-	 *
-	 * @return	string	The field input markup.
-	 * @since	1.6
-	 */
-	protected function getInput() {
-		
+	protected function getInput() 
+	{
 		$html = '';
 		
 		// Add the script to the document head.

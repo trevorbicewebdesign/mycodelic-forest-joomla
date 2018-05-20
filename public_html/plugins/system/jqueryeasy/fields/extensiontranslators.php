@@ -9,8 +9,8 @@ defined('_JEXEC') or die ;
 
 jimport('joomla.form.formfield');
 
-class JFormFieldExtensionTranslators extends JFormField {
-		
+class JFormFieldExtensionTranslators extends JFormField 
+{
 	public $type = 'ExtensionTranslators';
 	
 	protected function getLabel() 

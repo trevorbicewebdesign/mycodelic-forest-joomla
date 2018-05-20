@@ -18,10 +18,10 @@ class JFormFieldMessage extends JFormField
 		$html = '';
 
 		$lang = JFactory::getLanguage();
-		$lang->load('lib_syw.sys', JPATH_SITE);
+		$lang->load('plg_system_jqueryeasy.sys', JPATH_SITE);
 
 		if ($this->message_type == 'example') {
-			$html .= '<label style="visibility: hidden; margin: 0">'.JText::_('LIB_SYW_MESSAGE_EXAMPLE').'</label>';
+			$html .= '<label style="visibility: hidden; margin: 0">'.JText::_('PLG_SYSTEM_JQUERYEASY_EXAMPLE_EXAMPLE_LABEL').'</label>';
 		} else if ($this->message_type == 'fieldwarning' || $this->message_type == 'fielderror' || $this->message_type == 'fieldinfo') {
 			return parent::getLabel();
 		} else {
@@ -36,7 +36,7 @@ class JFormFieldMessage extends JFormField
 		$html = '';
 
 		$lang = JFactory::getLanguage();
-		$lang->load('lib_syw.sys', JPATH_SITE);
+		$lang->load('plg_system_jqueryeasy.sys', JPATH_SITE);
 
 		$message_label = '';
 		if ($this->element['label']) {
@@ -48,7 +48,7 @@ class JFormFieldMessage extends JFormField
 			if ($message_label) {
 				$html .= '<span class="label">'.$message_label.'</span>&nbsp;';
 			} else {
-				$html .= '<span class="label">'.JText::_('LIB_SYW_MESSAGE_EXAMPLE').'</span>&nbsp;';
+				$html .= '<span class="label">'.JText::_('PLG_SYSTEM_JQUERYEASY_EXAMPLE_EXAMPLE_LABEL').'</span>&nbsp;';
 			}
 			$html .= '<span class="muted" style="font-size: 0.8em;">';
 				

@@ -9,28 +9,29 @@ defined('_JEXEC') or die ;
 
 jimport('joomla.form.formfield');
 
-class JFormFieldLink extends JFormField {
-		
+class JFormFieldLink extends JFormField 
+{
 	public $type = 'Link';
+	
+	protected $title;
+	protected $text;
+	protected $titleintext;
+	protected $link;
+	protected $image_src;
 
-	/**
-	 * Method to get the field options.
-	 */
-	protected function getLabel() {
-		
+	protected function getLabel() 
+	{		
 		$html = '';
 		
-		$title = trim($this->element['title']);
-		$image_src = $this->element['imagesrc']; // path ex: ../modules/mod_latestnews/images/icon.png
-		$link = $this->element['link'];
+		JHtml::_('bootstrap.tooltip');
 		
-		$html .= '<div style="clear: both;">';
+		$html .= '<div>';
 		
-		$html .= '<a href="'.$link.'" target="_blank" title="'.JText::_($title).'">';
-		if ($image_src) {
-			$html .= '<img src="'.$image_src.'" alt="'.JText::_($title).'">';
+		$html .= '<a href="'.$this->link.'" target="_blank" class="hasTooltip" title="'.JText::_($this->title).'">';
+		if ($this->image_src) {
+			$html .= '<img src="'.$this->image_src.'" alt="'.JText::_($this->title).'">';
 		} else {
-			$html .= JText::_($title);
+			$html .= JText::_($this->title);
 		}
 		$html .= '</a>';
 		
@@ -39,35 +40,38 @@ class JFormFieldLink extends JFormField {
 		return $html;
 	}
 
-	/**
-	 * Method to get the field input markup.
-	 */
-	protected function getInput() {
-		
-		$title = trim($this->element['title']);
-		$text = trim($this->element['text']);
-		$link = $this->element['link'];
-		
-		$titleintext = false;
-		if ($this->element['titleintext']) {
-			$titleintext = ($this->element['titleintext'] === 'true');
-		}
-		
+	protected function getInput() 
+	{		
 		$html = '';
 		
 		$html .= '<div style="padding-top: 5px">';
 			
-		if ($titleintext) {
-			$html .= '<strong>'.JText::_($title).'</strong>: ';
+		if ($this->titleintext) {
+			$html .= '<strong>'.JText::_($this->title).'</strong>: ';
 		}
 				
-		if ($text) {
-			$html .= JText::sprintf($text, $link);
+		if ($this->text) {
+			$html .= JText::sprintf($this->text, $this->link);
 		}
 		
 		$html .= '</div>';
 
 		return $html;
+	}
+	
+	public function setup(SimpleXMLElement $element, $value, $group = null)
+	{
+		$return = parent::setup($element, $value, $group);
+		
+		if ($return) {
+			$this->title = isset($this->element['title']) ? trim($this->element['title']) : '';
+			$this->text = isset($this->element['text']) ? trim($this->element['text']) : '';
+			$this->titleintext = isset($this->element['titleintext']) ? $this->element['titleintext'] : false;
+			$this->link = isset($this->element['link']) ? $this->element['link'] : '';
+			$this->image_src = isset($this->element['imagesrc']) ? $this->element['imagesrc'] : ''; // ex: ../modules/mod_latestnews/images/icon.png
+		}
+		
+		return $return;
 	}
 
 }

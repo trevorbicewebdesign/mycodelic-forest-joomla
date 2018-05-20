@@ -13,36 +13,49 @@ class JFormFieldSYWOnlineHelp extends JFormField
 {
 	protected $type = 'SYWOnlineHelp';
 
+	protected $title;
+	protected $heading;
+	protected $layer_class;
+	protected $url;
+	
 	protected function getLabel()
 	{
-// 		if (empty($this->element['label']) && empty($this->element['description'])) {
-// 			return '';
-// 		}
-
-		JHtml::_('stylesheet', 'syw/fonts-min.css', false, true);
-
-		$title = $this->element['label'] ? (string) $this->element['label'] : ($this->element['title'] ? (string) $this->element['title'] : '');
-		$heading = $this->element['heading'] ? (string) $this->element['heading'] : 'h4';
-		$description = (string) $this->element['description'];
-		$class = !empty($this->class) ? ' class="' . $this->class . '"' : '';
-
-		$url = (string) $this->element['url'];
+		return '';
+	}
+	
+	protected function getInput()
+	{
+		JHtml::_('script', 'syw_jqueryeasy/fields.js', false, true);
+		JHtml::_('stylesheet', 'syw_jqueryeasy/fields.css', false, true);
 
 		$html = array();
 
-		$html[] = !empty($title) ? '<' . $heading . '>' . JText::_($title) . '</' . $heading . '>' : '';
+		$html[] = !empty($this->title) ? '<'.$this->heading.'>'.JText::_($this->title).'</'.$this->heading.'>' : '';
 
 		$html[] = '<table style="width: 100%"><tr>';
-		$html[] = !empty($description) ? '<td>'.JText::_($description).'</td>' : '';
-		$html[] = '<td style="text-align: right"><a href="'.$url.'" target="_blank" class="btn btn-info btn-mini btn-xs"><i class="SYWicon-local-library"></i></a></td>';
+		$html[] = !empty($this->description) ? '<td style="background-color: transparent">'.JText::_($this->description).'</td>' : '';
+		if ($this->url) {
+			$html[] = '<td style="text-align: right; background-color: transparent">';
+			$html[] = '<a href="'.$this->url.'" target="_blank" class="btn btn-info btn-small"><img src="'.JURI::root().'plugins/system/jqueryeasy/images/local-library.png"> <span>'.JText::_('JHELP').'</span></a>';
+			$html[] = '</td>';
+		}
 		$html[] = '</tr></table>';
 
-		return '</div><div ' . $class . '>' . implode('', $html);
+		return '<div class="syw_help'.$this->layer_class.'" style="margin-bottom: 0">'.implode($html).'</div>';
 	}
 
-	protected function getInput()
+	public function setup(SimpleXMLElement $element, $value, $group = null)
 	{
-		return '';
+		$return = parent::setup($element, $value, $group);
+		
+		if ($return) {
+			$this->title = !empty($this->element['label']) ? $this->element['label'] : (isset($this->element['title']) ? $this->element['title'] : '');
+			$this->heading = isset($this->element['heading']) ? $this->element['heading'] : 'h4';
+			$this->layer_class = isset($this->class) ? ' '.$this->class : (isset($this->element['class']) ? ' '.$this->element['class']: '');
+			$this->url = isset($this->element['url']) ? $this->element['url'] : '';
+		}
+		
+		return $return;
 	}
 
 }

@@ -9,35 +9,23 @@ defined('_JEXEC') or die ;
 
 jimport('joomla.form.formfield');
 
-class JFormFieldExtensionLink extends JFormField {
-		
+class JFormFieldExtensionLink extends JFormField 
+{		
 	public $type = 'ExtensionLink';
 
-	/**
-	 * Method to get the field options.
-	 */
-	protected function getLabel() {
-		
+	protected $link_type;
+	protected $link;
+
+	protected function getLabel() 
+	{
 		$html = '';
 		
 		$lang = JFactory::getLanguage();
 		$lang->load('plg_system_jqueryeasy', JPATH_SITE);
 		
-		$version = new JVersion();
-		$jversion = explode('.', $version->getShortVersion());
+		JHtml::_('bootstrap.tooltip');
 		
-		$type = $this->element['linktype'];
-		
-		if (intval($jversion[0]) > 2) {
-			$html .= '<div style="clear: both;">';
-		} else {
-			$html .= '<div style="overflow: hidden; margin: 5px 0">';
-			$html .= '<label style="margin: 0">';
-		}
-		
-		$image = '';
-		$title = '';
-		switch ($type) {
+		switch ($this->link_type) {
 			case 'forum': $image = 'chat.png'; $title = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_FORUM_LABEL'; break;
 			case 'demo': $image = 'visibility.png'; $title = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_DEMO_LABEL'; break;
 			case 'review': $image = 'thumb-up.png'; $title = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_REVIEW_LABEL'; break;
@@ -48,90 +36,84 @@ class JFormFieldExtensionLink extends JFormField {
 			case 'report': $image = 'bug-report.png'; $title = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_BUGREPORT_LABEL'; break;
 			case 'support': $image = 'lifebuoy.png'; $title = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_SUPPORT_LABEL'; break;
 			case 'translate': $image = 'translate.png'; $title = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_TRANSLATE_LABEL'; break;
+			default: $image = ''; $title = '';
 		}
 		
-		if (intval($jversion[0]) > 2) {
-			$html .= '<span class="label label-info">';
-		}
-					
+		$html .= '<span class="label">';
 		if (!empty($image)) {
 			$html .= '<img src="'.JURI::root().'plugins/system/jqueryeasy/images/'.$image.'" style="margin-right: 5px;">';
 			$html .= '<span style="vertical-align: middle">'.JText::_($title).'</span>';
 		} else {
 			$html .= JText::_($title);
 		}
-		
-		if (intval($jversion[0]) > 2) {
-			$html .= '</span>';
-		}
-		
-		if (intval($jversion[0]) > 2) {
-			$html .= '</div>';
-		} else {
-			$html .= '</label>';
-		}
+		$html .= '</span>';
 		
 		return $html;
 	}
 
-	/**
-	 * Method to get the field input markup.
-	 */
-	protected function getInput() {
-		
+	protected function getInput() 
+	{
 		$lang = JFactory::getLanguage();
 		$lang->load('plg_system_jqueryeasy', JPATH_SITE);
 		
-		$version = new JVersion();
-		$jversion = explode('.', $version->getShortVersion());
-		
-		$type = $this->element['linktype'];
-		$link = $this->element['link'];
-		$specific_desc = $this->element['description'];
-		
-		$desc = '';
-		switch ($type) {
-			case 'forum': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_FORUM_DESC'; break;
-			case 'demo': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_DEMO_DESC'; break;
-			case 'review': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_REVIEW_DESC'; break;
-			case 'donate': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_DONATE_DESC'; break;
-			case 'upgrade': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_UPGRADE_DESC'; break;
-			case 'doc': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_DOC_DESC'; break;
-			case 'onlinedoc': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_ONLINEDOC_DESC'; break;
-			case 'report': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_BUGREPORT_DESC'; break;
-			case 'support': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_SUPPORT_DESC'; break;
-			case 'translate': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_TRANSLATE_DESC'; break;
-		}
-		
-		if (intval($jversion[0]) > 2 || ($image && intval($jversion[0]) < 3)) {
-			$html = '<div style="padding-top: 5px; overflow: inherit">';
+		$html = '<div class="syw_info" style="padding-top: 5px; overflow: inherit">';
+					
+		if ($this->description) {
+			if ($this->link) {
+				$html .= JText::sprintf($this->description, $this->link);
+			} else {
+				$html .= JText::_($this->description);
+			}
 		} else {
-			$html = '<div>';
-		}
 			
-		if (isset($specific_desc)) {
-			if (isset($link)) {
-				$html .= JText::sprintf($specific_desc, $link);
-			} else {
-				$html .= JText::_($specific_desc);
+			switch ($this->link_type) {
+				case 'forum': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_FORUM_DESC'; break;
+				case 'demo': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_DEMO_DESC'; break;
+				case 'review': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_REVIEW_DESC'; break;
+				case 'donate': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_DONATE_DESC'; break;
+				case 'upgrade': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_UPGRADE_DESC'; break;
+				case 'doc': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_DOC_DESC'; break;
+				case 'onlinedoc': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_ONLINEDOC_DESC'; break;
+				case 'report': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_BUGREPORT_DESC'; break;
+				case 'support': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_SUPPORT_DESC'; break;
+				case 'translate': $image = true; $desc = 'PLG_SYSTEM_JQUERYEASY_EXTENSIONLINK_TRANSLATE_DESC'; break;
+				default: $desc = '';
 			}
-		} else {
-			if (isset($link)) {
-				$html .= JText::sprintf($desc, $link);
-			} else {
-				$html .= JText::_($desc);
+			
+			if ($desc) {
+				if ($this->link) {
+					$html .= JText::sprintf($desc, $this->link);
+				} else {
+					$html .= JText::_($desc);
+				}
 			}
 		}
 		
-		if (intval($jversion[0]) > 2) {
-			// J3+
-		} else {
-			$html .= '</div>';
+		if ($this->link_type == 'review') {
+			$html = rtrim($html, '.');
+			$html .= ' <a href="'.$this->link.'" target="_blank" style="text-decoration: none; vertical-align: text-bottom">';
+			$html .= '<span class="icon-star" style="color: #fcac0a; margin: 0; vertical-align: middle"></span>';
+			$html .= '<span class="icon-star" style="color: #fcac0a; margin: 0; vertical-align: middle"></span>';
+			$html .= '<span class="icon-star" style="color: #fcac0a; margin: 0; vertical-align: middle"></span>';
+			$html .= '<span class="icon-star" style="color: #fcac0a; margin: 0; vertical-align: middle"></span>';
+			$html .= '<span class="icon-star" style="color: #fcac0a; margin: 0; vertical-align: middle"></span></a> .';
 		}
 		
 		$html .= '</div>';
 
 		return $html;
+	}
+
+	public function setup(SimpleXMLElement $element, $value, $group = null)
+	{
+		$return = parent::setup($element, $value, $group);
+		
+		if ($return) {
+			$this->link_type = $this->element['linktype'];
+			$this->link = isset($this->element['link']) ? $this->element['link'] : '';
+		}
+		
+		return $return;
 	}
 
 }

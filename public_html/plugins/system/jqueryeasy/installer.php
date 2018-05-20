@@ -15,7 +15,8 @@ jimport('joomla.filesystem.folder');
  */
 class plgsystemjqueryeasyInstallerScript
 {	
-	static $version = '1.6.9';
+	static $version = '2.2.0';
+	static $available_languages = array('de-DE', 'en-GB', 'en-US', 'es-CO', 'es-ES', 'fr-FR', 'it-IT', 'nl-NL', 'pt-BR', 'ru-RU', 'sv-SE', 'tr-TR', 'uk-UA');
 	static $changelog_link = 'http://www.simplifyyourweb.com/downloads/jquery-easy/file/58-jquery-easy';
 	static $transifex_link = 'https://www.transifex.com/opentranslators/jquery-easy';
 				
@@ -38,15 +39,14 @@ class plgsystemjqueryeasyInstallerScript
 	{			
 		echo '<p style="margin: 20px 0">';
 		//echo '<img src="../plugins/system/jqueryeasy/images/logo.png" />';
-		echo '<span class="label">'.JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERSION_LABEL', self::$version).'</span>';
+		echo '<span class="label">'.JText::sprintf('PLG_SYSTEM_JQUERYEASY_VERSIONNUMBER_LABEL', self::$version).'</span>';
 		echo '<br /><br />Olivier Buisard @ <a href="http://www.simplifyyourweb.com" target="_blank">Simplify Your Web</a>';
 		echo '</p>';	
 		
- 		// language test
- 			
- 		$available_languages = array('de-DE', 'en-GB', 'en-US', 'es-CO', 'es-ES', 'fr-FR', 'it-IT', 'nl-NL', 'pt-BR', 'ru-RU', 'sv-SE', 'tr-TR', 'uk-UA');
+ 		// language test 			
+ 		
  		$current_language = JFactory::getLanguage()->getTag();
- 		if (!in_array($current_language, $available_languages)) {
+ 		if (!in_array($current_language, self::$available_languages)) {
  			JFactory::getApplication()->enqueueMessage(JText::sprintf('PLG_SYSTEM_JQUERYEASY_INFO_LANGUAGETRANSLATE', JFactory::getLanguage()->getName(), self::$transifex_link), 'notice');
  		}
 		

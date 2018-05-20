@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright	Copyright (C) 2011 Simplify Your Web, Inc. All rights reserved.
-* @license		GNU General Public License version 3 or later; see LICENSE.txt
+ * @license		GNU General Public License version 3 or later; see LICENSE.txt
 */
 
 // no direct access
@@ -12,54 +12,65 @@ jimport('joomla.form.formfield');
 class JFormFieldSubtitle extends JFormField
 {
 	public $type = 'Subtitle';
-
+	
+	protected $title;
+	protected $color;
+	
 	protected function getLabel()
 	{
-		$value = trim($this->element['title']);
-
-		$color = $this->element['color'];
-		if (empty($color)) {
-			$color = '#e65100';
-		}
-
-		$html = '</div>';
-
-		$style = array();
-
-		$style[] = 'display: inherit; ';
-		$style[] = 'position: relative; ';
-		$style[] = 'background: '.$color.'; ';
-		$style[] = 'background: linear-gradient(to right, '.$color.' 0%, #fff 100%); ';
-		$style[] = 'height: 5px; ';
-
-		$html .= '<div style="'.implode($style).'">';
-
-		if ($value) {
-				
-			$style = array();
-
-			$style[] = 'font-family: "Courier New", Courier, monospace; ';
-			$style[] = 'letter-spacing: 2px; ';
-			$style[] = 'font-size: 10px; ';
-			$style[] = 'font-weight: bold; ';
-			$style[] = 'background-color: #fff; ';
-			$style[] = 'color: '.$color.'; ';
-			$style[] = 'padding: 0 8px 0 10px; ';
-			$style[] = 'position: absolute; ';
-			$style[] = 'left: 20px; ';
-			$style[] = 'top: -6px; ';
-				
-			$html .= '<div style=\''.implode($style).'\'>'.JText::_($value).'</div>';
-		}
-
-		//$html .= '</div>';
-
-		return $html;
+		return '';
 	}
 
 	protected function getInput()
 	{
-		return '';
+		$html = '';
+		
+		JHtml::_('script', 'syw_jqueryeasy/fields.js', false, true);
+		JHtml::_('stylesheet', 'syw_jqueryeasy/fields.css', false, true);
+
+		$inline_style = array();
+
+		$inline_style[] = 'display: inherit; ';
+		$inline_style[] = 'position: relative; ';
+		$inline_style[] = 'background: '.$this->color.'; background: linear-gradient(to right, '.$this->color.' 0%, #fff 100%); ';
+		$inline_style[] = 'height: 5px; ';
+		$inline_style[] = 'margin: 15px 0; ';
+
+		$html .= '<div class="syw_header" style="'.implode($inline_style).'">';
+
+		if ($this->title) {
+				
+			$inline_style = array();
+
+			$inline_style[] = 'font-family: "Courier New", Courier, monospace; ';
+			$inline_style[] = 'font-size: 10px; ';
+			//$inline_style[] = 'font-weight: bold; ';
+			$inline_style[] = 'letter-spacing: 2px; ';
+			$inline_style[] = 'background-color: #fff; ';
+			$inline_style[] = 'color: '.$this->color.'; ';
+			$inline_style[] = 'padding: 0 8px 0 10px; ';
+			$inline_style[] = 'position: absolute; ';
+			$inline_style[] = 'left: 20px; ';
+			$inline_style[] = 'top: -6px; ';
+				
+			$html .= '<div style=\''.implode($inline_style).'\'>'.JText::_($this->title).'</div>';
+		}
+
+		$html .= '</div>';
+
+		return $html;
+	}
+	
+	public function setup(SimpleXMLElement $element, $value, $group = null)
+	{
+		$return = parent::setup($element, $value, $group);
+		
+		if ($return) {
+			$this->title = isset($this->element['title']) ? trim($this->element['title']) : '';
+			$this->color = '#6f6f6f'; // isset($this->element['color']) ? $this->element['color'] : '#6f6f6f';
+		}
+		
+		return $return;
 	}
 
 }
