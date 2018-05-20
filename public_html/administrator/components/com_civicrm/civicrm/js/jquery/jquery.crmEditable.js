@@ -18,7 +18,7 @@
       $row = this.first().closest('.crm-entity');
       ret.entity = $row.data('entity') || $row[0].id.split('-')[0];
       ret.id = $row.data('id') || $row[0].id.split('-')[1];
-      ret.action = $row.data('action') || 'create';
+      ret.action = $row.data('action') || 'setvalue';
 
     if (!ret.entity || !ret.id) {
       return false;
@@ -107,10 +107,10 @@
 
       var settings = {
         tooltip: $i.data('tooltip') || ts('Click to edit'),
-        placeholder: $i.data('placeholder') || '<i class="crm-i fa-pencil crm-editable-placeholder"></i>',
+        placeholder: $i.data('placeholder') || '<span class="crm-editable-placeholder">' + ts('Click to edit') + '</span>',
         onblur: 'cancel',
-        cancel: '<button type="cancel"><i class="crm-i fa-times"></i></button>',
-        submit: '<button type="submit"><i class="crm-i fa-check"></i></button>',
+        cancel: '<button type="cancel"><span class="ui-icon ui-icon-closethick"></span></button>',
+        submit: '<button type="submit"><span class="ui-icon ui-icon-check"></span></button>',
         cssclass: 'crm-editable-form',
         data: getData,
         onreset: restoreContainer
@@ -127,7 +127,7 @@
       }
       $i.addClass('crm-editable-enabled');
 
-      function callback(value, settings) {
+      $i.editable(function(value, settings) {
         $i.addClass('crm-editable-saving');
         var
           info = $i.crmEditableEntity(),
@@ -159,17 +159,13 @@
               var options = optionsCache[$el.data('optionsHashKey')];
               value = options && options[value] ? options[value] : '';
             }
-            $el.trigger('crmFormSuccess', [value]);
+            $el.trigger('crmFormSuccess');
             editableSettings.success.call($el[0], info.entity, info.field, value, data, settings);
           })
           .fail(function(data) {
             editableSettings.error.call($el[0], info.entity, info.field, value, data);
           });
-      }
-
-      CRM.loadScript(CRM.config.resourceBase + 'packages/jquery/plugins/jquery.jeditable.min.js').done(function() {
-        $i.editable(callback, settings);
-      });
+      }, settings);
 
       // CRM-15759 - Workaround broken textarea handling in jeditable 1.7.1
       $i.click(function() {
@@ -240,5 +236,9 @@
 
     });
   };
+
+  $(document).on('crmLoad', function(e) {
+    $('.crm-editable', e.target).crmEditable();
+  });
 
 })(jQuery, CRM._);

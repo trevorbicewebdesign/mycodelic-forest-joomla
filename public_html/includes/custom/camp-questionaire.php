@@ -41,8 +41,11 @@ $message .= $_POST['form']['camp_contribution_textarea']."
 ";
 $message .= " ";
 	
-
-	$token = 'xoxp-210734806581-210559729555-339562354386-23221f85ba6756a31cbd5e0ddf3f38e0';
+	$plugin = JPluginHelper::getPlugin('system', 'slack_integration');
+	$params = new JRegistry($plugin->params);//Joomla 1.6 Onward
+	$token = $params->get('token');
+	
+	die($token);
 			
 	$ch = curl_init("https://slack.com/api/chat.postMessage");
 	$data = http_build_query([
