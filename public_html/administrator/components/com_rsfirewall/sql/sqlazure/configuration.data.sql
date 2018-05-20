@@ -21,6 +21,9 @@ INSERT INTO [#__rsfirewall_configuration] ([name], [value], [type]) VALUES
 ('verify_emails', '0', 'int'),
 ('offset', '300', 'int'),
 ('request_timeout', '0', 'int'),
+('max_retries', '10', 'int'),
+('check_md5', '1', 'int'),
+('retries_timeout', '10', 'int'),
 ('log_system_check', '0', 'int'),
 ('enable_extra_logging', '0', 'int'),
 ('enable_backend_captcha', '0', 'int'),
@@ -46,7 +49,7 @@ INSERT INTO [#__rsfirewall_configuration] ([name], [value], [type]) VALUES
 ('folder_permissions', '755', 'int'),
 ('abusive_ips', '0', 'int'),
 ('ipv4_whois', 'http://whois.domaintools.com/{ip}', 'text'),
-('ipv6_whois', '', 'text'),
+('ipv6_whois', 'http://whois.domaintools.com/{ip}', 'text'),
 ('system_check_last_run', '', 'text'),
 ('deny_referer', '', 'text'),
 ('check_proxy_ip_headers', 'HTTP_X_REAL_IP\nHTTP_CLIENT_IP\nHTTP_TRUE_CLIENT_IP\nHTTP_X_FWD_IP_ADDR\nHTTP_X_FORWARDED_FOR\nHTTP_X_FORWARDED\nHTTP_FORWARDED_FOR\nHTTP_FORWARDED\nHTTP_VIA\nHTTP_X_COMING_FROM\nHTTP_COMING_FROM\nHTTP_CF_CONNECTING_IP\nHTTP_INCAP_CLIENT_IP', 'array-text');

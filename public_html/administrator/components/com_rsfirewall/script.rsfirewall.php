@@ -779,9 +779,9 @@ class com_rsfirewallInstallerScript
 				<b class="install-not-ok">Error installing!</b>
 				<?php } ?>
 			</p>
-			<h2>Changelog v2.11.14</h2>
+			<h2>Changelog v2.11.17</h2>
 			<ul class="version-history">
-				<li><span class="version-fixed">Fix</span> Changing a protected user could generate a Fatal Error if information was stored incorrectly in the database.</li>
+				<li><span class="version-fixed">Fix</span> An error would occur in the Blacklist/Whitelist area when adding a range or a CIDR IP in the lists.</li>
 			</ul>
 			<p>
 			<a class="btn btn-primary btn-large" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>

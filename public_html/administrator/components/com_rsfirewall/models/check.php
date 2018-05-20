@@ -1483,7 +1483,7 @@ class RsfirewallModelCheck extends JModelLegacy
 		// Load MD5 signatures
 		$file = JPATH_ADMINISTRATOR . self::SIGS_DIR . '/php.csv';
 		
-		if (file_exists($file) && is_readable($file))
+		if (file_exists($file) && is_readable($file) && $this->getConfig()->get('check_md5'))
 		{
 			$lines = file($file, FILE_IGNORE_NEW_LINES);
 			foreach ($lines as $line)

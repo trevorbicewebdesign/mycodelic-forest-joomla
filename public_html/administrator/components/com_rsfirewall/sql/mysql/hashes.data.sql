@@ -298,4 +298,8 @@ INSERT IGNORE INTO `#__rsfirewall_hashes` (`file`, `hash`, `type`) VALUES
 ('administrator/index.php', '0a7dbe91d13815d631a35bce7cd37500', '3.8.6'),
 ('index.php', 'f0574964d073eaca66212ca4cce708ca', '3.8.6'),
 ('plugins/authentication/joomla/joomla.php', '51f7c0e479a55b081896fa411d9d28ee', '3.8.6'),
-('plugins/user/joomla/joomla.php', 'f15a19ea4c56cb6fa761e4ab4ed1773f', '3.8.6');
+('plugins/user/joomla/joomla.php', 'f15a19ea4c56cb6fa761e4ab4ed1773f', '3.8.6'),
+('administrator/index.php', '0a7dbe91d13815d631a35bce7cd37500', '3.8.7'),
+('index.php', 'f0574964d073eaca66212ca4cce708ca', '3.8.7'),
+('plugins/authentication/joomla/joomla.php', '51f7c0e479a55b081896fa411d9d28ee', '3.8.7'),
+('plugins/user/joomla/joomla.php', '3bd61d302ded39ebc1534841a8e7967b', '3.8.7');

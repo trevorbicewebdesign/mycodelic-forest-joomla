@@ -119,6 +119,9 @@ RSFirewall.Database.Check = {
 
 /* System */
 RSFirewall.System = {};
+RSFirewall.Retries = 0;
+RSFirewall.MaxRetries = 10;
+RSFirewall.RetryTimeout = 10;
 RSFirewall.System.Check = {
 	unhide           : function (item) {
 		return RSFirewall.$(item).removeClass('com-rsfirewall-hidden');
@@ -312,6 +315,28 @@ RSFirewall.System.Check = {
 				RSFirewall.addLoading(currentResult);
 			},
 			error     : function (jqXHR, textStatus, errorThrown) {
+				if (currentStep == 'checkSignatures')
+				{
+					// Retry after 10 seconds if the server firewall interfered
+					// Max 10 retries
+					if (RSFirewall.Retries < RSFirewall.MaxRetries)
+					{
+						RSFirewall.Retries++;
+						currentResult.html(Joomla.JText._('COM_RSFIREWALL_ERROR_CHECK_RETRYING'));
+						setTimeout(function () {
+							if (typeof RSFirewall.next_file != 'undefined')
+							{
+								RSFirewall.System.Check.stepCheck(index, {'file': RSFirewall.next_file});
+							}
+							else
+							{
+								RSFirewall.System.Check.stepCheck(index);
+							}
+						}, parseFloat(RSFirewall.RetryTimeout * 1000));
+						
+						return;
+					}
+				}
 				currentResult.addClass('com-rsfirewall-error');
 				currentResult.html(Joomla.JText._('COM_RSFIREWALL_ERROR_CHECK') + jqXHR.status + ' ' + errorThrown);
 
@@ -837,6 +862,8 @@ RSFirewall.System.Check = {
 				var next_file = json.data.next_file;
 				var next_file_stripped = json.data.next_file_stripped;
 				result.text(Joomla.JText._('COM_RSFIREWALL_PLEASE_WAIT_WHILE_BUILDING_FILE_STRUCTURE').replace('%s', next_file_stripped));
+				
+				RSFirewall.next_file = next_file;
 
 				if (RSFirewall.requestTimeOut.Seconds != 0) {
 					setTimeout(function () {
