@@ -1,0 +1,79 @@
+/* (C) 2007 YOOtheme.com */
+
+
+
+div.default div.tbworks-accordion {
+	padding: 1px;
+	/* border: 1px solid #C8C8C8; */
+
+}
+div.default div.tbworks-accordion dt.toggler {
+	height: 37px;
+	line-height: 37px;
+	text-indent: 9px;
+	
+	cursor: pointer;
+	
+	border:0px;
+	margin:0px !important;
+	background: 98% 50% repeat;
+	
+	font-size: 14px;
+	font-weight: bold;
+	color:#567a89 !important;
+	font-family: 'Open Sans', sans-serif;
+}
+div.default div.tbworks-accordion dt.toggler div {
+	padding-left:5px;	
+	background:url(images/accordian-inactive.png) 96% 14px no-repeat;
+}
+div.default div.tbworks-accordion dt.active {
+	background: url(/templates/bloora/images/bkgrnd-rpt.jpg) 98% 50% repeat;	
+	color:#63781d;
+}
+div.default div.tbworks-accordion dt.active div{
+	background:url(images/accordian-active.png) 96% 14px no-repeat;
+	
+}
+div.default div.tbworks-accordion dt:hover.toggler, div.default div.tbworks-accordion dt.sfhover {
+}
+div.default div.tbworks-accordion dd div.article {
+	padding: 10px 20px 10px 20px;
+	border:0px;
+	
+}
+div.default div.tbworks-accordion .shadow {
+	background:url(images/accordion-shadow.png) 50% 0px no-repeat !important;
+	min-height:5px;
+	overflow:hidden;
+	background-size:100% 14px !important;
+}
+div.default div.tbworks-accordion .trans {
+
+}
+div.default div.tbworks-accordion dd {
+	
+}
+div.default div.tbworks-accordion dd.last div.article {
+	border-bottom: none;
+	
+}
+div.default div.tbworks-accordion .content {
+	padding-top:0px;
+	padding-bottom:4px;	
+	border:0px;
+	margin-bottom:5px;
+	line-height:inherit;
+	
+	/*background:#ebe9e5;*/
+	background: url(images/accordion-shadow.png) no-repeat scroll 50% 0 #ebe9e5 !important;
+	background-size:100% 14px !important;
+	margin-left:auto !important;
+	margin-right:auto !important;	
+}
+
+div.default div.tbworks-accordion .content .article {
+	padding-left:14px;
+	padding-top:17px;
+	border:0px;
+}

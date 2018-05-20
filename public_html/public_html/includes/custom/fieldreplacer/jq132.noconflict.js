@@ -1,0 +1,1 @@
+jq132 = jQuery.noConflict( true );

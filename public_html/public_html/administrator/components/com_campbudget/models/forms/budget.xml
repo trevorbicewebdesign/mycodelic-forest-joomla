@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+	<fieldset name="details"
+		addfieldpath="/administrator/components/com_campbudget/models/fields">
+
+		<field name="id" type="text" default="0"
+			readonly="true" class="readonly"
+			label="JGLOBAL_FIELD_ID_LABEL" description="JGLOBAL_FIELD_ID_DESC" />
+		<field name="name" 
+			type="text"
+			class="input-xxlarge input-large-text"
+			size="40" 
+			label="Name"
+			description="" 
+			required="true" 
+		/>
+		<field
+			name			="burn_year"
+			type			="list"
+			class		="btn-group "
+			default		="1"
+			label		="Item Type"
+			description	="JGLOBAL_SHOW_TITLE_DESC">
+				<option value="2017">2017</option>
+				<option value="2016">2016</option>
+				<option value="2015">2015</option>
+				<option value="2014">2014</option>
+				<option value="2013">2013</option>
+				<option value="2012">2012</option>
+		</field>
+		<field name="short_desc" 
+			type="textarea"
+			class="input-xxlarge input-large-text"
+			size="40" 
+			label="Short Description"
+			description="" 
+			required="true" 
+		/>
+	</fieldset>
+
+</form>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="2.5" type="plugin" group="system" method="upgrade">
+	<name>TB Works - CSS Pie for Joomla</name>
+	<author>Trevor Bice Webdesign</author>
+	<creationDate>March 2014</creationDate>
+	<copyright>Copyright (C)2013 Trevor bice Webdesign. All rights reserved.</copyright>
+	<license>The MIT License (MIT)</license>
+	<authorEmail>trevorbicewebdesign@gmail.com</authorEmail>
+	<authorUrl>webdesign.trevorbice.com</authorUrl>
+	<version>1.0</version>
+	<description>
+		<![CDATA[
+		
+		<link rel="stylesheet" href="../media/tbworks/css/admin.css" type="text/css" />
+		<div id="extension-description">
+		<h1>CSS Pie</h1>
+		<p>PIE makes Internet Explorer 6-9 capable of rendering several of the most useful CSS3 features.</p>
+	
+		<hr/>
+		<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+				<td valign="top">
+				Brought to you by:<br/>
+				<a href="http://webdesign.trevorbice.com/" target="_blank">
+					<img src="../media/tbworks/images/tbwebdesignlogo.png"/>
+				</a>
+				</td>
+				<td>
+				</td>
+			</tr>
+		</table>
+
+		</div>
+		
+		]]>
+	</description>
+	<!--FILES TO INCLUDE -->
+	<languages folder="administrator/language/en-GB">
+		<language tag="en-GB">en-GB.plg_system_csspie.ini</language>
+	</languages>	
+	<media folder="media" destination="tbworks">
+		<folder>css</folder>
+		<folder>images</folder>
+	</media>
+	<files>
+		<filename plugin="csspie">csspie.php</filename>
+		<filename>index.html</filename>
+		<folder>assets</folder>
+	</files>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+			
+			</fieldset>
+		</fields>
+	</config>
+</extension>

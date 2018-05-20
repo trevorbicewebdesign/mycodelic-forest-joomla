@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension	type="module"	version="1.6.0"	client="site"	method="upgrade">
+	<name>TBWorks - Accordion</name>
+	<author>Trevor Bice Webdesign</author>
+	<creationDate>June 2013</creationDate>
+	<copyright>Copyright (C) 2002 - 2013 Trevor Bice</copyright>
+	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<authorEmail>trevorbicewebdesign@gmail.com</authorEmail>
+	<authorUrl>webdesign.trevorbice.com</authorUrl>
+	<version>1.0.0 build 101</version>
+	<description>
+		<![CDATA[<link rel="stylesheet" href="../modules/mod_tbworks_accordion/assets/admin.css" type="text/css" />
+			<script src="../modules/mod_tbworks_accordion/assets/admin.js" type="text/javascript"></script>
+			
+			<div id="extension-description">
+			<h1>Accordion Slider</h1>
+			<p>Simple javascript based accordion slider. Plug and Play styles, just copy into Theme folder or create your own.</p>
+			
+			<hr/>
+			<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+			<td valign="top">
+			Brought to you by:<br/>
+			<a href="http://webdesign.trevorbice.com/" target="_blank">
+			<img src="../media/tbworks/images/tbwebdesignlogo.png"/>
+			</a>
+			</td>
+			<td>
+			</td>
+			</tr>
+			</table>
+			
+			</div>]]>
+	</description>
+	<files>
+		<filename module="mod_tbworks_accordion">mod_tbworks_accordion.php</filename>
+		<filename>mod_tbworks_accordion.xml</filename>
+		<filename>lists.php</filename>
+		<filename>helper.php</filename>
+		<filename>index.html</filename>
+		<folder>fields</folder>
+		<folder>lists</folder>
+		<folder>themes</folder>
+		<folder>assets</folder>
+	</files>
+	<config>
+		<fields name="params">
+			<fieldset addfieldpath="modules/mod_tbworks_accordion/fields" name="basic">
+				<field default="" description="Please select a theme." label="Themes" name="theme" type="themeselect"/>
+				<field default="" description="Please select a Data Source." label="Data Source" name="datatype" type="dataselect"/>
+				<field name="catid" type="categoryselect" default="" multiple="true" label="Category" description="" />
+				<field name="open" type="list" label="Open on load"	description="Select which items are shown on load">
+					<option value="first">First</option>
+					<option value="all">All</option>
+					<option value="none">None</option>
+				</field>
+				<field name="animation_speed" type="text" label="Animation Speed" description="Enter the transition time in MS" default="400" />
+				<field name="multiple_open" type="radio" label="Allow multiple open" description="Allow multiple open items">
+					<option value="1">Yes</option>
+					<option value="0">No</option>
+				</field>
+				<field
+					name="order"
+					type="list"
+					label="Ordering"
+					description="Ordering options">
+					<option value="o_asc">Article Order</option>
+					<option value="c_dsc">Recently Added First</option>
+					<option value="m_dsc">Recently Modified First</option>
+					<option value="h_dsc">Most Popular</option>
+					<option value="rnd">Randomize</option>
+				</field>
+				<field
+					name="readmore"
+					type="list"
+					label="Read More"
+					description="Show/Hide the Read More button">
+					<option value="0">Hide</option>
+					<option value="1">Show</option>
+				</field>
+				<field
+					name="items"
+					type="text"
+					label="No. of Items"
+					description="Maximum no of items to display" />
+				<field
+					name="moduleclass_sfx"
+					type="text"
+					label="Module Class Suffix"
+					description="Module Class Suffix" />
+			</fieldset>
+			<fieldset name="advanced">
+				<field
+				name="cache"
+				type="list"
+				label="Caching"
+				description="Select whether to cache the content of this module">
+					<option value="1">Use global</option>
+					<option value="0">No caching</option>
+				</field>
+				<field
+				name="cache_time"
+				type="text"
+				label="Cache Time"
+				description="The time before the module is recached" />
+			</fieldset>
+		</fields>
+	</config>
+</extension>
