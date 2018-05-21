@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date		2018-01-25
+ * @version     4.14.0.3812
+ * @date		2018-05-16
  */
 
 defined('JPATH_BASE') or die;
@@ -23,7 +23,13 @@ foreach ($this->form->getFieldset($this->currentFieldset->name) as $field) :
 	<div class="shrules">
 	<div class="controls">
 		<?php
-		echo $field->input;
+        $fieldInput= $field->input;
+        $fieldInput = str_replace(
+                'onchange="sendPermissions.',
+                'onchange="shSendPermissions.',
+                $fieldInput
+        );
+		echo $fieldInput;
 		$element = $field->element;
 		if (!empty($element['additionaltext'])): ?>
 			<span class = "sh404sef-additionaltext"><?php echo (string) $element['additionaltext']; ?></span>

@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date		2018-01-25
+ * @version     4.14.0.3812
+ * @date		2018-05-16
  */
 
 /** ensure this file is being included by a parent file */

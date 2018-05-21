@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date        2018-01-25
+ * @version     4.14.0.3812
+ * @date        2018-05-16
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -147,6 +147,17 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 			return true;
 		}
 
+		// insert or update
+		$sourceUrl = Sh404sefHelperGeneral::getSefFromNonSef(
+			$sourceUrl
+		);
+		$sourceUrl = wbLTrim(
+			$sourceUrl,
+			JUri::root()
+		);
+		$sourceUrl = empty($sourceUrl) ? '/' : $sourceUrl;
+
+		// deleting an existing canonical
 		if (empty($canonicalTarget))
 		{
 			ShlDbHelper::delete(
@@ -160,15 +171,6 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 			return true;
 		}
 
-		// insert or update
-		$sourceUrl = Sh404sefHelperGeneral::getSefFromNonSef(
-			$sourceUrl
-		);
-		$sourceUrl = wbLTrim(
-			$sourceUrl,
-			JUri::root()
-		);
-		$sourceUrl = empty($sourceUrl) ? '/' : $sourceUrl;
 		$this->saveFromInput(
 			$sourceUrl,
 			$canonicalTarget,
@@ -407,7 +409,7 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 			$where[] = "LOWER(a.newurl)  LIKE '%lang=" . $this->_cleanForQuery(Sh404sefHelperLanguage::getUrlCodeFromTag($filters->filter_language)) . "%'";
 		}
 
-		if ($filters->filter_target_type != 'all')
+		if (!empty($filters->filter_target_type) && $filters->filter_target_type != 'all')
 		{
 			$where[] = 'a.target_type = ' . $this->_db->Quote($filters->filter_target_type);
 		}

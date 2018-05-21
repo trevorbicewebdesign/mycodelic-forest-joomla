@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date		2018-01-25
+ * @version     4.14.0.3812
+ * @date		2018-05-16
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -43,7 +43,7 @@ defined('sh404SEF_URLTYPE_404') or define('sh404SEF_URLTYPE_404', -2);
 defined('sh404SEF_URLTYPE_NONE') or define('sh404SEF_URLTYPE_NONE', -1);
 defined('sh404SEF_URLTYPE_AUTO') or define('sh404SEF_URLTYPE_AUTO', 0);
 defined('sh404SEF_URLTYPE_CUSTOM') or define('sh404SEF_URLTYPE_CUSTOM', 1);
-defined('sh404SEF_MAX_SEF_URL_LENGTH') or define('sh404SEF_MAX_SEF_URL_LENGTH', 200);
+defined('sh404SEF_MAX_SEF_URL_LENGTH') or define('sh404SEF_MAX_SEF_URL_LENGTH', 1900);
 
 defined('sh404SEF_HOMEPAGE_CODE') or define('sh404SEF_HOMEPAGE_CODE', 'index.php?' . md5('sh404SEF Homepage url code'));
 

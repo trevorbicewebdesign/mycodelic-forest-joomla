@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date        2018-01-25
+ * @version     4.14.0.3812
+ * @date        2018-05-16
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -183,6 +183,27 @@ abstract class Sh404sefFactory
 		if (is_null($_instance))
 		{
 			$_instance = new Sh404sefModelRedirector(
+				$uri,
+				self::getConfig(),
+				JFactory::getConfig()
+			);
+		}
+
+		return $_instance;
+	}
+
+	/**
+	 * Create and return an object to manage firewall rules.
+	 *
+	 * @param JUri $uri
+	 */
+	public static function &getWaf($uri = null)
+	{
+		static $_instance = null;
+
+		if (is_null($_instance))
+		{
+			$_instance = new Sh404sefModelWaf(
 				$uri,
 				self::getConfig(),
 				JFactory::getConfig()

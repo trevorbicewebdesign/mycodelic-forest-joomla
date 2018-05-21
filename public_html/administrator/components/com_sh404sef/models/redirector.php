@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date        2018-01-25
+ * @version     4.14.0.3812
+ * @date        2018-05-16
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -553,11 +553,6 @@ class Sh404sefModelRedirector
 		{
 			case Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_CUSTOM:
 
-				if (wbStartsWith($aliasRecord->alias, '~'))
-				{
-					// user entered a raw regular expression, we don't interfere
-					break;
-				}
 				// if there are wildcards, and the incoming request URL have some matches
 				// we can inject them in the redirect target
 				if (

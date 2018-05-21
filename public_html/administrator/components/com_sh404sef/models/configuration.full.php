@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.14.0.3812
+ * @date        2018-05-16
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -33,7 +33,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	 * When config will be saved to db, most of the code in this
 	 * model will be removed and basemodel should handle everything
 	 *
-	 * @param array $data   an array holding data to save
+	 * @param array $data an array holding data to save
 	 * @param       integer id the com_sh404sef component id in extension table
 	 *
 	 * @return integer id of created or updated record
@@ -151,8 +151,11 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 		}
 
 		// special processing for fields stored as arrays, but edited as strings
-		$fields = array('shSecOnlyNumVars', 'shSecAlphaNumVars', 'shSecNoProtocolVars', 'ipWhiteList', 'ipBlackList', 'uAgentWhiteList',
-		                'uAgentBlackList', 'analyticsExcludeIP');
+		$fields = array(
+			'shSecOnlyNumVars', 'shSecAlphaNumVars', 'shSecNoProtocolVars', 'ipWhiteList', 'ipBlackList', 'uAgentWhiteList',
+			'uAgentBlackList', 'analyticsExcludeIP',
+			'request_block_list'
+		);
 		foreach ($fields as $field)
 		{
 			if (isset($data[$field]))
@@ -305,6 +308,20 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 		$form->setValue('uAgentBlackList', null, implode("\n", $form->getValue('uAgentBlackList', null, array())));
 		// analytics
 		$form->setValue('analyticsExcludeIP', null, implode("\n", $form->getValue('analyticsExcludeIP', null, array())));
+
+		// URL blocl list
+		$form->setValue(
+			'request_block_list',
+			null,
+			implode(
+				"\n",
+				$form->getValue(
+					'request_block_list',
+					null,
+					array()
+				)
+			)
+		);
 
 		// read mobile params from the mobile plugin, not from the component config, which only has a copy
 		$plugin = JPluginHelper::getPlugin('system', 'shmobile');

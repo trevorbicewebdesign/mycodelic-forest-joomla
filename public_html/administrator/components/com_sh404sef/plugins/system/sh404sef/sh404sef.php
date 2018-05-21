@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.14.0.3812
+ * @date        2018-05-16
  */
 
 // no direct access
@@ -264,7 +264,7 @@ class plgSystemSh404sef extends JPlugin
 
 		// should we spend time on this?
 		$config = Sh404sefFactory::getConfig();
-		if (is_object($row))
+		if (is_object($row) && !empty($row->text))
 		{
 			$row->text = $this->searchOGPImage($row->text, $config, $context, $row);
 			if($config->autoBuildDescription)
@@ -272,9 +272,9 @@ class plgSystemSh404sef extends JPlugin
 				Sh404sefHelperMetadata::buildAutoDescription($context, $row->text, $params, $page);
 			}
 		}
-		else
+		else if(!is_object($row))
 		{
-			$row = $this->searchOGPImage($row, null, $config);
+			$row = $this->searchOGPImage($row, $config);
 			if($config->autoBuildDescription)
 			{
 				Sh404sefHelperMetadata::buildAutoDescription($context, $row, $params, $page);

@@ -1,7 +1,58 @@
                                sh404sef changelog                               
 
-                        (2018-01-25 12:34 - build #3783)                        
+                        (2018-05-16 17:20 - build #3812)                        
 
+
+
+--------------------------------------------------------------------------------
+ [ 2018-05-16 ] Version 4.14.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Added rule-based URL blocking, comes with default common
+             WordPress bots attacks rules. Fully customizable.
+
+    [chg]    Added a javascript console message if Facebook social buttons are
+             not initialized (likely blocked by browser policy such as
+             Firefox)
+    [chg]    Adjusted saving of sh404SEF access permissions in backend to
+             adapt to non-backward compatible changes in Joomla
+    [chg]    Added support for wildcards in aliases target for regular
+             expressions aliases
+    [chg]    301 redirect from Joomla SEF to sh404SEF now off by default.
+    [chg]    Added widgetkit shortcodes removal from automatically generated
+             descriptions.
+    [chg]    Stop using JException when trowing errors.
+    [chg]    Prevent fatal error in case of invalid errors being sent by
+             template/extensions to the sh404SEF error handler
+    [chg]    Reduced trace column database size, avoid errors on some mysql
+             servers.
+    [chg]    Added preview link for Canonical type aliases in Aliases manager
+    [chg]    Extended all URLs database columns to 2048 caracters
+
+    [bug]    Regular expressions in aliases not taken into account when having
+             a wildcard in the target redirect
+    [bug]    index.php might be added at the end of og:urls OGP URLs for some
+             K2 pages.
+    [bug]    Possible fatal error if automatic OGP image detection enabled and
+             article has empty content.
+    [bug]    Incorrect language code can sometimes be used when saving meta
+             data if 2 languages are installed with same main language code
+             but different URL language codes (eg en-GB + en-US).
+    [bug]    Incorrect language code can sometimes be used when manually
+             creating a non-SEF/SEF record if 2 languages are installed with
+             same main language code but different URL language codes (eg
+             en-GB + en-US).
+    [bug]    404 URLs may have an additional leading slash when recorded.
+    [bug]    Possible notice error on com_contact pages
+    [bug]    URL source recording database table was not updated to 2048
+             characters URL length
+    [bug]    Canonical links cannot be deleted from the URL manager, must use
+             the Aliases manager
+    [bug]    On first visit to the Aliases page, canonical aliases are not
+             displayed.
+    [bug]    Possible notice errors when generating automatically meta
+             description, when using some extensions
 
 
 --------------------------------------------------------------------------------

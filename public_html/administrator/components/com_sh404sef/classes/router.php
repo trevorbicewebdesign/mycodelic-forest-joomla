@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.14.0.3812
+ * @date        2018-05-16
  */
 
 // no direct access
@@ -243,6 +243,13 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		$originalPath = trim(Sh404sefHelperUrl::getOriginalPathFromUri($uri, JUri::base()), '/');
 		$originalUri = new JUri($originalUrl);
 		$originalUri->setPath($originalPath);
+
+		// check requests rejection rules
+		if (JFactory::getApplication()->isSite())
+		{
+			Sh404sefFactory::getWaf($uri)
+			               ->filter();
+		}
 		$this->_checkAliases($uri);
 		$this->_checkShurls($uri);
 	}
@@ -2073,7 +2080,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		// Create an error object if none supplied
 		if (empty($error))
 		{
-			$error = new JException('Not found', 404);
+			$error = new \Exception('Not found', 404);
 		}
 
 		// render document
@@ -2099,12 +2106,12 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	/**
 	 * Overrride for Joomla! default error page handler
 	 *
-	 * @param JException $error
+	 * @param \Exception $error
 	 */
 	public function sh404sefErrorPage($error)
 	{
 		// only handle 404 errors, defer to previous handler otherwise
-		$code = $error->getCode();
+		$code = is_callable(array($error, 'getCode')) ? $error->getCode() : 500;
 		if (404 != $code && !empty($this->joomlaErrorHandler) && ($this->joomlaErrorHandler['mode'] != 'callback' || !is_callable($this->joomlaErrorHandler['options'])))
 		{
 			JError::customErrorPage($error);
@@ -2114,9 +2121,11 @@ class Sh404sefClassRouterInternal extends JRouterSite
 
 		if (404 != $code && !empty($this->joomlaErrorHandler) && $this->joomlaErrorHandler['mode'] == 'callback' && is_callable($this->joomlaErrorHandler['options']))
 		{
-			if (!$error instanceof JException)
+			if (!$error instanceof \Exception)
 			{
-				$newError = new JException($error->getMessage(), $error->getCode());
+				$newMessage = is_callable($error, 'getMessage') ? $error->getMessage() : (string) $error;
+				$newCode = is_callable($error, 'getCode') ? $error->getCode() : 500;
+				$newError = new \Exception($newMessage, $newCode);
 			}
 			else
 			{
@@ -2187,7 +2196,13 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		// optionnally log the 404 details
 		$reqPath = $uri->getPath();
 		$basePath = JUri::base(true);
-		if (!empty($basePath) && strpos($reqPath, $basePath) === 0)
+		if (
+			// site is in root
+			empty($basePath)
+			||
+			// site in subfolder
+			(!empty($basePath) && strpos($reqPath, $basePath) === 0)
+		)
 		{
 			$reqPath = substr($reqPath, JString::strlen($basePath) + 1);
 		}

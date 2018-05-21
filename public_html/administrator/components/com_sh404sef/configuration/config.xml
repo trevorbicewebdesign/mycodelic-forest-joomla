@@ -125,7 +125,7 @@
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
         </field>
-        <field menu="hide" name="shRedirectJoomlaSefToSef" type="radio" class="btn-group" default="1"
+        <field menu="hide" name="shRedirectJoomlaSefToSef" type="radio" class="btn-group" default="0"
                label="COM_SH404SEF_REDIRECT_JOOMLA_SEF_TO_SEF" description="COM_SH404SEF_TT_REDIRECT_JOOMLA_SEF_TO_SEF">
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
@@ -1345,6 +1345,27 @@
                description="COM_SH404SEF_TT_UAGENT_BLACK_LIST" cols="60" rows="5"/>
     </fieldset>
     <!--end security fieldset-->
+
+    <!--start url_block_list fieldset-->
+    <fieldset
+            name="url_block_list"
+            label="COM_SH404SEF_URL_BLOCK_LIST_TITLE"
+            description=""
+            groupname="COM_SH404SEF_CONFIG_SEC">
+
+        <field menu="hide" name="request_block_list" type="textarea" default="" label="COM_SH404SEF_URL_BLOCK_LIST"
+               description="COM_SH404SEF_TT_URL_BLOCK_LIST" cols="20" rows="5"/>
+
+        <field menu="hide" name="request_block_list_action" type="list" default="error_404"
+               label="COM_SH404SEF_URL_BLOCK_LIST_ACTION"
+               description="COM_SH404SEF_TT_URL_BLOCK_LIST_ACTION">
+            <option value="error_none">COM_SH404SEF_URL_BLOCK_LIST_ACTION_NONE</option>
+            <option value="error_404">COM_SH404SEF_URL_BLOCK_LIST_ACTION_404</option>
+            <option value="error_403">COM_SH404SEF_URL_BLOCK_LIST_ACTION_403</option>
+        </field>
+
+    </fieldset>
+    <!--end url_block_list fieldset-->
     <!--start anti-floor fieldset-->
     <fieldset
             name="antiflood"
