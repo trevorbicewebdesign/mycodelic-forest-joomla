@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE install PUBLIC "-//Joomla! 1.6//DTD template 1.0//EN" "http://www.joomla.org/xml/dtd/1.6/template-install.dtd">
+<extension version="2.5" type="template" method="upgrade" client="site">
+	<name>Source3</name>
+	<version>1.0.0</version>
+	<creationDate>September, 24 2014</creationDate>
+	<author>Trevor Bice</author>
+	<authorEmail>trevorbicewebdesign@gmail.com</authorEmail>
+	<authorUrl>http://webdesign.trevorbice.com</authorUrl>
+	<copyright>Copyright (C), Trevor Bice Webdesign</copyright>
+	<license>license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
+	<t3>
+		<base>base-bs3</base>
+	</t3>
+	<description>
+		<![CDATA[
+		<div align="center">
+			<div class="alert alert-success" style="background-color:#DFF0D8;border-color:#D6E9C6;color: #468847;padding: 1px 0;">
+				<span style="color:#FF0000">Note: Source3 requires T3 plugin to be installed and enabled.</span>
+				<p> </p>
+				<p>Copyright 2004 - 2014 <a href='http://www.themehippo.com/' title='Visit themehippo.com!'>themehippo.com</a>.</p>
+			</div>
+			<style>table.adminform{width: 100%;}</style>
+		</div>
+		]]>
+	</description>
+	<files>
+		<filename>component.php</filename>
+		<filename>favicon.ico</filename>
+		<filename>index.html</filename>
+		<filename>index.php</filename>
+		<filename>thememagic.xml</filename>
+		<filename>templateInfo.php</filename>
+		<filename>templateHook.php</filename>
+		<filename>template_preview.png</filename>
+		<filename>template_thumbnail.png</filename>
+		<filename>templateDetails.xml</filename>
+		<filename>helper.php</filename>
+		<filename>offline.php</filename>
+		<filename>error.php</filename>
+		<folder>etc</folder>
+		<folder>fonts</folder>
+		<folder>html</folder>
+		<folder>css</folder>
+		<folder>js</folder>
+		<folder>less</folder>
+		<folder>language</folder>
+		<folder>hippo-shortcodes</folder>
+		<folder>roksprocket</folder>
+		<folder>language</folder>
+		<folder>images</folder>
+		<folder>tpls</folder>
+	</files>
+	
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.tpl_mycodelic.ini</language>
+		<language tag="en-GB">en-GB/en-GB.tpl_mycodelic.sys.ini</language>
+	</languages>
+
+	<positions>
+		<position>languageswitcherload</position>
+		<position>social-icon</position>
+		
+		<position>top_drawer</position>
+		<position>top_drawer-a</position>
+		<position>top_drawer-b</position>
+		<position>top_drawer-c</position>
+		<position>top_drawer-d</position>
+		<position>top_drawer-e</position>
+		<position>top_drawer-f</position>
+		<position>top_drawer-g</position>
+		
+		<position>th-login</position>
+		<position>logo</position>
+		<position>head-search</position>
+		<position>mainnav</position>
+		<position>slideshow</position>
+		
+		<position>spotlight</position>
+		
+		<position>inner-header</position>
+		<position>header-right</position>
+		
+		<position>showcase-left</position>
+		<position>showcase-right</position>
+		
+		<position>content-top</position>
+		<position>content-bottom</position>
+		
+		<position>page_title</position>
+		<position>top-feature</position>
+		<position>navhelper</position>
+		<position>breadcrumbs</position>
+		<position>off-canvas</position>
+		
+		<position>sidebar-a</position>
+		<position>sidebar-b</position>
+		
+		<position>mast-col</position>
+		<position>client</position>
+
+		<position>features-intro-1</position>
+		
+		<position>position-1</position>
+		<position>position-2</position>
+		<position>position-3</position>
+		<position>position-4</position>
+		<position>position-5</position>
+		<position>position-6</position>
+		<position>position-7</position>
+		<position>position-8</position>
+		<position>position-9</position>
+		<position>position-10</position>
+
+		<position>mainbottom</position>
+		<position>mainbottom-a</position>
+		<position>mainbottom-b</position>
+		<position>mainbottom-c</position>
+		<position>mainbottom-d</position>
+		<position>mainbottom-e</position>
+		<position>mainbottom-f</position>
+		<position>mainbottom-g</position>
+		
+		<position>maintop</position>
+		<position>maintop-a</position>
+		<position>maintop-b</position>
+		<position>maintop-c</position>
+		<position>maintop-d</position>
+		<position>maintop-e</position>
+		<position>maintop-f</position>
+		<position>maintop-g</position>
+		
+		<position>footer</position>
+		<position>footer-0</position>
+		<position>footer-1</position>
+		<position>footer-2</position>
+		<position>footer-3</position>
+		<position>footer-4</position>
+		<position>footer-5</position>
+		<position>footer-6</position>
+		
+		<position>footer-right</position>
+		<position>debug</position>
+	</positions>
+
+	<config>
+		<fields name="params" addfieldpath="/plugins/system/t3/includes/depend">
+
+			<!-- Sample for add or disable template parameters -->
+			<!--fieldset name="menu_params" label="T3_PARAMS_MEGAMENU">
+				<field name="group_disable" type="t3depend" function="@group">
+					<option for="menu_as_bg" value="no">menu_as_bg</option>
+				</field>
+			</fieldset-->
+
+			<fieldset name="purity_iii_params" label="TPL_EXTENDED_TAB_LABEL" description="TPL_EXTENDED_TAB_LABEL">
+
+				<field name="tpl_article_info_datetime_format" type="list" default="d M Y"
+							 global="1"
+							 label="TPL_ARTICLE_INFO_DATETIME_FORMAT_LABEL"
+							 description="TPL_ARTICLE_INFO_DATETIME_FORMAT_DESC">
+					<option value="d M Y">TPL_DATE_SHORT</option>
+					<option value="d F Y">TPL_DATE_FULL_MONTH</option>
+					<option value="l, d F Y">TPL_DATE_FULL</option>
+				</field>
+
+			</fieldset>
+			
+		</fields>
+	</config>
+</extension>
