@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:35:38
+<?php /* Smarty version 2.6.30, created on 2018-06-10 12:07:58
          compiled from CRM/Campaign/Form/addCampaignToComponent.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Campaign/Form/addCampaignToComponent.tpl', 1, false),array('block', 'ts', 'CRM/Campaign/Form/addCampaignToComponent.tpl', 30, false),array('function', 'help', 'CRM/Campaign/Form/addCampaignToComponent.tpl', 19, false),array('modifier', 'crmAddClass', 'CRM/Campaign/Form/addCampaignToComponent.tpl', 23, false),)), $this); ?>

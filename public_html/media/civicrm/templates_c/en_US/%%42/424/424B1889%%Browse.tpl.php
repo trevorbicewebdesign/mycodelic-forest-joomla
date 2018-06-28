@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:35:38
+<?php /* Smarty version 2.6.30, created on 2018-06-10 12:07:58
          compiled from CRM/Mailing/Page/Browse.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Mailing/Page/Browse.tpl', 1, false),array('block', 'crmButton', 'CRM/Mailing/Page/Browse.tpl', 40, false),array('block', 'ts', 'CRM/Mailing/Page/Browse.tpl', 40, false),array('function', 'counter', 'CRM/Mailing/Page/Browse.tpl', 64, false),array('function', 'cycle', 'CRM/Mailing/Page/Browse.tpl', 66, false),array('function', 'crmURL', 'CRM/Mailing/Page/Browse.tpl', 73, false),array('modifier', 'escape', 'CRM/Mailing/Page/Browse.tpl', 73, false),array('modifier', 'mb_truncate', 'CRM/Mailing/Page/Browse.tpl', 74, false),array('modifier', 'replace', 'CRM/Mailing/Page/Browse.tpl', 89, false),)), $this); ?>

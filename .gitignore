@@ -2,8 +2,7 @@
 *.LCK
 /database/civicrm_job_log.sql
 *.sql
-*.log
-
+*civicrm.settings.php
 /public_html/media/civicrm/upload/cache/
 /public_html/media/civicrm/ConfigAndLog/
 /public_html/media/civicrm/templates_c/Cached*

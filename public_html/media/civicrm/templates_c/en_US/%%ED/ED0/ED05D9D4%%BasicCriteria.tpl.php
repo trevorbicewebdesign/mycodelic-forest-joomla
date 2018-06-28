@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:34
+<?php /* Smarty version 2.6.30, created on 2018-06-07 00:07:05
          compiled from CRM/Contact/Form/Search/BasicCriteria.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Search/BasicCriteria.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/Search/BasicCriteria.tpl', 30, false),array('modifier', 'crmAddClass', 'CRM/Contact/Form/Search/BasicCriteria.tpl', 79, false),)), $this); ?>

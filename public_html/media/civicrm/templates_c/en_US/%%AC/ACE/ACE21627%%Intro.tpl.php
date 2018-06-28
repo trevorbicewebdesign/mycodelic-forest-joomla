@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:34
+<?php /* Smarty version 2.6.30, created on 2018-06-07 00:07:05
          compiled from CRM/Contact/Form/Search/Intro.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Search/Intro.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/Search/Intro.tpl', 39, false),array('function', 'crmURL', 'CRM/Contact/Form/Search/Intro.tpl', 32, false),array('function', 'help', 'CRM/Contact/Form/Search/Intro.tpl', 40, false),)), $this); ?>
