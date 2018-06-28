@@ -39,7 +39,7 @@
 .dropdown-menu {
   padding: 0;
   min-width: 200px;
-	background:			rgba(0,0,0,.5);
+
   // Dividers (basically an hr) within the dropdown
   .divider {
     margin: 0;
@@ -65,9 +65,6 @@
   &:focus {
 
   }
-}
-.dropdown-menu > li {
-	width:		100%;
 }
 
 // Active state
@@ -132,7 +129,7 @@
 // Base class
 // ----------
 .nav {
-	text-align:			center;
+	text-align:			center !important;
   // Nav Items
   > li {
     > a {
@@ -221,7 +218,7 @@
   //End
 }
 
-.tab-content { 
+.tab-content {
   padding: 10px;
   border: 1px solid @t3-border-color;
   border-top: 0;
@@ -232,13 +229,8 @@
 // -----
 .nav-pills {
   > li {
-	 float:		none; 
-	
+	float:		none;
     // Links rendered as pills
-    li {
-	  width:		100%; 
-	 
-    }
     > a {
     }
 

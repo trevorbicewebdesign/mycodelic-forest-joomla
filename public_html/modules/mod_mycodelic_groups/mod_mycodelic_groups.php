@@ -10,22 +10,55 @@ $apiParams = array(
   'email' => $_POST['form']['email']
  
 );
+
+// print_r($result);
+
+echo "<h3>Leadership</h3>";
 $result = civicrm_api3('Contact', 'get', array(   
   'return' => "id",   
   'filter.group_id' => array(0 => 11)
 ));
-foreach($result as $index=>$val){
-	print_r($val);
+foreach($result['values'] as $index=>$val){
 	$apiParams = array(
 	  'id' => $val['contact_id']
 	);
 	if ($api->Contact->Get($apiParams)) {
 	  //each key of the result array is an attribute of the api
 		$civiUser = $api->lastResult->values[0];
-	
 	}
-	print_r($civiUser->display_name);
-	echo "<br/>";
+	echo "<div class='col-lg-3'>".$civiUser->display_name."</div>";	
+}
+
+echo "<h3>2018</h3>";
+$result = civicrm_api3('Contact', 'get', array(   
+  'return' => "id",   
+  'filter.group_id' => array(0 => 9)
+));
+foreach($result['values'] as $index=>$val){
+	$apiParams = array(
+	  'id' => $val['contact_id']
+	);
+	if ($api->Contact->Get($apiParams)) {
+	  //each key of the result array is an attribute of the api
+		$civiUser = $api->lastResult->values[0];
+	}
+	echo "<div class='col-lg-3'>".$civiUser->display_name."</div>";	
+}
+
+echo "<h3>Newbiews</h3>";
+$result = civicrm_api3('Contact', 'get', array(   
+  'return' => "id",   
+  'filter.group_id' => array(0 => 7)
+));
+foreach($result['values'] as $index=>$val){
+	$apiParams = array(
+	  'id' => $val['contact_id']
+	);
+	if ($api->Contact->Get($apiParams)) {
+	  //each key of the result array is an attribute of the api
+		$civiUser = $api->lastResult->values[0];
+	}
+	echo "<div class='col-lg-3'>".$civiUser->display_name."</div>";	
 }
 
 ?>
