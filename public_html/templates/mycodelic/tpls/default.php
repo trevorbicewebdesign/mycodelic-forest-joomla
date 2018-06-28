@@ -12,7 +12,6 @@
  *------------------------------------------------------------------------------
  */
 
-
 defined('_JEXEC') or die;
 ?>
 
@@ -27,6 +26,43 @@ defined('_JEXEC') or die;
 	$this->addCss('layouts/home-template');
 	?>
 	
+<link href="https://fonts.googleapis.com/css?family=Titan+One" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Sedgwick+Ave+Display" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Megrim" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Goblin+One" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Flavors" rel="stylesheet">
+<style>
+#parallax-1 {
+	background-image: 	url(/templates/mycodelic/images/34106547_10155519758463372_2974331639221452800_o.jpg);
+	background-size:	100% auto;
+	
+	min-height:		100vh;	
+	background-attachment:fixed;
+}
+#parallax-2 {
+	background-image: 	url(/templates/mycodelic/images/screen-shot-2013-08-26-at-1-06-50-am.png);
+	background-size:	100% auto;
+	
+	height:			50vh;	
+	background-attachment:fixed;
+}
+#logo-parallax {
+	position:			relative;
+	margin-top:		20vh;
+	max-width:		50vw;
+	-webkit-filter: 	drop-shadow( -5px -5px 15px #000 ); 
+            filter: 	drop-shadow( -5px -5px 15px #000 );	
+}
+#parallax-2 #logo-parallax {
+	position:			relative;
+	margin-top:		10vh;
+	max-width:		25vw;
+	-webkit-filter: 	drop-shadow( -5px -5px 15px #000 ); 
+            filter: 	drop-shadow( -5px -5px 15px #000 );
+}
+</style>
+    
+	
 </head>
 <body id="home-template">
 
@@ -35,12 +71,27 @@ defined('_JEXEC') or die;
 		<div id="tbw-pagetop"> <!-- Need this wrapper for off-canvas menu. Remove if you don't use of-canvas -->
 			<div class="pagetop-wrapper">
 				<div class="pagetop-wrapper2" >
-					<?php //$this->loadBlock('home-header') ?>	
-					<?php //$this->loadBlock('slideshow') ?>
+					<?php $this->loadBlock('top_drawer') ?>	
+					<?php $this->loadBlock('slideshow') ?>
 				</div>
-				<div class="mountains">
-					<img src="/templates/mycodelic/images/mt.png" width="1500" height="143" >
+				<?php $app = JFactory::getApplication();
+				$menu = $app->getMenu();
+				if ($menu->getActive() == $menu->getDefault( 'en-GB' )) :
+					
+				
+				?>
+				<a href="/">
+				<div id="parallax-1" data-stellar-background-ratio="0.5" data-stellar-vertical-offset="0">
+					<img id="logo-parallax" src="/templates/mycodelic/images/Mycodelic-Forest-logo_white.svg" style=""  data-stellar-ratio=".8" />
 				</div>
+				</a>
+				<?php else: ?>
+				<a href="/">
+				<div id="parallax-2" data-stellar-background-ratio="0.5" data-stellar-vertical-offset="0">
+					<img id="logo-parallax" src="/templates/mycodelic/images/Mycodelic-Forest-logo_white.svg" style=""  data-stellar-ratio=".8" />
+				</div>
+				</a>
+				<?php endif; ?>
 			</div>
 		</div>
 		
@@ -60,7 +111,13 @@ defined('_JEXEC') or die;
 		</div>
 	</div>
 </div>
+<script src="/templates/mycodelic/js/jquery.stellar.js"></script>
+<script> 
 
-</body>
+jQuery.stellar({
+    horizontalScrolling: false,
+    responsive: true
+});
+</script>
 </body>
 </html>

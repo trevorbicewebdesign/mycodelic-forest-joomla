@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE install PUBLIC "-//Joomla! 1.6//DTD template 1.0//EN" "http://www.joomla.org/xml/dtd/1.6/template-install.dtd">
 <extension version="2.5" type="template" method="upgrade" client="site">
-	<name>Source3</name>
+	<name>Mycodelic</name>
 	<version>1.0.0</version>
-	<creationDate>September, 24 2014</creationDate>
+	<creationDate>May, 30 2018</creationDate>
 	<author>Trevor Bice</author>
 	<authorEmail>trevorbicewebdesign@gmail.com</authorEmail>
 	<authorUrl>http://webdesign.trevorbice.com</authorUrl>
@@ -16,7 +16,7 @@
 		<![CDATA[
 		<div align="center">
 			<div class="alert alert-success" style="background-color:#DFF0D8;border-color:#D6E9C6;color: #468847;padding: 1px 0;">
-				<span style="color:#FF0000">Note: Source3 requires T3 plugin to be installed and enabled.</span>
+				<span style="color:#FF0000">Note: Mycodelic requires T3 plugin to be installed and enabled.</span>
 				<p> </p>
 				<p>Copyright 2004 - 2014 <a href='http://www.themehippo.com/' title='Visit themehippo.com!'>themehippo.com</a>.</p>
 			</div>
