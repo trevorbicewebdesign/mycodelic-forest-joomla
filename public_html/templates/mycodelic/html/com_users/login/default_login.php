@@ -39,12 +39,7 @@ JHtml::_('behavior.keepalive');
 	<form action="<?php echo JRoute::_('index.php?option=com_users&task=user.login'); ?>" method="post" class="form-horizontal">
 
 		<fieldset class="">
-			<span class="sourcecoast login"><div class="row-fluid"><div class="pull-left intro">Login With </div><div class="social-login facebook jfbcLogin pull-left">
-				<a class="sc_fblogin" href="javascript:void(0)" onclick="jfbc.login.provider('facebook');">
-				<img src="/media/sourcecoast/images/provider/facebook/icon_label.png" alt="Login With Facebook" title="Login With Facebook"></a>
-				</div></div>
-			</span>
-			<p></p>
+			
 			<div class="control-group">
 				<div class="controls">
 					<input name="username" id="username" value="" class="validate-username required" size="25" required="" aria-required="true" autofocus="" type="text" placeholder="Username">
