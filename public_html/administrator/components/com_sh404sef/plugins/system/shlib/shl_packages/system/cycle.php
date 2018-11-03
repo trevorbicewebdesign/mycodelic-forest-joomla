@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date				2018-01-15
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // no direct access
@@ -37,7 +37,7 @@ class ShlSystem_Cycle
 	 * @param int $step index increment between each value to be returned
 	 * @param int $start if not null, numeric index in array of value to start with
 	 * @param array $values array of values to cycle through
-	 * @return ShlSystem_Cycle the cycler object
+	 * @return \ShlSystem_Cycle the cycler object
 	 */
 	public static function getInstance($id, $step = 1, $start = null, $values = array(true, false))
 	{

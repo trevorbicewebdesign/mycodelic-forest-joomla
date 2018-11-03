@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date		2018-01-15
+ * @version     0.4.0.678
+ * @date		2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -50,7 +50,7 @@ class ShlHtmlModal_helper
 		$opt['fxResizeDuration'] = (isset($params['fxResizeDuration'])) ? $params['fxResizeDuration'] : null;
 		$opt['fxContentDuration'] = (isset($params['fxContentDuration'])) ? $params['fxContentDuration'] : null;
 
-		$options = ShlSystem_Convert::arrayToJSObject($opt);
+		$options = \ShlSystem_Convert::arrayToJSObject($opt);
 
 		$options = substr($options, 0, 1) == '{' ? substr($options, 1) : $options;
 		$options = substr($options, -1) == '}' ? substr($options, 0, -1) : $options;

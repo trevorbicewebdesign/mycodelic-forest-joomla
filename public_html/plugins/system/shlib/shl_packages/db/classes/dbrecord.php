@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date				2018-01-15
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -16,8 +16,6 @@ defined('_JEXEC') or die;
 /**
  *
  * Holds data for a database instance description
- *
- * @author yannick
  *
  */
 class ShlDbClass_Dbrecord {
@@ -47,7 +45,7 @@ class ShlDbClass_Dbrecord {
   public function __construct( $db, $name, $weight, $enableQueryCache, $tablesExclusionList, $enableForJoomla) {
 
     // decorates db instance with our simplified access methods
-    $this->db = new ShlDbClass( $db);
+    $this->db = new \ShlDbClass( $db);
     $this->db->queryCacheEnabled = $enableQueryCache;
     $this->db->instanceName = $name;
     $this->db->queryCacheEnabledForJoomla = $enableForJoomla;

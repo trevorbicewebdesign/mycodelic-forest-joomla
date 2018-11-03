@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -324,9 +324,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 				&& !preg_match('/(&|\?)lang=[a-zA-Z]{2,3}/iUu', $row->newurl)
 			)
 			{
-				$shTemp = explode('-', Sh404sefHelperLanguage::getDefaultLanguageTag());
-				$shLangTemp = $shTemp[0] ? $shTemp[0] : 'en';
-				$row->newurl .= '&lang=' . $shLangTemp;
+				$row->newurl .= '&lang=' . Sh404sefHelperLanguage::getDefaultLanguageSef();
 			}
 
 			// normalize the non-sef url representation, sorting query parts alphabetically

@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -22,7 +22,7 @@ class Com_Sh404sefInstallerScript
 	const MIN_JOOMLA_VERSION = '3.4.2';
 	const MAX_JOOMLA_VERSION = '4';
 
-	const MIN_SHLIB_VERSION = '0.3.0';
+	const MIN_SHLIB_VERSION = '0.3.1';
 	const MAX_SHLIB_VERSION = '';
 
 	private $_siteId               = '';
@@ -1859,28 +1859,28 @@ class Com_Sh404sefInstallerScript
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
         `cpt` INT(11) NOT NULL DEFAULT '0',
         `rank` INT(11) NOT NULL DEFAULT '0',
-        `oldurl` VARCHAR(255) NOT NULL DEFAULT '',
-        `newurl` VARCHAR(255) NOT NULL DEFAULT '',
+        `oldurl` VARCHAR(2048) NOT NULL DEFAULT '',
+        `newurl` VARCHAR(2048) NOT NULL DEFAULT '',
         `option` VARCHAR(255) NOT NULL DEFAULT '',
         `referrer_type` TINYINT(3) NOT NULL DEFAULT '0' COMMENT 'Used for 404, 0 = not set, 1 = external, 2 = internal',
         `dateadd` DATE NOT NULL DEFAULT '0000-00-00',
         `last_hit` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         PRIMARY KEY (`id`),
-        KEY `newurl` (`newurl`),
+        KEY `newurl` (`newurl` (190)),
         KEY `rank` (`rank`),
-        KEY `oldurl` (`oldurl`),
+        KEY `oldurl` (`oldurl` (190)),
         KEY `last_hit` (`last_hit`)
         ) DEFAULT CHARSET=utf8;",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_metas` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `newurl` VARCHAR(255) NOT NULL DEFAULT '',
+        `newurl` VARCHAR(2048) NOT NULL DEFAULT '',
         `metadesc` VARCHAR(512) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
         `metakey` VARCHAR(255) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT  '',
         `metatitle` VARCHAR(255) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
         `metalang` VARCHAR(30) DEFAULT '',
         `metarobots` VARCHAR(30) DEFAULT '',
-        `canonical` VARCHAR(255) DEFAULT '',
+        `canonical` VARCHAR(2048) DEFAULT '',
         `og_enable` TINYINT(3) NOT NULL DEFAULT '2',
         `og_type` VARCHAR(30) DEFAULT '',
         `og_image` VARCHAR(255) DEFAULT '',
@@ -1902,28 +1902,28 @@ class Com_Sh404sefInstallerScript
         `og_fax_number` VARCHAR(255) DEFAULT '',
         `og_enable_fb_admin_ids` TINYINT(3) NOT NULL DEFAULT '2',
         PRIMARY KEY (`id`),
-        KEY `newurl` (`newurl`)
+        KEY `newurl` (`newurl` (190))
         ) DEFAULT CHARSET=utf8;",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_aliases` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `newurl` VARCHAR(255) NOT NULL DEFAULT '',
-        `alias` VARCHAR(255) NOT NULL DEFAULT '',
+        `newurl` VARCHAR(2048) NOT NULL DEFAULT '',
+        `alias` VARCHAR(2048) NOT NULL DEFAULT '',
         `type` TINYINT(3) NOT NULL DEFAULT '0',
         `target_type` TINYINT(3) NOT NULL DEFAULT '0',
         `hits` INT(11) NOT NULL DEFAULT '0',
         `state` TINYINT(3) NOT NULL DEFAULT 1,
         `ordering` INT(11) NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`),
-        KEY `newurl` (`newurl`),
-        KEY `alias` (`alias`),
+        KEY `newurl` (`newurl` (190)),
+        KEY `alias` (`alias` (190)),
         KEY `type` (`type`),
         KEY `state` (`state`)
         ) DEFAULT CHARSET=utf8;",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_pageids` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `newurl` VARCHAR(1024) NOT NULL DEFAULT '',
+        `newurl` VARCHAR(2048) NOT NULL DEFAULT '',
         `pageid` VARCHAR(255) NOT NULL DEFAULT '',
         `type` TINYINT(3) NOT NULL DEFAULT '0',
         `hits` INT(11) NOT NULL DEFAULT '0',
@@ -1935,10 +1935,10 @@ class Com_Sh404sefInstallerScript
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_shurls` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `url` VARCHAR(1024) NOT NULL DEFAULT '',
-        `target` VARCHAR(333) NOT NULL DEFAULT '',
+        `url` VARCHAR(2048) NOT NULL DEFAULT '',
+        `target` VARCHAR(2048) NOT NULL DEFAULT '',
         `target_domain` VARCHAR(191) NOT NULL DEFAULT '',
-        `referrer` VARCHAR(191) NOT NULL DEFAULT '',
+        `referrer` VARCHAR(2048) NOT NULL DEFAULT '',
         `referrer_domain` VARCHAR(191) NOT NULL DEFAULT '',
         `user_agent` VARCHAR(191) NOT NULL DEFAULT '',
         `ip_address` VARCHAR(50) NOT NULL DEFAULT '',
@@ -1946,7 +1946,7 @@ class Com_Sh404sefInstallerScript
         `type` TINYINT(3) NOT NULL DEFAULT '0',
         PRIMARY KEY (`id`),
         KEY `url` (`url` (190)),
-        KEY `referrer` (`referrer`),
+        KEY `referrer` (`referrer` (190)),
         KEY `user_agent` (`user_agent`),
         KEY `ip_address` (`ip_address`),
         KEY `type` (`type`)
@@ -1954,18 +1954,18 @@ class Com_Sh404sefInstallerScript
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_aliases` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `url` VARCHAR(191) NOT NULL DEFAULT '',
-        `target` VARCHAR(333) NOT NULL DEFAULT '',
+        `url` VARCHAR(2048) NOT NULL DEFAULT '',
+        `target` VARCHAR(2048) NOT NULL DEFAULT '',
         `target_domain` VARCHAR(191) NOT NULL DEFAULT '',
-        `referrer` VARCHAR(191) NOT NULL DEFAULT '',
+        `referrer` VARCHAR(2048) NOT NULL DEFAULT '',
         `referrer_domain` VARCHAR(191) NOT NULL DEFAULT '',
         `user_agent` VARCHAR(191) NOT NULL DEFAULT '',
         `ip_address` VARCHAR(50) NOT NULL DEFAULT '',
         `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         `type` TINYINT(3) NOT NULL DEFAULT '0',
         PRIMARY KEY (`id`),
-        KEY `url` (`url`),
-        KEY `referrer` (`referrer`),
+        KEY `url` (`url` (190)),
+        KEY `referrer` (`referrer` (190)),
         KEY `user_agent` (`user_agent`),
         KEY `ip_address` (`ip_address`),
         KEY `type` (`type`)
@@ -1973,18 +1973,18 @@ class Com_Sh404sefInstallerScript
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_404s` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `url` VARCHAR(191) NOT NULL DEFAULT '',
-        `target` VARCHAR(333) NOT NULL DEFAULT '',
+        `url` VARCHAR(2048) NOT NULL DEFAULT '',
+        `target` VARCHAR(2048) NOT NULL DEFAULT '',
         `target_domain` VARCHAR(191) NOT NULL DEFAULT '',
-        `referrer` VARCHAR(191) NOT NULL DEFAULT '',
+        `referrer` VARCHAR(2048) NOT NULL DEFAULT '',
         `referrer_domain` VARCHAR(191) NOT NULL DEFAULT '',
         `user_agent` VARCHAR(191) NOT NULL DEFAULT '',
         `ip_address` VARCHAR(50) NOT NULL DEFAULT '',
         `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         `type` TINYINT(3) NOT NULL DEFAULT '0',
         PRIMARY KEY (`id`),
-        KEY `url` (`url`),
-        KEY `referrer` (`referrer`),
+        KEY `url` (`url` (190)),
+        KEY `referrer` (`referrer` (190)),
         KEY `user_agent` (`user_agent`),
         KEY `ip_address` (`ip_address`),
         KEY `type` (`type`)
@@ -1992,18 +1992,18 @@ class Com_Sh404sefInstallerScript
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_urls_src` (
 	`id` INT(11) NOT NULL AUTO_INCREMENT,
-        `url` VARCHAR(191) NOT NULL DEFAULT '',
-        `routed_url` VARCHAR(191) NOT NULL DEFAULT '',
+        `url` VARCHAR(2048) NOT NULL DEFAULT '',
+        `routed_url` VARCHAR(2048) NOT NULL DEFAULT '',
         `rank` INT(11) NOT NULL DEFAULT '0',
-        `source_url` VARCHAR(191) NOT NULL DEFAULT '',
-        `source_routed_url` VARCHAR(333) NOT NULL DEFAULT '',
-        `trace` VARCHAR(10000) NOT NULL DEFAULT '',
+        `source_url` VARCHAR(2048) NOT NULL DEFAULT '',
+        `source_routed_url` VARCHAR(2048) NOT NULL DEFAULT '',
+        `trace` VARCHAR(7000) NOT NULL DEFAULT '',
         `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
         PRIMARY KEY (`id`),
-        KEY `url` (`url`),
+        KEY `url` (`url` (190)),
         KEY `rank` (`rank`),
-        KEY `routed_url` (`routed_url`),
-        KEY `source_url` (`source_url`)
+        KEY `routed_url` (`routed_url` (190)),
+        KEY `source_url` (`source_url` (190))
         ) DEFAULT CHARSET=" . $this->charset . ";",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_keystore` (
@@ -2052,46 +2052,87 @@ class Com_Sh404sefInstallerScript
 		// get a db instance
 		$db = JFactory::getDBO();
 
-		/* version 3.4: added OpenGraph data columns to meta data table
-		 CREATE TABLE IF NOT EXISTS `#__sh404sef_metas` (
-		     `id` int(11) NOT NULL auto_increment,
-		     `newurl` varchar(255) NOT NULL default '',
-		     `metadesc` varchar(255) default '',
-		     `metakey` varchar(255) default  '',
-		     `metatitle` varchar(255) default '',
-		     `metalang` varchar(30) default '',
-		     `metarobots` varchar(30) default '',
-
-		     `og_enable` tinyint(3) NOT NULL DEFAULT '0',
-		     `og_type` varchar(30) default '',
-		     `og_image` varchar(255) default '',
-		     `og_enable_description` tinyint(3) NOT NULL DEFAULT '0',
-		     `og_enable_site_name` tinyint(3) NOT NULL DEFAULT '0',
-		     `og_site_name` varchar(255) default '',
-		     `fb_admin_ids` varchar(255) default '',
-		     `og_enable_location` tinyint(3) NOT NULL DEFAULT '0',
-		     `og_latitude` varchar(30) default '',
-		     `og_longitude` varchar(30) default '',
-		     `og_street_address` varchar(255) default '',
-		     `og_locality` varchar(255) default '',
-		     `og_postal_code` varchar(30) default '',
-		     `og_region` varchar(255) default '',
-		     `og_country_name` varchar(255) default '',
-		     `og_enable_contact` tinyint(3) NOT NULL DEFAULT '0',
-		     `og_email` varchar(255) default '',
-		     `og_phone_number` varchar(255) default '',
-		     `og_fax_number` varchar(255) default '',
-		     `og_enable_fb_admin_ids` tinyint(3) NOT NULL DEFAULT '0',
-		     `canonical` varchar(255) default '',
-		     PRIMARY KEY (`id`),
-		     KEY `newurl` (`newurl`)
-		 ) DEFAULT CHARSET=utf8;*/
+		$subQueries = array();
 
 		// when upgrading from older version, these values could be missing at the time of install
 		defined('SH404SEF_OPTION_VALUE_NO') or define('SH404SEF_OPTION_VALUE_NO', 0);
 		defined('SH404SEF_OPTION_VALUE_YES') or define('SH404SEF_OPTION_VALUE_YES', 1);
 		defined('SH404SEF_OPTION_VALUE_USE_DEFAULT') or define('SH404SEF_OPTION_VALUE_USE_DEFAULT', 2);
 
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_urls
+		// ------------------------------------------------------------------------------
+		$subqueries['#__sh404sef_urls'] = array();
+		if (method_exists($db, 'getTableFields'))
+		{
+			$columns = $db->getTableFields('#__sh404sef_urls');
+			$columns = empty($columns['#__sh404sef_urls']) ? array() : $columns['#__sh404sef_urls'];
+		}
+		else
+		{
+			$columns = $db->getTableColumns('#__sh404sef_urls');
+		}
+
+		// 4.7.0 new columns for URLs table
+		if (empty($columns['option']))
+		{
+			$subQueries['#__sh404sef_urls'][] = "add `option` varchar(255) NOT NULL DEFAULT ''";
+		}
+		if (empty($columns['referrer_type']))
+		{
+			$subQueries['#__sh404sef_urls'][] = "add `referrer_type` tinyint(3) NOT NULL DEFAULT '" . SH404SEF_OPTION_VALUE_NO . "'";
+		}
+
+		// upgrading to 4.7.0, we reset the hit counter of regular URLs.
+		// previous counts may/will be wrong because they are the result of 404s
+		// (for which hits were counted) turned into valid SEF (for which, up to now)
+		// hits were not counted.
+		// Thus we set to 0 all `cpt` fields for non-404 URLS (ie: automatic and custom).
+		// of course, we must do this only once. We detect this condition by looking for
+		// the referrer_type column in the table, which was introduced at the same time
+		// as the hit counting feature
+		if (empty($columns['referrer_type']))
+		{
+			try
+			{
+				$query = 'update ' . $db->qn('#__sh404sef_urls') . ' set ' . $db->qn('cpt') . ' = 0'
+					. ' where ' . $db->qn('newurl') . " <> ''";
+				$db->setQuery($query);
+				$db->query();
+				$error = $db->getErrorNum();
+				if (!empty($error))
+				{
+					throw new Exception($db->getErrorMsg());
+				}
+			}
+			catch (Exception $e)
+			{
+				JFactory::getApplication()
+				        ->enqueueMessage(
+					        'Error while upgrading the database : ' . $e->getMessage()
+					        . '. Sh404SEF will probably not operate properly. Please uninstall it, then try again after checking your database server setup. Contact us in case this happens again.'
+				        );
+			}
+		}
+
+		// 4.8.0 added last_hit column
+		if (empty($columns['last_hit']))
+		{
+			$subQueries['#__sh404sef_urls'][] = "add `last_hit` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00'";
+			$subQueries['#__sh404sef_urls'][] = "add index `last_hit` (`last_hit`)";
+		}
+
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_urls'][] = 'modify `oldurl` varchar(2048)';
+		$subQueries['#__sh404sef_urls'][] = 'DROP INDEX `oldurl`';
+		$subQueries['#__sh404sef_urls'][] = 'add index `oldurl` (`oldurl`(190))';
+		$subQueries['#__sh404sef_urls'][] = 'modify `newurl` varchar(2048)';
+		$subQueries['#__sh404sef_urls'][] = 'DROP INDEX `newurl`';
+		$subQueries['#__sh404sef_urls'][] = 'add index `newurl` (`newurl`(190))';
+
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_metas
+		// ------------------------------------------------------------------------------
 		// get list of columns
 		// platform 12.1
 		if (method_exists($db, 'getTableFields'))
@@ -2104,12 +2145,10 @@ class Com_Sh404sefInstallerScript
 			$columns = $db->getTableColumns('#__sh404sef_metas');
 		}
 
-		// build required statements
-		$subQueries = array();
 		$subqueries['#__sh404sef_metas'] = array();
 		if (empty($columns['canonical']))
 		{
-			$subQueries['#__sh404sef_metas'][] = "add `canonical` varchar(255) default ''";
+			$subQueries['#__sh404sef_metas'][] = "add `canonical` varchar(2048) default ''";
 		}
 
 		if (empty($columns['og_enable']))
@@ -2231,7 +2270,25 @@ class Com_Sh404sefInstallerScript
 			$subQueries['#__sh404sef_metas'][] = "add `google_publisher_url` varchar(255) default ''";
 		}
 
-		// some very old install don't have the 'type' or 'hits' columns in aliases table
+		// 4.10.1 allow utf8mb4
+		if ($this->hasUtf8mb4Support && class_exists('Sh404sefFactory') && version_compare(Sh404sefFactory::getConfig()->version, '4.10.1', 'lt'))
+		{
+			// updating
+			$subQueries['#__sh404sef_metas'][] = 'modify `metatitle` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
+			$subQueries['#__sh404sef_metas'][] = 'modify `metakey` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
+		}
+
+		// 4.13.0: expanded max meta description length from 255 to 512 chars
+		$subQueries['#__sh404sef_metas'][] = 'modify `metadesc` varchar(512) CHARACTER SET ' . $this->charset . ' collate ' . $this->collation . '';
+
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_metas'][] = 'modify `newurl` varchar(2048)';
+		$subQueries['#__sh404sef_metas'][] = 'DROP INDEX `newurl`';
+		$subQueries['#__sh404sef_metas'][] = 'add index `newurl` (`newurl`(190))';
+
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_aliases
+		// ------------------------------------------------------------------------------
 		$subqueries['#__sh404sef_aliases'] = array();
 		if (method_exists($db, 'getTableFields'))
 		{
@@ -2242,7 +2299,8 @@ class Com_Sh404sefInstallerScript
 		{
 			$columns = $db->getTableColumns('#__sh404sef_aliases');
 		}
-		// aliases type
+
+		// some very old install don't have the 'type' or 'hits' columns in aliases table
 		if (empty($columns['type']))
 		{
 			$subQueries['#__sh404sef_aliases'][] = "add `type` tinyint(3) NOT NULL DEFAULT '" . SH404SEF_OPTION_VALUE_NO . "'";
@@ -2271,140 +2329,82 @@ class Com_Sh404sefInstallerScript
 			$subQueries['#__sh404sef_aliases'][] = "add `ordering` int(11) NOT NULL DEFAULT 0";
 		}
 
-		// 4.7.0 new columns for URLs table
-		$subqueries['#__sh404sef_urls'] = array();
-		if (method_exists($db, 'getTableFields'))
-		{
-			$columns = $db->getTableFields('#__sh404sef_urls');
-			$columns = empty($columns['#__sh404sef_urls']) ? array() : $columns['#__sh404sef_urls'];
-		}
-		else
-		{
-			$columns = $db->getTableColumns('#__sh404sef_urls');
-		}
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_aliases'][] = 'modify `newurl` varchar(2048)';
+		$subQueries['#__sh404sef_aliases'][] = 'DROP INDEX `newurl`';
+		$subQueries['#__sh404sef_aliases'][] = 'add index `newurl` (`newurl`(190))';
+		$subQueries['#__sh404sef_aliases'][] = 'modify `alias` varchar(2048)';
+		$subQueries['#__sh404sef_aliases'][] = 'DROP INDEX `alias`';
+		$subQueries['#__sh404sef_aliases'][] = 'add index `alias` (`alias`(190))';
 
-		if (empty($columns['option']))
-		{
-			$subQueries['#__sh404sef_urls'][] = "add `option` varchar(255) NOT NULL DEFAULT ''";
-		}
-		if (empty($columns['referrer_type']))
-		{
-			$subQueries['#__sh404sef_urls'][] = "add `referrer_type` tinyint(3) NOT NULL DEFAULT '" . SH404SEF_OPTION_VALUE_NO . "'";
-		}
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_pageids
+		// ------------------------------------------------------------------------------
 
-		// upgrading to 4.7.0, we reset the hit counter of regular URLs.
-		// previous counts may/will be wrong because they are the result of 404s
-		// (for which hits were counted) turned into valid SEF (for which, up to now)
-		// hits were not counted.
-		// Thus we set to 0 all `cpt` fields for non-404 URLS (ie: automatic and custom).
-		// of course, we must do this only once. We detect this condition by looking for
-		// the referrer_type column in the table, which was introduced at the same time
-		// as the hit counting feature
-		if (empty($columns['referrer_type']))
-		{
-			try
-			{
-				$query = 'update ' . $db->qn('#__sh404sef_urls') . ' set ' . $db->qn('cpt') . ' = 0'
-					. ' where ' . $db->qn('newurl') . " <> ''";
-				$db->setQuery($query);
-				$db->query();
-				$error = $db->getErrorNum();
-				if (!empty($error))
-				{
-					throw new Exception($db->getErrorMsg());
-				}
-			}
-			catch (Exception $e)
-			{
-				JFactory::getApplication()
-				        ->enqueueMessage(
-					        'Error while upgrading the database : ' . $e->getMessage()
-					        . '. Sh404SEF will probably not operate properly. Please uninstall it, then try again after checking your database server setup. Contact us in case this happens again.'
-				        );
-			}
-		}
-
-		// 4.8.0 added last_hit column
-		if (empty($columns['last_hit']))
-		{
-			$subQueries['#__sh404sef_urls'][] = "add `last_hit` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00'";
-			$subQueries['#__sh404sef_urls'][] = "add index `last_hit` (`last_hit`)";
-		}
-
-		// 4.10.1 allow utf8mb4
-		if ($this->hasUtf8mb4Support && class_exists('Sh404sefFactory') && version_compare(Sh404sefFactory::getConfig()->version, '4.10.1', 'lt'))
-		{
-			// updating
-			$subQueries['#__sh404sef_metas'][] = 'modify `metatitle` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
-			$subQueries['#__sh404sef_metas'][] = 'modify `metakey` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
-		}
+		$subQueries['#__sh404sef_pageids'] = array();
 
 		// 4.12.0 pageids/shurl allow external target, expand target URL column, but limit index
-		//	"CREATE TABLE IF NOT EXISTS `#__sh404sef_pageids` (
-		//`id` INT(11) NOT NULL AUTO_INCREMENT,
-		//   `newurl` VARCHAR(1024) NOT NULL DEFAULT '',
-		//   `pageid` VARCHAR(255) NOT NULL DEFAULT '',
-		//   `type` TINYINT(3) NOT NULL DEFAULT '0',
-		//   `hits` INT(11) NOT NULL DEFAULT '0',
-		//   PRIMARY KEY (`id`),
-		//   KEY `newurl` (`newurl` (190)),
-		//   KEY `alias` (`pageid` (190)),
-		//   KEY `type` (`type`)
-		//   ) DEFAULT CHARSET=utf8;",
-		//
-		//		"CREATE TABLE IF NOT EXISTS `#__sh404sef_hits_shurls` (
-		//`id` INT(11) NOT NULL AUTO_INCREMENT,
-		//   `url` VARCHAR(1024) NOT NULL DEFAULT '',
-		//   `target` VARCHAR(333) NOT NULL DEFAULT '',
-		//   `target_domain` VARCHAR(191) NOT NULL DEFAULT '',
-		//   `referrer` VARCHAR(191) NOT NULL DEFAULT '',
-		//   `referrer_domain` VARCHAR(191) NOT NULL DEFAULT '',
-		//   `user_agent` VARCHAR(191) NOT NULL DEFAULT '',
-		//   `ip_address` VARCHAR(50) NOT NULL DEFAULT '',
-		//   `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
-		//   `type` TINYINT(3) NOT NULL DEFAULT '0',
-		//   PRIMARY KEY (`id`),
-		//   KEY `url` (`url` (190)),
-		//   KEY `referrer` (`referrer`),
-		//   KEY `user_agent` (`user_agent`),
-		//   KEY `ip_address` (`ip_address`),
-		//   KEY `type` (`type`)
-		//   ) DEFAULT CHARSET=utf8;",
-
 		if ($this->hasUtf8mb4Support && class_exists('Sh404sefFactory') && version_compare(Sh404sefFactory::getConfig()->version, '4.12.0', 'lt'))
 		{
-			$subQueries['#__sh404sef_pageids'] = array();
-			$subQueries['#__sh404sef_pageids'][] = 'modify `newurl` varchar(1024)';
-			$subQueries['#__sh404sef_pageids'][] = 'DROP INDEX `newurl`';
-			$subQueries['#__sh404sef_pageids'][] = 'add index `newurl` (`newurl`(190))';
 			$subQueries['#__sh404sef_pageids'][] = 'DROP INDEX `alias`';
 			$subQueries['#__sh404sef_pageids'][] = 'add index `alias` (`pageid`(190))';
-
-			$subQueries['#__sh404sef_hits_shurls'] = array();
-			$subQueries['#__sh404sef_hits_shurls'][] = 'modify `url` varchar(1024)';
-			$subQueries['#__sh404sef_hits_shurls'][] = 'DROP INDEX `url`';
-			$subQueries['#__sh404sef_hits_shurls'][] = 'add index `url` (`url`(190))';
 		}
 
-		// 4.13.0: expanded max meta description length from 255 to 512 chars
-		$subQueries['#__sh404sef_metas'][] = 'modify `metadesc` varchar(512) CHARACTER SET ' . $this->charset . ' collate ' . $this->collation . '';
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_pageids'][] = 'modify `newurl` varchar(2048)';
+		$subQueries['#__sh404sef_pageids'][] = 'DROP INDEX `newurl`';
+		$subQueries['#__sh404sef_pageids'][] = 'add index `newurl` (`newurl`(190))';
 
-		// 4.13.2 URL src also stores URL rank
-		//	"CREATE TABLE IF NOT EXISTS `#__sh404sef_urls_src` (
-		//`id` INT(11) NOT NULL AUTO_INCREMENT,
-		//   `url` VARCHAR(191) NOT NULL DEFAULT '',
-		//   `routed_url` VARCHAR(191) NOT NULL DEFAULT '',
-		//   `rank` INT(11) NOT NULL DEFAULT '0',
-		//   `source_url` VARCHAR(191) NOT NULL DEFAULT '',
-		//   `source_routed_url` VARCHAR(333) NOT NULL DEFAULT '',
-		//   `trace` VARCHAR(10000) NOT NULL DEFAULT '',
-		//   `datetime` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
-		//   PRIMARY KEY (`id`),
-		//   KEY `url` (`url`),
-		//   KEY `rank` (`rank`),
-		//   KEY `routed_url` (`routed_url`),
-		//   KEY `source_url` (`source_url`)
-		//   ) DEFAULT CHARSET=" . $this->charset . ";",
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_hits_shurls
+		// ------------------------------------------------------------------------------
+
+		$subQueries['#__sh404sef_hits_shurls'] = array();
+
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_hits_shurls'] = array();
+		$subQueries['#__sh404sef_hits_shurls'][] = 'modify `url` varchar(2048)';
+		$subQueries['#__sh404sef_hits_shurls'][] = 'DROP INDEX `url`';
+		$subQueries['#__sh404sef_hits_shurls'][] = 'add index `url` (`url`(190))';
+		$subQueries['#__sh404sef_hits_shurls'][] = 'modify `target` varchar(2048)';
+		$subQueries['#__sh404sef_hits_shurls'][] = 'modify `referrer` varchar(2048)';
+		$subQueries['#__sh404sef_hits_shurls'][] = 'DROP INDEX `referrer`';
+		$subQueries['#__sh404sef_hits_shurls'][] = 'add index `referrer` (`referrer`(190))';
+
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_hits_aliases
+		// ------------------------------------------------------------------------------
+		$subQueries['#__sh404sef_hits_aliases'] = array();
+
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_hits_aliases'] = array();
+		$subQueries['#__sh404sef_hits_aliases'][] = 'modify `url` varchar(2048)';
+		$subQueries['#__sh404sef_hits_aliases'][] = 'DROP INDEX `url`';
+		$subQueries['#__sh404sef_hits_aliases'][] = 'add index `url` (`url`(190))';
+		$subQueries['#__sh404sef_hits_aliases'][] = 'modify `target` varchar(2048)';
+		$subQueries['#__sh404sef_hits_aliases'][] = 'modify `referrer` varchar(2048)';
+		$subQueries['#__sh404sef_hits_aliases'][] = 'DROP INDEX `referrer`';
+		$subQueries['#__sh404sef_hits_aliases'][] = 'add index `referrer` (`referrer`(190))';
+
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_hits_404s
+		// ------------------------------------------------------------------------------
+		$subQueries['#__sh404sef_hits_404s'] = array();
+
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_hits_404s'] = array();
+		$subQueries['#__sh404sef_hits_404s'][] = 'modify `url` varchar(2048)';
+		$subQueries['#__sh404sef_hits_404s'][] = 'DROP INDEX `url`';
+		$subQueries['#__sh404sef_hits_404s'][] = 'add index `url` (`url`(190))';
+		$subQueries['#__sh404sef_hits_404s'][] = 'modify `target` varchar(2048)';
+		$subQueries['#__sh404sef_hits_404s'][] = 'modify `referrer` varchar(2048)';
+		$subQueries['#__sh404sef_hits_404s'][] = 'DROP INDEX `referrer`';
+		$subQueries['#__sh404sef_hits_404s'][] = 'add index `referrer` (`referrer`(190))';
+
+		// ------------------------------------------------------------------------------
+		// #__sh404sef_urls_src
+		// ------------------------------------------------------------------------------
+
 		if (method_exists($db, 'getTableFields'))
 		{
 			$columns = $db->getTableFields('#__sh404sef_urls_src');
@@ -2414,6 +2414,8 @@ class Com_Sh404sefInstallerScript
 		{
 			$columns = $db->getTableColumns('#__sh404sef_urls_src');
 		}
+
+		// 4.13.2 URL src also stores URL rank
 		$subqueries['#__sh404sef_urls_src'] = array();
 		if (empty($columns['rank']))
 		{
@@ -2421,7 +2423,22 @@ class Com_Sh404sefInstallerScript
 			$subQueries['#__sh404sef_urls_src'][] = 'add index `rank` (`rank`)';
 		}
 
+		// 4.13.3 -  extend all URL fields to 2048 chars
+		$subQueries['#__sh404sef_urls_src'][] = 'modify `url` varchar(2048)';
+		$subQueries['#__sh404sef_urls_src'][] = 'DROP INDEX `url`';
+		$subQueries['#__sh404sef_urls_src'][] = 'add index `url` (`url`(190))';
+		$subQueries['#__sh404sef_urls_src'][] = 'modify `routed_url` varchar(2048)';
+		$subQueries['#__sh404sef_urls_src'][] = 'DROP INDEX `routed_url`';
+		$subQueries['#__sh404sef_urls_src'][] = 'add index `routed_url` (`routed_url`(190))';
+		$subQueries['#__sh404sef_urls_src'][] = 'modify `source_url` varchar(2048)';
+		$subQueries['#__sh404sef_urls_src'][] = 'DROP INDEX `source_url`';
+		$subQueries['#__sh404sef_urls_src'][] = 'add index `source_url` (`source_url`(190))';
+		$subQueries['#__sh404sef_urls_src'][] = 'modify `source_routed_url` varchar(2048)';
+		$subQueries['#__sh404sef_urls_src'][] = 'modify `trace` varchar(7000)';
+
+		// ------------------------------------------------------------------------------
 		// apply changes
+		// ------------------------------------------------------------------------------
 		if (!empty($subQueries))
 		{
 			try

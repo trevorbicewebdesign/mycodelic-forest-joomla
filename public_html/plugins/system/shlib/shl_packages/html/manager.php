@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.661
- * @date         2018-01-15
+ * @version      0.4.0.678
+ * @date         2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -38,7 +38,7 @@ class ShlHtml_Manager
 	{
 		if (is_null(self::$_manager))
 		{
-			$manager = new ShlHtml_Manager;
+			$manager = new \ShlHtml_Manager;
 			$manager::$assetsMode = plgSystemShlib::$__params->get('assets_mode', self::PRODUCTION);
 			$manager::$assetsBundling = plgSystemShlib::$__params->get('assets_bundling', self::BUNDLE);
 			$manager->initDeferredScripts();
@@ -87,7 +87,7 @@ class ShlHtml_Manager
 	 *
 	 * @param string $name JS file name, no extension
 	 * @param array $options
-	 *                     document    a J! document object, default to JFactory::getDocument() if missing
+	 *                     document    a J! document object, default to \JFactory::getDocument() if missing
 	 *                     files_root  Root path to file location, default to JPATH_ROOT
 	 *                     files_path  Subpath to file location, will be added to files_root, default to /media/plg_shlib
 	 *                     url_root    Root URL to link files to, default to JURI::root(true)
@@ -98,7 +98,7 @@ class ShlHtml_Manager
 	 */
 	public function addScript($name, $options = array())
 	{
-		$document = empty($options['document']) ? JFactory::getDocument() : $options['document'];
+		$document = empty($options['document']) ? \JFactory::getDocument() : $options['document'];
 		$link = empty($options['raw']) ? $this->getMediaLink($name, 'js', $options) : $name;
 		if (!empty($options['position']) && $options['position'] == 'bottom')
 		{
@@ -129,14 +129,14 @@ class ShlHtml_Manager
 	 *
 	 * @param string $content JS content, without script tags
 	 * @param array $options
-	 *                     document    a J! document object, default to JFactory::getDocument() if missing
+	 *                     document    a J! document object, default to \JFactory::getDocument() if missing
 	 *                     position    bottom || empty
 	 *                     weight      int used to order scripts when inserted, lower is inserted first, higher inserted last
 	 * @return $this
 	 */
 	public function addScriptDeclaration($content, $options = array())
 	{
-		$document = empty($options['document']) ? JFactory::getDocument() : $options['document'];
+		$document = empty($options['document']) ? \JFactory::getDocument() : $options['document'];
 		if (!empty($options['position']) && $options['position'] == 'bottom')
 		{
 			$weight = empty($options['weight']) ? 10 : (int) $options['weight'];
@@ -158,7 +158,7 @@ class ShlHtml_Manager
 	 *
 	 * @param string $name JS file name, no extension
 	 * @param array $options
-	 *                     document    a J! document object, default to JFactory::getDocument() if missing
+	 *                     document    a J! document object, default to \JFactory::getDocument() if missing
 	 *                     files_root  Root path to file location, default to JPATH_ROOT
 	 *                     files_path  Subpath to file location, will be added to files_root, default to /media/plg_shlib
 	 *                     url_root    Root URL to link files to, default to JURI::root(true)
@@ -166,7 +166,7 @@ class ShlHtml_Manager
 	 */
 	public function addStylesheet($name, $options = array())
 	{
-		$document = empty($options['document']) ? JFactory::getDocument() : $options['document'];
+		$document = empty($options['document']) ? \JFactory::getDocument() : $options['document'];
 		$document->addStyleSheet($this->getMediaLink($name, 'css', $options));
 
 		return $this;

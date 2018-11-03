@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date        2018-01-15
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 /* Security check to ensure this file is being included by a parent file.*/
 defined('_JEXEC') or die;
@@ -30,7 +30,7 @@ defined('_JEXEC') or die;
  *
  * The values to use as index are defined at instance creation:
  *
- * ShlDb_Log::create(
+ * \ShlDb_Log::create(
  *   'downloads'  // scope
  *    array(      // indices
  *      'name_3',
@@ -120,7 +120,7 @@ class ShlDb_Log
 	/**
 	 * Singleton
 	 *
-	 * @var ShlDbKeystore
+	 * @var \ShlDbKeystore
 	 */
 	private static $instance = array();
 
@@ -130,7 +130,7 @@ class ShlDb_Log
 	 * @param string $scope Name of logger, used to derive table name
 	 * @param array  $indices List of data keys to be used as index
 	 *
-	 * @return ShlDbKeystore
+	 * @return \ShlDbKeystore
 	 */
 	public static function create($scope, $indices = array())
 	{
@@ -156,8 +156,8 @@ class ShlDb_Log
 		if (empty($rawScope))
 		{
 			$message = 'Trying to create a database logger with an empty scope.';
-			ShlSystem_Log::error('shLib', __METHOD__ . ': shLib: ' . $message);
-			throw new InvalidArgumentException(
+			\ShlSystem_Log::error('shLib', __METHOD__ . ': shLib: ' . $message);
+			throw new \InvalidArgumentException(
 				$message
 			);
 		}
@@ -171,15 +171,15 @@ class ShlDb_Log
 	 *
 	 * @param string $scope
 	 *
-	 * @return ShlDb_Log
+	 * @return \ShlDb_Log
 	 *
-	 * @throws InvalidArgumentException
+	 * @throws \InvalidArgumentException
 	 */
 	protected static function get($scope)
 	{
 		if (empty(self::$instance[$scope]))
 		{
-			ShlSystem_Log::error('shLib', __METHOD__ . ': shLib: Trying to log to a database logger (' . $scope . ') that has not yet been created.');
+			\ShlSystem_Log::error('shLib', __METHOD__ . ': shLib: Trying to log to a database logger (' . $scope . ') that has not yet been created.');
 			return false;
 		}
 
@@ -188,7 +188,7 @@ class ShlDb_Log
 
 	/**
 	 *
-	 * ShlDb_Log::log(
+	 * \ShlDb_Log::log(
 	 *   'downloads',
 	 *    array(
 	 *       'name_1' => 'value_1',
@@ -245,7 +245,7 @@ class ShlDb_Log
 			'scope' => $subScope,
 			'description' => $description,
 			'data' => json_encode($data),
-			'created_at' => ShlSystem_Date::getUTCNow(),
+			'created_at' => \ShlSystem_Date::getUTCNow(),
 			'timestamp' => $this->getTimestamp()
 		);
 
@@ -256,7 +256,7 @@ class ShlDb_Log
 		);
 
 		// insert or update the record in database
-		ShlDbHelper::insert(
+		\ShlDbHelper::insert(
 			$this->tableName,
 			$dbData
 		);
@@ -276,7 +276,7 @@ class ShlDb_Log
 		{
 			// getUser requires a real NULL to fetch current user
 			$user = empty($user) ? null : (int) $user;
-			$user = JFactory::getUser($user);
+			$user = \JFactory::getUser($user);
 		}
 
 		if (empty($user) || empty($user->id))

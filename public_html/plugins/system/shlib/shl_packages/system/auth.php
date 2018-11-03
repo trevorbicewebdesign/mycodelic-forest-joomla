@@ -3,12 +3,14 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date                2018-01-15
+ * @version     0.4.0.678
+ * @date                2018-08-02
  */
+
+use Joomla\String\StringHelper;
 
 defined('_JEXEC') or die;
 
@@ -49,8 +51,8 @@ class ShlSystem_Auth
 	)
 	{
 		$accessKey = self::splitAuthKey($authKey);
-		$origin = JString::rtrim($origin, '/');
-		$extra = is_string($extra) ? JString::trim($extra) : 'n/a';
+		$origin = StringHelper::rtrim($origin, '/');
+		$extra = is_string($extra) ? StringHelper::trim($extra) : 'n/a';
 
 		$request = new stdClass();
 		$headers = array(
@@ -101,7 +103,7 @@ class ShlSystem_Auth
 	 */
 	private static function splitAuthKey($authKey)
 	{
-		$authKey = JString::trim($authKey);
+		$authKey = StringHelper::trim($authKey);
 		$splitKey = array('key' => '', 'secret' => '');
 		if (64 != strlen($authKey))
 		{

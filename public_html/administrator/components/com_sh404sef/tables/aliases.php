@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date        2018-01-25
+ * @version     4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -99,7 +99,7 @@ class Sh404sefTableAliases extends JTable
 	public function check()
 	{
 		$this->newurl = JString::trim($this->newurl);
-		if(empty($this->newurl))
+		if (empty($this->newurl))
 		{
 			$this->setError(
 				JText::_('COM_SH404SEF_ALIASES_INVALID_ALIAS_EMPTY')
@@ -107,7 +107,7 @@ class Sh404sefTableAliases extends JTable
 			return false;
 		}
 		$this->alias = JString::trim($this->alias);
-		if(empty($this->alias))
+		if (empty($this->alias))
 		{
 			$this->setError(
 				JText::_('COM_SH404SEF_ALIASES_INVALID_TARGET') . ' ' . JText::_('COM_SH404SEF_TT_CREATE_ALIAS_TARGET_URL_SPEC')
@@ -155,6 +155,10 @@ class Sh404sefTableAliases extends JTable
 
 		// adjust alias type based on content if user input
 		if (wbStartsWith($this->newurl, array('http://', 'https://')))
+		{
+			$type = self::URLTYPE_ALIAS_CUSTOM;
+		}
+		else if (wbStartsWith($this->alias, '~'))
 		{
 			$type = self::URLTYPE_ALIAS_CUSTOM;
 		}

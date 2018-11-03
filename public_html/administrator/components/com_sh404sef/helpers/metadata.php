@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -239,6 +239,18 @@ class Sh404sefHelperMetadata
 			$params,
 			$page
 		);
+
+		// store in cache
+		if (!empty(self::$filteredAutoDesc))
+		{
+			$content = Sh404sefHelperGeneral::addCommentedTag(
+				$content,
+				'sh404sef_tag_description',
+				self::$filteredAutoDesc
+			);
+		}
+
+		return $content;
 	}
 
 	/**
@@ -256,13 +268,16 @@ class Sh404sefHelperMetadata
 			'#{\s*wbamp[^}]+}#uUi',
 			'#{\s*sh404sef_[^}]*}#us',
 			'#{\s*module[^}]*}#iuUs',
+			'#{\s*loadmodule[^}]*}#iuUs',
+			'#{\s*loadposition[^}]*}#iuUs',
 			'#{(field|fieldgroup)\s+(.*?)}#uUi',
 			'#{\s*snippet[^}]*}#iuUs',
 			'#{\s*tip[^}]*}#iuUs',
 			'#{\s*rsform[^}]*}#iuUs',
 			'#{\s*phocagallery[^}]*}#iuUs',
 			'#{(.*?)}(.*?){/(.*?)}#us',
-			'#\[(.*?)\](.*?)\[/(.*?)\]#us'
+			'#\[(.*?)\](.*?)\[/(.*?)\]#us',
+			'#\[widgetkit[^\]]+\]#us'
 		);
 
 		/**
@@ -309,8 +324,25 @@ class Sh404sefHelperMetadata
 		return $description;
 	}
 
-	public static function getAutoDescription()
+	/**
+	 * @param string $fromContent
+	 *
+	 * @return string
+	 */
+	public static function getAutoDescription($fromContent = '')
 	{
+		if (empty(self::$filteredAutoDesc) && !empty($fromContent))
+		{
+			if (strpos($fromContent, 'sh404sef_tag_description') != false)
+			{
+				$cachedDescription = Sh404sefHelperGeneral::getCommentedTag(
+					$fromContent,
+					'sh404sef_tag_description'
+				);
+				self::$filteredAutoDesc = wbArrayGet($cachedDescription, 0, '');
+			}
+		}
+
 		return self::$filteredAutoDesc;
 	}
 

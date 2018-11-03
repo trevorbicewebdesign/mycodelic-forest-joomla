@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date				2018-01-15
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // no direct access
@@ -45,9 +45,9 @@ class ShlSystem_Resourcemanager
 
 		try
 		{
-			// ShlDbHelper::insertUpdate( self::CONSUMERS_TABLE_NAME, $record, array( 'context' => $options['context']));
+			// \JFactory::DbHelper::insertUpdate( self::CONSUMERS_TABLE_NAME, $record, array( 'context' => $options['context']));
 			// do we have a record?
-			$db = JFactory::getDBO();
+			$db = \JFactory::getDBO();
 			$query = $db->getQuery(true);
 			$query->select('*')->from(self::CONSUMERS_TABLE_NAME);
 			$query->where($db->quoteName('context') . '=' . $db->quote($options['context']));
@@ -71,11 +71,11 @@ class ShlSystem_Resourcemanager
 			$db->setQuery($query)->execute();
 
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
-			if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
+			if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'error'))
 			{
-				ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
+				\ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			}
 			return false;
 		}
@@ -98,8 +98,8 @@ class ShlSystem_Resourcemanager
 			$registrationData = self::isRegistered($resource, $context);
 			if (!empty($registrationData))
 			{
-				//ShlDbHelper::delete(self::CONSUMERS_TABLE_NAME, array('resource' => $resource, 'context' => $context));
-				$db = JFactory::getDbo();
+				//\JFactory::DbHelper::delete(self::CONSUMERS_TABLE_NAME, array('resource' => $resource, 'context' => $context));
+				$db = \JFactory::getDbo();
 				$query = $db->getQuery(true);
 				$query->delete();
 				$query->from(self::CONSUMERS_TABLE_NAME);
@@ -113,11 +113,11 @@ class ShlSystem_Resourcemanager
 			}
 			return $registrationData;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
-			if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
+			if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'error'))
 			{
-				ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
+				\ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			}
 			return false;
 		}
@@ -136,8 +136,8 @@ class ShlSystem_Resourcemanager
 
 		try
 		{
-			//$registrationData = ShlDbHelper::selectObject(self::CONSUMERS_TABLE_NAME, '*', array('resource' => $resource, 'context' => $context));
-			$db = JFactory::getDBO();
+			//$registrationData = \JFactory::DbHelper::selectObject(self::CONSUMERS_TABLE_NAME, '*', array('resource' => $resource, 'context' => $context));
+			$db = \JFactory::getDBO();
 			$query = $db->getQuery(true);
 			$query->select('*')->from(self::CONSUMERS_TABLE_NAME);
 			$query->where($db->quoteName('resource') . '=' . $db->quote($resource));
@@ -146,11 +146,11 @@ class ShlSystem_Resourcemanager
 
 			return $registrationData;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
-			if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
+			if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'error'))
 			{
-				ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
+				\ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			}
 			return false;
 		}
@@ -182,9 +182,9 @@ class ShlSystem_Resourcemanager
 		{
 			if (!empty($currentVersion) && version_compare($newVersion, $currentVersion, 'le'))
 			{
-				if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'debug'))
+				if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'debug'))
 				{
-					ShlSystem_Log::debug('shlib',
+					\ShlSystem_Log::debug('shlib',
 						'Skipping install of ' . $resource . ' version ' . $newVersion . ' over existing version ' . $currentVersion);
 				}
 				$result->canInstall = 'skip';
@@ -207,7 +207,7 @@ class ShlSystem_Resourcemanager
 		// read existing extensions requirements
 		if (!empty($currentVersion) && $result->canInstall != 'no' && $result->canInstall != 'skip')
 		{
-			$db = JFactory::getDbo();
+			$db = \JFactory::getDbo();
 			$query = $db->getQuery(true);
 			$query->select('*')->from(self::CONSUMERS_TABLE_NAME)->where($db->quoteName('resource') . ' = ' . $db->quote($resource));
 			$db->setQuery($query);
@@ -215,11 +215,11 @@ class ShlSystem_Resourcemanager
 			{
 				$consumers = $db->loadObjectList();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
-				if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
+				if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'error'))
 				{
-					ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
+					\ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 				}
 				$consumers = array();
 			}
@@ -271,9 +271,9 @@ class ShlSystem_Resourcemanager
 			}
 		}
 
-		if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'debug'))
+		if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'debug'))
 		{
-			ShlSystem_Log::debug('shlib',
+			\ShlSystem_Log::debug('shlib',
 				'Resource manager: attempt to install ' . $resource . ' version ' . $newVersion . ' | result: ' . $result->canInstall
 					. (empty($result->reason) ? '' : ' ' . $result->reason));
 		}
@@ -292,24 +292,24 @@ class ShlSystem_Resourcemanager
 
 		try
 		{
-			//$registered = ShlDbHelper::selectObjectList(self::CONSUMERS_TABLE_NAME, '*', array('resource' => $resource));
-			$db = JFactory::getDBO();
+			//$registered = \JFactory::DbHelper::selectObjectList(self::CONSUMERS_TABLE_NAME, '*', array('resource' => $resource));
+			$db = \JFactory::getDBO();
 			$query = $db->getQuery(true);
 			$query->select('*')->from(self::CONSUMERS_TABLE_NAME);
 			$query->where($db->quoteName('resource') . '=' . $db->quote($resource));
 			$registered = $db->setQuery($query)->loadObjectList();
 
 			$canUninstall = empty($registered);
-			if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'debug'))
+			if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'debug'))
 			{
-				ShlSystem_Log::debug('shlib',
+				\ShlSystem_Log::debug('shlib',
 					'Request to uninstall ' . $resource . ': ' . ($canUninstall ? 'granted' : 'denied') . ' [' . print_r($registered, true) . ']');
 			}
 			return $canUninstall;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
-			if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
+			if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'error'))
 			{
 				ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			}
@@ -333,7 +333,7 @@ class ShlSystem_Resourcemanager
 
 		try
 		{
-			$db = JFactory::getDbo();
+			$db = \JFactory::getDbo();
 			$query = $db->getQuery(true);
 
 			// is this an update or a new install?
@@ -361,7 +361,7 @@ class ShlSystem_Resourcemanager
 				ShlSystem_Log::debug('shlib', 'Installed new shared resource ' . $resource . ' version ' . $version);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
 			{
@@ -385,7 +385,7 @@ class ShlSystem_Resourcemanager
 		try
 		{
 
-			$db = JFactory::getDbo();
+			$db = \JFactory::getDbo();
 
 			// resource manager may not be installed yet
 			$tables = $db->getTableList();
@@ -404,7 +404,7 @@ class ShlSystem_Resourcemanager
 			$currentVersion = $db->loadResult();
 			return empty($currentVersion) ? '0' : $currentVersion;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
 			{

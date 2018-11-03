@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -33,7 +33,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	 * When config will be saved to db, most of the code in this
 	 * model will be removed and basemodel should handle everything
 	 *
-	 * @param array $data   an array holding data to save
+	 * @param array $data an array holding data to save
 	 * @param       integer id the com_sh404sef component id in extension table
 	 *
 	 * @return integer id of created or updated record
@@ -105,10 +105,10 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 			}
 		}
 
-		// make sure we have a default value for analytics groups
-		if (!isset($data['analyticsUserGroups']))
+		// make sure we have a default value for analytics view levels
+		if (!isset($data['analyticsViewLevel']))
 		{
-			$data['analyticsUserGroups'] = array(1);
+			$data['analyticsViewLevel'] = array(1);
 		}
 
 		// Google analytics oAuth handling
@@ -136,11 +136,11 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 			{
 				// restore auth info from current values, so that they are not cleared
 				// unless user wanted to clear them
-				$sefConfig = Sh404sefFactory::getConfig();
-				$data['wbgaauth_access_token'] = $sefConfig->wbgaauth_access_token;
+				$sefConfig                      = Sh404sefFactory::getConfig();
+				$data['wbgaauth_access_token']  = $sefConfig->wbgaauth_access_token;
 				$data['wbgaauth_refresh_token'] = $sefConfig->wbgaauth_refresh_token;
-				$data['wbgaauth_expires_on'] = $sefConfig->wbgaauth_expires_on;
-				$data['wbgaauth_token_type'] = $sefConfig->wbgaauth_token_type;
+				$data['wbgaauth_expires_on']    = $sefConfig->wbgaauth_expires_on;
+				$data['wbgaauth_token_type']    = $sefConfig->wbgaauth_token_type;
 				$data['wbgaauth_client_id_key'] = $sefConfig->wbgaauth_client_id_key;
 			}
 			else
@@ -151,8 +151,11 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 		}
 
 		// special processing for fields stored as arrays, but edited as strings
-		$fields = array('shSecOnlyNumVars', 'shSecAlphaNumVars', 'shSecNoProtocolVars', 'ipWhiteList', 'ipBlackList', 'uAgentWhiteList',
-		                'uAgentBlackList', 'analyticsExcludeIP');
+		$fields = array(
+			'shSecOnlyNumVars', 'shSecAlphaNumVars', 'shSecNoProtocolVars', 'ipWhiteList', 'ipBlackList', 'uAgentWhiteList',
+			'uAgentBlackList', 'analyticsExcludeIP',
+			'request_block_list'
+		);
 		foreach ($fields as $field)
 		{
 			if (isset($data[$field]))
@@ -241,19 +244,19 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 			'com_sh404sef',
 			JPATH_ADMINISTRATOR . '/components/com_sh404sef/configuration'
 		);
-		$form = $comConfigModel->getForm();
-		$component = $comConfigModel->getComponent();
+		$form           = $comConfigModel->getForm();
+		$component      = $comConfigModel->getComponent();
 
 		// version prefix
 		$this->joomlaVersionPrefix = Sh404sefHelperGeneral::getJoomlaVersionPrefix();
-		$method = '_getByComponentField' . $this->joomlaVersionPrefix;
+		$method                    = '_getByComponentField' . $this->joomlaVersionPrefix;
 		// inject the by components part in the form
 		$field = $this->$method();
 		$form->setField($field);
 
 		// inject the languages part in the form
 		$method = '_getLanguagesField' . $this->joomlaVersionPrefix;
-		$field = $this->$method();
+		$field  = $this->$method();
 		$form->setField($field);
 
 		// inject the current content of the 404 error page as default value in the txt404 form field
@@ -306,6 +309,20 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 		// analytics
 		$form->setValue('analyticsExcludeIP', null, implode("\n", $form->getValue('analyticsExcludeIP', null, array())));
 
+		// URL blocl list
+		$form->setValue(
+			'request_block_list',
+			null,
+			implode(
+				"\n",
+				$form->getValue(
+					'request_block_list',
+					null,
+					array()
+				)
+			)
+		);
+
 		// read mobile params from the mobile plugin, not from the component config, which only has a copy
 		$plugin = JPluginHelper::getPlugin('system', 'shmobile');
 		if (!empty($plugin))
@@ -316,6 +333,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 			$form->setValue('mobile_switch_enabled', null, $params->get('mobile_switch_enabled', 0));
 			$form->setValue('mobile_template', null, $params->get('mobile_template', ''));
 		}
+
 		// inject a link to shLib plugin params for cache settings
 		$form
 			->setFieldAttribute(
@@ -323,6 +341,40 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 				'<span class = "btn sh404sef-textinput"><a href="' . Sh404sefHelperGeneral::getShLibPluginLink() . '" target="_blank">'
 				. JText::_('COM_SH404SEF_CONFIGURE_SHLIB_PLUGIN') . '</a></span>'
 			);
+
+		// inject links to allow clearing Data recordings
+		$form
+			->setFieldAttribute(
+				'log404sHits', 'additionaltext',
+				'<span class = "btn"><span class = "wb_purge_details" href="#0" data-task="purgeAllDetails" data-request_type="' . Sh404sefModelReqrecorder::REQUEST_404 . '" data-ajax_uri="index.php?option=com_sh404sef&tmpl=component&format=json&c=hitdetails" data-token="' . JSession::getFormToken() . '">'
+				. JText::_('COM_SH404SEF_DATA_PURGE') . '</span></span>'
+				. '<div class="wb-spinner-container"><div class="wbl-spinner-black" id="wb_purge_spinner_' . Sh404sefModelReqrecorder::REQUEST_404 . '"></div></div>'
+			);
+
+		$form
+			->setFieldAttribute(
+				'logAliasesHits', 'additionaltext',
+				'<span class = "btn"><span class = "wb_purge_details" href="#0" data-task="purgeAllDetails" data-request_type="' . Sh404sefModelReqrecorder::REQUEST_ALIAS . '" data-ajax_uri="index.php?option=com_sh404sef&tmpl=component&format=json&c=hitdetails" data-token="' . JSession::getFormToken() . '">'
+				. JText::_('COM_SH404SEF_DATA_PURGE') . '</span></span>'
+				. '<div class="wb-spinner-container"><div class="wbl-spinner-black" id="wb_purge_spinner_' . Sh404sefModelReqrecorder::REQUEST_ALIAS . '"></div></div>'
+			);
+
+		$form
+			->setFieldAttribute(
+				'logShurlsHits', 'additionaltext',
+				'<span class = "btn"><span class = "wb_purge_details" href="#0" data-task="purgeAllDetails" data-request_type="' . Sh404sefModelReqrecorder::REQUEST_SHURL . '" data-ajax_uri="index.php?option=com_sh404sef&tmpl=component&format=json&c=hitdetails" data-token="' . JSession::getFormToken() . '">'
+				. JText::_('COM_SH404SEF_DATA_PURGE') . '</span></span>'
+				. '<div class="wb-spinner-container"><div class="wbl-spinner-black" id="wb_purge_spinner_' . Sh404sefModelReqrecorder::REQUEST_SHURL . '"></div></div>'
+			);
+
+		$form
+			->setFieldAttribute(
+				'logUrlsSource', 'additionaltext',
+				'<span class = "btn"><span class = "wb_purge_details" href="#0" data-task="purgeAllDetails" data-request_type="urlssource" data-ajax_uri="index.php?option=com_sh404sef&tmpl=component&format=json&c=srcdetails" data-token="' . JSession::getFormToken() . '">'
+				. JText::_('COM_SH404SEF_DATA_PURGE') . '</span></span>'
+				. '<div class="wb-spinner-container"><div class="wbl-spinner-black" id="wb_purge_spinner_urlssource"></div></div>'
+			);
+
 		return $form;
 	}
 
@@ -339,15 +391,15 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	private function _getErrorPageContents()
 	{
 		$activeLanguages = Sh404sefHelperLanguage::getAllInstalledLanguage(JPATH_ROOT);
-		$contents = array();
+		$contents        = array();
 		foreach ($activeLanguages as $language)
 		{
 			// XML field def
-			$langTag = $language['tag'];
-			$langName = str_replace('-', '_', $language['tag']);
+			$langTag   = $language['tag'];
+			$langName  = str_replace('-', '_', $language['tag']);
 			$fieldName = 'txt404_' . $language['tag'];
-			$xml = '';
-			$xml .= '<fieldset name="page_404_' . $language['tag'] . '" label="' . JText::_('COM_SH404SEF_CONFIG_ERROR_PAGE')
+			$xml       = '';
+			$xml       .= '<fieldset name="page_404_' . $language['tag'] . '" label="' . JText::_('COM_SH404SEF_CONFIG_ERROR_PAGE')
 				. ' ' . $langName . '" description="" groupname="COM_SH404SEF_CONFIG_ERROR_PAGE">';
 
 			// add Itemid selection
@@ -367,10 +419,10 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 			$content = empty($content) ? JText::_('COM_SH404SEF_DEF_404_MSG') : $content;
 
 			// build return array
-			$contents[$langTag] = array();
-			$contents[$langTag]['name'] = $fieldName;
-			$contents[$langTag]['group'] = 'COM_SH404SEF_CONFIG_ERROR_PAGE';
-			$contents[$langTag]['xml'] = new SimpleXMLElement($xml);
+			$contents[$langTag]            = array();
+			$contents[$langTag]['name']    = $fieldName;
+			$contents[$langTag]['group']   = 'COM_SH404SEF_CONFIG_ERROR_PAGE';
+			$contents[$langTag]['xml']     = new SimpleXMLElement($xml);
 			$contents[$langTag]['content'] = $content;
 		}
 
@@ -380,15 +432,14 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	private function _getAnalyticsGroupsField()
 	{
 		$usergroups = JHtml::_('user.groups', $includeSuperAdmin = true);
-		$xml = '';
-		$xml .= '<fieldset name="analytics" label="COM_SH404SEF_CONFIG_ANALYTICS" description="COM_SH404SEF_CONF_ANALYTICS_HELP" groupname="COM_SH404SEF_CONFIG_ANALYTICS">';
-		$xml .= '<field menu="hide" name="analyticsUserGroups" type="list" multiple="true" size="10" default="[1]" label="COM_SH404SEF_ANALYTICS_USER_GROUPS" description="COM_SH404SEF_TT_ANALYTICS_USER_GROUPS">';
+		$xml        = '';
+		$xml        .= '<fieldset name="analytics" label="COM_SH404SEF_CONFIG_ANALYTICS" description="COM_SH404SEF_CONF_ANALYTICS_HELP" groupname="COM_SH404SEF_CONFIG_ANALYTICS">';
+		$xml        .= '<field menu="hide" name="analyticsUserGroups" type="list" multiple="true" size="10" default="" label="COM_SH404SEF_ANALYTICS_USER_GROUPS" description="COM_SH404SEF_TT_ANALYTICS_USER_GROUPS">';
 		foreach ($usergroups as $usergroup)
 		{
-			$t = htmlspecialchars($usergroup->text, ENT_COMPAT, 'UTF-8');
-			$xml .= '<option value="' . $usergroup->value . '">' . htmlspecialchars($t, ENT_COMPAT, 'UTF-8') . '</option>';
+			$xml .= '<option value="' . $usergroup->value . '">' . htmlspecialchars($usergroup->text, ENT_COMPAT, 'UTF-8') . '</option>';
 		}
-		$xml .= '</field></fieldset>';
+		$xml     .= '</field></fieldset>';
 		$element = new SimpleXMLElement($xml);
 		return $element;
 	}
@@ -396,15 +447,14 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	private function _getAnalyticsDisabledGroupsField()
 	{
 		$usergroups = JHtml::_('user.groups', $includeSuperAdmin = true);
-		$xml = '';
-		$xml .= '<fieldset name="analytics" label="COM_SH404SEF_CONFIG_ANALYTICS" description="COM_SH404SEF_CONF_ANALYTICS_HELP" groupname="COM_SH404SEF_CONFIG_ANALYTICS">';
-		$xml .= '<field menu="hide" name="analyticsUserGroupsDisabled" type="list" multiple="true" size="10" default="[1]" label="COM_SH404SEF_ANALYTICS_USER_GROUPS_DISABLED" description="COM_SH404SEF_TT_ANALYTICS_USER_GROUPS_DISABLED">';
+		$xml        = '';
+		$xml        .= '<fieldset name="analytics" label="COM_SH404SEF_CONFIG_ANALYTICS" description="COM_SH404SEF_CONF_ANALYTICS_HELP" groupname="COM_SH404SEF_CONFIG_ANALYTICS">';
+		$xml        .= '<field menu="hide" name="analyticsUserGroupsDisabled" type="list" multiple="true" size="10" default="" label="COM_SH404SEF_ANALYTICS_USER_GROUPS_DISABLED" description="COM_SH404SEF_TT_ANALYTICS_USER_GROUPS_DISABLED">';
 		foreach ($usergroups as $usergroup)
 		{
-			$t = htmlspecialchars($usergroup->text, ENT_COMPAT, 'UTF-8');
-			$xml .= '<option value="' . $usergroup->value . '">' . htmlspecialchars($t, ENT_COMPAT, 'UTF-8') . '</option>';
+			$xml .= '<option value="' . $usergroup->value . '">' . htmlspecialchars($usergroup->text, ENT_COMPAT, 'UTF-8') . '</option>';
 		}
-		$xml .= '</field></fieldset>';
+		$xml     .= '</field></fieldset>';
 		$element = new SimpleXMLElement($xml);
 		return $element;
 	}
@@ -416,31 +466,31 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	private function _getCategoriesField()
 	{
 		$catListOptions = JHtml::_('category.options', 'com_content');
-		$options = '';
+		$options        = '';
 		foreach ($catListOptions as $cat)
 		{
 			$cat->text = ShlSystem_Xml::sanitizeUTF8($cat->text);
 			// need to apply htmlspecialchars twice, as SimpleXMLElement does an
 			// htmlentitydecode in the constructor, which then causes
 			// an error downstream when this data is injected in the form
-			$t = htmlspecialchars($cat->text, ENT_COMPAT, 'UTF-8');
+			$t       = htmlspecialchars($cat->text, ENT_COMPAT, 'UTF-8');
 			$options .= '<option value="' . $cat->value . '">' . htmlspecialchars($t, ENT_COMPAT, 'UTF-8') . '</option>';
 		}
-		$xml = '';
-		$xml .= '<fieldset name="joomla" label="Joomla" description="" groupname="COM_SH404SEF_CONFIG_EXT">';
-		$xml .= '<field menu="hide" name="shInsertContentArticleIdCatList" type="list" multiple="true" default="" label="COM_SH404SEF_INSERT_NUMERICAL_ID_CAT_LIST" description="COM_SH404SEF_TT_INSERT_NUMERICAL_ID_CAT_LIST">';
-		$xml .= '<option value="">COM_SH404SEF_INSERT_NUMERICAL_ID_ALL_CAT</option>';
-		$xml .= $options;
-		$xml .= '</field>';
-		$xml .= '<field menu="hide" name="shInsertNumericalIdCatList" type="list" multiple="true" default="" label="COM_SH404SEF_INSERT_NUMERICAL_ID_CAT_LIST" description="COM_SH404SEF_TT_INSERT_NUMERICAL_ID_CAT_LIST">';
-		$xml .= '<option value="">COM_SH404SEF_INSERT_NUMERICAL_ID_ALL_CAT</option>';
-		$xml .= $options;
-		$xml .= '</field>';
-		$xml .= '<field menu="hide" name="insertDateCatList" type="list" multiple="true" default="" label="COM_SH404SEF_INSERT_DATE_CAT_LIST" description="COM_SH404SEF_TT_INSERT_DATE_CAT_LIST">';
-		$xml .= '<option value="">COM_SH404SEF_INSERT_NUMERICAL_ID_ALL_CAT</option>';
-		$xml .= $options;
-		$xml .= '</field>';
-		$xml .= '</fieldset>';
+		$xml     = '';
+		$xml     .= '<fieldset name="joomla" label="Joomla" description="" groupname="COM_SH404SEF_CONFIG_EXT">';
+		$xml     .= '<field menu="hide" name="shInsertContentArticleIdCatList" type="list" multiple="true" default="" label="COM_SH404SEF_INSERT_NUMERICAL_ID_CAT_LIST" description="COM_SH404SEF_TT_INSERT_NUMERICAL_ID_CAT_LIST">';
+		$xml     .= '<option value="">COM_SH404SEF_INSERT_NUMERICAL_ID_ALL_CAT</option>';
+		$xml     .= $options;
+		$xml     .= '</field>';
+		$xml     .= '<field menu="hide" name="shInsertNumericalIdCatList" type="list" multiple="true" default="" label="COM_SH404SEF_INSERT_NUMERICAL_ID_CAT_LIST" description="COM_SH404SEF_TT_INSERT_NUMERICAL_ID_CAT_LIST">';
+		$xml     .= '<option value="">COM_SH404SEF_INSERT_NUMERICAL_ID_ALL_CAT</option>';
+		$xml     .= $options;
+		$xml     .= '</field>';
+		$xml     .= '<field menu="hide" name="insertDateCatList" type="list" multiple="true" default="" label="COM_SH404SEF_INSERT_DATE_CAT_LIST" description="COM_SH404SEF_TT_INSERT_DATE_CAT_LIST">';
+		$xml     .= '<option value="">COM_SH404SEF_INSERT_NUMERICAL_ID_ALL_CAT</option>';
+		$xml     .= $options;
+		$xml     .= '</field>';
+		$xml     .= '</fieldset>';
 		$element = new SimpleXMLElement($xml);
 		return $element;
 	}
@@ -464,7 +514,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 
 		jimport('joomla.application.component.helper');
 		$component = JComponentHelper::getComponent('com_sh404sef');
-		$params = new JRegistry();
+		$params    = new JRegistry();
 		$params->loadString($component->params);
 
 		// set values
@@ -499,7 +549,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	private function _getByComponentFieldJ3()
 	{
 		$installedComponents = Sh404sefHelperGeneral::getComponentsList();
-		$xml = '';
+		$xml                 = '';
 
 		$xml .= '<fieldset name="by_component" label="COM_SH404SEF_CONF_TAB_BY_COMPONENT" description="" groupname="COM_SH404SEF_CONFIG">';
 		foreach ($installedComponents as $name => $properties)

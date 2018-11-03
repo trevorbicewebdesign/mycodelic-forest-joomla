@@ -6,13 +6,15 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date        2018-01-25
+ * @version     4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
+{
 	die('Direct Access to this location is not allowed.');
+}
 
 /**
  * Implement analytics handling
@@ -93,7 +95,6 @@ class Sh404sefClassBaseanalytics
 
 		// return data response for further processing
 		return $dataResponse;
-
 	}
 
 	/**
@@ -136,14 +137,37 @@ class Sh404sefClassBaseanalytics
 			return false;
 		}
 
-		// check if we are set to include tracking code for current user
-		if (!sh404sefHelperGeneral::isInGroupList(JAccess::getGroupsByUser(JFactory::getUser()->id, $recursive = true), empty($config->analyticsUserGroups) ? array(1) : $config->analyticsUserGroups))
+		$user = JFactory::getUser();
+		$userViewLevels = $user->getAuthorisedViewLevels();
+		$allowedViewLevels = $config->analyticsViewLevel;
+
+		// check access view first
+		$shouldInsert = false;
+		if (!empty($allowedViewLevels) && is_array($allowedViewLevels) && !empty($userViewLevels) && is_array($userViewLevels))
 		{
-			return false;
+			if (array_intersect($allowedViewLevels, $userViewLevels))
+			{
+				$shouldInsert = true;
+			}
 		}
-		if (sh404sefHelperGeneral::isInGroupList(JAccess::getGroupsByUser(JFactory::getUser()->id, $recursive = true), $config->analyticsUserGroupsDisabled))
+
+		// check if we are set to include tracking code for current user
+		$groups = $user->getAuthorisedGroups();
+		if (!empty($config->analyticsUserGroups) && sh404sefHelperGeneral::isInGroupList(
+				$groups,
+				$config->analyticsUserGroups
+			)
+		)
 		{
-			return false;
+			$shouldInsert = true;
+		}
+		if (!empty($config->analyticsUserGroupsDisabled) && sh404sefHelperGeneral::isInGroupList(
+				$groups,
+				$config->analyticsUserGroupsDisabled
+			)
+		)
+		{
+			$shouldInsert = false;
 		}
 		// check if current IP is on exclusion list
 		if (!empty($config->analyticsExcludeIP))
@@ -152,10 +176,10 @@ class Sh404sefClassBaseanalytics
 			$exclude = Sh404sefHelperGeneral::checkIPList($ip, $config->analyticsExcludeIP);
 			if ($exclude)
 			{
-				return false;
+				$shouldInsert = false;
 			}
 		}
 
-		return true;
+		return $shouldInsert;
 	}
 }

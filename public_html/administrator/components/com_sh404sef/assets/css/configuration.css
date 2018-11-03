@@ -210,3 +210,23 @@ div.tip-wrap {
 .tip-text {
     text-align: justify;
 }
+
+.wb-spinner-container {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 1em;
+}
+
+.wb-purge-button-disabled {
+    color: #bbb;
+}
+
+.sh404sef-additionaltext .wbl-spinner-css {
+    width: 16px;
+    height: 16px;
+    border: 2px rgba(50, 125, 203, 0.5) solid;
+    border-top: 2px #327dcb solid;
+    border-radius: 50%;
+    webkit-animation: wbl-spinner 0.6s infinite linear;
+    animation: wbl-spinner-kf 0.6s infinite linear;
+}

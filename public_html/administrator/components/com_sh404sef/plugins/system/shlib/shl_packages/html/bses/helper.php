@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.661
- * @date        2018-01-15
+ * @version      0.4.0.678
+ * @date        2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -21,7 +21,7 @@ class ShlHtmlBs_Helper
 	 */
 	public static function addBootstrapCss($document, $root = '')
 	{
-		$htmlManager = ShlHtml_Manager::getInstance();
+		$htmlManager = \ShlHtml_Manager::getInstance();
 		$document->addStyleSheet($htmlManager->getMediaLink('bs', 'css'));
 		$document->addStyleSheet($htmlManager->getMediaLink('modal', 'css'));
 	}
@@ -39,7 +39,7 @@ class ShlHtmlBs_Helper
 
 	public static function addBootstrapJs($document, $root = '')
 	{
-		$htmlManager = ShlHtml_Manager::getInstance();
+		$htmlManager = \ShlHtml_Manager::getInstance();
 		$document->addScript($htmlManager->getMediaLink('bs', 'js'));
 	}
 

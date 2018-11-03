@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date        2018-01-15
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 
 /** ensure this file is being included by a parent file */
@@ -19,7 +19,7 @@ defined('_JEXEC') or die;
  *
  * @since       0.2.1
  */
-class ShlMvcLayout_File extends ShlMvcLayout_Base
+class ShlMvcLayout_File extends \ShlMvcLayout_Base
 {
 	/**
 	 * @var    string  Dot separated path to the layout file, relative to base path
@@ -80,7 +80,7 @@ class ShlMvcLayout_File extends ShlMvcLayout_Base
 
 		// apply a filter for 3rd-party content customization
 		$filterName = 'shlib_layout_' . str_replace('.', '_', $this->layoutId);
-		$layoutOutput = ShlHook::filter($filterName, $layoutOutput, $displayData);
+		$layoutOutput = \ShlHook::filter($filterName, $layoutOutput, $displayData);
 
 		return $layoutOutput;
 	}
@@ -100,7 +100,7 @@ class ShlMvcLayout_File extends ShlMvcLayout_Base
 			$fileName = basename($rawPath);
 			$filePath = dirname($rawPath);
 
-			$possiblePaths = array(JPATH_THEMES . '/' . JFactory::getApplication()->getTemplate() . '/html/layouts/' . $filePath);
+			$possiblePaths = array(JPATH_THEMES . '/' . \JFactory::getApplication()->getTemplate() . '/html/layouts/' . $filePath);
 			if (is_string($this->basePath))
 			{
 				$possiblePaths[] = $this->basePath . '/' . $filePath;

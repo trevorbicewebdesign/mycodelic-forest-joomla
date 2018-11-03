@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.661
- * @date        2018-01-15
+ * @version      0.4.0.678
+ * @date        2018-08-02
  */
 
 defined('_JEXEC') or die;
@@ -78,7 +78,7 @@ class ShlHook
 			self::$hooks[$id][$priority] = empty(self::$hooks[$id][$priority]) ? array() : self::$hooks[$id][$priority];
 			self::$hooks[$id][$priority][] = array(
 				'callback' => $callback,
-				'hash' => self::hash($callback)
+				'hash'     => self::hash($callback)
 			);
 
 			// re-order by priority
@@ -273,5 +273,20 @@ class ShlHook
 		array_pop(self::$hooksStack);
 
 		return $newValue;
+	}
+
+	/**
+	 * Whether a given hook has callbacks registered.
+	 *
+	 * @param string $id
+	 */
+	public static function hasHook($id)
+	{
+		$hasHook = false;
+		if (!empty($id) && is_string($id))
+		{
+			$hasHook = !empty(self::$hooks[$id]);
+		}
+		return $hasHook;
 	}
 }

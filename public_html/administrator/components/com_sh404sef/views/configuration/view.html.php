@@ -2,12 +2,12 @@
 /**
  * sh404SEF - SEO extension for Joomla!
  *
- * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
- * @package     sh404SEF
- * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date  2018-01-25
+ * @author       Yannick Gaultier
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @package      sh404SEF
+ * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
+ * @version      4.15.1.3863
+ * @date  2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -22,7 +22,7 @@ class Sh404sefViewConfiguration extends ShlMvcView_Base
 	{
 		// version prefix
 		$this->joomlaVersionPrefix = Sh404sefHelperGeneral::getJoomlaVersionPrefix();
-		$this->refreshAfter = JFactory::getApplication()->input->getCmd('refreshafter');
+		$this->refreshAfter        = JFactory::getApplication()->input->getCmd('refreshafter');
 
 		if ($this->getLayout() != 'close')
 		{
@@ -35,7 +35,6 @@ class Sh404sefViewConfiguration extends ShlMvcView_Base
 					break;
 				default:
 					$this->byComponentItemsCount = 7;
-
 			}
 
 			// get model
@@ -44,31 +43,33 @@ class Sh404sefViewConfiguration extends ShlMvcView_Base
 			$this->form = $model->getForm();
 
 			// prepare layouts objects, to be used by sub-layouts
-			$this->layoutRenderer = array();
-			$this->layoutRenderer['default'] = new ShlMvcLayout_File('com_sh404sef.configuration.fields.default', sh404SEF_LAYOUTS);
+			$this->layoutRenderer             = array();
+			$this->layoutRenderer['default']  = new ShlMvcLayout_File('com_sh404sef.configuration.fields.default', sh404SEF_LAYOUTS);
 			$this->layoutRenderer['shlegend'] = new ShlMvcLayout_File('com_sh404sef.configuration.fields.legend', sh404SEF_LAYOUTS);
-			$this->layoutRenderer['Rules'] = new ShlMvcLayout_File('com_sh404sef.configuration.fields.rules', sh404SEF_LAYOUTS);
-
+			$this->layoutRenderer['Rules']    = new ShlMvcLayout_File('com_sh404sef.configuration.fields.rules', sh404SEF_LAYOUTS);
 
 			$document = JFactory::getDocument();
 
 			// insert custom stylesheet
 			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/configuration.css');
 
-			if (version_compare(JVERSION, '3.0', 'ge'))
-			{
-				ShlHtmlBs_helper::addBootstrapCss($document);
-				ShlHtmlBs_helper::addBootstrapJs($document);
+			ShlHtmlBs_helper::addBootstrapCss($document);
+			ShlHtmlBs_helper::addBootstrapJs($document);
 
-				JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/j3_list.css');
+			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/j3_list.css');
 
-				// insert bootstrap theme
-				ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
-			}
+			// insert bootstrap theme
+			ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
+
+			ShlHtml_Manager::getInstance($document)
+			               ->addAssets($document)
+			               ->addSpinnerAssets($document);
 
 			// add ga_auth js and css, in case we open configuration
 			$document->addStyleSheet(JUri::root(true) . '/media/com_sh404sef/assets/css/wb_gaauth.css');
 			$document->addScript(JUri::root(true) . '/media/com_sh404sef/assets/js/wb_gaauth_' . $this->joomlaVersionPrefix . '.js');
+			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/permissions.js');
+			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/purge.js');
 		}
 
 		parent::display($this->joomlaVersionPrefix);

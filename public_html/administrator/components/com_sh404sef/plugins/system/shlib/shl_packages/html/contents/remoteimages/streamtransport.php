@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date        2018-01-15
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -117,10 +117,10 @@ class ShlHtmlContentRemoteimage_Streamtransport
 
 					return $this;
 				}
-				catch (ShlStreamBufferTooSmallException $e)
+				catch (\ShlStreamBufferTooSmallException $e)
 				{
 				}
-				catch (ShlInvalidImageException $e)
+				catch (\ShlInvalidImageException $e)
 				{
 					$this->result['size'] = 'invalid';
 				}

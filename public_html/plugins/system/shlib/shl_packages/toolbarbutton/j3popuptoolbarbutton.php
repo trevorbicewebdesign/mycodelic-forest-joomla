@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date		2018-01-15
+ * @version     0.4.0.678
+ * @date		2018-08-02
  */
 
 // Check to ensure this file is within the rest of the framework
@@ -20,7 +20,7 @@ defined('JPATH_BASE') or die();
  * @subpackage		HTML
  * @since		1.5
  */
-class JToolbarButtonj3popuptoolbarbutton extends JToolbarButtonStandard
+class JToolbarButtonj3popuptoolbarbutton extends \JToolbarButtonStandard
 {
 	/**
 	 * Button type
@@ -51,8 +51,8 @@ class JToolbarButtonj3popuptoolbarbutton extends JToolbarButtonStandard
 	public function fetchButton($type = 'Modal', $name = '', $text = '', $url = '', $width = 640, $height = 480, $top = 0, $left = 0, $onClose = '',
 		$title = '', $params = array())
 	{
-		$text = JText::_($text);
-		$title = JText::_($title);
+		$text = \JText::_($text);
+		$title = \JText::_($title);
 		$iconClass = empty($params['iconClass']) ? '' : $params['iconClass'];
 		$onclick = $this->_getOnclick(empty($params['checkListSelection']) ? false : true);
 		$url = $this->_fixUrl($url);
@@ -113,7 +113,7 @@ class JToolbarButtonj3popuptoolbarbutton extends JToolbarButtonStandard
 		else
 		{
 			$onclick = '';
-			$message = JText::_('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
+			$message = \JText::_('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
 			$message = addslashes($message);
 			$onclick = 'onclick="if (document.adminForm.boxchecked.value==0){alert(\'' . $message
 				  . '\');shlBootstrap.canOpenModal = false;return false;}else{
@@ -137,7 +137,7 @@ class JToolbarButtonj3popuptoolbarbutton extends JToolbarButtonStandard
 	{
 		if (substr($url, 0, 4) !== 'http')
 		{
-			$url = JURI::base(true) . '/' . $url;
+			$url = \JURI::base(true) . '/' . $url;
 		}
 
 		return $url;

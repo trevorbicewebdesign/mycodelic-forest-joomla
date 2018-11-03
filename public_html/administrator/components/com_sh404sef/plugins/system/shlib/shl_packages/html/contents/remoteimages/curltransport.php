@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date        2018-01-15
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -169,7 +169,7 @@ class ShlHtmlContentRemoteimage_Curltransport
 			$parsedSize = $this->parser->parseSize();
 			$this->result['size'] = empty($parsedSize) ? 'failed' : $parsedSize;
 		}
-		catch (ShlStreamBufferTooSmallException $e)
+		catch (\ShlStreamBufferTooSmallException $e)
 		{
 			/*
 			 * If this exception is thrown, we don't have enough of the stream buffered
@@ -184,7 +184,7 @@ class ShlHtmlContentRemoteimage_Curltransport
 
 			return strlen($str);
 		}
-		catch (ShlInvalidImageException $e)
+		catch (\ShlInvalidImageException $e)
 		{
 
 			/*

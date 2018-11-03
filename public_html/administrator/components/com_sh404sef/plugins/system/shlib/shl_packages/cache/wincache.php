@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date				2018-01-15
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -15,26 +15,26 @@ defined('_JEXEC') or die;
 
 /**
  * Implements read and store methods
- * to decorate an ShlCache_Manager
+ * to decorate an \ShlCache_Manager
  *
  * @author yannick
  *
  */
-class ShlCache_Wincache extends ShlSystem_Abstractdecorator {
+class ShlCache_Wincache extends \ShlSystem_Abstractdecorator {
 
   protected $_instanceParams = array();
 
   /**
    * Check if setup is correct, ie APC extension is loaded in php
    *
-   * @throws ShlException
+   * @throws \ShlException
    */
   public function init($params) {
 
     $this->_instanceParams = $params;
     $this->enabled =  extension_loaded('wincache');
     if(!$this->enabled) {
-      ShlSystem_Log::error( 'shlib', __METHOD__ . ': WinCache extension not loaded, unable to create cache manager using it');
+      \ShlSystem_Log::error( 'shlib', __METHOD__ . ': WinCache extension not loaded, unable to create cache manager using it');
     }
     
     return true;
@@ -47,7 +47,7 @@ class ShlCache_Wincache extends ShlSystem_Abstractdecorator {
       $read = wincache_ucache_get( $id);
       return $read;
     } else {
-      throw new ShlException( __METHOD__ . ': trying to read from a disabled cache');
+      throw new \ShlException( __METHOD__ . ': trying to read from a disabled cache');
     }
   }
 
@@ -57,7 +57,7 @@ class ShlCache_Wincache extends ShlSystem_Abstractdecorator {
       $stored = wincache_ucache_set( $id, $value, $ttl);
       return $stored;
     } else {
-      throw new ShlException( __METHOD__ . ': trying to write to a disabled cache');
+      throw new \ShlException( __METHOD__ . ': trying to write to a disabled cache');
     }
 
   }
@@ -68,7 +68,7 @@ class ShlCache_Wincache extends ShlSystem_Abstractdecorator {
       $removed = wincache_ucache_delete( $id);
       return $removed;
     } else {
-      throw new ShlException( __METHOD__ . ': trying to delete from a disabled cache');
+      throw new \ShlException( __METHOD__ . ': trying to delete from a disabled cache');
     }
   }
 
@@ -78,7 +78,7 @@ class ShlCache_Wincache extends ShlSystem_Abstractdecorator {
       $cleared = wincache_ucache_clear();
       return $cleared;
     } else {
-      throw new ShlException( __METHOD__ . ': trying to clear a disabled cache');
+      throw new \ShlException( __METHOD__ . ': trying to clear a disabled cache');
     }
   }
 

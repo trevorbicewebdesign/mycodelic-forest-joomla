@@ -3,10 +3,10 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.661
+ * @version      0.4.0.678
  */
 
 /**
@@ -30,7 +30,7 @@ $displayData['msgs'] = empty($displayData['msgs']) || !is_array($displayData['ms
 	<?php
 	foreach ($displayData['msgs'] as $msg)
 	{
-		echo ShlMvcLayout_Helper::render('shlib.msg.msg', array('msg' => $msg, 'container_id' => $id), SHLIB_LAYOUTS_PATH);
+		echo \ShlMvcLayout_Helper::render('shlib.msg.msg', array('msg' => $msg, 'container_id' => $id), SHLIB_LAYOUTS_PATH);
 	}
 	?>
 </section>

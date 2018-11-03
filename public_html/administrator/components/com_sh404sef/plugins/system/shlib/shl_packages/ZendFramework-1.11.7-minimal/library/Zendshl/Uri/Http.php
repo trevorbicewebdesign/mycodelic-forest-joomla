@@ -163,7 +163,7 @@ class Zendshl_Uri_Http extends Zendshl_Uri
    *
    * @param  string $uri String to create URI from, must start with
    *                     'http://' or 'https://'
-   * @throws InvalidArgumentException  When the given $uri is not a string or
+   * @throws \InvalidArgumentException  When the given $uri is not a string or
    *                                   does not start with http:// or https://
    * @throws Zendshl_Uri_Exception        When the given $uri is invalid
    * @return Zendshl_Uri_Http

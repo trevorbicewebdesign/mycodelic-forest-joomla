@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date				2018-01-15
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // no direct access
@@ -35,7 +35,7 @@ class ShlSystem_Email {
    */
   public static function send( $params = array(), $noLog = false) {
 
-    $app = JFactory::getApplication();
+    $app = \JFactory::getApplication();
 
     //load the language strings
     JPlugin::loadLanguage( 'plg_system_shlib', JPATH_ADMINISTRATOR);
@@ -66,7 +66,7 @@ class ShlSystem_Email {
 
     if (is_array($result)) {
       if(!$noLog) {
-        ShlSystem_Log::error( 'shlib', $result['message']);
+        \ShlSystem_Log::error( 'shlib', $result['message']);
       }
       return false;
     }
@@ -86,14 +86,14 @@ class ShlSystem_Email {
 
       try {
         $defTo = new DateTime( $message['deferredTo']);
-      } catch (Exception $e) {
+      } catch (\Exception $e) {
         // this is an error, as defer to date is invalid. Return status
         $status = array( 'message' => 'Local emailer error sending to ' . (empty($message['recipient']) ? 'N/A' : $message['recipient']) . ': ' . $e->getMessage());
         return $status;
       }
 
       // we have a valid defer to date, leave it to others to handle, just log a debug message
-      ShlSystem_Log::debug( 'shlib', 'Local emailer: receiving deferred message for ' . (empty($message['recipient']) ? 'N/A' : $message['recipient']) . ', deferred until ' . $message['deferredTo']. ' : not sending');
+      \ShlSystem_Log::debug( 'shlib', 'Local emailer: receiving deferred message for ' . (empty($message['recipient']) ? 'N/A' : $message['recipient']) . ', deferred until ' . $message['deferredTo']. ' : not sending');
 
       // exit with successful message, as there was no actual error
       return true;
@@ -106,13 +106,13 @@ class ShlSystem_Email {
       jimport('joomla.mail.mail');
       try {
         $status = JMail::sendMail($message['mailfrom'], $message['fromname'], $message['recipient'], $message['subject'], $message['body'], $message['html'], $message['cc'], $message['bcc'] );
-      }catch (Exception $e) {
+      }catch (\Exception $e) {
         $status = $e;
       }
     }
 
     // log error : exception cannot be used, as they would break the plugins chain
-    if ($status instanceof Exception) {
+    if ($status instanceof \Exception) {
       $code = $status->getCode();
       if ($code == 500) {
         $cannotSend = true;

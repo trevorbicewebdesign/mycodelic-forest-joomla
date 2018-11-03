@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -41,8 +41,11 @@ class Sh404sefModelHitdetails extends Sh404sefClassBaselistmodel
 	 * Method to get lists item data
 	 *
 	 * @access public
+	 *
 	 * @param        object             holding options
-	 * @param boolea $returnZeroElement . If true, and the list returned is empty, a null object will be returned (as an array)
+	 * @param boolea $returnZeroElement . If true, and the list returned is empty, a null object will be returned (as
+	 *     an array)
+	 *
 	 * @return array
 	 */
 	public function getList($options = null, $returnZeroElement = false, $forcedLimitstart = null, $forcedLimit = null)
@@ -147,6 +150,32 @@ class Sh404sefModelHitdetails extends Sh404sefClassBaselistmodel
 		}
 
 		ShlDbHelper::delete($this->_defaultTable, array('url' => $url->requested_url));
+	}
+
+	public function purgeAllDetails($requestType)
+	{
+		$requestType = $this->getRequestType($requestType);
+		$this->_setState('request_type', $requestType);
+		$set = $this->_setTableName();
+		if ($set !== true)
+		{
+			$this->setError($set);
+			return;
+		}
+
+		switch ($requestType)
+		{
+			case Sh404sefModelReqrecorder::REQUEST_404:
+			case Sh404sefModelReqrecorder::REQUEST_ALIAS:
+			case Sh404sefModelReqrecorder::REQUEST_SHURL:
+				ShlDbHelper::delete($this->_defaultTable);
+				break;
+			default:
+				return false;
+				break;
+		}
+
+		return true;
 	}
 
 	public function getRequestType($requestType = null)

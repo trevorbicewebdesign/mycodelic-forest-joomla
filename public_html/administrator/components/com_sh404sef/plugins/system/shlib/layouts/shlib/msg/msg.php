@@ -3,10 +3,10 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.661
+ * @version      0.4.0.678
  */
 
 /**
@@ -21,9 +21,9 @@
 
 defined('_JEXEC') or die;
 
-$class = empty(ShlMsg_Manager::$displayTypeClasses[$displayData['msg']->display_type]) ?
-	ShlMsg_Manager::$displayTypeClasses[ShlMsg_Manager::DISPLAY_TYPE_INFO]
-	: ShlMsg_Manager::$displayTypeClasses[$displayData['msg']->display_type];
+$class = empty(\ShlMsg_Manager::$displayTypeClasses[$displayData['msg']->display_type]) ?
+	\ShlMsg_Manager::$displayTypeClasses[\ShlMsg_Manager::DISPLAY_TYPE_INFO]
+	: \ShlMsg_Manager::$displayTypeClasses[$displayData['msg']->display_type];
 ?>
 
 <!-- wbLib message -->
@@ -39,7 +39,7 @@ $class = empty(ShlMsg_Manager::$displayTypeClasses[$displayData['msg']->display_
 	<?php endif; ?>
 	>
 
-	<?php if ($displayData['msg']->action != ShlMsg_Manager::ACTION_CANNOT_CLOSE) : ?>
+	<?php if ($displayData['msg']->action != \ShlMsg_Manager::ACTION_CANNOT_CLOSE) : ?>
 		<button type="button"
 		        data-element-id="<?php echo $displayData['msg']->uid; ?>"
 		        data-token="<?php echo JSession::getFormToken(); ?>"

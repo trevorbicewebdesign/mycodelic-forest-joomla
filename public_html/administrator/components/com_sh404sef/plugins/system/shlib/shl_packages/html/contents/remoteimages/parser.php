@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date        2018-01-15
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -38,7 +38,7 @@ defined('_JEXEC') or die();
  *
  * @version 0.01
  */
-class ShlInvalidImageException extends Exception
+class ShlInvalidImageException extends \Exception
 {
 
 }
@@ -263,13 +263,13 @@ class ShlHtmlContentRemoteimage_Parser
 					{
 						$data = $this->stream->read($this->readInt($this->stream->read(2)) - 2);
 
-						$stream = new ShlHtmlContentRemoteimage_Stream;
+						$stream = new \ShlHtmlContentRemoteimage_Stream;
 						$stream->write($data);
 
 						if ($stream->read(4) === 'Exif')
 						{
 							$stream->read(2);
-							$exif = new ShlHtmlContentRemoteimage_ExifParser($stream);
+							$exif = new \ShlHtmlContentRemoteimage_ExifParser($stream);
 						}
 
 						break;
@@ -340,7 +340,7 @@ class ShlHtmlContentRemoteimage_Parser
 	 */
 	protected function parseSizeForTiff()
 	{
-		$exif = new ShlHtmlContentRemoteimage_ExifParser($this->stream);
+		$exif = new \ShlHtmlContentRemoteimage_ExifParser($this->stream);
 
 		if ($exif->isRotated())
 		{

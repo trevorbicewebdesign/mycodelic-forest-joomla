@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date        2018-01-25
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -30,7 +30,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 	 */
 	function shCleanUpTitle($title)
 	{
-
 		return Sh404sefHelperMetadata::cleanUpTitle($title);
 	}
 
@@ -43,7 +42,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 	 */
 	function shProtectPageTitle($title)
 	{
-
 		return Sh404sefHelperMetadata::protectPageTitle($title);
 	}
 
@@ -56,7 +54,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 	 */
 	function shCleanUpDesc($desc)
 	{
-
 		return Sh404sefHelperMetadata::cleanUpDesc($desc);
 	}
 
@@ -65,7 +62,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 	 */
 	function shIncludeMetaPlugin()
 	{
-
 		Sh404sefHelperMetadata::includeMetaPlugin();
 	}
 
@@ -73,10 +69,8 @@ if (defined('SH404SEF_IS_RUNNING'))
 	// one or more instances of a tag. If last parameter is 'first', then only the
 	// first occurence of the tag is replaced, or the new value is inserted only
 	// after or before the first occurence of the tag
-
 	function shInsertCustomTagInBuffer($buffer, $tag, $where, $value, $firstOnly)
 	{
-
 		if (!$buffer || !$tag || !$value)
 		{
 			return $buffer;
@@ -86,7 +80,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		{
 			return $buffer;
 		}
-		$result = $bits[0];
+		$result   = $bits[0];
 		$maxCount = count($bits) - 1;
 		switch ($where)
 		{
@@ -115,7 +109,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shPregInsertCustomTagInBuffer($buffer, $tag, $where, $value, $firstOnly, $rawPattern = false)
 	{
-
 		if (!$buffer || !$tag || !$value)
 		{
 			return $buffer;
@@ -150,7 +143,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoMultipleH1ToH2Callback($matches)
 	{
-
 		static $firstH1 = true;
 		static $firstH1Closed = true;
 
@@ -174,14 +166,13 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoRedirectOutboundLinksCallback($matches)
 	{
-
 		if (count($matches) != 2)
 		{
 			return empty($matches) ? '' : $matches[0];
 		}
 		if (strpos($matches[1], Sh404sefFactory::getPageInfo()->getDefaultFrontLiveSite()) === false)
 		{
-			$mask = '<a href="' . Sh404sefFactory::getPageInfo()->getDefaultFrontLiveSite()
+			$mask   = '<a href="' . Sh404sefFactory::getPageInfo()->getDefaultFrontLiveSite()
 				. '/index.php?option=com_sh404sef&shtask=redirect&shtarget=%%shM1%%"';
 			$result = str_replace('%%shM1%%', $matches[1], $mask);
 		}
@@ -195,13 +186,12 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoInsertOutboundLinksImageCallback($matches)
 	{
-
 		//if (count($matches) != 2 && count($matches) != 3) return empty($matches) ? '' : $matches[0];
-		$orig = $matches[0];
-		$bits = explode('href=', $orig);
+		$orig  = $matches[0];
+		$bits  = explode('href=', $orig);
 		$part2 = $bits[1]; // 2nd part, after the href=
-		$sep = substr($part2, 0, 1); // " or ' ?
-		$link = JString::trim($part2, $sep); // remove first " or '
+		$sep   = substr($part2, 0, 1); // " or ' ?
+		$link  = JString::trim($part2, $sep); // remove first " or '
 		if (empty($sep))
 		{
 			// this should not happen, but it happens (Fireboard)
@@ -213,7 +203,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		$link = $link[0]; // keep only the link
 
 		$shPageInfo = &Sh404sefFactory::getPageInfo();
-		$sefConfig = &Sh404sefFactory::getConfig();
+		$sefConfig  = &Sh404sefFactory::getConfig();
 
 		if (substr($link, 0, strlen($shPageInfo->getDefaultFrontLiveSite())) != $shPageInfo->getDefaultFrontLiveSite()
 			&& (substr($link, 0, 7) == 'http://' || substr($link, 0, 7) == 'https://')
@@ -221,23 +211,22 @@ if (defined('SH404SEF_IS_RUNNING'))
 			&& strpos($link, 'pinterest.com') === false
 		)
 		{
-
 			$mask = '%%shM1%%href="%%shM2%%" %%shM3%% >%%shM4%%<img border="0" alt="%%shM5%%" src="' . $shPageInfo->getDefaultFrontLiveSite()
 				. '/components/com_sh404sef/images/' . $sefConfig->shImageForOutboundLinks . '"/></a>';
 
 			$result = str_replace('%%shM1%%', $bits[0], $mask);
 			$result = str_replace('%%shM2%%', $link, $result);
 
-			$m3 = str_replace($sep . $link . $sep, '', str_replace('</a>', '', $part2)); // remove link from part 2
-			$bits2 = explode('>', $m3);
-			$m3 = $bits2[0];
+			$m3     = str_replace($sep . $link . $sep, '', str_replace('</a>', '', $part2)); // remove link from part 2
+			$bits2  = explode('>', $m3);
+			$m3     = $bits2[0];
 			$result = str_replace('%%shM3%%', $m3, $result);
 
 			array_shift($bits2); // remove first bit
-			$m4 = implode($bits2, '>');
+			$m4     = implode($bits2, '>');
 			$result = str_replace('%%shM4%%', $m4, $result);
 
-			$m5 = strip_tags($m4);
+			$m5     = strip_tags($m4);
 			$result = str_replace('%%shM5%%', $m5, $result);
 		}
 		else
@@ -250,7 +239,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoTitleTags(&$buffer)
 	{
-
 		// Replace TITLE and DESCRIPTION and KEYWORDS
 		if (empty($buffer))
 		{
@@ -258,7 +246,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		}
 
 		$shPageInfo = Sh404sefFactory::getPageInfo();
-		$sefConfig = Sh404sefFactory::getConfig();
+		$sefConfig  = Sh404sefFactory::getConfig();
 
 		// V 1.2.4.t protect against error if using shCustomtags without sh404SEF activated
 		// this should not happen, so we simply do nothing
@@ -279,7 +267,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 			// Optionnaly, we will force them into the page again, in case some
 			// other extension has modified them
 			$metaDataOverride = !defined('SH404SEF_OTHER_DO_NOT_OVERRIDE_EXISTING_META_DATA') || SH404SEF_OTHER_DO_NOT_OVERRIDE_EXISTING_META_DATA == 0;
-			$document = JFactory::getDocument();
+			$document         = JFactory::getDocument();
 			if ($metaDataOverride)
 			{
 				$headData = $document->getHeadData();
@@ -287,12 +275,13 @@ if (defined('SH404SEF_IS_RUNNING'))
 				// if document title is != from the one we have in store, override
 				if (!empty($metadata->pageTitle) && $document->getTitle() != $metadata->pageTitle)
 				{
-					$shPageInfo->pageTitle = $metadata->pageTitle;
+					$shPageInfo->pageTitle   = $metadata->pageTitle;
 					$shPageInfo->pageTitlePr = Sh404sefHelperMetadata::protectPageTitle($shPageInfo->pageTitle);
-					$buffer = ShlSystem_Strings::pr('/\<\s*title\s*\>.*\<\s*\/title\s*\>/isuU', '<title>' . $shPageInfo->pageTitlePr . '</title>', $buffer);
-					$buffer = ShlSystem_Strings::pr('/\<\s*meta\s+name\s*=\s*"title.*\/\>/isuU', '', $buffer); // remove any title meta
+					$buffer                  = ShlSystem_Strings::pr('/\<\s*title\s*\>.*\<\s*\/title\s*\>/isuU', '<title>' . $shPageInfo->pageTitlePr . '</title>', $buffer);
+					$buffer                  = ShlSystem_Strings::pr('/\<\s*meta\s+name\s*=\s*"title.*\/\>/isuU', '', $buffer); // remove any title meta
 				}
 
+				$metadata->pageDescription = empty($metadata->pageDescription) ? Sh404sefHelperMetadata::getAutoDescription($buffer) : $metadata->pageDescription;
 				if (!empty($metadata->pageDescription) && $document->getDescription() != $metadata->pageDescription)
 				{
 					$shPageInfo->pageDescription = $metadata->pageDescription;
@@ -363,19 +352,19 @@ if (defined('SH404SEF_IS_RUNNING'))
 			}
 			else
 			{
-				$shPageInfo->pageTitle = Sh404sefHelperMetadata::cleanUpTitle($document->getTitle());
-				$shPageInfo->pageTitlePr = Sh404sefHelperMetadata::protectPageTitle($shPageInfo->pageTitle);
+				$shPageInfo->pageTitle       = Sh404sefHelperMetadata::cleanUpTitle($document->getTitle());
+				$shPageInfo->pageTitlePr     = Sh404sefHelperMetadata::protectPageTitle($shPageInfo->pageTitle);
 				$shPageInfo->pageDescription = Sh404sefHelperMetadata::cleanUpDesc($document->getDescription());
 			}
 
 			// custom handling of canonical
 			$canonicalPattern = '/\<\s*link[^>]+rel\s*=\s*"canonical[^>]+\/\>/isUu';
-			$matches = array();
-			$canonicalCount = preg_match_all($canonicalPattern, $buffer, $matches);
+			$matches          = array();
+			$canonicalCount   = preg_match_all($canonicalPattern, $buffer, $matches);
 			// more than one canonical already: kill them all
 			if ($canonicalCount > 1 && Sh404sefFactory::getConfig()->removeOtherCanonicals)
 			{
-				$buffer = ShlSystem_Strings::pr($canonicalPattern, '', $buffer);
+				$buffer         = ShlSystem_Strings::pr($canonicalPattern, '', $buffer);
 				$canonicalCount = 0;
 			} // only one and J3: must be the one inserted by J3 SEF plugin
 			else if ($canonicalCount > 0 && Sh404sefFactory::getConfig()->removeOtherCanonicals && version_compare(JVERSION, '3.0', 'ge')
@@ -383,7 +372,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 			)
 			{
 				// kill it, if asked to
-				$buffer = ShlSystem_Strings::pr($canonicalPattern, '', $buffer);
+				$buffer         = ShlSystem_Strings::pr($canonicalPattern, '', $buffer);
 				$canonicalCount = 0;
 			}
 
@@ -465,7 +454,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 			// version x : if multiple h1 headings, replace them by h2
 			if ($sefConfig->shMultipleH1ToH2 && substr_count(JString::strtolower($buffer), '<h1') > 1)
 			{
-				$tmp = preg_replace_callback('#<(\/)?h1#sUu', 'shDoMultipleH1ToH2Callback', $buffer);
+				$tmp    = preg_replace_callback('#<(\/)?h1#sUu', 'shDoMultipleH1ToH2Callback', $buffer);
 				$buffer = !empty($tmp) ? $tmp : $buffer;
 			}
 
@@ -510,7 +499,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoAnalytics(&$buffer)
 	{
-
 		// get sh404sef config
 		$config = Sh404sefFactory::getConfig();
 
@@ -522,7 +510,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 		// calculate params
 		$className = 'Sh404sefAdapterAnalytics' . strtolower($config->analyticsType);
-		$handler = new $className();
+		$handler   = new $className();
 
 		// do insert
 		$snippet = $handler->getSnippet();
@@ -546,9 +534,8 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoSocialButtons(&$buffer)
 	{
-
 		// get sh404sef config
-		$sefConfig = Sh404sefFactory::getConfig();
+		$sefConfig  = Sh404sefFactory::getConfig();
 		$dispatcher = ShlSystem_factory::dispatcher();
 
 		// fire event so that social plugin can attach required external js and css
@@ -560,7 +547,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoSocialAnalytics(&$buffer)
 	{
-
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
 
@@ -577,7 +563,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoShURL(&$buffer)
 	{
-
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
 
@@ -600,7 +585,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertOpenGraphData(&$buffer)
 	{
-
 		$tags = Sh404sefHelperOgp::buildOpenGraphTags();
 
 		// actually insert the tags
@@ -618,7 +602,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertGoogleAuthorshipData(&$buffer)
 	{
-
 		// quick check, do we have a createdBy field on the page?
 		if (strpos($buffer, '<dd class="createdby">') === false)
 		{
@@ -627,7 +610,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
-		$pageInfo = Sh404sefFactory::getPageInfo();
+		$pageInfo  = Sh404sefFactory::getPageInfo();
 
 		if (empty($sefConfig->shMetaManagementActivated) || !isset($sefConfig) || empty($pageInfo->currentNonSefUrl)
 			|| (!empty($pageInfo->httpStatus) && $pageInfo->httpStatus == 404)
@@ -653,9 +636,9 @@ if (defined('SH404SEF_IS_RUNNING'))
 		}
 
 		// site
-		$authorUrl = empty($customData->google_authorship_author_profile) ? $sefConfig->googleAuthorshipAuthorProfile
+		$authorUrl  = empty($customData->google_authorship_author_profile) ? $sefConfig->googleAuthorshipAuthorProfile
 			: $customData->google_authorship_author_profile;
-		$authorUrl = JString::trim($authorUrl, '/');
+		$authorUrl  = JString::trim($authorUrl, '/');
 		$authorName = empty($customData->google_authorship_author_name) ? $sefConfig->googleAuthorshipAuthorName
 			: $customData->google_authorship_author_name;
 
@@ -663,7 +646,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		{
 			return;
 		}
-		$authorUrl = 'https://plus.google.com/' . htmlspecialchars($authorUrl, ENT_COMPAT, 'UTF-8') . '?rel=author';
+		$authorUrl  = 'https://plus.google.com/' . htmlspecialchars($authorUrl, ENT_COMPAT, 'UTF-8') . '?rel=author';
 		$authorName = htmlspecialchars($authorName, ENT_COMPAT, 'UTF-8');
 
 		$googleAuthorshipData = JText::sprintf('COM_CONTENT_WRITTEN_BY', JHtml::_('link', $authorUrl, $authorName));
@@ -680,7 +663,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertGooglePublisherData(&$buffer)
 	{
-
 		// don't insert head link to publisher page if there's
 		// already a visible badge (see sh404sef core social plugin
 		if (strpos($buffer, 'rel=\'publisher\'') !== false)
@@ -690,7 +672,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 		// get sh404sef config
 		$sefConfig = Sh404sefFactory::getConfig();
-		$pageInfo = Sh404sefFactory::getPageInfo();
+		$pageInfo  = Sh404sefFactory::getPageInfo();
 
 		if (empty($sefConfig->shMetaManagementActivated) || !isset($sefConfig) || empty($pageInfo->currentNonSefUrl)
 			|| (!empty($pageInfo->httpStatus) && $pageInfo->httpStatus == 404)
@@ -731,7 +713,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function insertStructuredData(& $buffer)
 	{
-
 		$markup = Sh404sefHelperStructureddata::buildStructuredData();
 		if (!empty($markup))
 		{
@@ -741,7 +722,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shInsertTwitterCardsData(&$buffer)
 	{
-
 		$twitterCardsData = Sh404sefHelperTcards::buildTwitterCardsTags();
 
 		// actually insert the tags
@@ -753,11 +733,10 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shDoHeadersChanges()
 	{
-
 		global $shCanonicalTag;
 
 		$sefConfig = Sh404sefFactory::getConfig();
-		$pageInfo = Sh404sefFactory::getPageInfo();
+		$pageInfo  = Sh404sefFactory::getPageInfo();
 
 		if (!isset($sefConfig) || empty($sefConfig->shMetaManagementActivated) || empty($pageInfo->currentNonSefUrl))
 		{
@@ -779,7 +758,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 	function shAddPaginationHeaderLinks(&$buffer)
 	{
-
 		$sefConfig = &Sh404sefFactory::getConfig();
 
 		if (!isset($sefConfig) || empty($sefConfig->shMetaManagementActivated) || empty($sefConfig->insertPaginationTags))
@@ -792,20 +770,19 @@ if (defined('SH404SEF_IS_RUNNING'))
 		// handle pagination
 		if (!empty($pageInfo->paginationNextLink))
 		{
-			$link = "\n  " . '<link rel="next" href="' . $pageInfo->paginationNextLink . '" />';
+			$link   = "\n  " . '<link rel="next" href="' . $pageInfo->paginationNextLink . '" />';
 			$buffer = shInsertCustomTagInBuffer($buffer, '<head>', 'after', $link, 'first');
 		}
 
 		if (!empty($pageInfo->paginationPrevLink))
 		{
-			$link = "\n  " . '<link rel="prev" href="' . $pageInfo->paginationPrevLink . '" />';
+			$link   = "\n  " . '<link rel="prev" href="' . $pageInfo->paginationPrevLink . '" />';
 			$buffer = shInsertCustomTagInBuffer($buffer, '<head>', 'after', $link, 'first');
 		}
 	}
 
 	function shFixHrefLang(&$buffer)
 	{
-
 		// if not home page
 		$pageInfo = Sh404sefFactory::getPageInfo();
 		if ($pageInfo->currentNonSefUrl != $pageInfo->homeLink)
@@ -829,7 +806,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		if ($languageFilterParams->get('alternate_meta'))
 		{
 			$languages = Sh404sefHelperLanguage::getActiveLanguages();
-			$config = Sh404sefFactory::getConfig();
+			$config    = Sh404sefFactory::getConfig();
 			foreach ($languages as $key => $language)
 			{
 				$sefCode = JString::ltrim($config->shRewriteStrings[$config->shRewriteMode] . $language->sef, '/');
@@ -841,9 +818,24 @@ if (defined('SH404SEF_IS_RUNNING'))
 				{
 					$url = JURI::base() . $sefCode . '/';
 				}
-				$link = "\n  " . '<link href="' . $url . '" rel="alternate" hreflang="' . $language->lang_code . '" />';
+				$link   = "\n  " . '<link href="' . $url . '" rel="alternate" hreflang="' . $language->lang_code . '" />';
 				$buffer = shInsertCustomTagInBuffer($buffer, '<head>', 'after', $link, 'first');
 			}
+		}
+	}
+
+	function shRemoveContentTags(&$buffer)
+	{
+		$tags = array(
+			'sh404sef_tag_description',
+			'sh404sef_tag_ogp_image'
+		);
+		foreach ($tags as $tag)
+		{
+			$buffer = Sh404sefHelperGeneral::removeCommentedTag(
+				$buffer,
+				$tag
+			);
 		}
 	}
 
@@ -890,6 +882,9 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 		// pagination links for lists
 		shAddPaginationHeaderLinks($shPage);
+
+		// remove content put in tags
+		shRemoveContentTags($shPage);
 
 		if (Sh404sefFactory::getConfig()->displayUrlCacheStats)
 		{

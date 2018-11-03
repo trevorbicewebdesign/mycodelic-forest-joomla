@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date				2018-01-15
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 /** ensure this file is being included by a parent file */
@@ -41,10 +41,10 @@ class ShlSystem_Abstractdecorator {
       return call_user_func_array( array($this->_decorated, $method), $arguments);
     } else {
       // temporary (yeah, right) workaround for http://joomlacode.org/gf/project/joomla/tracker/?action=TrackerItemEdit&tracker_item_id=27923
-      if($method == 'getError' && !empty($this->_decorated) && $this->_decorated instanceof JDatabase) {
+      if($method == 'getError' && !empty($this->_decorated) && $this->_decorated instanceof \JDatabase) {
         return false;
       }
-      throw new ShlException( 'Method ' . $method . ' not defined');
+      throw new \ShlException( 'Method ' . $method . ' not defined');
     }
   }
 
@@ -58,7 +58,7 @@ class ShlSystem_Abstractdecorator {
     if (property_exists( $this->_decorated, $property) || $this->_decoratedIsDecorator) {
       return $this->_decorated->$property;
     } else {
-      throw new ShlException('Trying to get non-existent property ('.(empty($property) ? 'N/A':$property).') for class ' . $this->_decoratedClass);
+      throw new \ShlException('Trying to get non-existent property ('.(empty($property) ? 'N/A':$property).') for class ' . $this->_decoratedClass);
     }
   }
 

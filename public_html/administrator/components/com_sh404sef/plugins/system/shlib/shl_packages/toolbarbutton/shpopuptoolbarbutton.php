@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date		2018-01-15
+ * @version     0.4.0.678
+ * @date		2018-08-02
  */
 
 // Check to ensure this file is within the rest of the framework
@@ -20,7 +20,7 @@ defined('JPATH_BASE') or die();
  * @subpackage		HTML
  * @since		1.5
  */
-class JButtonShpopuptoolbarbutton extends JButton
+class JButtonShpopuptoolbarbutton extends \JToolbarButton
 {
 	/**
 	 * Button type
@@ -67,7 +67,7 @@ class JButtonShpopuptoolbarbutton extends JButton
 		$defaultOptions = array('class' => 'modal', 'size' => array('x' => 640, 'y' => 500));
 		$options = array_merge($defaultOptions, $popupOptions);
 
-		$text = JText::_($text);
+		$text = \JText::_($text);
 		$class = $this->fetchIconClass($name);
 		$doTask = $this->_getCommand($msg, $name, $task, $list, $hideMenu);
 		$id = $this->fetchId($name);
@@ -114,7 +114,7 @@ class JButtonShpopuptoolbarbutton extends JButton
 	 */
 	function _getCommand($msg, $name, $task, $list, $hide)
 	{
-		$message = JText::_('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
+		$message = \JText::_('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
 		$message = addslashes($message);
 
 		if ($hide)

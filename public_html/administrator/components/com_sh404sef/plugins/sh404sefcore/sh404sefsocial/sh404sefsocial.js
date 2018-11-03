@@ -5,8 +5,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.13.2.3783
- * @date        2018-01-25
+ * @version     4.15.1.3863
+ * @date        2018-08-22
  */
 
 // get Google Analytics queue
@@ -19,14 +19,18 @@ var sh404SEFAnalyticsType = sh404SEFAnalyticsType || [];
 
 _sh404sefSocialTrack.setup = function () {
 
-    FB.init({
-        appId: _sh404sefSocialTrack.options.FBAppId ? _sh404sefSocialTrack.options.FBAppId : "",
-        version: "v2.6",
-        status: true, // check login status
-        cookie: true, // enable cookies to allow the server to access the session
-        oauth: true, // enable OAuth 2.0
-        xfbml: true  // parse XFBML
-    });
+    try {
+        FB.init({
+            appId: _sh404sefSocialTrack.options.FBAppId ? _sh404sefSocialTrack.options.FBAppId : "",
+            version: "v2.6",
+            status: true, // check login status
+            cookie: true, // enable cookies to allow the server to access the session
+            oauth: true, // enable OAuth 2.0
+            xfbml: true  // parse XFBML
+        });
+    } catch (Err) {
+        console.error('Facebook sharing button not initialized. If using Firefox, it may be blocked if using the Tracking Protection feature.');
+    }
 
     if (_sh404sefSocialTrack.options.enableAnalytics) {
         // compute tracker name
@@ -56,10 +60,10 @@ _sh404sefSocialTrack.setupTweeterTracking = function () {
                         targetUrl = _sh404sefSocialTrack.extractParamFromUri(event.target.src, 'url');
                     }
                     if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.classic) {
-                        _gaq.push([ '_trackEvent', _sh404sefSocialTrack.trackerName + '_tweeter', 'tweet', targetUrl, 1, true ]);
+                        _gaq.push(['_trackEvent', _sh404sefSocialTrack.trackerName + '_tweeter', 'tweet', targetUrl, 1, true]);
                         // Google tracking
                         if (_sh404sefSocialTrack.options.enableGoogleTracking) {
-                            _gaq.push([ '_trackSocial', 'twitter', 'tweet', targetUrl ]);
+                            _gaq.push(['_trackSocial', 'twitter', 'tweet', targetUrl]);
                         }
                     }
                     if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
@@ -86,7 +90,7 @@ _sh404sefSocialTrackPinterestTracking = function (msg, url) {
             var targetMedia = _sh404sefSocialTrack.extractParamFromUri(url, 'url') + ' ('
                 + _sh404sefSocialTrack.extractParamFromUri(url, 'media') + ')';
             if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.classic) {
-                _gaq.push([ '_trackEvent', _sh404sefSocialTrack.trackerName + '_pinterest', msg, targetMedia, 1, true ]);
+                _gaq.push(['_trackEvent', _sh404sefSocialTrack.trackerName + '_pinterest', msg, targetMedia, 1, true]);
             }
             if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
                 ga('send', 'event', _sh404sefSocialTrack.trackerName + '_pinterest', msg, targetUrl, 1);
@@ -104,7 +108,7 @@ _sh404sefSocialTrackGPlusTracking = function (data) {
     try {
         if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.classic) {
             if (data.state == "on" || data.state == "off") {
-                _gaq.push([ '_trackEvent', _sh404sefSocialTrack.trackerName + '_gplus', data.state, data.href, 1, true ]);
+                _gaq.push(['_trackEvent', _sh404sefSocialTrack.trackerName + '_gplus', data.state, data.href, 1, true]);
             }
         }
         if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
@@ -121,7 +125,7 @@ _sh404sefSocialTrackGPlusTracking = function (data) {
 _sh404sefSocialTrack.GPageTracking = function (target, source) {
     try {
         if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.classic) {
-            _gaq.push([ '_trackEvent', _sh404sefSocialTrack.trackerName + '_gplus_page', target, source, 1, true ]);
+            _gaq.push(['_trackEvent', _sh404sefSocialTrack.trackerName + '_gplus_page', target, source, 1, true]);
         }
         if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
             ga('send', 'event', _sh404sefSocialTrack.trackerName + '_gplus_page', target, source, 1);

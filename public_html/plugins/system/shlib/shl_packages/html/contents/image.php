@@ -3,12 +3,14 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.661
- * @date        2018-01-15
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
+
+use Joomla\String\StringHelper;
 
 // Security check to ensure this file is being included by a parent file.
 defined('_JEXEC') or die();
@@ -38,12 +40,12 @@ class ShlHtmlContent_Image
 		if (empty($rootPath))
 		{
 			$rootUrl = Juri::root();
-			$rootLength = JString::strlen($rootUrl);
+			$rootLength = StringHelper::strlen($rootUrl);
 			$protocoleRelRootUrl = str_replace(array('https://', 'http://'), '//', $rootUrl);
-			$protocoleRelRootLength = JString::strlen($protocoleRelRootUrl);
+			$protocoleRelRootLength = StringHelper::strlen($protocoleRelRootUrl);
 			$rootPath = JUri::base(true);
-			$pathLength = JString::strlen($rootPath);
-			if (JFactory::getApplication()->isAdmin())
+			$pathLength = StringHelper::strlen($rootPath);
+			if (\JFactory::getApplication()->isAdmin())
 			{
 				$rootPath = str_replace('/administrator', '', $rootPath);
 			}
@@ -53,20 +55,20 @@ class ShlHtmlContent_Image
 		$dimensions = array('width' => 0, 'height' => 0);
 
 		// build the physical path from the URL
-		if (JString::substr($url, 0, $rootLength) == $rootUrl)
+		if (StringHelper::substr($url, 0, $rootLength) == $rootUrl)
 		{
-			$cleanedPath = self::trimQuery(JString::substr($url, $rootLength));
+			$cleanedPath = self::trimQuery(StringHelper::substr($url, $rootLength));
 		}
-		else if (!empty($rootPath) && JString::substr($url, 0, $pathLength) == $rootPath)
+		else if (!empty($rootPath) && StringHelper::substr($url, 0, $pathLength) == $rootPath)
 		{
-			$cleanedPath = self::trimQuery(JString::substr($url, $pathLength));
+			$cleanedPath = self::trimQuery(StringHelper::substr($url, $pathLength));
 		}
-		else if (JString::substr($url, 0, 2) == '//' && JString::substr($url, 0, $protocoleRelRootLength) == $protocoleRelRootUrl)
+		else if (StringHelper::substr($url, 0, 2) == '//' && StringHelper::substr($url, 0, $protocoleRelRootLength) == $protocoleRelRootUrl)
 		{
 			// protocol relative URL
-			$cleanedPath = self::trimQuery(JString::substr($url, $protocoleRelRootLength));
+			$cleanedPath = self::trimQuery(StringHelper::substr($url, $protocoleRelRootLength));
 		}
-		else if (ShlSystem_Route::isFullyQUalified($url))
+		else if (\ShlSystem_Route::isFullyQUalified($url))
 		{
 			// a URL, but not on this site, try to download it and read its size
 			$remoteDimensions = self::getCachedRemoteImageDimensions($url);
@@ -161,7 +163,7 @@ class ShlHtmlContent_Image
 		$lockCache->store($url, $lockKey);
 
 		// use utility class to fetch remote image
-		$sizeReader = new ShlHtmlContentRemoteimage_Fasterimage();
+		$sizeReader = new \ShlHtmlContentRemoteimage_Fasterimage();
 		$dimensionsRead = $sizeReader->getSize($url);
 
 		// clear lock

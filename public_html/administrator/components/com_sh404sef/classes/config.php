@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.13.2.3783
- * @date  2018-01-25
+ * @version      4.15.1.3863
+ * @date  2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -37,7 +37,7 @@ class Sh404sefClassConfig
 	const COM_SH404SEF_KEYSTORE_KEY_404_ERROR_PAGE = 'com_sh404sef.errors.404';
 
 	/* string,  version number */
-	public $version = '4.13.2.3783';
+	public $version = '4.15.1.3863';
 	/* boolean, is 404 SEF enabled  */
 	public $Enabled = false;
 	/* char,  Character to use for url replacement */
@@ -134,7 +134,7 @@ class Sh404sefClassConfig
 	/* boolean, if true, non-sef URL like index.php?option=com_content&task=view&id=12&Itemid=2 will be 301-redirected to their sef equivalent */
 	public $shRedirectNonSefToSef = false;
 	/* boolean, if true, Joomla sef URL like /content/view/12/61 will be 301-redirected to their sef equivalent */
-	public $shRedirectJoomlaSefToSef = true;
+	public $shRedirectJoomlaSefToSef = false;
 	/* string, should be set to SSL secure URL of site if any used. No trailing / */
 	public $shConfig_live_secure_site = '';
 	/* boolean, if true, ed non-sef parameter will be interpreted as a iJoomla param in com_content plugin  */
@@ -281,7 +281,7 @@ class Sh404sefClassConfig
 	// security parameters  V x
 	public $shSecEnableSecurity      = false;
 	public $shSecLogAttacks          = false;
-	public $shSecOnlyNumVars         = array('itemid', 'limit', 'limitstart');
+	public $shSecOnlyNumVars         = array('Itemid', 'limit', 'limitstart');
 	public $shSecAlphaNumVars        = array();
 	public $shSecNoProtocolVars      = array('task', 'option', 'no_html', 'mosmsg', 'lang');
 	public $ipWhiteList              = '';
@@ -620,6 +620,20 @@ class Sh404sefClassConfig
 	// 4.11
 	public $autoBuildDescription = true;
 
+	// 4.14  wp-admin.php\nwp-login.php\nwp-content/*\nwp-admin/*",
+	public $request_block_list        = array(
+		'wp-{*}.php{*}',
+		'wp-admin{*}',
+		'wp-content{*}',
+		'wp-includes{*}',
+		'wp-login{*}',
+		'wp-json{*}',
+	);
+	public $request_block_list_action = 'error_404';
+
+	// 4.15
+	public $analyticsViewLevel = array(1);
+
 	// End of parameters
 
 	/**
@@ -635,6 +649,7 @@ class Sh404sefClassConfig
 	 */
 	public function __construct($reset = false)
 	{
+
 		$app = JFactory::getApplication();
 
 		// try to read from params column of com_sh404sef record in #__extensions table
@@ -649,7 +664,16 @@ class Sh404sefClassConfig
 		if (!empty($values))
 		{
 			//options names for components
-			$com_options = array('manageURL', 'translateURL', 'insertIsoCode', 'shDoNotOverrideOwnSef', 'compEnablePageId', 'defaultComponentString', 'itemidOverrides', 'itemidOverridesValues');
+			$com_options = array(
+				'manageURL',
+				'translateURL',
+				'insertIsoCode',
+				'shDoNotOverrideOwnSef',
+				'compEnablePageId',
+				'defaultComponentString',
+				'itemidOverrides',
+				'itemidOverridesValues'
+			);
 
 			//if we have values that mean we have a json object and we can clear the values for the arrays that contain parameters related to components
 			$this->nocache = array();
@@ -2076,7 +2100,7 @@ class Sh404sefClassConfig
 
 								// set to 1 to stop overriding meta data with those defined
 								// with sh404SEF';
-			$shDefaultParams['SH404SEF_OTHER_DO_NOT_OVERRIDE_EXISTING_META_DATA'] = 1;
+			$shDefaultParams['SH404SEF_OTHER_DO_NOT_OVERRIDE_EXISTING_META_DATA'] = 0;
 		}
 
 		// b/c : try to read "very. advanced" values from disk file
@@ -2095,7 +2119,7 @@ class Sh404sefClassConfig
 			{ // only need to modify custom params in back-end
 				$this->defaultParamList = '<?php
 			    // custom.sef.php : custom.configuration file for sh404SEF
-			    // 4.13.2.3783 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
+			    // 4.15.1.3863 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
 
 			    // DO NOT REMOVE THIS LINE :
 			    if (!defined(\'_JEXEC\')) die(\'Direct Access to this location is not allowed.\');
@@ -2188,6 +2212,7 @@ class Sh404sefClassConfig
 
 	protected function shInitLanguageList($currentList, $default, $defaultLangDefault)
 	{
+
 		$ret = array();
 		$app = JFactory::getApplication();
 		$pageInfo = Sh404sefFactory::getPageInfo();
@@ -2228,6 +2253,7 @@ class Sh404sefClassConfig
 				}
 			}
 		}
+
 		return $ret;
 	}
 
@@ -2242,8 +2268,16 @@ class Sh404sefClassConfig
 
 		// An array name with the names of the arrays that contain parameters for components
 		$comParams = array(
-			'nocache', 'skip', 'useJoomlaRouter', 'notTranslateURLList', 'notInsertIsoCodeList', 'shDoNotOverrideOwnSef',
-			'useJoomsefRouter', 'useAcesefRouter', 'compEnablePageId', 'defaultComponentStringList'
+			'nocache',
+			'skip',
+			'useJoomlaRouter',
+			'notTranslateURLList',
+			'notInsertIsoCodeList',
+			'shDoNotOverrideOwnSef',
+			'useJoomsefRouter',
+			'useAcesefRouter',
+			'compEnablePageId',
+			'defaultComponentStringList'
 		);
 
 		// Same thing for the language params
@@ -2406,6 +2440,7 @@ class Sh404sefClassConfig
 
 	public function shGetReplacements()
 	{
+
 		// V 1.2.4.q : initialize variable
 		static $shReplacements = null;
 		if (isset($shReplacements))
@@ -2422,11 +2457,13 @@ class Sh404sefClassConfig
 				$shReplacements[JString::trim($src)] = JString::trim($dst);
 			}
 		}
+
 		return $shReplacements;
 	}
 
 	public function shCheckFilesAccess()
 	{
+
 		$files = array(
 			'administrator/components/com_sh404sef'                => 'administrator/components/com_sh404sef',
 			'administrator/components/com_sh404sef/custom.sef.php' => 'administrator/components/com_sh404sef/index.html',
@@ -2447,6 +2484,7 @@ class Sh404sefClassConfig
 
 	public function shCheckFileAccess($fileName)
 	{
+
 		return is_readable(sh404SEF_ABS_PATH . $fileName) && is_writable(sh404SEF_ABS_PATH . $fileName);
 	}
 
@@ -2459,27 +2497,33 @@ class Sh404sefClassConfig
 
 	public function shGetStripCharList()
 	{
+
 		static $shStripCharList = null;
 		if (is_null($shStripCharList))
 		{
 			$shStripCharList = array();
 			$shStripCharList = explode('|', $this->stripthese);
 		}
+
 		return $shStripCharList;
 	}
 
 	public function set($var, $val)
 	{
+
 		if (isset($this->$var))
 		{
 			$this->$var = $val;
+
 			return true;
 		}
+
 		return false;
 	}
 
 	public function version()
 	{
+
 		return $this->version;
 	}
 
