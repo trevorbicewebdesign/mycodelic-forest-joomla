@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @version   $Id: EasyBlog.php 28637 2015-07-09 15:45:21Z james $
+ * @version   $Id: EasyBlog.php 30755 2018-04-13 15:41:51Z reggie $
  * @author    RocketTheme http://www.rockettheme.com
  * @copyright Copyright (C) 2007 - 2015 RocketTheme, LLC
  * @license   http://www.gnu.org/licenses/gpl-2.0.html GNU/GPLv2 only
@@ -240,8 +240,8 @@ class RokSprocket_Provider_EasyBlog extends RokSprocket_Provider_AbstarctJoomlaB
 
 		$primary_link = new RokSprocket_Item_Link();
 
-		$itemId 	= EasyBlogRouter::getItemIdByCategories( $raw_item->category_id );
-		$primary_link->setUrl(EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id=' . $raw_item->id . '&Itemid=' . $itemId ));
+		$itemId 	= EBR::getItemIdByCategories( $raw_item->category_id );
+		$primary_link->setUrl(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $raw_item->id . '&Itemid=' . $itemId ));
 		$primary_link->getIdentifier('article_link');
 		$item->setPrimaryLink($primary_link);
 
@@ -249,7 +249,7 @@ class RokSprocket_Provider_EasyBlog extends RokSprocket_Provider_AbstarctJoomlaB
 
 		$links = array();
 		$link  = new RokSprocket_Item_Link();
-		$link->setUrl(EasyBlogRouter::_('index.php?option=com_easyblog&view=entry&id=' . $raw_item->id . '&Itemid=' . $itemId ));
+		$link->setUrl(EBR::_('index.php?option=com_easyblog&view=entry&id=' . $raw_item->id . '&Itemid=' . $itemId ));
 		$link->setText('');
 		$link->setIdentifier('article_link');
 		$links[$link->getIdentifier()] = $link;
