@@ -6,7 +6,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2010, Mike Pultz <mike@mikepultz.com>.
+ * Copyright (c) 2012, Mike Pultz <mike@mikepultz.com>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,23 +41,20 @@
  * @category  Networking
  * @package   Net_DNS2
  * @author    Mike Pultz <mike@mikepultz.com>
- * @copyright 2010 Mike Pultz <mike@mikepultz.com>
+ * @copyright 2012 Mike Pultz <mike@mikepultz.com>
  * @license   http://www.opensource.org/licenses/bsd-license.php  BSD License
  * @version   SVN: $Id$
  * @link      http://pear.php.net/package/Net_DNS2
- * @since     File available since Release 0.6.0
+ * @since     File available since Release 1.2.5
  *
  */
 
 /**
- * NSEC Resource Record - RFC3845 section 2.1
+ * TYPE65534 - Private space
  *
- *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   /                      Next Domain Name                         /
- *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   /                   List of Type Bit Map(s)                     /
- *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * Since Bind 9.8 beta, it use a private recode as documented
+ * in the Bind ARM, chapter 4, "Private-type records. 
+ * Basically they store signing process state.
  * 
  * @category Networking
  * @package  Net_DNS2
@@ -67,17 +64,12 @@
  * @see      Net_DNS2_RR
  *
  */
-class Net_DNS2_RR_NSEC extends Net_DNS2_RR
+class Net_DNS2_RR_TYPE65534 extends Net_DNS2_RR
 {
     /*
-     * The next owner name
+     * The Private data field
      */
-    public $next_domain_name;
-
-    /*
-     * identifies the RRset types that exist at the NSEC RR's owner name.
-     */
-    public $type_bit_maps = array();
+    public $private_data;
 
     /**
      * method to return the rdata portion of the packet as a string
@@ -88,14 +80,7 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrToString()
     {
-        $data = $this->cleanString($this->next_domain_name) . '.';
-
-        foreach ($this->type_bit_maps as $rr) {
-
-            $data .= ' ' . $rr;
-        }
-
-        return $data;
+        return base64_encode($this->private_data);
     }
 
     /**
@@ -109,9 +94,8 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrFromString(array $rdata)
     {
-        $this->next_domain_name = $this->cleanString(array_shift($rdata));
-        $this->type_bit_maps = $rdata;
-        
+        $this->private_data = base64_decode(implode('', $rdata));
+
         return true;
     }
 
@@ -127,19 +111,7 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
     protected function rrSet(Net_DNS2_Packet &$packet)
     {
         if ($this->rdlength > 0) {
-
-            //
-            // expand the next domain name
-            //
-            $offset = $packet->offset;
-            $this->next_domain_name = Net_DNS2_Packet::expand($packet, $offset);
-
-            //
-            // parse out the RR's from the bitmap
-            //
-            $this->type_bit_maps = Net_DNS2_BitMap::bitMapToArray(
-                substr($this->rdata, $offset - $packet->offset)
-            );
+            $this->private_data  = $this->rdata;
 
             return true;
         }
@@ -160,14 +132,13 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrGet(Net_DNS2_Packet &$packet)
     {
-        if (strlen($this->next_domain_name) > 0) {
+        if (strlen($this->private_data) > 0) {
 
-            $data = $packet->compress($this->next_domain_name, $packet->offset);
-            $bitmap = Net_DNS2_BitMap::arrayToBitMap($this->type_bit_maps);
-    
-            $packet->offset += strlen($bitmap);
+            $data = $this->private_data;
 
-            return $data . $bitmap;
+            $packet->offset += strlen($data);
+
+            return $data;
         }
 
         return null;

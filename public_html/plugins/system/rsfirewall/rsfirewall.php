@@ -331,7 +331,7 @@ class plgSystemRSFirewall extends JPlugin
 		}
 
 		$agent 	 = $this->agent;
-		$pattern = '#JSimplepieFactory|JDatabaseDriver|SimplePie|disconnectHandlers|JFactory|assert|sanitize|feed\_url|JFactory|preg\_#';
+		$pattern = '#JSimplepieFactory|JDatabaseDriver|disconnectHandlers|JFactory|assert|sanitize|feed\_url|JFactory|preg\_|cache\_name\_function#i';
 		if (preg_match($pattern, $agent, $match)) {
 			$this->logger->add('medium', 'DANGEROUS_USER_AGENT', JText::sprintf('COM_RSFIREWALL_USER_AGENT', $agent));
 			return true;
@@ -891,7 +891,7 @@ class plgSystemRSFirewall extends JPlugin
 			$db = JFactory::getDbo();
 			$query = $db->getQuery(true)
 				->delete('#__rsfirewall_logs')
-				->where($db->qn('date') . ' < ' . $db->q($date->toSql()) . ' LIMIT 50');
+				->where($db->qn('date') . ' < ' . $db->q($date->toSql()));
 			$db->setQuery($query);
 			$db->execute();
 		}
@@ -904,7 +904,7 @@ class plgSystemRSFirewall extends JPlugin
 		$db = JFactory::getDbo();
 		$query = $db->getQuery(true)
 			->delete('#__rsfirewall_offenders')
-			->where($db->qn('date') . ' < ' . $db->q($date->toSql()) . ' LIMIT 50');
+			->where($db->qn('date') . ' < ' . $db->q($date->toSql()));
 		$db->setQuery($query);
 		$db->execute();
 	}

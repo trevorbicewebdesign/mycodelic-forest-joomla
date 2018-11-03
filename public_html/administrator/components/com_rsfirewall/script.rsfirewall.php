@@ -779,9 +779,10 @@ class com_rsfirewallInstallerScript
 				<b class="install-not-ok">Error installing!</b>
 				<?php } ?>
 			</p>
-			<h2>Changelog v2.11.14</h2>
+			<h2>Changelog v2.11.20</h2>
 			<ul class="version-history">
-				<li><span class="version-fixed">Fix</span> Changing a protected user could generate a Fatal Error if information was stored incorrectly in the database.</li>
+				<li><span class="version-upgraded">Upg</span> Email addresses converted to images now have a transparent background.</li>
+				<li><span class="version-upgraded">Upg</span> Email image text color can now be set in Firewall Configuration - Active Scanner.</li>
 			</ul>
 			<p>
 			<a class="btn btn-primary btn-large" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>

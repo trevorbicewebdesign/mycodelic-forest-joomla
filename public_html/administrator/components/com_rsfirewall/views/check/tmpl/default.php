@@ -8,6 +8,7 @@
 
 defined('_JEXEC') or die('Restricted access');
 JText::script('COM_RSFIREWALL_ERROR_CHECK');
+JText::script('COM_RSFIREWALL_ERROR_CHECK_RETRYING');
 JText::script('COM_RSFIREWALL_ERROR_FIX');
 JText::script('COM_RSFIREWALL_CONFIGURATION_LINE');
 JText::script('COM_RSFIREWALL_USERNAME');
@@ -340,7 +341,9 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 </form>
 
 <script type="text/javascript">
-RSFirewall.requestTimeOut.Seconds = '<?php echo (float) $this->config->get('request_timeout');?>';
+RSFirewall.requestTimeOut.Seconds = '<?php echo (float) $this->config->get('request_timeout'); ?>';
+RSFirewall.MaxRetries = <?php echo (int) $this->config->get('max_retries'); ?>;
+RSFirewall.RetriesTimeout = <?php echo (int) $this->config->get('retries_timeout'); ?>;
 
 function RSFirewallStartCheck() {
 	RSFirewall.$('#com-rsfirewall-start-button').remove();

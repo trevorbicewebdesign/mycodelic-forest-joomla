@@ -6,7 +6,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2010, Mike Pultz <mike@mikepultz.com>.
+ * Copyright (c) 2014, Mike Pultz <mike@mikepultz.com>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,24 +41,24 @@
  * @category  Networking
  * @package   Net_DNS2
  * @author    Mike Pultz <mike@mikepultz.com>
- * @copyright 2010 Mike Pultz <mike@mikepultz.com>
+ * @copyright 2014 Mike Pultz <mike@mikepultz.com>
  * @license   http://www.opensource.org/licenses/bsd-license.php  BSD License
  * @version   SVN: $Id$
  * @link      http://pear.php.net/package/Net_DNS2
- * @since     File available since Release 0.6.0
+ * @since     File available since Release 1.4.0
  *
  */
 
 /**
- * NSEC Resource Record - RFC3845 section 2.1
+ * OPENPGPKEY Resource Record - https://tools.ietf.org/html/draft-ietf-dane-openpgpkey-01
  *
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   /                      Next Domain Name                         /
+ *   /                                                               /
+ *   /                  OpenPGP Public KeyRing                       /
+ *   /                                                               /
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   /                   List of Type Bit Map(s)                     /
- *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * 
+ *
  * @category Networking
  * @package  Net_DNS2
  * @author   Mike Pultz <mike@mikepultz.com>
@@ -67,17 +67,12 @@
  * @see      Net_DNS2_RR
  *
  */
-class Net_DNS2_RR_NSEC extends Net_DNS2_RR
+class Net_DNS2_RR_OPENPGPKEY extends Net_DNS2_RR
 {
     /*
-     * The next owner name
+     * the public key
      */
-    public $next_domain_name;
-
-    /*
-     * identifies the RRset types that exist at the NSEC RR's owner name.
-     */
-    public $type_bit_maps = array();
+    public $key;
 
     /**
      * method to return the rdata portion of the packet as a string
@@ -88,14 +83,7 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrToString()
     {
-        $data = $this->cleanString($this->next_domain_name) . '.';
-
-        foreach ($this->type_bit_maps as $rr) {
-
-            $data .= ' ' . $rr;
-        }
-
-        return $data;
+        return $this->key;
     }
 
     /**
@@ -109,9 +97,8 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrFromString(array $rdata)
     {
-        $this->next_domain_name = $this->cleanString(array_shift($rdata));
-        $this->type_bit_maps = $rdata;
-        
+        $this->key = array_shift($rdata);
+
         return true;
     }
 
@@ -128,18 +115,7 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
     {
         if ($this->rdlength > 0) {
 
-            //
-            // expand the next domain name
-            //
-            $offset = $packet->offset;
-            $this->next_domain_name = Net_DNS2_Packet::expand($packet, $offset);
-
-            //
-            // parse out the RR's from the bitmap
-            //
-            $this->type_bit_maps = Net_DNS2_BitMap::bitMapToArray(
-                substr($this->rdata, $offset - $packet->offset)
-            );
+            $this->key = base64_encode(substr($this->rdata, 0, $this->rdlength));
 
             return true;
         }
@@ -160,16 +136,15 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrGet(Net_DNS2_Packet &$packet)
     {
-        if (strlen($this->next_domain_name) > 0) {
+        if (strlen($this->key) > 0) {
 
-            $data = $packet->compress($this->next_domain_name, $packet->offset);
-            $bitmap = Net_DNS2_BitMap::arrayToBitMap($this->type_bit_maps);
-    
-            $packet->offset += strlen($bitmap);
+            $data = base64_decode($this->key);
 
-            return $data . $bitmap;
+            $packet->offset += strlen($data);
+
+            return $data;
         }
-
+        
         return null;
     }
 }

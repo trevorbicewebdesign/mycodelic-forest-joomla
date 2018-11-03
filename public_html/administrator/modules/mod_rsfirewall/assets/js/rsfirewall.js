@@ -12,14 +12,10 @@ RSFirewall.$(document).ready(function($) {
 				'option': 'com_rsfirewall',
 				'task': 'getLatestJoomlaVersion'
 			},
-			error: function(jqXHR, textStatus, errorThrown) {
-				checkRSFirewallVersion();
-				
+			error: function(jqXHR, textStatus, errorThrown) {				
 				RSFirewall.$('#mod-rsfirewall-joomla-version').html(textStatus).addClass('com-rsfirewall-error');
 			},
-			success: function(json) {
-				checkRSFirewallVersion();
-				
+			success: function(json) {				
 				if (json.success == true) {
 					if (json.data.is_latest == true) {
 						var message = Joomla.JText._('MOD_RSFIREWALL_YOU_ARE_RUNNING_LATEST_VERSION').replace('%s', json.data.current);
@@ -50,9 +46,11 @@ RSFirewall.$(document).ready(function($) {
 				'task': 'getLatestFirewallVersion'
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
+				checkJoomlaVersion();
 				RSFirewall.$('#mod-rsfirewall-firewall-version').html(textStatus).addClass('com-rsfirewall-error');
 			},
 			success: function(json) {
+				checkJoomlaVersion();
 				if (json.success == true) {
 					if (json.data.is_latest == true) {
 						var message = Joomla.JText._('MOD_RSFIREWALL_YOU_ARE_RUNNING_LATEST_VERSION').replace('%s', json.data.current);
@@ -69,5 +67,5 @@ RSFirewall.$(document).ready(function($) {
 		});
 	}
 	
-	checkJoomlaVersion();
+	window.setTimeout(checkRSFirewallVersion, 2000);
 });

@@ -18,7 +18,45 @@ class RSFirewallGeoIP
 	public function __construct($ip = '')
 	{
 		$this->buildIp($ip);
+	}
 
+	public static function getInstance($ip = '')
+	{
+		static $inst;
+		if (!$inst)
+		{
+			$inst = new RSFirewallGeoIP($ip);
+		}
+
+		return $inst;
+	}
+
+	protected function buildIp($ip)
+	{
+		if (!class_exists('RSFirewallIP')) {
+			require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/ip/ip.php';
+		}
+		
+		if (empty($ip))
+		{
+			$ip = RSFirewallIP::get();
+		}
+		try
+		{
+			$ipClass = new RSFirewallIP($ip);
+		}
+		catch (Exception $e)
+		{
+			return;
+		}
+
+		$ipArray = array(
+			'ip'   => $ip,
+			'type' => 'ipv' . $ipClass->version,
+		);
+
+		$this->ip = $ipArray;
+		
 		// detect if there's a built-in function
 		if (!function_exists('geoip_database_info'))
 		{
@@ -51,41 +89,11 @@ class RSFirewallGeoIP
 		}
 	}
 
-	public static function getInstance($ip = '')
-	{
-		static $inst;
-		if (!$inst)
-		{
-			$inst = new RSFirewallGeoIP($ip);
-		}
-
-		return $inst;
-	}
-
-	public function buildIp($ip)
-	{
-		if (!class_exists('RSFirewallIP')) {
-			require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/ip/ip.php';
-		}
-		
-		if (empty($ip))
-		{
-			$ip = RSFirewallIP::get();
-		}
-		$ipClass = new RSFirewallIP($ip);
-
-		$ipArray = array(
-			'ip'   => $ip,
-			'type' => 'ipv' . $ipClass->version,
-		);
-
-		$this->ip = $ipArray;
-	}
-
 	public function getCountryCode($ip)
 	{
 		if (!isset($this->codes[$ip]))
 		{
+			$this->buildIp($ip);
 			$this->codes[$ip] = '';
 			if ($this->handle)
 			{
@@ -165,9 +173,9 @@ class RSFirewallGeoIP
 
 		if ($placeholder)
 		{
-			$link = str_ireplace('{ip}', urlencode($ip), $placeholder);
+			$link = str_ireplace('{ip}', $ip, $placeholder);
 
-			return '<a target="_blank" href="' . $link . '" class="rsf-ip-address">' . htmlentities($ip, ENT_COMPAT, 'utf-8') . '</a>';
+			return '<a target="_blank" href="' . htmlspecialchars($link, ENT_COMPAT, 'utf-8') . '" class="rsf-ip-address">' . htmlentities($ip, ENT_COMPAT, 'utf-8') . '</a>';
 		}
 
 		return '<span class="rsf-ip-address">' . htmlentities($ip, ENT_COMPAT, 'utf-8') . '</span>';

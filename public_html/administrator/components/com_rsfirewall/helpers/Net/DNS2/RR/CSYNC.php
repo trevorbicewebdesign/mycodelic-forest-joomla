@@ -6,7 +6,7 @@
  *
  * PHP Version 5
  *
- * Copyright (c) 2010, Mike Pultz <mike@mikepultz.com>.
+ * Copyright (c) 2015, Mike Pultz <mike@mikepultz.com>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,24 +41,26 @@
  * @category  Networking
  * @package   Net_DNS2
  * @author    Mike Pultz <mike@mikepultz.com>
- * @copyright 2010 Mike Pultz <mike@mikepultz.com>
+ * @copyright 2015 Mike Pultz <mike@mikepultz.com>
  * @license   http://www.opensource.org/licenses/bsd-license.php  BSD License
  * @version   SVN: $Id$
  * @link      http://pear.php.net/package/Net_DNS2
- * @since     File available since Release 0.6.0
+ * @since     File available since Release 1.4.1
  *
  */
 
 /**
- * NSEC Resource Record - RFC3845 section 2.1
+ * CSYNC Resource Record - RFC 7477 seciond 2.1.1
  *
- *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   /                      Next Domain Name                         /
- *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   /                   List of Type Bit Map(s)                     /
- *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * 
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |                  SOA Serial                   |
+ *    |                                               |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    |                    Flags                      |
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    /                 Type Bit Map                  /
+ *    +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *
  * @category Networking
  * @package  Net_DNS2
  * @author   Mike Pultz <mike@mikepultz.com>
@@ -67,15 +69,20 @@
  * @see      Net_DNS2_RR
  *
  */
-class Net_DNS2_RR_NSEC extends Net_DNS2_RR
+class Net_DNS2_RR_CSYNC extends Net_DNS2_RR
 {
     /*
-     * The next owner name
+     * serial number
      */
-    public $next_domain_name;
+    public $serial;
 
     /*
-     * identifies the RRset types that exist at the NSEC RR's owner name.
+     * flags
+     */
+    public $flags;
+
+    /*
+     * array of RR type names
      */
     public $type_bit_maps = array();
 
@@ -88,14 +95,17 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrToString()
     {
-        $data = $this->cleanString($this->next_domain_name) . '.';
+        $out = $this->serial . ' ' . $this->flags;
 
+        //
+        // show the RR's
+        //
         foreach ($this->type_bit_maps as $rr) {
 
-            $data .= ' ' . $rr;
+            $out .= ' ' . strtoupper($rr);
         }
 
-        return $data;
+        return $out;
     }
 
     /**
@@ -109,9 +119,11 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrFromString(array $rdata)
     {
-        $this->next_domain_name = $this->cleanString(array_shift($rdata));
+        $this->serial   = array_shift($rdata);
+        $this->flags    = array_shift($rdata);
+
         $this->type_bit_maps = $rdata;
-        
+
         return true;
     }
 
@@ -129,16 +141,18 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
         if ($this->rdlength > 0) {
 
             //
-            // expand the next domain name
+            // unpack the serial and flags values
             //
-            $offset = $packet->offset;
-            $this->next_domain_name = Net_DNS2_Packet::expand($packet, $offset);
+            $x = unpack('@' . $packet->offset . '/Nserial/nflags', $packet->rdata);
+
+            $this->serial   = Net_DNS2::expandUint32($x['serial']);
+            $this->flags    = $x['flags'];
 
             //
-            // parse out the RR's from the bitmap
+            // parse out the RR bitmap                 
             //
             $this->type_bit_maps = Net_DNS2_BitMap::bitMapToArray(
-                substr($this->rdata, $offset - $packet->offset)
+                substr($this->rdata, 6)
             );
 
             return true;
@@ -160,17 +174,22 @@ class Net_DNS2_RR_NSEC extends Net_DNS2_RR
      */
     protected function rrGet(Net_DNS2_Packet &$packet)
     {
-        if (strlen($this->next_domain_name) > 0) {
+        //
+        // pack the serial and flags values
+        //
+        $data = pack('Nn', $this->serial, $this->flags);
 
-            $data = $packet->compress($this->next_domain_name, $packet->offset);
-            $bitmap = Net_DNS2_BitMap::arrayToBitMap($this->type_bit_maps);
-    
-            $packet->offset += strlen($bitmap);
+        //
+        // convert the array of RR names to a type bitmap
+        //
+        $data .= Net_DNS2_BitMap::arrayToBitMap($this->type_bit_maps);
 
-            return $data . $bitmap;
-        }
+        //
+        // advance the offset
+        //
+        $packet->offset += strlen($data);
 
-        return null;
+        return $data;
     }
 }
 

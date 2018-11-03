@@ -11,10 +11,10 @@ defined('_JEXEC') or die('Restricted access');
 abstract class RSFirewallReplacer
 {
 	protected static $emails = false;
-	
+
 	public static function addCaptcha(&$buffer) {
 		$find = '<div class="button-holder">';
-		
+
 		if (strpos($buffer, $find) !== false) {
 			$with  = '<div style="clear: both;">'."\n"
 					 .'<table cellspacing="0" cellpadding="2" border="0" width="100%">'."\n"
@@ -29,14 +29,14 @@ abstract class RSFirewallReplacer
 					 .'</table>'."\n"
 					 .'</div>'."\n";
 			$with .= $find;
-			
+
 			$buffer = str_replace($find, $with, $buffer);
-			
+
 			return true;
 		}
 
 		$find = '<div class="btn-group pull-left">';
-		
+
 		if (strpos($buffer, $find) !== false) {
 			$with = '
 			<div class="control-group">
@@ -57,12 +57,12 @@ abstract class RSFirewallReplacer
 			<div class="control-group">
 				<div class="controls">
 					<div class="btn-group pull-left">';
-			
+
 			$buffer = str_replace($find, $with, $buffer);
-			
+
 			return true;
 		}
-		
+
 		$find = '<div class="btn-group">';
 		if (strpos($buffer, $find) !== false) {
 			$with = '
@@ -84,22 +84,22 @@ abstract class RSFirewallReplacer
 			<div class="control-group">
 				<div class="controls">
 					<div class="btn-group">';
-			
+
 			$buffer = str_replace($find, $with, $buffer);
-			
+
 			return true;
 		}
-		
+
 		return false;
 	}
-	
+
 	protected static function _getPattern($link, $text)
 	{
 		$pattern = '~(?:<a ([^>]*)href\s*=\s*"mailto:' . $link . '"([^>]*))>' . $text . '</a>~i';
 
 		return $pattern;
 	}
-	
+
 	public static function replaceEmails(&$text)
 	{
 		if (strpos($text, '{emailcloak=off}') !== false)
@@ -107,7 +107,7 @@ abstract class RSFirewallReplacer
 			$text = str_ireplace('{emailcloak=off}', '', $text);
 			return true;
 		}
-		
+
 		// performance check
 		if (strpos($text, '@') === false)
 		{
@@ -452,14 +452,14 @@ abstract class RSFirewallReplacer
 		{
 			$text = str_replace('</body>', '<script type="text/javascript" src="'.JUri::root(true).'/components/com_rsfirewall/assets/js/rsfirewall.js"></script></body>', $text);
 		}
-		
+
 		return self::$emails;
 	}
-	
+
 	protected static function _getReplacement($mail, $mailText = null)
 	{
 		self::$emails = true;
-		
+
 		if (!empty($mailText))
 		{
 			$label = $mailText;
@@ -468,40 +468,49 @@ abstract class RSFirewallReplacer
 		{
 			$label = '<img src="' . htmlentities(self::getImageString($mail), ENT_COMPAT, 'utf-8') . '" style="vertical-align: middle" class="rsfirewall_emails_img" alt="." />';
 		}
-		
+
 		$replacement = '<a href="javascript:void(0);" onclick="RSFirewallMail(\'' . base64_encode($mail) . '\')" class="rsfirewall_emails_a">' . $label . '</a>';
 
 		return $replacement;
 	}
-	
-	protected static function getImageString($mail) {
-		if (function_exists('imagecreate')) {
-			$length = strlen($mail);
-			$size = 15;
-	 
-			$imagelength = $length*7;
-			$imageheight = $size;
-			$image       = imagecreate($imagelength, $imageheight);
-			$usebgrcolor = sscanf('#FFFFFF', '#%2x%2x%2x');
-			$usestrcolor = sscanf('#000000', '#%2x%2x%2x');
 
-			$bgcolor     = imagecolorallocate($image, $usebgrcolor[0], $usebgrcolor[1], $usebgrcolor[2]);
-			$stringcolor = imagecolorallocate($image, $usestrcolor[0], $usestrcolor[1], $usestrcolor[2]);
-			
-			imagestring($image, 3, 0, 0,  $mail, $stringcolor); 
-			
-			ob_start();
-			imagegif($image);
-			imagedestroy($image);
-			$data = ob_get_contents();
-			ob_end_clean();
-			
-			return 'data:image/gif;base64,'.base64_encode($data);
-		} else {
-			// disable if image creation doesn't work
-			RSFirewallConfig::getInstance()->set('verify_emails', 0);
-		}
-		
-		return '';
-	}
+    protected static function getImageString($mail) {
+        if (function_exists('imagecreate')) {
+            $length = strlen($mail);
+            $size = 15;
+
+            $imagelength = $length*7;
+            $imageheight = $size;
+            $image       = imagecreate($imagelength, $imageheight);
+
+            $text_color = RSFirewallConfig::getInstance()->get('email_text_color');
+            if (strlen($text_color) != 7)
+            {
+                $text_color = '#FFFFFF';
+            }
+            $usestrcolor = sscanf($text_color, '#%2x%2x%2x');
+
+            imagealphablending($image, false);
+            $transparent = imagecolorallocatealpha($image, 0, 0, 0, 127);
+            imagefill($image, 0, 0, $transparent);
+            imagesavealpha($image, true);
+
+            $stringcolor = imagecolorallocate($image, $usestrcolor[0], $usestrcolor[1], $usestrcolor[2]);
+
+            imagestring($image, 3, 0, 0,  $mail, $stringcolor);
+
+            ob_start();
+            imagepng($image);
+            imagedestroy($image);
+            $data = ob_get_contents();
+            ob_end_clean();
+
+            return 'data:image/png;base64,'.base64_encode($data);
+        } else {
+            // disable if image creation doesn't work
+            RSFirewallConfig::getInstance()->set('verify_emails', 0);
+        }
+
+        return '';
+    }
 }

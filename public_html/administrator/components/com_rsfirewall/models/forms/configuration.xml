@@ -284,6 +284,12 @@
 		<field name="file_permissions" default="644" type="text" description="COM_RSFIREWALL_FILE_PERMISSIONS_DESC" label="COM_RSFIREWALL_FILE_PERMISSIONS" />
 		<field name="folder_permissions" default="755" type="text" description="COM_RSFIREWALL_FOLDER_PERMISSIONS_DESC" label="COM_RSFIREWALL_FOLDER_PERMISSIONS" />
 		<field name="request_timeout" type="text"  default="0" description="COM_RSFIREWALL_REQUEST_TIMEOUT_DESC" label="COM_RSFIREWALL_REQUEST_TIMEOUT" />
+		<field name="max_retries" type="text"  default="10" description="COM_RSFIREWALL_MAX_RETRIES_DESC" label="COM_RSFIREWALL_MAX_RETRIES" />
+		<field name="retries_timeout" type="text"  default="10" description="COM_RSFIREWALL_RETRIES_TIMEOUT_DESC" label="COM_RSFIREWALL_RETRIES_TIMEOUT" />
+		<field name="check_md5" type="radio" class="btn-group" description="COM_RSFIREWALL_CHECK_MD5_DESC" label="COM_RSFIREWALL_CHECK_MD5" size="1" >
+			<option value="1">JYES</option>
+			<option value="0">JNO</option>
+		</field>
 		<field name="google_safebrowsing_api_key" type="text" default="" description="COM_RSFIREWALL_GOOGLE_SAFE_BROWSING_DESC" label="COM_RSFIREWALL_GOOGLE_SAFE_BROWSING_LABEL"/>
 	</fieldset>
 	<fieldset name="active_scanner" label="COM_RSFIREWALL_ACTIVE_SCANNER" description="COM_RSFIREWALL_ACTIVE_SCANNER_DESC">
@@ -307,6 +313,7 @@
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
+		<field name="email_text_color" type="color" format="hex" description="COM_RSFIREWALL_EMAIL_TEXT_COLOR_DESC" label="COM_RSFIREWALL_EMAIL_TEXT_COLOR" />
 		<field name="monitor_core" type="radio" class="btn-group" description="COM_RSFIREWALL_MONITOR_CORE_DESC" label="COM_RSFIREWALL_MONITOR_CORE" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>

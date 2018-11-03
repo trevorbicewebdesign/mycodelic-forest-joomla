@@ -130,7 +130,7 @@ class RsfirewallModelFix extends JModelLegacy
 				$query->select($db->qn('id'))
 					  ->from($db->qn('#__rsfirewall_hashes'))
 					  ->where($db->qn('file').'='.$db->q($file))
-					  ->where($db->qn('type').'='.$db->q('ignore'));
+					  ->where('('. $db->qn('type') . '=' . $db->q('ignore') . ' OR ' . $db->qn('type') . ' = ' . $db->q($this->getCurrentJoomlaVersion()) . ')');
 				
 				$db->setQuery($query);
 				if ($id = $db->loadResult()) {
@@ -157,12 +157,23 @@ class RsfirewallModelFix extends JModelLegacy
 				
 				$query->clear();
 			}
-			
 			return true;
 		} catch (Exception $e) {
 			$this->setError($e->getMessage());
 			return false;
 		}
+	}
+	
+	public function getCurrentJoomlaVersion()
+    {
+		static $current = null;
+
+		if (is_null($current))
+		{
+            $current = $this->getInstance('Check', 'RsfirewallModel')->getCurrentJoomlaVersion();
+		}
+
+		return $current;
 	}
 	
 	public function setPermissions($paths, $perms) {
