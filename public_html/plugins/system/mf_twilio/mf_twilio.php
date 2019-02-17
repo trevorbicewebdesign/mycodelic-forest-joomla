@@ -1,5 +1,5 @@
 <?php
-require(JPATH_BASE.'/plugins/system/mf_twilio/assets/Twilio/autoload.php');
+require(JPATH_SITE.'/plugins/system/mf_twilio/assets/Twilio/autoload.php');
 use Twilio\Rest\Client;
 
 
@@ -24,10 +24,10 @@ class plgSystemMf_twilio extends JPlugin
 		
 		if($task == 'twilio.insertSlack' ){
 			
-			require_once(JPATH_BASE.'/administrator/components/com_civicrm/civicrm/api/class.api.php');
-			$api = new civicrm_api3(array(
+			require_once(JPATH_SITE.'/administrator/components/com_civicrm/civicrm/api/class.api.php');
+			$api = new JPATH_SITE(array(
 			  // Specify location of "civicrm.settings.php".
-			  'conf_path' => JPATH_BASE.'/administrator/components/com_civicrm/',
+			  'conf_path' => JPATH_SITE.'/administrator/components/com_civicrm/',
 			));
 			echo $from;
 			
@@ -66,13 +66,13 @@ class plgSystemMf_twilio extends JPlugin
 						$phone	= $username[1];
 					}
 					
-					/*
-					curl -X POST 'https://api.twilio.com/2010-04-01/Accounts/AC7dab6b08735f18f6466332f2c5ee9293/Messages.json' \
-					--data-urlencode 'To=+15558675310'  \
-					--data-urlencode 'From=+15017122661'  \
-					--data-urlencode 'Body=This is the ship that made the Kessel Run in fourteen parsecs?'  \
-					-u AC7dab6b08735f18f6466332f2c5ee9293:your_auth_token
-					*/
+					
+					// curl -X POST 'https://api.twilio.com/2010-04-01/Accounts/AC7dab6b08735f18f6466332f2c5ee9293/Messages.json' 
+					// --data-urlencode 'To=+15558675310'  \
+					// --data-urlencode 'From=+15017122661'  \
+					// --data-urlencode 'Body=This is the ship that made the Kessel Run in fourteen parsecs?'  \
+					// -u AC7dab6b08735f18f6466332f2c5ee9293:your_auth_token
+					
 					// $this->slack( "Send a message to ".$phone,"SLACK TESTING", "#leadership");
 					$this->twilio_message($phone,$data["event"]['text']);
 				}
