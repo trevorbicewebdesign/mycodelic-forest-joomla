@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date                2018-04-16
+ * @version     0.4.0.678
+ * @date                2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -20,7 +20,7 @@ defined('_JEXEC') or die;
  * - root path stored in self::$_rootPathes, one per registered prefix
  * - process all classes starting with registered list of prefixes
  * - Global naming scheme:
- *   ShlPackageSubdirOthersubdir_Filename
+ *   \JShlPackageSubdirOthersubdir_Filename
  *
  *        Shl is one of many prefixes. Prefixes are registered to the class
  *    using the registerPrefix() method, passing in the desired prefix
@@ -38,7 +38,7 @@ defined('_JEXEC') or die;
  *    then the last subdir name is used instead.
  *    It'll be lowercased as well
  *
- *    Example1: ShlPackageSubdirOthersubdir_Filename will be searched in
+ *    Example1: \ShlPackageSubdirOthersubdir_Filename will be searched in
  *
  *    self::$_rootPathes['Shl'] . 'package/subdirs/othersubdirs/filename.php'
  *
@@ -72,7 +72,7 @@ class ShlSystem_Autoloader
 
 		// add our own
 		self::registerPrefix('Shl', $rootPath);
-		$registered = spl_autoload_register(array('ShlSystem_Autoloader', 'autoload'));
+		$registered = spl_autoload_register(array('\ShlSystem_Autoloader', 'autoload'));
 
 		// stitch back any pre-existing autoload function at the end of the list
 		if (function_exists("__autoload"))

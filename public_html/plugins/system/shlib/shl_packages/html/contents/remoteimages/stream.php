@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date        2018-04-16
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -38,7 +38,7 @@ defined('_JEXEC') or die();
  *
  * @version 0.01
  */
-class ShlStreamBufferTooSmallException extends Exception
+class ShlStreamBufferTooSmallException extends \Exception
 {
 
 }
@@ -73,7 +73,7 @@ class ShlHtmlContentRemoteimage_Stream
 	{
 		if (strlen($this->stream_string) < $this->strpos + $characters)
 		{
-			throw new ShlStreamBufferTooSmallException();
+			throw new \ShlStreamBufferTooSmallException();
 		}
 
 		return substr($this->stream_string, $this->strpos, $characters);

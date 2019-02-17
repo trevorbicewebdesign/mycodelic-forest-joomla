@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-03 19:05:54
+<?php /* Smarty version 2.6.30, created on 2019-01-30 20:10:21
          compiled from CRM/Member/Page/Tab.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Member/Page/Tab.tpl', 1, false),array('block', 'ts', 'CRM/Member/Page/Tab.tpl', 41, false),array('function', 'crmURL', 'CRM/Member/Page/Tab.tpl', 35, false),array('function', 'cycle', 'CRM/Member/Page/Tab.tpl', 87, false),array('modifier', 'crmDate', 'CRM/Member/Page/Tab.tpl', 92, false),array('modifier', 'replace', 'CRM/Member/Page/Tab.tpl', 100, false),)), $this); ?>

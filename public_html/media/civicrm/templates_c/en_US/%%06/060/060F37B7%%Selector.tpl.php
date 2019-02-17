@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:16:06
+<?php /* Smarty version 2.6.30, created on 2019-01-30 20:10:21
          compiled from CRM/Activity/Selector/Selector.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Activity/Selector/Selector.tpl', 1, false),array('block', 'ts', 'CRM/Activity/Selector/Selector.tpl', 29, false),array('modifier', 'crmAddClass', 'CRM/Activity/Selector/Selector.tpl', 35, false),array('function', 'crmURL', 'CRM/Activity/Selector/Selector.tpl', 69, false),array('function', 'crmAPI', 'CRM/Activity/Selector/Selector.tpl', 90, false),)), $this); ?>

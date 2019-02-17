@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date                2018-04-16
+ * @version     0.4.0.678
+ * @date                2018-08-02
  */
 
 // no direct access
@@ -139,7 +139,7 @@ class ShlSystem_Log
 	}
 
 	/**
-	 * Deprecated, use ShlSystemLog::error( $prefix)
+	 * Deprecated, use \ShlSystemLog::error( $prefix)
 	 */
 	public static function logError()
 	{
@@ -156,7 +156,7 @@ class ShlSystem_Log
 	}
 
 	/**
-	 * Deprecated, use ShlSystemLog::alert( $prefix)
+	 * Deprecated, use \ShlSystemLog::alert( $prefix)
 	 */
 	public static function logAlert()
 	{
@@ -174,7 +174,7 @@ class ShlSystem_Log
 	}
 
 	/**
-	 * Deprecated, use ShlSystemLog::debug( $prefix)
+	 * Deprecated, use \ShlSystemLog::debug( $prefix)
 	 */
 	public static function logDebug($prefix)
 	{
@@ -207,7 +207,7 @@ class ShlSystem_Log
 	}
 
 	/**
-	 * Deprecated, use ShlSystemLog::custom( $prefix)
+	 * Deprecated, use \ShlSystemLog::custom( $prefix)
 	 */
 	public static function logCustom($file, $level, $options)
 	{
@@ -270,7 +270,7 @@ class ShlSystem_Log
 		$notifyStatus = true;
 
 		// include user details in logging
-		$user = JFactory::getUser();
+		$user = \JFactory::getUser();
 		$userString = empty($user->id) ? 'guest' : $user->id . ' (' . $user->email . ')';
 
 		// do logging
@@ -295,7 +295,7 @@ class ShlSystem_Log
 			// @TODO: target emails for notifications should be configurable
 			// should be able to send to more than one, at least CC or BCC
 
-			$app = JFactory::getApplication();
+			$app = \JFactory::getApplication();
 
 			// prepare standard email based on template
 			$ip = empty($_SERVER['REMOTE_ADDR']) ? 'N/A' : $_SERVER['REMOTE_ADDR'];
@@ -312,7 +312,7 @@ class ShlSystem_Log
 			}
 
 			// use email helper
-			$notifyStatus = ShlSystem_email::send($emailParams, $noLog = true);
+			$notifyStatus = \ShlSystem_email::send($emailParams, $noLog = true);
 		}
 
 		return $logStatus && $notifyStatus;
@@ -324,13 +324,13 @@ class ShlSystem_Log
 		$defaultParams = array(
 			'file'                => 'info'
 			, 'category'          => 'shLib'
-			, 'date'              => ShlSystem_Date::getSiteNow('Y-m-d')
-			, 'time'              => ShlSystem_Date::getSiteNow('H:i:s')
+			, 'date'              => \ShlSystem_Date::getSiteNow('Y-m-d')
+			, 'time'              => \ShlSystem_Date::getSiteNow('H:i:s')
 			, 'message'           => 'No logging message, probably an error'
 			, 'user'              => '-'
 			, 'priority'          => self::INFO
 			, 'text_entry_format' => "{DATE}\t{TIME}\t{TYPE}\t{C-IP}\t{USER}\t{MESSAGE}"
-			, 'timestamp'         => ShlSystem_Date::getSiteNow('Y-m-d')
+			, 'timestamp'         => \ShlSystem_Date::getSiteNow('Y-m-d')
 			, 'prefix'            => 'shlib'
 		);
 

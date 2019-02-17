@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date				2018-04-16
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -170,18 +170,18 @@ class ShlDbHelper
 			// now override JOomla instance
 			if (version_compare(JVERSION, '1.6.0', 'ge'))
 			{
-				JFactory::$database = $joomlaDb; // 1.6+
+				\JFactory::$database = $joomlaDb; // 1.6+
 			}
 			else
 			{
-				$db = JFactory::getDbo();
+				$db = \JFactory::getDbo();
 				$db = $joomlaDb; // 1.5
 			}
 			$switched = true;
 		}
 		catch (Exception $e)
 		{
-			ShlSystem_Log::error('shlib', __METHOD__ . ': unable to switch query cache for joomla ' . ($value ? 'on' : 'off'));
+			\ShlSystem_Log::error('shlib', __METHOD__ . ': unable to switch query cache for joomla ' . ($value ? 'on' : 'off'));
 		}
 		return $switched;
 	}
@@ -208,13 +208,13 @@ class ShlDbHelper
 	 *
 	 * @param array $list array of table names, using Joomla notation: #__table_name
 	 * @return array previous list
-	 * @throws ShlException
+	 * @throws \ShlException
 	 */
 	public static function setDefaultExcludedTablesList($list)
 	{
 		if (!is_array($list))
 		{
-			throw new ShlException(__METHOD__ . ': excluded tables list not an array');
+			throw new \ShlException(__METHOD__ . ': excluded tables list not an array');
 		}
 
 		$previous = self::$_defaultQueryCacheTableExclusionList;
@@ -240,7 +240,7 @@ class ShlDbHelper
 	 *
 	 * @param integer $newTTL
 	 * @return integer previous value of TTL
-	 * @throws ShlException
+	 * @throws \ShlException
 	 */
 	public static function setDefaultTTL($newTTL)
 	{
@@ -248,7 +248,7 @@ class ShlDbHelper
 
 		if ($newTTL < 0)
 		{
-			throw new ShlException(__METHOD__ . ': trying to set negative global TTL');
+			throw new \ShlException(__METHOD__ . ': trying to set negative global TTL');
 		}
 
 		$previous = self::$_queryCacheDefaultTTL;
@@ -268,26 +268,26 @@ class ShlDbHelper
 	 * @param boolean $enableQueryCache if true, query cache will be enabled on queries to this database
 	 * @param array $list array of table names, using Joomla notation: #__table_name
 	 * @return object the database full record
-	 * @throws ShlDbException
+	 * @throws \ShlDbException
 	 */
 	public static function registerDb($name, &$db, $dataset = self::SHL_DEFAULT, $opType = self::OP_TYPE_DEFAULT, $weight = self::DEFAULT_WEIGHT,
 		$enableQueryCache = true, $exclusionList = null)
 	{
 		if (empty($name))
 		{
-			throw new ShlDbException(__METHOD__ . ': Trying to register a database object with no valid name');
+			throw new \ShlDbException(__METHOD__ . ': Trying to register a database object with no valid name');
 		}
 
 		if ((int) $weight < 1)
 		{
-			throw new ShlDbException(__METHOD__ . ': Trying to register a database object with an invalid weight: Must be greater than 1');
+			throw new \ShlDbException(__METHOD__ . ': Trying to register a database object with an invalid weight: Must be greater than 1');
 		}
 
 		// compute exclusion list value
 		$exclusionList = is_null($exclusionList) ? self::$_defaultQueryCacheTableExclusionList : $exclusionList;
 
 		// store the actual db information
-		self::$_databases[$name] = new ShlDbClass_Dbrecord($db, $name, $weight, $enableQueryCache, $exclusionList, self::$_joomlaQueryCacheEnabled);
+		self::$_databases[$name] = new \ShlDbClass_Dbrecord($db, $name, $weight, $enableQueryCache, $exclusionList, self::$_joomlaQueryCacheEnabled);
 
 		// then record what it's good for
 		switch ($opType)
@@ -301,7 +301,7 @@ class ShlDbHelper
 				self::$_datasets[$dataset][self::OP_TYPE_WRITE][] = $name;
 				break;
 			default:
-				throw new ShlDbException(__METHOD__ . ': Trying to set database object with invalid operation type');
+				throw new \ShlDbException(__METHOD__ . ': Trying to set database object with invalid operation type');
 				break;
 		}
 
@@ -330,13 +330,13 @@ class ShlDbHelper
 	 *
 	 * @param string $name reference name for the instance
 	 * @return object the database full record
-	 * @throws ShlDbException
+	 * @throws \ShlDbException
 	 */
 	public static function disableDbInstance($name)
 	{
 		if ($name == self::SHL_DEFAULT)
 		{
-			throw new ShlDbException(__METHOD__ . ': Trying to disable the default database instance');
+			throw new \ShlDbException(__METHOD__ . ': Trying to disable the default database instance');
 		}
 
 		if (!empty(self::$_databases[$name]))
@@ -345,7 +345,7 @@ class ShlDbHelper
 		}
 		else
 		{
-			throw new ShlDbException(__METHOD__ . ': Trying to disable a non existing database instance');
+			throw new \ShlDbException(__METHOD__ . ': Trying to disable a non existing database instance');
 		}
 
 		// perf flag: if only one (or none) db instance left enabled, disable multi db support
@@ -361,7 +361,7 @@ class ShlDbHelper
 	 *
 	 * @param string $name reference name for the instance
 	 * @return object the database full record
-	 * @throws ShlDbException
+	 * @throws \ShlDbException
 	 */
 	public static function enableDbInstance($name)
 	{
@@ -371,7 +371,7 @@ class ShlDbHelper
 		}
 		else
 		{
-			throw new ShlDbException(__METHOD__ . ': Trying to enable a non existing database instance');
+			throw new \ShlDbException(__METHOD__ . ': Trying to enable a non existing database instance');
 		}
 
 		self::$_multiDbSupportEnabled = self::_hasMoreThanOneEnabledDb();
@@ -387,13 +387,13 @@ class ShlDbHelper
 	 *
 	 * @param string $name name of dataset to select
 	 * @return string previously selected dataset, if any
-	 * @throws ShlDbException
+	 * @throws \ShlDbException
 	 */
 	public static function selectDataset($name = '')
 	{
 		if (!empty($name) && empty(self::$_datasets[$name]))
 		{
-			throw new ShlDbException(__METHOD__ . ': Trying to select a dataset that has not been set: ' . $name);
+			throw new \ShlDbException(__METHOD__ . ': Trying to select a dataset that has not been set: ' . $name);
 		}
 
 		$previous = self::$_selectedDataset;
@@ -422,13 +422,13 @@ class ShlDbHelper
 	 *
 	 * @param string $name name of database instance to select
 	 * @return string previously selected dataset, if any
-	 * @throws ShlDbException
+	 * @throws \ShlDbException
 	 */
 	public static function selectDb($name = '')
 	{
 		if (!empty($name) && empty(self::$_databases[$name]))
 		{
-			throw new ShlDbException(__METHOD__ . ': Trying to select a database that has not been set: ' . $name);
+			throw new \ShlDbException(__METHOD__ . ': Trying to select a database that has not been set: ' . $name);
 		}
 
 		$previous = self::$_selectedDb;
@@ -453,10 +453,10 @@ class ShlDbHelper
 	 *
 	 * usage:
 	 *
-	 * $result = ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
+	 * $result = \ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
 	 * will select the 'alias' column where nonsef column is index.php?option=com_content&view=article&id=12
 	 * Alternate where condition syntax:
-	 * $result = ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', 'amount > 0 and amount < ?', array( '100'));
+	 * $result = \ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', 'amount > 0 and amount < ?', array( '100'));
 	 * If where condition is a string, it will be used literally, with question marks replaced by parameters as
 	 * passed in the next method param. These params are escaped, but the base where condition is not
 	 *
@@ -490,10 +490,10 @@ class ShlDbHelper
 	 *
 	 * usage:
 	 *
-	 * $result = ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
+	 * $result = \ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
 	 * will select the 'alias' column where nonsef column is index.php?option=com_content&view=article&id=12
 	 * Alternate where condition syntax:
-	 * $result = ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', 'amount > 0 and amount < ?', array( '100'));
+	 * $result = \ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', 'amount > 0 and amount < ?', array( '100'));
 	 * If where condition is a string, it will be used literally, with question marks replaced by parameters as
 	 * passed in the next method param. These params are escaped, but the base where condition is not
 	 *
@@ -513,7 +513,7 @@ class ShlDbHelper
 	public static function selectResultArray($table, $aColList = array('*'), $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0,
 		$lines = 0, $opType = '')
 	{
-		ShlSystem_Log::debug('shlib', 'Using deprecated ShlDbHelper::selectResultArray() method. Use ShlDbHelper::selectColumn() instead');
+		\ShlSystem_Log::debug('shlib', 'Using deprecated \ShlDbHelper::selectResultArray() method. Use \ShlDbHelper::selectColumn() instead');
 		return self::selectColumn($table, $aColList, $mWhere, $aWhereData, $orderBy, $offset, $lines, $opType);
 	}
 
@@ -522,10 +522,10 @@ class ShlDbHelper
 	 *
 	 * usage:
 	 *
-	 * $result = ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
+	 * $result = \ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
 	 * will select the 'alias' column where nonsef column is index.php?option=com_content&view=article&id=12
 	 * Alternate where condition syntax:
-	 * $result = ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', 'amount > 0 and amount < ?', array( '100'));
+	 * $result = \ShlHelperDb::selectResult( '#__sh404sef_alias', 'alias', 'amount > 0 and amount < ?', array( '100'));
 	 * If where condition is a string, it will be used literally, with question marks replaced by parameters as
 	 * passed in the next method param. These params are escaped, but the base where condition is not
 	 *
@@ -559,10 +559,10 @@ class ShlDbHelper
 	 *
 	 * usage:
 	 *
-	 * $result = ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
+	 * $result = \ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
 	 * will return an array with 2 keys, alias and id, where nonsef column is index.php?option=com_content&view=article&id=12
 	 *
-	 * $result = ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), 'amount > 0 and amount < ?', array( '100'));
+	 * $result = \ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), 'amount > 0 and amount < ?', array( '100'));
 	 * If where condition is a string, it will be used literally, with question marks replaced by parameters as
 	 * passed in the next method param. These params are escaped, but the base where condition is not
 	 *
@@ -596,10 +596,10 @@ class ShlDbHelper
 	 *
 	 * usage:
 	 *
-	 * $result = ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
+	 * $result = \ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), array( 'nonsef' => 'index.php?option=com_content&view=article&id=12'));
 	 * will return an array of arrays with 2 keys, alias and id, where nonsef column is index.php?option=com_content&view=article&id=12
 	 *
-	 * $result = ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), 'amount > 0 and amount < ?', array( '100'));
+	 * $result = \ShlHelperDb::selectAssoc( '#__sh404sef_alias', array('alias', 'id'), 'amount > 0 and amount < ?', array( '100'));
 	 * If where condition is a string, it will be used literally, with question marks replaced by parameters as
 	 * passed in the next method param. These params are escaped, but the base where condition is not
 	 *
@@ -984,6 +984,18 @@ class ShlDbHelper
 	}
 
 	/**
+	 *
+	 * Asks DB to escape a string
+	 * @param string $string
+	 */
+	public static function escape($string)
+	{
+		$db = self::getInstance();
+
+		return $db->escape($string);
+	}
+
+	/**
 	 * Quote an array of value and turn it into a list
 	 * of separated, name quoted elements
 	 *
@@ -1181,10 +1193,10 @@ class ShlDbHelper
 		// that's hardcoded dependency, but allow transparent operation
 		// within Joomla! framework, which will be 99%
 		// of cases anyway
-		$db = JFactory::getDBO();
+		$db = \JFactory::getDBO();
 
 		// prepare a record to hold our database instance details
-		self::$_databases[$name] = new ShlDbClass_Dbrecord($db, $name, self::DEFAULT_WEIGHT, self::$_queryCacheEnabled,
+		self::$_databases[$name] = new \ShlDbClass_Dbrecord($db, $name, self::DEFAULT_WEIGHT, self::$_queryCacheEnabled,
 			self::$_defaultQueryCacheTableExclusionList, self::$_joomlaQueryCacheEnabled);
 
 		// store as well in default dataset

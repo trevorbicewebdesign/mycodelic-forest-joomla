@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.665
- * @date                2018-04-16
+ * @version      0.4.0.678
+ * @date                2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -20,8 +20,8 @@ defined('_JEXEC') or die;
 class plgSystemShlibInstallerScript
 {
 
-	const MIN_JOOMLA_VERSION = '2.5.6';
-	const MAX_JOOMLA_VERSION = '4';
+	const MIN_JOOMLA_VERSION = '3.2.4';
+	const MAX_JOOMLA_VERSION = '5';
 
 	public function install($parent)
 	{
@@ -52,7 +52,7 @@ class plgSystemShlibInstallerScript
 
 	public function uninstall($parent)
 	{
-		$db = JFactory::getDbo();
+		$db = \JFactory::getDbo();
 		$db->dropTable('#__shlib_consumers');
 		$db->dropTable('#__shlib_resources');
 		$db->dropTable('#__wblib_messages');
@@ -77,7 +77,7 @@ class plgSystemShlibInstallerScript
 			// check Joomla! version
 			if (version_compare(JVERSION, self::MIN_JOOMLA_VERSION, '<') || version_compare(JVERSION, self::MAX_JOOMLA_VERSION, 'ge'))
 			{
-				JFactory::getApplication()->enqueueMessage(sprintf('shLib requires Joomla! version between %s and %s (you are using %s). Aborting installation', self::MIN_JOOMLA_VERSION, self::MAX_JOOMLA_VERSION, JVERSION));
+				\JFactory::getApplication()->enqueueMessage(sprintf('shLib requires Joomla! version between %s and %s (you are using %s). Aborting installation', self::MIN_JOOMLA_VERSION, self::MAX_JOOMLA_VERSION, JVERSION));
 				return false;
 			}
 		}
@@ -140,7 +140,7 @@ class plgSystemShlibInstallerScript
 			try
 			{
 				// do we have a record?
-				$db = JFactory::getDBO();
+				$db = \JFactory::getDBO();
 				$query = $db->getQuery(true);
 				$query->select('*')->from('#__shlib_consumers');
 				$query->where($db->quoteName('resource') . '=' . $db->quote('shlib'));
@@ -159,9 +159,9 @@ class plgSystemShlibInstallerScript
 			}
 			catch (Exception $e)
 			{
-				if (class_exists('ShlSystem_Log') && method_exists('ShlSystem_Log', 'error'))
+				if (class_exists('\ShlSystem_Log') && method_exists('\ShlSystem_Log', 'error'))
 				{
-					ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
+					\ShlSystem_Log::error('shlib', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 				}
 				return false;
 			}
@@ -234,7 +234,7 @@ class plgSystemShlibInstallerScript
 			) ENGINE = InnoDB DEFAULT CHARSET=utf8;";
 
 		// make sure have 512 chars for message titles
-		$db = JFactory::getDbo();
+		$db = \JFactory::getDbo();
 		$queries[] = 'alter table' . $db->qn('#__wblib_messages') . ' modify ' . $db->qn('title') . ' VARCHAR(512);';
 
 		// run query
@@ -250,21 +250,16 @@ class plgSystemShlibInstallerScript
 
 		try
 		{
-			$db = JFactory::getDBO();
+			$db = \JFactory::getDBO();
 			foreach ($queries as $query)
 			{
 				$db->setQuery($query);
-				$db->query();
-				$error = $db->getErrorNum();
-				if (!empty($error))
-				{
-					throw new Exception($db->getErrorMsg());
-				}
+				$db->execute();
 			}
 		}
 		catch (Exception $e)
 		{
-			$app = JFactory::getApplication();
+			$app = \JFactory::getApplication();
 			$app->enqueueMessage(
 				'Error while creating/upgrading the database : ' . $e->getMessage()
 				. '.<br />shLib will probably not operate properly. Please uninstall it, then try again after checking your database server setup. Contact us in case this happens again.'
@@ -278,7 +273,7 @@ class plgSystemShlibInstallerScript
 		{
 			return;
 		}
-		$db = JFactory::getDBO();
+		$db = \JFactory::getDBO();
 		$updatedQueries = array();
 		foreach ($alterQueries as $table => $queries)
 		{

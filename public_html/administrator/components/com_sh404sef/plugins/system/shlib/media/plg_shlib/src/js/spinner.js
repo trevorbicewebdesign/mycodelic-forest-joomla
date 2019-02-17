@@ -2,11 +2,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.665
- * @date         2018-04-16
+ * @version      0.4.0.678
+ * @date         2018-08-02
  */
 
 /*! Copyright Weeblr llc @_YEAR_@ - Licence: http://www.gnu.org/copyleft/gpl.html GNU/GPL */

@@ -79,7 +79,7 @@ class RsfirewallModelCheck extends JModelLegacy
 		return $response;
 	}
 
-	protected function getCurrentJoomlaVersion() {
+	public function getCurrentJoomlaVersion() {
 		static $current = null;
 
 		if (is_null($current)) {
@@ -924,8 +924,9 @@ class RsfirewallModelCheck extends JModelLegacy
 		$query->select($db->qn('file'))
 			  ->select($db->qn('hash'))
 			  ->select($db->qn('flag'))
+			  ->select($db->qn('type'))
 			  ->from($db->qn('#__rsfirewall_hashes'))
-			  ->where($db->qn('type').'='.$db->q('ignore'));
+              ->where('('. $db->qn('type') . '=' . $db->q('ignore') . ' OR ' . $db->qn('type') . ' = ' . $db->q($this->getCurrentJoomlaVersion()) . ')');
 		$db->setQuery($query);
 
 		$results = $db->loadObjectList('file');
@@ -1128,7 +1129,8 @@ class RsfirewallModelCheck extends JModelLegacy
 				$results[$file] = (object) array(
 					'file' => $file,
 					'hash' => '',
-					'flag' => 'M'
+					'flag' => 'M',
+					'type' => 'ignore'
 				);
 			}
 		}
@@ -1366,7 +1368,9 @@ class RsfirewallModelCheck extends JModelLegacy
 								// grab the hash from the file found in the database
 								$file_hash = $ignored_files[$file_path]->hash;
 							}
-							$result->ignored[] = $file_path;
+							if ($ignored_files[$file_path]->type == 'ignore') {
+								$result->ignored[] = $file_path;
+							}
 						}
 
 						if (file_exists($full_path)) {

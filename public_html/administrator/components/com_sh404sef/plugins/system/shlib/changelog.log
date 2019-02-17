@@ -1,6 +1,6 @@
                                 shLib change log                                
 
-                        (2018-04-16 11:10 - build #665)                         
+                        (2018-08-02 18:01 - build #678)                         
 
 
     [new]    Added rule-based URL blocking, comes with default common
@@ -34,6 +34,8 @@
     [new]    Added MVC compatibility layer, handling J! 2 & J! 3
 
     [chg]    Analytics IP exclusion now operates on servers behind proxies
+    [chg]    stringToCleanedArray would strip a string that contains the
+             character
     [chg]    Default hook prio is now 100, so that handlers can be hooked
              after the default handlers
     [chg]    Now truncating structured data headline field to its maximum, 100

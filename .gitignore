@@ -1,5 +1,6 @@
 *.lck
 *.LCK
+.DS_Store
 /database/civicrm_job_log.sql
 *.sql
 *.log

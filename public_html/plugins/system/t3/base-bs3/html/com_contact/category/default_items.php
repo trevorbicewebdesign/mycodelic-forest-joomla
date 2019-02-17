@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_contact
  *
- * @copyright   Copyright (C) 2005 - 2017 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -110,7 +110,7 @@ $listDirn  = $this->escape($this->state->get('list.direction'));
 			<?php endforeach; ?>
 		</ul>
 
-		<?php if ($this->params->get('show_pagination', 2)) : ?>
+		<?php if ($this->params->get('show_pagination', 2) && ($this->pagination->getPagesCounter() > 0 )) : ?>
 		<div class="pagination">
 			<?php if ($this->params->def('show_pagination_results', 1)) : ?>
 			<p class="counter">

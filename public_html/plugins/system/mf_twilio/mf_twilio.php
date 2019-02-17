@@ -1,5 +1,5 @@
 <?php
-require('/home/trevorbi/mycodelicforest.org/public_html/plugins/system/mf_twilio/assets/Twilio/autoload.php');
+require(JPATH_BASE.'/plugins/system/mf_twilio/assets/Twilio/autoload.php');
 use Twilio\Rest\Client;
 
 
@@ -24,10 +24,10 @@ class plgSystemMf_twilio extends JPlugin
 		
 		if($task == 'twilio.insertSlack' ){
 			
-			require_once('/home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/api/class.api.php');
+			require_once(JPATH_BASE.'/administrator/components/com_civicrm/civicrm/api/class.api.php');
 			$api = new civicrm_api3(array(
 			  // Specify location of "civicrm.settings.php".
-			  'conf_path' => '/home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/',
+			  'conf_path' => JPATH_BASE.'/administrator/components/com_civicrm/',
 			));
 			echo $from;
 			

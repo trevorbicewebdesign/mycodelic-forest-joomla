@@ -244,24 +244,24 @@
     >
 
         <field type="shlegend" shlrenderer="shlegend" class="text" label="COM_SH404SEF_URL_HITS_RECORDING_TITLE"/>
-        <field menu="hide" name="log404sHits" type="radio" class="btn-group" default="0"
+        <field menu="hide" name="log404sHits" type="Shradio" class="btn-group" default="0" additionaltext=""
                label="COM_SH404SEF_LOG_404_HITS" description="COM_SH404SEF_TT_LOG_404_HITS">
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
         </field>
-        <field menu="hide" name="logAliasesHits" type="radio" class="btn-group" default="0"
+        <field menu="hide" name="logAliasesHits" type="Shradio" class="btn-group" default="0" additionaltext=""
                label="COM_SH404SEF_LOG_ALIASES_HITS" description="COM_SH404SEF_TT_LOG_ALIASES_HITS">
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
         </field>
-        <field menu="hide" name="logShurlsHits" type="radio" class="btn-group" default="0"
+        <field menu="hide" name="logShurlsHits" type="Shradio" class="btn-group" default="0" additionaltext=""
                label="COM_SH404SEF_LOG_SHURLS_HITS" description="COM_SH404SEF_TT_LOG_SHURLS_HITS">
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
         </field>
 
         <field type="shlegend" shlrenderer="shlegend" class="text" label="COM_SH404SEF_URL_CREATION_RECORDING_TITLE"/>
-        <field menu="hide" name="logUrlsSource" type="radio" class="btn-group" default="0"
+        <field menu="hide" name="logUrlsSource" type="Shradio" class="btn-group" default="0" additionaltext=""
                label="COM_SH404SEF_LOG_URLS_SOURCE" description="COM_SH404SEF_TT_LOG_URLS_SOURCE">
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
@@ -1224,11 +1224,16 @@
                label="COM_SH404SEF_ANALYTICS_EXCLUDE_IP" description="COM_SH404SEF_TT_ANALYTICS_EXCLUDE_IP" cols="30"
                rows="5"/>
 
-        <field menu="hide" name="analyticsUserGroups" type="list" multiple="true" size="10" default="[1]"
+        <field menu="hide" name="analyticsViewLevel" type="accesslevel" multiple="true" default="[1]"
+               label="COM_SH404SEF_ANALYTICS_ACCESS_LEVEL"
+               description="COM_SH404SEF_TT_ANALYTICS_ACCESS_LEVEL">
+        </field>
+
+        <field menu="hide" name="analyticsUserGroups" type="list" multiple="true" size="10" default=""
                label="COM_SH404SEF_ANALYTICS_USER_GROUPS" description="COM_SH404SEF_TT_ANALYTICS_USER_GROUPS">
         </field>
 
-        <field menu="hide" name="analyticsUserGroupsDisabled" type="list" multiple="true" size="10" default="[1]"
+        <field menu="hide" name="analyticsUserGroupsDisabled" type="list" multiple="true" size="10" default=""
                label="COM_SH404SEF_ANALYTICS_USER_GROUPS_DISABLED"
                description="COM_SH404SEF_TT_ANALYTICS_USER_GROUPS_DISABLED">
         </field>

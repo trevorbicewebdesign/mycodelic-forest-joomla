@@ -19,6 +19,7 @@ INSERT IGNORE INTO `#__rsfirewall_configuration` (`name`, `value`, `type`) VALUE
 ('verify_generator', '1', 'int'),
 ('grade', '0', 'int'),
 ('verify_emails', '0', 'int'),
+('email_text_color', '#000000', 'text'),
 ('offset', '300', 'int'),
 ('request_timeout', '0', 'int'),
 ('max_retries', '10', 'int'),

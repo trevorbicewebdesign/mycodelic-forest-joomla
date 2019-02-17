@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.14.0.3812
- * @date        2018-05-16
+ * @version     4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -657,5 +657,101 @@ class Sh404sefHelperGeneral
 		}
 
 		return $propertyValue;
+	}
+
+	/**
+	 * Add a tag and value to a piece of content, as HTML comment.
+	 * Tag content will be json_encoded.
+	 *
+	 * @param string $content
+	 * @param string $tagName
+	 * @param string $tagContent
+	 * @param string $position
+	 *
+	 * @return string
+	 */
+	public static function addCommentedTag($content, $tagName, $tagContent, $position = 'after')
+	{
+		static $alreadyAdded = array();
+
+		if(!empty($alreadyAdded[$tagName]))
+		{
+			return $content;
+		}
+
+		$tagName = strtolower($tagName);
+		$tag = "\n<!-- "
+			. $tagName
+			. ' '
+			. json_encode($tagContent)
+			. ' /' . $tagName . " -->\n";
+
+		switch ($position)
+		{
+			case 'after':
+				$content .= $tag;
+				$alreadyAdded[$tagName] = true;
+				break;
+			case 'before':
+				$content = $tag . $content;
+				$alreadyAdded[$tagName] = true;
+				break;
+			default:
+				break;
+		}
+		return $content;
+	}
+
+	/**
+	 * Retrieve piece(s) of data attached to a tag in some content.
+	 * Returns either the data or an array of data if there's more than one tag.
+	 *
+	 * @param string $content
+	 * @param string $tagName
+	 *
+	 * @return array
+	 */
+	public static function getCommentedTag($content, $tagName)
+	{
+		$tagName = strtolower($tagName);
+		$data = array();
+		preg_match(
+			'~<!-- ' . $tagName . ' (.*) /' . $tagName . ' -->~su',
+			$content,
+			$data
+		);
+
+		// remove full match
+		if (is_array($data) && !empty($data[1]))
+		{
+			array_shift($data);
+		}
+
+		foreach($data as $key => $value)
+		{
+			$data[$key] = json_decode($value);
+		}
+
+		return empty($data) ? array() : $data;
+	}
+
+	/**
+	 * Remove all instances of a commented tag out of a piece of content.
+	 *
+	 * @param string $content
+	 * @param string $tagName
+	 *
+	 * @return string
+	 */
+	public static function removeCommentedTag($content, $tagName)
+	{
+		$tagName = strtolower($tagName);
+		$content = ShlSystem_Strings::pr(
+			'~<!-- ' . $tagName . ' (.*) /' . $tagName . ' -->~',
+			'',
+			$content
+		);
+
+		return $content;
 	}
 }

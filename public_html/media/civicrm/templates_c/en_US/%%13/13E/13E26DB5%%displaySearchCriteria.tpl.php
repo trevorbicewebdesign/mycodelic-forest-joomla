@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:48
+<?php /* Smarty version 2.6.30, created on 2018-12-09 09:59:11
          compiled from CRM/common/displaySearchCriteria.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/displaySearchCriteria.tpl', 1, false),array('block', 'ts', 'CRM/common/displaySearchCriteria.tpl', 36, false),array('modifier', 'escape', 'CRM/common/displaySearchCriteria.tpl', 34, false),)), $this); ?>

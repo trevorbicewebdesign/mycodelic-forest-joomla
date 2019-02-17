@@ -3,12 +3,14 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.665
- * @date        2018-04-16
+ * @version      0.4.0.678
+ * @date        2018-08-02
  */
+
+use Joomla\String\StringHelper;
 
 defined('_JEXEC') or die;
 
@@ -52,9 +54,9 @@ class ShlSystem_Route
 			if ($forceDomain)
 			{
 				// make sure the base path is not added twice (for sites in a subfolder)
-				if (JString::substr($url, 0, JString::strlen($basePath)) == $basePath)
+				if (StringHelper::substr($url, 0, StringHelper::strlen($basePath)) == $basePath)
 				{
-					$url = JString::substr($url, JString::strlen($basePath));
+					$url = StringHelper::substr($url, StringHelper::strlen($basePath));
 				}
 
 				$url = self::getCanonicalDomain() . $url;
@@ -65,9 +67,9 @@ class ShlSystem_Route
 
 		// relative URL, make it fully qualified
 		$currentBase = $base;
-		if ($isAdmin === true || ($isAdmin !== false && JFactory::getApplication()->isAdmin()))
+		if ($isAdmin === true || ($isAdmin !== false && \JFactory::getApplication()->isAdmin()))
 		{
-			$currentBase = JString::substr($base, 0, -14);
+			$currentBase = StringHelper::substr($base, 0, -14);
 		}
 
 		return $currentBase . $url;
@@ -124,13 +126,13 @@ class ShlSystem_Route
 		if (is_null(self::$canonicalDomain))
 		{
 			$sefPlgParams = ShlSystem_Joomla::getExtensionParams('plg_sef', array('type' => 'plugin', 'folder' => 'system', 'element' => 'sef'));
-			$canonicalParam = JString::trim($sefPlgParams->get('domain', ''));
+			$canonicalParam = StringHelper::trim($sefPlgParams->get('domain', ''));
 			if (empty($canonicalParam))
 			{
 				$base = JUri::base();
-				if ($isAdmin === true || ($isAdmin !== false && JFactory::getApplication()->isAdmin()))
+				if ($isAdmin === true || ($isAdmin !== false && \JFactory::getApplication()->isAdmin()))
 				{
-					$base = JString::substr($base, 0, -14);
+					$base = StringHelper::substr($base, 0, -14);
 				}
 				self::$canonicalDomain = $base;
 			}
@@ -138,7 +140,7 @@ class ShlSystem_Route
 			{
 				self::$canonicalDomain = $canonicalParam;
 			}
-			self::$canonicalDomain = JString::trim(self::$canonicalDomain, '/');
+			self::$canonicalDomain = StringHelper::trim(self::$canonicalDomain, '/');
 		}
 
 		return self::$canonicalDomain;
@@ -175,7 +177,7 @@ class ShlSystem_Route
 		}
 
 		// build a reg exp based on rule
-		if (JString::substr($rule, 0, 1) == $regexpChar)
+		if (StringHelper::substr($rule, 0, 1) == $regexpChar)
 		{
 			// this is a regexp, use it directly
 			$regExp = $rule;

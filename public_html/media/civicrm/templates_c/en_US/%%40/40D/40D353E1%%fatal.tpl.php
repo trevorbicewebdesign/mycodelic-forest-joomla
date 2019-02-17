@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:43:51
+<?php /* Smarty version 2.6.30, created on 2019-02-11 22:55:01
          compiled from CRM/common/fatal.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/fatal.tpl', 1, false),array('block', 'ts', 'CRM/common/fatal.tpl', 52, false),array('modifier', 'truncate', 'CRM/common/fatal.tpl', 42, false),)), $this); ?>

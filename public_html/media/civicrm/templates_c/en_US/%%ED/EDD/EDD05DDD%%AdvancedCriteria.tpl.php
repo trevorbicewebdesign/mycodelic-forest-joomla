@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-04 12:21:02
+<?php /* Smarty version 2.6.30, created on 2018-12-09 10:13:42
          compiled from CRM/Contact/Form/Search/AdvancedCriteria.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 50, false),array('function', 'crmURL', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 88, false),array('function', 'help', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 106, false),)), $this); ?>

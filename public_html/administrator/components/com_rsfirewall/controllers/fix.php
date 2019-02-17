@@ -251,6 +251,7 @@ class RsfirewallControllerFix extends JControllerLegacy
 		$model = $this->getModel('fix');			
 		if (!$model->ignoreFiles()) {
 			$success 		= false;
+            $data	 		= new stdClass();
 			$data->result   = false;
 			$data->message  = $model->getError();
 		} else {

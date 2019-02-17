@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date		2018-04-16
+ * @version     0.4.0.678
+ * @date		2018-08-02
  */
 
 // Check to ensure this file is within the rest of the framework
@@ -24,7 +24,7 @@ defined('JPATH_BASE') or die();
  * @subpackage		HTML
  * @since		1.5
  */
-class JButtonShpopupstandardbutton extends JButton
+class JButtonShpopupstandardbutton extends \JToolbarButton
 {
 	/**
 	 * Button type
@@ -36,7 +36,7 @@ class JButtonShpopupstandardbutton extends JButton
 
 	function fetchButton( $type='Standard', $name = '', $text = '', $task = '', $list = true, $hideMenu = false )
 	{
-		$i18n_text	= JText::_($text);
+		$i18n_text	= \JText::_($text);
 		$class	= $this->fetchIconClass($name);
 		$doTask	= $this->_getCommand($text, $task, $list, $hideMenu);
 
@@ -74,7 +74,7 @@ class JButtonShpopupstandardbutton extends JButton
 	 */
 	function _getCommand($name, $task, $list, $hide)
 	{
-		$message = JText::_('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
+		$message = \JText::_('JLIB_HTML_PLEASE_MAKE_A_SELECTION_FROM_THE_LIST');
 		$message = addslashes($message);
 		$hidecode	= $hide ? 'shHideMainMenu();' : '';
 

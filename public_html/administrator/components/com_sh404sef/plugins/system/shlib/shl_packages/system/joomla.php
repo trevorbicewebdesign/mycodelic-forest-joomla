@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.665
- * @date        2018-04-16
+ * @version      0.4.0.678
+ * @date        2018-08-02
  */
 
 defined('_JEXEC') or die;
@@ -26,14 +26,14 @@ class ShlSystem_Joomla
 		{
 			try
 			{
-				$oldParams = ShlDbHelper::selectResult('#__extensions', 'params', $options);
+				$oldParams = \ShlDbHelper::selectResult('#__extensions', 'params', $options);
 				$_params[$extension] = new JRegistry();
 				$_params[$extension]->loadString($oldParams);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$_params[$extension] = new JRegistry();
-				ShlSystem_Log::error('shlib', '%s::%d: %s', __METHOD__, __LINE__, $e->getMessage());
+				\ShlSystem_Log::error('shlib', '%s::%d: %s', __METHOD__, __LINE__, $e->getMessage());
 			}
 		}
 
@@ -52,12 +52,12 @@ class ShlSystem_Joomla
 	{
 		try
 		{
-			ShlDbHelper::update('#__extensions', array('params' => (string) $params), $options);
+			\ShlDbHelper::update('#__extensions', array('params' => (string) $params), $options);
 			return true;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
-			ShlSystem_Log::error('shlib', '%s::%d: %s', __METHOD__, __LINE__, $e->getMessage());
+			\ShlSystem_Log::error('shlib', '%s::%d: %s', __METHOD__, __LINE__, $e->getMessage());
 			return false;
 		}
 	}

@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.665
- * @date                2018-04-16
+ * @version      0.4.0.678
+ * @date                2018-08-02
  */
 
 // no direct access
@@ -33,7 +33,7 @@ class ShlSystem_Convert
 
 		if (!extension_loaded('bcmath'))
 		{
-			throw new ShlException(__METHOD__ . ': Using ShlSystem_Convert::hexToDecimal without BCMATH extension', 500);
+			throw new \ShlException(__METHOD__ . ': Using \ShlSystem_Convert::hexToDecimal without BCMATH extension', 500);
 		}
 
 		$dec = hexdec(substr($originalHex, -4));

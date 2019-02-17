@@ -6,8 +6,8 @@
  * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.14.0.3812
- * @date        2018-05-16
+ * @version     4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -57,7 +57,7 @@ class Sh404sefModelNotfoundstore
 			try
 			{
 				$rawResults = ShlDbHelper::selectAssocList('#__sh404sef_urls', array('oldurl', 'newurl', 'dateadd', 'id', 'cpt', 'rank'), array('oldurl' => $reqPath), array(), $orderBy = array('rank'));
-
+				$urlAlreedyExists = false;
 				// do we have at least one 404 existing records?
 				if (!empty($rawResults))
 				{
@@ -79,10 +79,12 @@ class Sh404sefModelNotfoundstore
 							{
 								$invalidRecordsIds[] = $rawResult['id'];
 							}
-							// if not a 404 and not a custom URL, delete also
+							// if not a 404 and not a custom URL, this usually means the URL exists
+							// and is valid but a 404 as triggered because of ACL: the user does not have access
+							// we do not delete the record but we should not add another one so we raise a flag
 							if (!empty($rawResult['newurl']) && $rawResult['dateadd'] == '0000-00-00')
 							{
-								$invalidRecordsIds[] = $rawResult['id'];
+								$urlAlreedyExists = true;
 							}
 						}
 					}
@@ -133,11 +135,11 @@ class Sh404sefModelNotfoundstore
 				}
 
 				// write back the record, with updated counter
-				if (empty($notFoundRecord))
+				if (empty($notFoundRecord) && !$urlAlreedyExists)
 				{
 					ShlDbHelper::insert('#__sh404sef_urls', $updatedRecord);
 				}
-				else
+				else if(!empty($notFoundRecord))
 				{
 					ShlDbHelper::update('#__sh404sef_urls', $updatedRecord, array('id' => $updatedRecord['id']));
 				}

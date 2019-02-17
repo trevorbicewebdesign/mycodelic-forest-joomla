@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:22
+<?php /* Smarty version 2.6.30, created on 2018-12-09 09:57:29
          compiled from CRM/Group/Page/Group.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Group/Page/Group.tpl', 1, false),array('block', 'ts', 'CRM/Group/Page/Group.tpl', 29, false),array('function', 'crmURL', 'CRM/Group/Page/Group.tpl', 29, false),array('function', 'help', 'CRM/Group/Page/Group.tpl', 35, false),)), $this); ?>

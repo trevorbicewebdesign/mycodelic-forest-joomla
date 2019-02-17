@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-05 14:04:11
+<?php /* Smarty version 2.6.30, created on 2018-12-17 17:48:07
          compiled from string:Dear+Lowell */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'string:Dear Lowell', 1, false),)), $this); ?>

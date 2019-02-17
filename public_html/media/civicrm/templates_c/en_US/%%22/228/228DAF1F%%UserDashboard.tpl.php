@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-07 15:26:15
+<?php /* Smarty version 2.6.30, created on 2019-02-16 08:36:32
          compiled from CRM/Pledge/Page/UserDashboard.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Pledge/Page/UserDashboard.tpl', 1, false),array('block', 'ts', 'CRM/Pledge/Page/UserDashboard.tpl', 49, false),array('function', 'counter', 'CRM/Pledge/Page/UserDashboard.tpl', 36, false),array('function', 'cycle', 'CRM/Pledge/Page/UserDashboard.tpl', 38, false),array('function', 'crmURL', 'CRM/Pledge/Page/UserDashboard.tpl', 49, false),array('function', 'crmScript', 'CRM/Pledge/Page/UserDashboard.tpl', 57, false),array('modifier', 'crmMoney', 'CRM/Pledge/Page/UserDashboard.tpl', 39, false),array('modifier', 'truncate', 'CRM/Pledge/Page/UserDashboard.tpl', 43, false),array('modifier', 'crmDate', 'CRM/Pledge/Page/UserDashboard.tpl', 43, false),)), $this); ?>

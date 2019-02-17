@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:33:25
+<?php /* Smarty version 2.6.30, created on 2019-01-02 07:48:57
          compiled from CRM/Contact/Form/Inline/ContactName.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Inline/ContactName.tpl', 1, false),)), $this); ?>

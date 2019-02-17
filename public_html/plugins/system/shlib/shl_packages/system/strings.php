@@ -3,12 +3,14 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.665
- * @date                2018-04-16
+ * @version      0.4.0.678
+ * @date                2018-08-02
  */
+
+use Joomla\String\StringHelper;
 
 // no direct access
 defined('_JEXEC') or die;
@@ -107,19 +109,19 @@ class ShlSystem_Strings
 		{
 			foreach ($bits as $bit)
 			{
-				$cleaned = JString::trim($bit);
-				if (!empty($cleaned))
+				$cleaned = StringHelper::trim($bit);
+				if (strlen($cleaned) != 0)
 				{
 					switch ($caseHandling)
 					{
 						case self::LOWERCASE:
-							$output[] = JString::strtolower($cleaned);
+							$output[] = StringHelper::strtolower($cleaned);
 							break;
 						case self::UPPERCASE:
-							$output[] = JString::strtoupper($cleaned);
+							$output[] = StringHelper::strtoupper($cleaned);
 							break;
 						case self::UCFIRST:
-							$output[] = JString::ucfirst($cleaned);
+							$output[] = StringHelper::ucfirst($cleaned);
 							break;
 						default:
 							$output[] = $cleaned;

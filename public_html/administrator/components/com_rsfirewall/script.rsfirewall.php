@@ -779,9 +779,10 @@ class com_rsfirewallInstallerScript
 				<b class="install-not-ok">Error installing!</b>
 				<?php } ?>
 			</p>
-			<h2>Changelog v2.11.17</h2>
+			<h2>Changelog v2.11.20</h2>
 			<ul class="version-history">
-				<li><span class="version-fixed">Fix</span> An error would occur in the Blacklist/Whitelist area when adding a range or a CIDR IP in the lists.</li>
+				<li><span class="version-upgraded">Upg</span> Email addresses converted to images now have a transparent background.</li>
+				<li><span class="version-upgraded">Upg</span> Email image text color can now be set in Firewall Configuration - Active Scanner.</li>
 			</ul>
 			<p>
 			<a class="btn btn-primary btn-large" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>

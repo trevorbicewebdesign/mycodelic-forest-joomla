@@ -139,6 +139,25 @@ class RsfirewallModelDiff extends JModelLegacy
 				throw new Exception(JText::_('COM_RSFIREWALL_FILESYSTEM_ERROR_COPY_FAILED'));
 			}
 
+            $table = JTable::getInstance('Hashes', 'RsfirewallTable', array());
+			$db = JFactory::getDbo();
+            $query = $db->getQuery(true);
+
+            $query->select($db->qn('id'))
+                ->from($db->qn('#__rsfirewall_hashes'))
+                ->where($db->qn('file').'='.$db->q($message['files']['localFile']))
+                ->where('('. $db->qn('type') . '=' . $db->q('ignore') . ' OR ' . $db->qn('type') . ' = ' . $db->q($this->getCurrentJoomlaVersion()) . ')');
+            $db->setQuery($query);
+            if ($id = $db->loadResult())
+            {
+                $table->load($id);
+                $table->bind(array(
+                    'hash' => md5_file(JPATH_SITE . '/' . $message['files']['localFile']),
+                    'date' => JFactory::getDate()->toSql()
+                ));
+                $table->store();
+            }
+
 			$message['status']  = true;
 			$message['message'] = JText::_('COM_RSFIREWALL_FILESYSTEM_FILES_COPIED');
 
@@ -149,6 +168,18 @@ class RsfirewallModelDiff extends JModelLegacy
 		echo json_encode($message);
 		jexit();
 	}
+
+    public function getCurrentJoomlaVersion()
+    {
+        static $current = null;
+
+        if (is_null($current))
+        {
+            $current = $this->getInstance('Check', 'RsfirewallModel')->getCurrentJoomlaVersion();
+        }
+
+        return $current;
+    }
 
 	protected function connect($url, $caching = true)
 	{

@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.14.0.3812
- * @date        2018-05-16
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -43,8 +43,8 @@ Class Sh404sefControllerHitdetails extends Sh404sefClassBasecontroller
 		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 
 		// collect input data : which url needs to be redirected ?
-		$app = JFactory::getApplication();
-		$urlId = $app->input->getInt('url_id');
+		$app         = JFactory::getApplication();
+		$urlId       = $app->input->getInt('url_id');
 		$requestType = $app->input->getCmd('request_type');
 
 		// get model and ask it to do the job
@@ -61,10 +61,14 @@ Class Sh404sefControllerHitdetails extends Sh404sefClassBasecontroller
 		if (version_compare(JVERSION, '3.0', 'ge'))
 		{
 			// V3: we redirect to the close page, as ajax is not used anymore to save
-			$failure = array('url'     => 'index.php?option=com_sh404sef&c=hitdetails&view=hitdetails&tmpl=component',
-			                 'message' => $error);
-			$success = array('url'     => 'index.php?option=com_sh404sef&c=hitdetails&view=hitdetails&tmpl=component&layout=refresh',
-			                 'message' => JText::sprintf('COM_SH404SEF_HIT_DETAILS_PURGE_SUCCESS', $model->getUrl($urlId)->requested_url));
+			$failure = array(
+				'url'     => 'index.php?option=com_sh404sef&c=hitdetails&view=hitdetails&tmpl=component',
+				'message' => $error
+			);
+			$success = array(
+				'url'     => 'index.php?option=com_sh404sef&c=hitdetails&view=hitdetails&tmpl=component&layout=refresh',
+				'message' => JText::sprintf('COM_SH404SEF_HIT_DETAILS_PURGE_SUCCESS', $model->getUrl($urlId)->requested_url)
+			);
 			if (!empty($error))
 			{
 				// Save failed, go back to the screen and display a notice.
@@ -80,5 +84,49 @@ Class Sh404sefControllerHitdetails extends Sh404sefClassBasecontroller
 			// standard display
 			$this->display();
 		}
+	}
+
+	public function purgeAllDetails()
+	{
+		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+		$app         = JFactory::getApplication();
+		$requestType = $app->input->getCmd('request_type');
+		try
+		{
+			$model = ShlMvcModel_Base::getInstance('Hitdetails', 'Sh404sefModel');
+			if (!empty($model))
+			{
+				$model->purgeAllDetails($requestType);
+				$response = array(
+					'success'  => true,
+					'data'     => array(
+						'result' => true
+					),
+					'message'  => null,
+					'messages' => array()
+				);
+			}
+			else
+			{
+				throw new \Exception('Internal error: unable to load model.');
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'success'  => false,
+				'data'     => array(
+					'result' => false
+				),
+				'message'  => null,
+				'messages' => array(
+					'error' => array(
+						JText::sprintf('COM_SH404SEF_DATA_PURGE_ERROR', $e->getMessage())
+					)
+				)
+			);
+		}
+
+		echo json_encode($response);
 	}
 }

@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date				2018-04-16
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -86,7 +86,7 @@ class ShlCache_Manager {
     $newTTL = (int) $newTTL;
 
     if( $newTTL < 0) {
-      throw new ShlException( __METHOD__ . ': trying to set negative TTL on cache handler');
+      throw new \ShlException( __METHOD__ . ': trying to set negative TTL on cache handler');
     }
 
     self::$_defaultTTL = $newTTL;
@@ -126,7 +126,7 @@ class ShlCache_Manager {
   /**
    *
    * Store some piece of information in cache,
-   * using handler defined by a call to ShlCache_Manager::setHandler()
+   * using handler defined by a call to \ShlCache_Manager::setHandler()
    * or using default handler if setHandler() has not be called yet
    * No serialization is required by the calling party
    *
@@ -135,13 +135,13 @@ class ShlCache_Manager {
    * @param mixed $value a php variable holding the data
    * @param integer $ttl optional time to live for the data, default to 3600 seconds
    * @return boolean, true if success
-   * @throws ShlException
+   * @throws \ShlException
    */
   public static function store( $id, $dataset, $value, $ttl = null) {
 
     $ttl = is_null($ttl) ? self::$_defaultTTL : (int) $ttl;
     if( $ttl < 0) {
-      throw new ShlException( __METHOD__ . ': trying to set negative TTL on cache handler');
+      throw new \ShlException( __METHOD__ . ': trying to set negative TTL on cache handler');
     }
     $stored = self::_getInstance(self::$_handler)->doStore( self::_computeCacheId( $id, $dataset), $value, $ttl);
     if($stored) {
@@ -158,7 +158,7 @@ class ShlCache_Manager {
    * @param string $id unique id fo the information to remove from cache
    * @param string $dataset a group the data belongs to, mostly for stats accumulation
    * @return boolean, true if success
-   * @throws ShlException
+   * @throws \ShlException
    */
   public static function remove( $id, $dataset) {
 
@@ -176,7 +176,7 @@ class ShlCache_Manager {
    *
    * @param string $group optional, name of items group to clear
    * @return boolean, true if success
-   * @throws ShlException
+   * @throws \ShlException
    */
   public static function clear( $group = '') {
 
@@ -216,7 +216,7 @@ class ShlCache_Manager {
    */
   public static function getUniqueId() {
 
-    self::$_uniqueId = empty( self::$_uniqueId) ? JFactory::getConfig()->get('secret') : self::$_uniqueId;
+    self::$_uniqueId = empty( self::$_uniqueId) ? \JFactory::getConfig()->get('secret') : self::$_uniqueId;
 
     return self::$_uniqueId;
   }
@@ -250,17 +250,17 @@ class ShlCache_Manager {
     // create a single manager instance
     if(is_null(self::$_manager)) {
       // instantiate a manager
-      $base = new ShlCache_Manager();
+      $base = new \ShlCache_Manager();
 
       // get default handler, if none supplied
       $handler = empty( $handler) ? self::CACHE_HANDLER_APC : $handler;
 
       // decorate manager with the proper handler
-      $className = 'ShlCache_' . ucfirst( $handler);
+      $className = '\ShlCache_' . ucfirst( $handler);
       if(class_exists($className)) {
         self::$_manager = new $className( $base);
       } else {
-        throw new ShlException( __METHOD__ . ': trying to instantiate a non-existing cache handler: ' . $className);
+        throw new \ShlException( __METHOD__ . ': trying to instantiate a non-existing cache handler: ' . $className);
       }
 
       // ask handler to check setup is working, ie corresponding extension is loaded in php

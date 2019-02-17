@@ -2,18 +2,18 @@
 /**
  * Shlib - programming library
  *
- * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
- * @package     shlib
- * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date                2018-04-16
+ * @author       Yannick Gaultier
+ * @copyright    (c) Yannick Gaultier 2018
+ * @package      shlib
+ * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
+ * @version      0.4.0.678
+ * @date                2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
 defined('_JEXEC') or die;
 
-class ShlDbClass extends ShlSystem_Abstractdecorator
+class ShlDbClass extends \ShlSystem_Abstractdecorator
 {
 
 	const CACHE_STATS_DATASET_NAME = 'shl_database';
@@ -24,8 +24,10 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	// query cache option
 	public $queryCacheEnabled            = true;
 	public $queryCacheEnabledForJoomla   = false;
-	public $queryCacheTableExclusionList = array('#__sh404sef_urls', '#__extensions', '#__schemas', '#__session', '#__update_categories',
-	                                             '#__update_sites', '#__update_sites_extensions', '#__updates');
+	public $queryCacheTableExclusionList = array(
+		'#__sh404sef_urls', '#__extensions', '#__schemas', '#__session', '#__update_categories',
+		'#__update_sites', '#__update_sites_extensions', '#__updates'
+	);
 
 	// a unique id needed when using the query cache
 	public $queryCacheUid = '';
@@ -41,7 +43,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	public function shlGetCacheStats()
 	{
 
-		return ShlCache_Manager::getCacheStats(self::CACHE_STATS_DATASET_NAME);
+		return \ShlCache_Manager::getCacheStats(self::CACHE_STATS_DATASET_NAME);
 	}
 
 	/**
@@ -63,8 +65,8 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 *
 	 *
 	 * @param string $query
-	 * @param array $nameQuoted
-	 * @param array $quoted
+	 * @param array  $nameQuoted
+	 * @param array  $quoted
 	 * @param string $namePlaceHolder
 	 * @param string $dataPlaceHolder
 	 */
@@ -78,13 +80,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 		{
 			// find placeholders
 			$sqlBits = explode($namePlaceHolder, $query);
-			$i = 0;
+			$i       = 0;
 			// replace each place holder by the matching value
 			foreach ($nameQuoted as $data)
 			{
 				$newQuery .= $sqlBits[$i];
 				$newQuery .= $this->quoteName($data);
-				$i += 1;
+				$i        += 1;
 			}
 			if (isset($sqlBits[$i]))
 			{
@@ -94,22 +96,22 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 
 		if (strpos($newQuery, $namePlaceHolder) !== false)
 		{
-			throw new ShlDbException(__METHOD__ . ': ' . 'Invalid db query sent to queryQuote helper: ' . $query . '. Maybe missing some data.');
+			throw new \ShlDbException(__METHOD__ . ': ' . 'Invalid db query sent to queryQuote helper: ' . $query . '. Maybe missing some data.');
 		}
 
 		// name quoting
 		if (!empty($quoted))
 		{
 			// find placeholders
-			$sqlBits = explode($dataPlaceHolder, $newQuery);
+			$sqlBits  = explode($dataPlaceHolder, $newQuery);
 			$newQuery = '';
-			$i = 0;
+			$i        = 0;
 			// replace each place holder by the matching value
 			foreach ($quoted as $data)
 			{
 				$newQuery .= $sqlBits[$i];
 				$newQuery .= $this->_shlPrepareData($data);
-				$i += 1;
+				$i        += 1;
 			}
 			if (isset($sqlBits[$i]))
 			{
@@ -123,11 +125,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Prepare and set a query against the db object
 	 *
-	 * @param String $table The table name
-	 * @param Array $aData An array of field to be inserted in the db ('columnName' => 'columnValue')
-	 * @param String $mWhere Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
-	 * @param Array $mWhere ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE `columnName` = 'columnValue'. columnValue is escaped before being used
-	 * @param Array $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by this array values, escaped
+	 * @param String $table      The table name
+	 * @param Array  $aData      An array of field to be inserted in the db ('columnName' => 'columnValue')
+	 * @param String $mWhere     Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
+	 * @param Array  $mWhere     ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE
+	 *                           `columnName` = 'columnValue'. columnValue is escaped before being used
+	 * @param Array  $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by
+	 *                           this array values, escaped
 	 */
 	public function shlSetInsertUpdateQuery($table, $aData, $mWhere = '', $aWhereData = array())
 	{
@@ -149,14 +153,16 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Prepare and set a SELECT query against the db
 	 *
-	 * @param String $table The table name
-	 * @param Array $aColList array of strings of columns to be fetched
-	 * @param String $mWhere Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
-	 * @param Array $mWhere ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE `columnName` = 'columnValue'. columnValue is escaped before being used
-	 * @param Array $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by this array values, escaped
-	 * @param Array $orderBy , a list of columns to order the results
-	 * @param Integer $offset , first line of result set to select
-	 * @param Integer $lines , max number of lines to select
+	 * @param String  $table      The table name
+	 * @param Array   $aColList   array of strings of columns to be fetched
+	 * @param String  $mWhere     Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
+	 * @param Array   $mWhere     ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE
+	 *                            `columnName` = 'columnValue'. columnValue is escaped before being used
+	 * @param Array   $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by
+	 *                            this array values, escaped
+	 * @param Array   $orderBy    , a list of columns to order the results
+	 * @param Integer $offset     , first line of result set to select
+	 * @param Integer $lines      , max number of lines to select
 	 */
 	public function shlSetSelectQuery($table, $aColList = array('*'), $mWhere = '', $aWhereData = array(), $orderBy = array(), $offset = 0,
 	                                  $lines = 0)
@@ -192,11 +198,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Prepare and set a select/count query against the db
 	 *
-	 * @param String $table The table name
-	 * @param String $column an optional column to be counter
-	 * @param String $mWhere Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
-	 * @param Array $mWhere ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE `columnName` = 'columnValue'. columnValue is escaped before being used
-	 * @param Array $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by this array values, escaped
+	 * @param String $table      The table name
+	 * @param String $column     an optional column to be counter
+	 * @param String $mWhere     Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
+	 * @param Array  $mWhere     ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE
+	 *                           `columnName` = 'columnValue'. columnValue is escaped before being used
+	 * @param Array  $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by
+	 *                           this array values, escaped
 	 */
 	public function shlSetCountQuery($table, $column = '*', $mWhere = '', $aWhereData = array())
 	{
@@ -216,11 +224,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Prepare and set an UPDATE query against the db
 	 *
-	 * @param String $table The table name
-	 * @param Array $aData array of values pairs ( ie 'columnName' => 'columnValue')
-	 * @param String $mWhere Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
-	 * @param Array $mWhere ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE `columnName` = 'columnValue'. columnValue is escaped before being used
-	 * @param Array $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by this array values, escaped
+	 * @param String $table      The table name
+	 * @param Array  $aData      array of values pairs ( ie 'columnName' => 'columnValue')
+	 * @param String $mWhere     Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
+	 * @param Array  $mWhere     ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE
+	 *                           `columnName` = 'columnValue'. columnValue is escaped before being used
+	 * @param Array  $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by
+	 *                           this array values, escaped
 	 */
 	public function shlSetUpdateQuery($table, $aData, $mWhere = '', $aWhereData = array())
 	{
@@ -256,24 +266,24 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 * Prepare and set an INSERT query against the db
 	 *
 	 * @param String $table The table name
-	 * @param Array $aData array of values pairs ( ie 'columnName' => 'columnValue')
+	 * @param Array  $aData array of values pairs ( ie 'columnName' => 'columnValue')
 	 */
 	public function shlSetInsertQuery($table, $aData)
 	{
 
 		// which columns to set ?
 		$columns = '';
-		$values = '';
+		$values  = '';
 		if (!empty($aData))
 		{
 			foreach ($aData as $columnName => $columnValue)
 			{
 				$columns .= ', ' . $this->quoteName($columnName);
-				$values .= ', ' . $this->_shlPrepareData($columnValue);
+				$values  .= ', ' . $this->_shlPrepareData($columnValue);
 			}
 			// remove leading ', '
 			$columns = substr($columns, 2);
-			$values = substr($values, 2);
+			$values  = substr($values, 2);
 		}
 
 		// set up the query
@@ -285,10 +295,12 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Prepare and set a DELETE query against the db
 	 *
-	 * @param String $table The table name
-	 * @param String $mWhere Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
-	 * @param Array $mWhere ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE `columnName` = 'columnValue'. columnValue is escaped before being used
-	 * @param Array $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by this array values, escaped
+	 * @param String $table      The table name
+	 * @param String $mWhere     Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
+	 * @param Array  $mWhere     ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE
+	 *                           `columnName` = 'columnValue'. columnValue is escaped before being used
+	 * @param Array  $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by
+	 *                           this array values, escaped
 	 */
 	public function shlSetDeleteQuery($table, $mWhere = '', $aWhereData = array())
 	{
@@ -305,10 +317,12 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Returns true if a record exists matching 'where' condition
 	 *
-	 * @param String $table , the table to look into
-	 * @param String $mWhere Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
-	 * @param Array $mWhere ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE `columnName` = 'columnValue'. columnValue is escaped before being used
-	 * @param Array $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by this array values, escaped
+	 * @param String $table      , the table to look into
+	 * @param String $mWhere     Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
+	 * @param Array  $mWhere     ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE
+	 *                           `columnName` = 'columnValue'. columnValue is escaped before being used
+	 * @param Array  $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by
+	 *                           this array values, escaped
 	 */
 	public function shlIsRecord($table, $mWhere = '', $aWhereData = array())
 	{
@@ -331,9 +345,9 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Returns true if a record exists with a given Id
 	 *
-	 * @param String $table , the table to look into
-	 * @param Integer $id , the id to look for
-	 * @param String $idName , default to 'id', the columns to look into, if not 'id'
+	 * @param String  $table  , the table to look into
+	 * @param Integer $id     , the id to look for
+	 * @param String  $idName , default to 'id', the columns to look into, if not 'id'
 	 */
 	public function shlIsRecordById($table, $id, $idName = 'id')
 	{
@@ -360,12 +374,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	{
 
 		$this->_isShLibHelper = true;
-		$result = $this->loadResult();
-		$error = $this->getErrorNum();
-		if (!empty($error))
-		{
-			throw new ShlDbException($this->getErrorMsg(), $error);
-		}
+		$result               = $this->loadResult();
 		$this->_isShLibHelper = false;
 		return $result;
 	}
@@ -378,7 +387,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	public function shlLoadResultArray($numinarray = 0)
 	{
 
-		ShlSystem_Log::debug('shlib', 'Using deprecated ShlDbClass::shlLoadResultArray() method. Use ShlDbClass::shlLoadColumn() instead');
+		\ShlSystem_Log::debug('shlib', 'Using deprecated \ShlDbClass::shlLoadResultArray() method. Use \ShlDbClass::shlLoadColumn() instead');
 		return $this->shlLoadColumn($numinarray);
 	}
 
@@ -390,13 +399,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	{
 
 		$this->_isShLibHelper = true;
-		$array = $this->loadColumn($offset);
-		$error = $this->getErrorNum();
-		if (!empty($error))
-		{
-			throw new ShlDbException($this->getErrorMsg(), $error);
-		}
-
+		$array                = $this->loadColumn($offset);
 		$this->_isShLibHelper = false;
 		return $array;
 	}
@@ -409,13 +412,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	{
 
 		$this->_isShLibHelper = true;
-		$result = $this->loadAssoc();
-		$error = $this->getErrorNum();
-		if (!empty($error))
-		{
-			throw new ShlDbException($this->getErrorMsg(), $error);
-		}
-
+		$result               = $this->loadAssoc();
 		$this->_isShLibHelper = false;
 		return $result;
 	}
@@ -428,13 +425,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	{
 
 		$this->_isShLibHelper = true;
-		$result = $this->loadAssocList($key);
-		$error = $this->getErrorNum();
-		if (!empty($error))
-		{
-			throw new ShlDbException($this->getErrorMsg(), $error);
-		}
-
+		$result               = $this->loadAssocList($key);
 		$this->_isShLibHelper = false;
 
 		return $result;
@@ -448,13 +439,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	{
 
 		$this->_isShLibHelper = true;
-		$object = $this->loadObject($className);
-		$error = $this->getErrorNum();
-		if (!empty($error))
-		{
-			throw new ShlDbException($this->getErrorMsg(), $error);
-		}
-
+		$object               = $this->loadObject($className);
 		$this->_isShLibHelper = false;
 		return $object;
 	}
@@ -467,13 +452,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	{
 
 		$this->_isShLibHelper = true;
-		$objectList = $this->loadObjectList($key, $className);
-		$error = $this->getErrorNum();
-		if (!empty($error))
-		{
-			throw new ShlDbException($this->getErrorMsg(), $error);
-		}
-
+		$objectList           = $this->loadObjectList($key, $className);
 		$this->_isShLibHelper = false;
 		return $objectList;
 	}
@@ -496,13 +475,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	{
 
 		$this->_isShLibHelper = true;
-		$status = $this->execute();
-		$error = empty($status) ? $this->getErrorNum() : '';
-		if (!empty($error))
-		{
-			throw new ShlDbException($this->getErrorMsg(), $error);
-		}
-
+		$this->execute();
 		$this->_isShLibHelper = false;
 		return $this;
 	}
@@ -574,9 +547,9 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 * NOTE: Chosing to key the result array by a non-unique field name can result in unwanted
 	 * behavior and should be avoided.
 	 *
-	 * @param   string $key The name of a field on which to key the result array.
+	 * @param   string $key    The name of a field on which to key the result array.
 	 * @param   string $column An optional column name. Instead of the whole row, only this column value will be in
-	 * the result array.
+	 *                         the result array.
 	 *
 	 * @return  mixed   The return value or null if the query failed.
 	 *
@@ -667,7 +640,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 * NOTE: Choosing to key the result array by a non-unique field name can result in unwanted
 	 * behavior and should be avoided.
 	 *
-	 * @param   string $key The name of a field on which to key the result array.
+	 * @param   string $key   The name of a field on which to key the result array.
 	 * @param   string $class The class name to use for the returned row objects.
 	 *
 	 * @return  mixed   The return value or null if the query failed.
@@ -844,9 +817,11 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	/**
 	 * Build a where clause
 	 *
-	 * @param String $mWhere Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
-	 * @param Array $mWhere ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE `columnName` = 'columnValue'. columnValue is escaped before being used
-	 * @param Array $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by this array values, escaped
+	 * @param String $mWhere     Conditions. Taken as a litteral where clause ( WHERE `amount` > 100 ).
+	 * @param Array  $mWhere     ( ie 'columnName' => 'columnValue') : a where clause is created like so : WHERE
+	 *                           `columnName` = 'columnValue'. columnValue is escaped before being used
+	 * @param Array  $aWhereData Used only if $aWhere is a string. In such case, '?' place holders will be replaced by
+	 *                           this array values, escaped
 	 */
 	protected function _shlBuildWhereClause($mWhere = '', $aWhereData = array())
 	{
@@ -863,7 +838,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 			if ($holderCount > 0 && !empty($aWhereData) && $holderCount != count($aWhereData))
 			{
 				// the number of ? placehlders does not match the data array passed
-				throw new ShlDbException(
+				throw new \ShlDbException(
 					__METHOD__ . ': ' . 'Internal error: trying to build invalid db query where clause [ ' . serialize($mWhere) . ' ] [ '
 					. serialize($aWhereData) . ' ]', 500
 				);
@@ -881,13 +856,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 				else
 				{
 					$sqlBits = explode('?', $mWhere);
-					$i = 0;
+					$i       = 0;
 					// replace each place holder by the matching value
 					foreach ($aWhereData as $data)
 					{
 						$where .= $sqlBits[$i];
 						$where .= $this->_shlPrepareData($data);
-						$i += 1;
+						$i     += 1;
 					}
 					if (isset($sqlBits[$i]))
 					{
@@ -923,8 +898,9 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 * $orderBy = array( 'extension', 'title');
 	 *
 	 * @param String $orderBy name of unique column to sort with, direction is always ASC
-	 * @param Array $orderBy a list of column names to order by, direction is always asc
-	 * @param Array $orderBy a list of key => values, where key is a column name, and value is either '', 'asc' or 'desc'
+	 * @param Array  $orderBy a list of column names to order by, direction is always asc
+	 * @param Array  $orderBy a list of key => values, where key is a column name, and value is either '', 'asc' or
+	 *                        'desc'
 	 */
 	protected function _shlBuildOrderByClause($orderBy)
 	{
@@ -970,7 +946,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 * Builds a LIMIT sql statement
 	 *
 	 * @param Integer $offset , the line in result set to start with
-	 * @param Integer $lines , the max number of lines in result set to return
+	 * @param Integer $lines  , the max number of lines in result set to return
 	 */
 	protected function _shlBuildLimitClause($offset, $lines)
 	{
@@ -997,10 +973,12 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 * Store the result of a db query into the query cache
 	 * (if such feature is present and enabled)
 	 *
-	 * @param mixed $value the value to be stored
+	 * @param mixed  $value  the value to be stored
 	 * @param string $prefix a prefix string to identify db operation, on top of sql query
+	 *
 	 * @return boolean $stored true if successfully stored, false if not
-	 * @throws ShlDbException in case of cache internal error. Cache will be disabled if this happens (for current db instance)
+	 * @throws \ShlDbException in case of cache internal error. Cache will be disabled if this happens (for current db
+	 *                        instance)
 	 *
 	 */
 	protected function _shlQueryCacheStore($value, $prefix)
@@ -1013,13 +991,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 			try
 			{
 				//  cache id is made of db instance prepended with full sql query
-				$stored = ShlCache_Manager::store($this->instanceName . $prefix . $this->getQuery(), self::CACHE_STATS_DATASET_NAME, $value);
+				$stored = \ShlCache_Manager::store($this->instanceName . $prefix . $this->getQuery(), self::CACHE_STATS_DATASET_NAME, $value);
 			}
 			catch (Exception $e)
 			{
 				// there was an error: log that and disable cache for this instance
 				$this->queryCacheEnabled = false;
-				ShlSystem_Log::error(
+				\ShlSystem_Log::error(
 					'shlib',
 					__METHOD__ . ': error storing data in query cache for instance %s, disabling cache for this instance (%s)', $this->instanceName,
 					$e->getMessage()
@@ -1035,11 +1013,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 	 * result of a given database sql query
 	 * (if such cache feature is present and enabled)
 	 * The desired query must have been already prepared and set
-	 * into the ShlDbClass database object passed to this method
+	 * into the \ShlDbClass database object passed to this method
 	 *
 	 * @param string $prefix a prefix string to identify db operation, on top of sql query
+	 *
 	 * @return mixed $read false if nothing found, whatever was found in the cache otherwise
-	 * @throws ShlDbException in case of cache internal error. Cache will be disabled if this happens (for current db instance)
+	 * @throws \ShlDbException in case of cache internal error. Cache will be disabled if this happens (for current db
+	 *                        instance)
 	 */
 	protected function _shlQueryCacheRead($prefix)
 	{
@@ -1050,13 +1030,13 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 			try
 			{
 				//  cache id is made of db instance prepended with full sql query
-				$read = ShlCache_Manager::read($this->instanceName . $prefix . $this->getQuery(), self::CACHE_STATS_DATASET_NAME);
+				$read = \ShlCache_Manager::read($this->instanceName . $prefix . $this->getQuery(), self::CACHE_STATS_DATASET_NAME);
 			}
 			catch (Exception $e)
 			{
 				// there was an error: log that and disable cache for this instance
 				$this->queryCacheEnabled = false;
-				ShlSystem_Log::error(
+				\ShlSystem_Log::error(
 					'shlib',
 					__METHOD__ . ': error reading data in query cache for instance %s, disabling cache for this instance (%s)', $this->instanceName,
 					$e->getMessage()
@@ -1088,7 +1068,7 @@ class ShlDbClass extends ShlSystem_Abstractdecorator
 		{
 			return false;
 		}
-		$app = JFactory::getApplication();
+		$app = \JFactory::getApplication();
 		if (!$app->isSite())
 		{
 			return false;

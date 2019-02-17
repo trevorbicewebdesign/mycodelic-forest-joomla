@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date                2018-04-16
+ * @version     0.4.0.678
+ * @date                2018-08-02
  */
 
 // no direct access
@@ -18,11 +18,14 @@ class ShlSystem_Http
 
 	// return code
 	const RETURN_OK = 200;
+	const RETURN_CREATED = 201;
+	const RETURN_NO_CONTENT = 204;
 	const RETURN_BAD_REQUEST = 400;
 	const RETURN_UNAUTHORIZED = 401;
 	const RETURN_FORBIDDEN = 403;
 	const RETURN_NOT_FOUND = 404;
 	const RETURN_PROXY_AUTHENTICATION_REQUIRED = 407;
+	const RETURN_INTERNAL_ERROR = 500;
 	const RETURN_SERVICE_UNAVAILABLE = 503;
 
 	public static function abort($code = self::RETURN_NOT_FOUND, $cause = '')
@@ -41,7 +44,7 @@ class ShlSystem_Http
 		die($msg);
 	}
 
-	public static function getHeader($code, $cause)
+	public static function getHeader($code, $cause = '')
 	{
 
 		$code = intval($code);
@@ -50,36 +53,54 @@ class ShlSystem_Http
 		switch ($code)
 		{
 
+			case self::RETURN_OK:
+				$header->raw = 'HTTP/1.0 200 OK';
+				$header->msg = 'OK';
+				break;
+			case self::RETURN_CREATED:
+				$header->raw = 'HTTP/1.0 201 CREATED';
+				$header->msg = 'Created';
+				break;
+			case self::RETURN_NO_CONTENT:
+				$header->raw = 'HTTP/1.0 204 OK';
+				$header->msg = 'No content';
+				break;
+
 			case self::RETURN_BAD_REQUEST:
 				$header->raw = 'HTTP/1.0 400 BAD REQUEST';
-				$header->msg = '<h1>Unauthorized</h1>';
+				$header->msg = 'Bad request';
 				break;
 			case self::RETURN_UNAUTHORIZED:
 				$header->raw = 'HTTP/1.0 401 UNAUTHORIZED';
-				$header->msg = '<h1>Unauthorized</h1>';
+				$header->msg = 'Unauthorized';
 				break;
 			case self::RETURN_FORBIDDEN:
 				$header->raw = 'HTTP/1.0 403 FORBIDDEN';
-				$header->msg = '<h1>Forbidden access</h1>';
+				$header->msg = 'Forbidden access';
 				break;
 			case self::RETURN_NOT_FOUND:
 				$header->raw = 'HTTP/1.0 404 NOT FOUND';
-				$header->msg = '<h1>Page not found</h1>';
+				$header->msg = 'Not found';
+				break;
+			case self::RETURN_INTERNAL_ERROR:
+				$header->raw = 'HTTP/1.0 500 INTERNAL ERROR';
+				$header->msg = 'Internal error';
 				break;
 			case self::RETURN_PROXY_AUTHENTICATION_REQUIRED:
 				$header->raw = 'HTTP/1.0 407 PROXY AUTHENTICATION REQUIRED';
-				$header->msg = '<h1>Proxy authentication required</h1>';
+				$header->msg = 'Proxy authentication required';
 				break;
 			case self::RETURN_SERVICE_UNAVAILABLE:
 				$header->raw = 'HTTP/1.0 503 SERVICE UNAVAILABLE';
-				$header->msg = '<h1>Service unavailable</h1>';
+				$header->msg = 'Service unavailable';
 				break;
 
 			default:
 				$header->raw = 'HTTP/1.0 ' . $code;
-				$header->msg = $cause;
 				break;
 		}
+
+		$header->msg = empty($cause) ? $header->msg : $cause;
 
 		return $header;
 	}
@@ -102,7 +123,7 @@ class ShlSystem_Http
 			}
 
 			// loop, keep only relevant headers
-			if (empty($prefix))
+			if (empty($prefix) && empty($cgiPrefix))
 			{
 				$headers = $rawHeaders;
 			}
@@ -128,13 +149,34 @@ class ShlSystem_Http
 		return $headers;
 	}
 
+	public static function isError($status)
+	{
+		$status = (int) $status;
+
+		return $status > 399;
+	}
+
+	public static function isRedirect($status)
+	{
+		$status = (int) $status;
+
+		return $status > 299 and $status < 400;
+	}
+
+	public static function isSuccess($status)
+	{
+		$status = (int) $status;
+
+		return $status > 199 and $status < 300;
+	}
+
 	/**
 	 * Renders an http response and end processing of request
 	 *
 	 * @param int    $code http status to use for response
 	 * @param string $cause Optional text to use as response body
 	 */
-	public static function render($code = self::RETURN_NOT_FOUND, $cause = '', $type = 'text/html')
+	public static function render($code = self::RETURN_NOT_FOUND, $cause = '', $type = 'text/html', $otherHeaders = array())
 	{
 		$header = self::getHeader($code, $cause);
 
@@ -145,10 +187,34 @@ class ShlSystem_Http
 		if (!headers_sent())
 		{
 			header($header->raw);
-			header('Content-type: ' . $type);
 		}
 
-		die($msg);
+		$otherHeaders['Content-type'] = $type;
+		self::outputHeaders($otherHeaders);
+
+		if (!is_null($msg))
+		{
+			echo $msg;
+		}
+
+		die();
+	}
+
+	/**
+	 * Output an array of headers.
+	 *
+	 * @param array $headers Key/value array of headers
+	 */
+	public static function outputHeaders($headers)
+	{
+		@ob_end_clean();
+		if (!headers_sent())
+		{
+			foreach ($headers as $key => $value)
+			{
+				header($key . ': ' . $value);
+			}
+		}
 	}
 
 	/**
@@ -176,9 +242,13 @@ class ShlSystem_Http
 	/**
 	 * Collect a visitor IP address, including best guesses when site is behind a proxy.
 	 *
+	 * Bases on https://github.com/geertw/php-ip-anonymizer
+	 *
+	 * @param bool $anonymize Anonymize the IP address.
+	 *
 	 * @return string
 	 */
-	public static function getVisitorIpAddress()
+	public static function getVisitorIpAddress($anonymize = false)
 	{
 		if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
 		{
@@ -192,6 +262,24 @@ class ShlSystem_Http
 		{
 			$ip = empty($_SERVER['REMOTE_ADDR']) ? '' : $_SERVER['REMOTE_ADDR'];
 		}
+
+		if ($anonymize)
+		{
+			$packedAddress = inet_pton($ip);
+			if (strlen($packedAddress) == 4)
+			{
+				$ip = inet_ntop(inet_pton($ip) & inet_pton('255.255.255.0'));
+			}
+			elseif (strlen($packedAddress) == 16)
+			{
+				$ip = inet_ntop(inet_pton($ip) & inet_pton('ffff:ffff:ffff:ffff:0000:0000:0000:0000'));
+			}
+			else
+			{
+				$ip = '';
+			}
+		}
+
 		return $ip;
 	}
 }

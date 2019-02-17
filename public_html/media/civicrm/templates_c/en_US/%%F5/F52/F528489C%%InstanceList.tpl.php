@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-03 14:40:57
+<?php /* Smarty version 2.6.30, created on 2018-12-09 10:13:30
          compiled from CRM/Report/Page/InstanceList.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Report/Page/InstanceList.tpl', 1, false),array('block', 'ts', 'CRM/Report/Page/InstanceList.tpl', 32, false),array('function', 'counter', 'CRM/Report/Page/InstanceList.tpl', 37, false),array('modifier', 'json_encode', 'CRM/Report/Page/InstanceList.tpl', 56, false),array('modifier', 'htmlspecialchars', 'CRM/Report/Page/InstanceList.tpl', 56, false),array('modifier', 'escape', 'CRM/Report/Page/InstanceList.tpl', 57, false),)), $this); ?>

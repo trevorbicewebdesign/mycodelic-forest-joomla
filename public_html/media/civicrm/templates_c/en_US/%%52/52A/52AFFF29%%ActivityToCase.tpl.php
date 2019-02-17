@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:16:06
+<?php /* Smarty version 2.6.30, created on 2019-01-30 20:10:21
          compiled from CRM/Case/Form/ActivityToCase.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Case/Form/ActivityToCase.tpl', 1, false),array('block', 'ts', 'CRM/Case/Form/ActivityToCase.tpl', 41, false),array('function', 'crmURL', 'CRM/Case/Form/ActivityToCase.tpl', 62, false),array('function', 'crmKey', 'CRM/Case/Form/ActivityToCase.tpl', 79, false),)), $this); ?>

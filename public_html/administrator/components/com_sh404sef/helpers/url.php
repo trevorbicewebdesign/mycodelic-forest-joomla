@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.14.0.3812
- * @date        2018-05-16
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -265,8 +265,27 @@ class Sh404sefHelperUrl
 						{
 							foreach ($value as $k => $v)
 							{
-								// fix for arrays, thanks doorknob
-								$shNewString .= '&' . $key . '[' . $k . ']=' . str_replace(array('%2F', '%2f'), '/', $v);
+								if (is_array($v))
+								{
+									foreach ($v as $vKey => $vValue)
+									{
+										if (is_array($vValue))
+										{
+											foreach ($vValue as $vvKey => $vvValue)
+											{
+												$shNewString .= '&' . $key . '[' . $k . '][' . $vKey . '][' . $vvKey . ']=' . str_replace(array('%2F', '%2f'), '/', $vvValue);
+											}
+										}
+										else
+										{
+											$shNewString .= '&' . $key . '[' . $k . '][' . $vKey . ']=' . str_replace(array('%2F', '%2f'), '/', $vValue);
+										}
+									}
+								}
+								else
+								{
+									$shNewString .= '&' . $key . '[' . $k . ']=' . str_replace(array('%2F', '%2f'), '/', $v);
+								}
 							}
 						}
 						else

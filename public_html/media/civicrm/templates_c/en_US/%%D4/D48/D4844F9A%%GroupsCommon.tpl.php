@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:26
+<?php /* Smarty version 2.6.30, created on 2018-11-02 20:29:36
          compiled from CRM/Group/Form/GroupsCommon.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Group/Form/GroupsCommon.tpl', 1, false),array('block', 'ts', 'CRM/Group/Form/GroupsCommon.tpl', 28, false),array('modifier', 'count', 'CRM/Group/Form/GroupsCommon.tpl', 27, false),array('modifier', 'cat', 'CRM/Group/Form/GroupsCommon.tpl', 35, false),array('modifier', 'crmAddClass', 'CRM/Group/Form/GroupsCommon.tpl', 46, false),array('function', 'help', 'CRM/Group/Form/GroupsCommon.tpl', 28, false),)), $this); ?>

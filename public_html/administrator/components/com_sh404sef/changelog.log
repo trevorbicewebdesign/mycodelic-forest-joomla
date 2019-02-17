@@ -1,7 +1,52 @@
                                sh404sef changelog                               
 
-                        (2018-05-16 17:20 - build #3812)                        
+                        (2018-08-22 20:02 - build #3863)                        
 
+
+
+--------------------------------------------------------------------------------
+ [ 2018-08-22 ] Version 4.15.1
+--------------------------------------------------------------------------------
+
+
+    [chg]    Pass all non-404 exceptions back to Joomla, better compatibility
+             with 3rd-party extensions
+
+    [bug]    Under some rare circumstances, meta description can be written
+             onto the page content instead of being hidden
+
+
+--------------------------------------------------------------------------------
+ [ 2018-08-20 ] Version 4.15.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Added buttons to delete detailed recorded information about SEF
+             URLs, aliases and shURLs
+    [new]    Insert Analytics snippet based on access levels in addition to
+             user groups.
+
+    [chg]    Only enforce www/non-www rules on front-end
+    [chg]    When redirecting non-joomla, non-SEF URLs (ie magento,
+             prestashop,...), query string is not appended anymore to the
+             redirect target if it matches the redirect itself
+    [chg]    Removed hack that was required for com_mailto to operate with
+             simple encoding, prior to Joomla 3.8
+    [chg]    Added ability to handle non-sef URLs with nested array variables
+             up to 3 levels (up from 1)
+    [chg]    Automatically generated description is now compatible with Joomla
+             caching.
+    [chg]    OGP image detection now compatible with Joomla caching
+
+    [bug]    When a page has restricted access, under some circumstances the
+             URL to it can be deleted and/or multiple URLs can be recorded for
+             it
+    [bug]    Analytics snippet may not be displayed if configuration is saved
+             with default value of 'Public' in 'Disable Analytics for groups'
+             setting
+    [bug]    Custom canonical is not inserted if a fully qualified canonical
+             of itself is used on a page
+    [bug]    OGP image search for K2 content is ran even on non-K2 content
 
 
 --------------------------------------------------------------------------------

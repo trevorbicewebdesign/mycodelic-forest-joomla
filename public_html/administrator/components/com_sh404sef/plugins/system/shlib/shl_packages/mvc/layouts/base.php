@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date        2018-04-16
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 
 /** ensure this file is being included by a parent file */
@@ -18,7 +18,7 @@ defined('_JEXEC') or die;
  *
  * @since       0.2.1
  */
-class ShlMvcLayout_Base implements ShlMvcLayout
+class ShlMvcLayout_Base implements \ShlMvcLayout
 {
 	/**
 	 * Storage for display data
@@ -93,7 +93,7 @@ class ShlMvcLayout_Base implements ShlMvcLayout
 	}
 
 	/**
-	 * Same as @see ShlMvcLayout_Base::get, but returned output cast to an integer.
+	 * Same as @see \ShlMvcLayout_Base::get, but returned output cast to an integer.
 	 *
 	 * @param string $key
 	 * @param int    $default
@@ -107,7 +107,7 @@ class ShlMvcLayout_Base implements ShlMvcLayout
 	}
 
 	/**
-	 * Same as @see ShlMvcLayout_Base::get, but returned output cast to an integer
+	 * Same as @see \ShlMvcLayout_Base::get, but returned output cast to an integer
 	 * and then formatted as a string:
 	 *
 	 * Format into K and M for large number
@@ -123,11 +123,11 @@ class ShlMvcLayout_Base implements ShlMvcLayout
 	protected function getAsFormattedInt($key, $default = 0)
 	{
 
-		return ShlSystem_Strings::formatIntForTitle($this->get($key, $default));
+		return \ShlSystem_Strings::formatIntForTitle($this->get($key, $default));
 	}
 
 	/**
-	 * Same as @see ShlMvcLayout_Base::get, but returned output cast to an array.
+	 * Same as @see \ShlMvcLayout_Base::get, but returned output cast to an array.
 	 *
 	 * @param string $key
 	 * @param array  $default
@@ -222,7 +222,7 @@ class ShlMvcLayout_Base implements ShlMvcLayout
 	}
 
 	/**
-	 * Same as @see ShlMvcLayout_Base::get, but returned output is json encoded
+	 * Same as @see \ShlMvcLayout_Base::get, but returned output is json encoded
 	 *
 	 * @param string $key
 	 * @param string $default

@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.14.0.3812
- * @date        2018-05-16
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -75,6 +75,14 @@ class Sh404sefModelSrcdetails extends Sh404sefClassBaselistmodel
 		}
 
 		ShlDbHelper::delete($this->_defaultTable, array('url' => $url->newurl, 'routed_url' => $url->oldurl));
+	}
+
+	/**
+	 * Delete all records in the URL source table.
+	 */
+	public function purgeAllDetails()
+	{
+		ShlDbHelper::delete($this->_defaultTable);
 	}
 
 	/**

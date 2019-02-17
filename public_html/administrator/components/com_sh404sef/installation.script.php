@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.14.0.3812
- * @date        2018-05-16
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -22,7 +22,7 @@ class Com_Sh404sefInstallerScript
 	const MIN_JOOMLA_VERSION = '3.4.2';
 	const MAX_JOOMLA_VERSION = '4';
 
-	const MIN_SHLIB_VERSION = '0.3.0';
+	const MIN_SHLIB_VERSION = '0.3.1';
 	const MAX_SHLIB_VERSION = '';
 
 	private $_siteId               = '';

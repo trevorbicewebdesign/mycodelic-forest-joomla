@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:55
+<?php /* Smarty version 2.6.30, created on 2018-12-09 10:00:20
          compiled from CRM/Contact/Form/Task/AddToGroup.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Task/AddToGroup.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/Task/AddToGroup.tpl', 30, false),)), $this); ?>

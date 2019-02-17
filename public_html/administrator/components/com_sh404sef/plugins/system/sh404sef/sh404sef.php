@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.14.0.3812
- * @date        2018-05-16
+ * @version      4.15.1.3863
+ * @date        2018-08-22
  */
 
 // no direct access
@@ -267,17 +267,17 @@ class plgSystemSh404sef extends JPlugin
 		if (is_object($row) && !empty($row->text))
 		{
 			$row->text = $this->searchOGPImage($row->text, $config, $context, $row);
-			if($config->autoBuildDescription)
+			if ($config->autoBuildDescription)
 			{
-				Sh404sefHelperMetadata::buildAutoDescription($context, $row->text, $params, $page);
+				$row->text = Sh404sefHelperMetadata::buildAutoDescription($context, $row->text, $params, $page);
 			}
 		}
-		else if(!is_object($row))
+		else if (!is_object($row))
 		{
 			$row = $this->searchOGPImage($row, $config);
-			if($config->autoBuildDescription)
+			if ($config->autoBuildDescription)
 			{
-				Sh404sefHelperMetadata::buildAutoDescription($context, $row, $params, $page);
+				$row = Sh404sefHelperMetadata::buildAutoDescription($context, $row, $params, $page);
 			}
 		}
 
@@ -407,6 +407,25 @@ class plgSystemSh404sef extends JPlugin
 			return $content;
 		}
 
+		// 1.5 OGP info cached in content?
+		if (strpos($content, 'sh404sef_tag_ogp_image') != false)
+		{
+			$cachedImage = Sh404sefHelperGeneral::getCommentedTag(
+				$content,
+				'sh404sef_tag_ogp_image'
+			);
+			$cachedImage = wbArrayGet($cachedImage, 0, '');
+			if (!empty($cachedImage))
+			{
+				$customData->og_image = $cachedImage;
+			}
+
+			if (!empty($customData->og_image))
+			{
+				return $content;
+			}
+		}
+
 		// 2 - Full or Intro image (only for com_content)
 		if ('com_content.article' == $context)
 		{
@@ -417,7 +436,8 @@ class plgSystemSh404sef extends JPlugin
 			}
 		}
 
-		// 2Bis - Same for K2 - if ('com_k2.item' == $context)
+		// 2Bis - Same for K2 -
+		if ('com_k2.item' == $context)
 		{
 			$bestImage = Sh404sefHelperOgp::detectComK2Images($contentObject);
 			if (!empty($bestImage))
@@ -428,7 +448,12 @@ class plgSystemSh404sef extends JPlugin
 
 		if (!empty($customData->og_image))
 		{
-			// there is a
+			// found an image
+			$content = Sh404sefHelperGeneral::addCommentedTag(
+				$content,
+				'sh404sef_tag_ogp_image',
+				$customData->og_image
+			);
 			return $content;
 		}
 
@@ -441,6 +466,16 @@ class plgSystemSh404sef extends JPlugin
 
 		// in all case, remove the optional disable tag
 		$content = str_replace('{disable_auto_meta_image_detection}', '', $content);
+
+		// store image in content itself so as to be able to retrieve it when Joomla cache is enabled
+		if (!empty($customData->og_image))
+		{
+			$content = Sh404sefHelperGeneral::addCommentedTag(
+				$content,
+				'sh404sef_tag_ogp_image',
+				$bestImage
+			);
+		}
 
 		return $content;
 	}

@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:22
+<?php /* Smarty version 2.6.30, created on 2018-12-09 09:57:29
          compiled from CRM/Group/Form/Search.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Group/Form/Search.tpl', 1, false),array('block', 'ts', 'CRM/Group/Form/Search.tpl', 28, false),array('function', 'crmURL', 'CRM/Group/Form/Search.tpl', 67, false),array('function', 'help', 'CRM/Group/Form/Search.tpl', 67, false),)), $this); ?>

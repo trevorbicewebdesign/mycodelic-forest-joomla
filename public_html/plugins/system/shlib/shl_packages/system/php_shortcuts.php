@@ -3,12 +3,14 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date        2018-04-16
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
+
+use Joomla\String\StringHelper;
 
 // Security check to ensure this file is being included by a parent file.
 defined('_JEXEC') or die;
@@ -220,7 +222,7 @@ if (!function_exists('wbArrayKeyAppend'))
 	 * @param mixed  $key
 	 * @param string $value
 	 *
-	 * @throws InvalidArgumentException
+	 * @throws \InvalidArgumentException
 	 * @return mixed
 	 */
 	function wbArrayKeyAppend(&$array, $key, $value, $glue = '')
@@ -254,7 +256,7 @@ if (!function_exists('wbArrayKeyInit'))
 	 * @param mixed $key
 	 * @param mixed $default
 	 *
-	 * @throws InvalidArgumentException
+	 * @throws \InvalidArgumentException
 	 * @return mixed
 	 */
 	function wbArrayKeyInit(&$array, $key, $default)
@@ -428,13 +430,13 @@ if (!function_exists('wbContains'))
 	{
 		if (is_string($needles))
 		{
-			return !empty($needles) && JString::strpos($haystack, $needles) !== false;
+			return !empty($needles) && StringHelper::strpos($haystack, $needles) !== false;
 		}
 		else if (is_array($needles))
 		{
 			foreach ($needles as $needle)
 			{
-				if (!empty($needle) && JString::strpos($haystack, $needle) !== false)
+				if (!empty($needle) && StringHelper::strpos($haystack, $needle) !== false)
 				{
 					return true;
 				}
@@ -451,13 +453,13 @@ if (!function_exists('wbStartsWith'))
 	{
 		if (is_string($needles))
 		{
-			return !empty($needles) && 0 === JString::strpos($haystack, $needles);
+			return !empty($needles) && 0 === StringHelper::strpos($haystack, $needles);
 		}
 		else if (is_array($needles))
 		{
 			foreach ($needles as $needle)
 			{
-				if (!empty($needle) && 0 === JString::strpos($haystack, $needle))
+				if (!empty($needle) && 0 === StringHelper::strpos($haystack, $needle))
 				{
 					return true;
 				}
@@ -474,13 +476,13 @@ if (!function_exists('wbEndsWith'))
 	{
 		if (is_string($needles))
 		{
-			return !empty($needles) && JString::substr($haystack, -JString::strlen($needles)) == $needles;
+			return !empty($needles) && StringHelper::substr($haystack, -StringHelper::strlen($needles)) == $needles;
 		}
 		else if (is_array($needles))
 		{
 			foreach ($needles as $needle)
 			{
-				if (!empty($needle) && JString::substr($haystack, -JString::strlen($needle)) == $needle)
+				if (!empty($needle) && StringHelper::substr($haystack, -StringHelper::strlen($needle)) == $needle)
 				{
 					return true;
 				}
@@ -497,7 +499,7 @@ if (!function_exists('wbRTrim'))
 	{
 		if (wbEndsWith($string, $toTrim))
 		{
-			$string = JString::substr($string, 0, -JString::strlen($toTrim));
+			$string = StringHelper::substr($string, 0, -StringHelper::strlen($toTrim));
 		}
 
 		return $string;
@@ -510,7 +512,7 @@ if (!function_exists('wbLTrim'))
 	{
 		if (wbStartsWith($string, $toTrim))
 		{
-			$string = JString::substr($string, JString::strlen($toTrim));
+			$string = StringHelper::substr($string, StringHelper::strlen($toTrim));
 		}
 
 		return $string;
@@ -649,14 +651,14 @@ if (!function_exists('wbAbridge'))
 	function wbAbridge($text, $length = 50, $intro = 30, $bridge = '...')
 	{
 		// Abridge the item text if it is too long.
-		if (JString::strlen($text) > $length)
+		if (StringHelper::strlen($text) > $length)
 		{
 			// Determine the remaining text length.
-			$remainder = $length - ($intro + JString::strlen($bridge));
+			$remainder = $length - ($intro + StringHelper::strlen($bridge));
 
 			// Extract the beginning and ending text sections.
-			$beg = JString::substr($text, 0, $intro);
-			$end = JString::substr($text, JString::strlen($text) - $remainder);
+			$beg = StringHelper::substr($text, 0, $intro);
+			$end = StringHelper::substr($text, StringHelper::strlen($text) - $remainder);
 
 			// Build the resulting string.
 			$text = $beg . $bridge . $end;
@@ -699,9 +701,9 @@ if (!function_exists('wbGetProtectedProperty'))
 				$propertyValue = $static ? $_propertiesCache[$className . $propertyName]->getStaticValue($instance)
 					: $_propertiesCache[$className . $propertyName]->getValue($instance);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
-				ShlSystem_Log::error('sh404sef', __CLASS__ . '/' . __METHOD__ . '/' . __LINE__ . ': ' . $e->getMessage());
+				\ShlSystem_Log::error('sh404sef', __CLASS__ . '/' . __METHOD__ . '/' . __LINE__ . ': ' . $e->getMessage());
 				$propertyValue = null;
 			}
 		}

@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date        2018-04-16
+ * @version     0.4.0.678
+ * @date        2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -55,7 +55,7 @@ class ShlHtmlContentRemoteimage_Fasterimage
 	 * Finds out which http transport we can use and initialize
 	 * accordingly
 	 *
-	 * ShlHtmlContentRemoteimage_FasterImage constructor.
+	 * \ShlHtmlContentRemoteimage_FasterImage constructor.
 	 */
 	public function __construct($options = array())
 	{
@@ -65,8 +65,8 @@ class ShlHtmlContentRemoteimage_Fasterimage
 		}
 
 		// get stream and parser
-		$this->stream = new ShlHtmlContentRemoteimage_Stream;
-		$this->parser = new ShlHtmlContentRemoteimage_Parser($this->stream);
+		$this->stream = new \ShlHtmlContentRemoteimage_Stream;
+		$this->parser = new \ShlHtmlContentRemoteimage_Parser($this->stream);
 
 		// determine which transport to use
 		$this->discoverTransport()
@@ -93,7 +93,7 @@ class ShlHtmlContentRemoteimage_Fasterimage
 
 	protected function buildTransport()
 	{
-		$className = 'ShlHtmlContentRemoteimage_' . ucfirst($this->transportType) . 'transport';
+		$className = '\ShlHtmlContentRemoteimage_' . ucfirst($this->transportType) . 'transport';
 
 		$this->transport = new $className(
 			$this->stream,

@@ -29,7 +29,7 @@ body {
 		margin:				0px;
 		padding:				0px;
 		ul.nav  {
-			 li {
+			 > li {
 				display:			inline-block;
 				
 				 a {	
@@ -46,7 +46,10 @@ body {
 	 
 				 }
 			 }
-			 
+			 > li > a a {
+				 display:			block;
+				 width:			100%;
+			 }
 			 li:hover,
 			 li.hover,
 			 li.active,

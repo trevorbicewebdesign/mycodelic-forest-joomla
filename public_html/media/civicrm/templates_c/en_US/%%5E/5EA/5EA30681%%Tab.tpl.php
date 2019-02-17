@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-03 19:05:55
+<?php /* Smarty version 2.6.30, created on 2019-01-30 20:10:21
          compiled from CRM/Contribute/Page/Tab.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contribute/Page/Tab.tpl', 1, false),array('block', 'ts', 'CRM/Contribute/Page/Tab.tpl', 36, false),array('function', 'crmURL', 'CRM/Contribute/Page/Tab.tpl', 34, false),array('function', 'help', 'CRM/Contribute/Page/Tab.tpl', 80, false),)), $this); ?>

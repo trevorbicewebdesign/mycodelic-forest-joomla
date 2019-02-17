@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date		2018-04-16
+ * @version     0.4.0.678
+ * @date		2018-08-02
  */
 /* Security check to ensure this file is being included by a parent file.*/
 defined('_JEXEC') or die;
@@ -72,14 +72,14 @@ class ShlDb_Keystore
 	/**
 	 * Singleton
 	 *
-	 * @var ShlDbKeystore
+	 * @var \ShlDbKeystore
 	 */
 	private static $_instance = array();
 
 	/**
 	 * Public singleton
 	 *
-	 * @return ShlDbKeystore
+	 * @return \ShlDbKeystore
 	 */
 	public static function getInstance($tableName = self::TABLE_NAME)
 	{
@@ -100,7 +100,7 @@ class ShlDb_Keystore
 	private function __construct($tableName)
 	{
 		$this->_tableName = $tableName;
-		$this->_userId = JFactory::getUser()->id;
+		$this->_userId = \JFactory::getUser()->id;
 	}
 
 	/**
@@ -147,12 +147,12 @@ class ShlDb_Keystore
 			'key'         => $key,
 			'value'       => $this->_encode($value, $format),
 			'user_id'     => $this->_userId,
-			'modified_at' => ShlSystem_Date::getSiteNow(),
+			'modified_at' => \ShlSystem_Date::getSiteNow(),
 			'format'      => $format
 		);
 
 		// insert or update the record in database
-		ShlDbHelper::insertUpdate($this->_tableName, $data, array('scope' => $scope, 'key' => $key));
+		\ShlDbHelper::insertUpdate($this->_tableName, $data, array('scope' => $scope, 'key' => $key));
 
 		return $this;
 	}
@@ -200,7 +200,7 @@ class ShlDb_Keystore
 			throw new \InvalidArgumentException('Empty key while trying to put some data in key store');
 		}
 
-		$record = ShlDbHelper::selectAssoc($this->_tableName, array('value', 'format'), array('scope' => $scope, 'key' => $key));
+		$record = \ShlDbHelper::selectAssoc($this->_tableName, array('value', 'format'), array('scope' => $scope, 'key' => $key));
 		$value = empty($record) ? null : $this->_decode($record['value'], $record['format']);
 		$value = is_null($value) ? $default : $value;
 
@@ -250,7 +250,7 @@ class ShlDb_Keystore
 			throw new \InvalidArgumentException('Empty key while trying to delete some data from key store');
 		}
 
-		ShlDbHelper::delete($this->_tableName, array('scope' => $scope, 'key' => $key));
+		\ShlDbHelper::delete($this->_tableName, array('scope' => $scope, 'key' => $key));
 
 		return $this;
 	}

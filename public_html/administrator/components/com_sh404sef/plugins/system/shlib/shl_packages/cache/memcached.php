@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2017
+ * @copyright   (c) Yannick Gaultier 2018
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.3.1.665
- * @date				2018-04-16
+ * @version     0.4.0.678
+ * @date				2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -15,12 +15,12 @@ defined('_JEXEC') or die;
 
 /**
  * Implements read and store methods
- * to decorate an ShlCache_Manager
+ * to decorate an \ShlCache_Manager
  *
  * @author yannick
  *
  */
-class ShlCache_Memcached extends ShlSystem_Abstractdecorator
+class ShlCache_Memcached extends \ShlSystem_Abstractdecorator
 {
 
 	const DEFAULT_HOST = '127.0.0.1';
@@ -37,7 +37,7 @@ class ShlCache_Memcached extends ShlSystem_Abstractdecorator
 	/**
 	 * Check if setup is correct, ie APC extension is loaded in php
 	 *
-	 * @throws ShlException
+	 * @throws \ShlException
 	 */
 	public function init($params)
 	{
@@ -53,7 +53,7 @@ class ShlCache_Memcached extends ShlSystem_Abstractdecorator
 		$this->enabled = extension_loaded('memcached');
 		if (!$this->enabled)
 		{
-			ShlSystem_Log::error('shlib', __METHOD__ . ': Memcached extension not loaded, unable to create cache manager using it');
+			\ShlSystem_Log::error('shlib', __METHOD__ . ': Memcached extension not loaded, unable to create cache manager using it');
 		}
 
 		// sort of validate params, using defaults if missing
@@ -69,7 +69,7 @@ class ShlCache_Memcached extends ShlSystem_Abstractdecorator
 			$this->enabled = Memcached::RES_SUCCESS == @$this->_server->getResultCode();
 			if (!$this->enabled)
 			{
-				ShlSystem_Log::error('shlib', __METHOD__ . ': Unable to add Memcache server %s:%s', $this->_instanceParams['host'],
+				\ShlSystem_Log::error('shlib', __METHOD__ . ': Unable to add Memcache server %s:%s', $this->_instanceParams['host'],
 					$this->_instanceParams['port']);
 			}
 		}
@@ -109,7 +109,7 @@ class ShlCache_Memcached extends ShlSystem_Abstractdecorator
 		}
 		else
 		{
-			throw new ShlException(__METHOD__ . ': trying to read from a disabled cache');
+			throw new \ShlException(__METHOD__ . ': trying to read from a disabled cache');
 		}
 	}
 
@@ -121,14 +121,14 @@ class ShlCache_Memcached extends ShlSystem_Abstractdecorator
 			$stored = @$this->_server->set($id, $value, $ttl);
 			if ($stored === false)
 			{
-				ShlSystem_Log::error('shlib', __METHOD__ . ': error storing memcached value %s - %s', @$this->_server->getResultCode(),
+				\ShlSystem_Log::error('shlib', __METHOD__ . ': error storing memcached value %s - %s', @$this->_server->getResultCode(),
 					@$this->_server->getResultMessage());
 			}
 			return $stored;
 		}
 		else
 		{
-			throw new ShlException(__METHOD__ . ': trying to write to a disabled cache');
+			throw new \ShlException(__METHOD__ . ': trying to write to a disabled cache');
 		}
 	}
 
@@ -142,7 +142,7 @@ class ShlCache_Memcached extends ShlSystem_Abstractdecorator
 		}
 		else
 		{
-			throw new ShlException(__METHOD__ . ': trying to delete from a disabled cache');
+			throw new \ShlException(__METHOD__ . ': trying to delete from a disabled cache');
 		}
 	}
 
@@ -156,7 +156,7 @@ class ShlCache_Memcached extends ShlSystem_Abstractdecorator
 		}
 		else
 		{
-			throw new ShlException(__METHOD__ . ': trying to clear a disabled cache');
+			throw new \ShlException(__METHOD__ . ': trying to clear a disabled cache');
 		}
 	}
 

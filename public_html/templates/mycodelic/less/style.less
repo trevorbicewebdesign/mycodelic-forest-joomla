@@ -15,11 +15,12 @@
 // MAIN TEMPLATE STYLES
 // ---------------------------------------------------------
 
-#tbw-pagemiddle .th-box, 
-#tbw-pagemiddle .th-page-header, 
-#tbw-pagemiddle .margin-right-wrapper, 
-#tbw-pagemiddle .margin-left-wrapper, 
-#tbw-pagemiddle .th-box-wrapper {
+.rs_event_detail {
+	background:		transparent !important;
+	
+}
+
+.th-box, .th-page-header, .margin-right-wrapper, .margin-left-wrapper, .th-box-wrapper {
 	background:		none;
 }
 .article-header {
@@ -1662,43 +1663,3 @@ text-decoration:none;
 		padding:0px;   
 	}
 }
-
-
-
-
-
-
-
-
-
-#mf-top_drawer {
-	position:		absolute;
-	width:		100%;
-	font-size:	@top_drawer-font-size;
-	
-	overflow:		hidden;
-	z-index:		@zindex-top_drawer;
-	text-align:	center;
-	.container {
-		.t3-spotlight > div {
-			float:right	
-		}
-		.t3-module {
-			margin:		0px;
-			display:		inline-block;
-			
-			@media screen and (max-width: @screen-sm) {
-				background:#969696;
-				position:	relative;
-			}
-			.module-ct {
-				padding:	0px;	
-			}
-		}
-	}
-	@media screen and (max-width: @screen-sm) {
-		background:#969696;
-		position:	relative;
-	}
-}
-

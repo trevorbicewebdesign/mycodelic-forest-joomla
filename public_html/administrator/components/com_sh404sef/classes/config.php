@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.14.0.3812
- * @date  2018-05-16
+ * @version      4.15.1.3863
+ * @date  2018-08-22
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -37,7 +37,7 @@ class Sh404sefClassConfig
 	const COM_SH404SEF_KEYSTORE_KEY_404_ERROR_PAGE = 'com_sh404sef.errors.404';
 
 	/* string,  version number */
-	public $version = '4.14.0.3812';
+	public $version = '4.15.1.3863';
 	/* boolean, is 404 SEF enabled  */
 	public $Enabled = false;
 	/* char,  Character to use for url replacement */
@@ -630,6 +630,9 @@ class Sh404sefClassConfig
 		'wp-json{*}',
 	);
 	public $request_block_list_action = 'error_404';
+
+	// 4.15
+	public $analyticsViewLevel = array(1);
 
 	// End of parameters
 
@@ -2116,7 +2119,7 @@ class Sh404sefClassConfig
 			{ // only need to modify custom params in back-end
 				$this->defaultParamList = '<?php
 			    // custom.sef.php : custom.configuration file for sh404SEF
-			    // 4.14.0.3812 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
+			    // 4.15.1.3863 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
 
 			    // DO NOT REMOVE THIS LINE :
 			    if (!defined(\'_JEXEC\')) die(\'Direct Access to this location is not allowed.\');

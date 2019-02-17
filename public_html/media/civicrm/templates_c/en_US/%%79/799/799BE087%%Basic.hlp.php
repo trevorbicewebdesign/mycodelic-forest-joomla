@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-02 18:32:48
+<?php /* Smarty version 2.6.30, created on 2018-12-09 09:59:11
          compiled from CRM/Contact/Form/Search/Basic.hlp */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Search/Basic.hlp', 1, false),array('block', 'htxt', 'CRM/Contact/Form/Search/Basic.hlp', 26, false),array('block', 'ts', 'CRM/Contact/Form/Search/Basic.hlp', 27, false),array('modifier', 'crmMoney', 'CRM/Contact/Form/Search/Basic.hlp', 30, false),array('function', 'crmURL', 'CRM/Contact/Form/Search/Basic.hlp', 46, false),)), $this); ?>

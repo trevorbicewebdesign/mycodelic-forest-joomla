@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2017
+ * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.3.1.665
- * @date         2018-04-16
+ * @version      0.4.0.678
+ * @date         2018-08-02
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -51,7 +51,7 @@ class ShlMsg_Manager
 				self::DISPLAY_TYPE_NOTICE    => 'notice',
 				self::DISPLAY_TYPE_IMPORTANT => 'important'
 			);
-			self::$_manager = new ShlMsg_Manager;
+			self::$_manager = new \ShlMsg_Manager;
 		}
 
 		return self::$_manager;
@@ -68,10 +68,10 @@ class ShlMsg_Manager
 		$msg['uid'] = sha1(serialize($msg) . mt_rand());
 
 		// update creation _date
-		$msg['created_on'] = ShlSystem_Date::getUTCNow();
+		$msg['created_on'] = \ShlSystem_Date::getUTCNow();
 
 		// store to db
-		ShlDbHelper::insert($this->_tableName, $msg);
+		\ShlDbHelper::insert($this->_tableName, $msg);
 	}
 
 	/**
@@ -85,7 +85,7 @@ class ShlMsg_Manager
 		{
 			return;
 		};
-		$found = ShlDbHelper::count($this->_tableName, 'id', array('scope' => $msg['scope'], 'type' => $msg['type'], 'sub_type' => $msg['sub_type']));
+		$found = \ShlDbHelper::count($this->_tableName, 'id', array('scope' => $msg['scope'], 'type' => $msg['type'], 'sub_type' => $msg['sub_type']));
 		if (empty($found))
 		{
 			$this->add($msg);
@@ -105,7 +105,7 @@ class ShlMsg_Manager
 		{
 			return;
 		};
-		$found = ShlDbHelper::count($this->_tableName, 'id', $options);
+		$found = \ShlDbHelper::count($this->_tableName, 'id', $options);
 		if (empty($found))
 		{
 			$this->add($msg);
@@ -124,7 +124,7 @@ class ShlMsg_Manager
 		{
 			return;
 		};
-		$found = ShlDbHelper::count($this->_tableName, 'id', array(
+		$found = \ShlDbHelper::count($this->_tableName, 'id', array(
 				'scope' => $msg['scope'], 'type' => $msg['type'], 'sub_type' => $msg['sub_type'], 'acked_on' => '0000-00-00 00:00:00'
 			)
 		);
@@ -164,7 +164,7 @@ class ShlMsg_Manager
 			}
 
 			$where = array();
-			$db = ShlDbHelper::getDb();
+			$db = \ShlDbHelper::getDb();
 			foreach ($options as $key => $value)
 			{
 				switch ($key)
@@ -193,7 +193,7 @@ class ShlMsg_Manager
 			}
 
 			// hide or show after at give date
-			$now = $db->q(ShlSystem_Date::getUTCNow());
+			$now = $db->q(\ShlSystem_Date::getUTCNow());
 			$where[] = '(' . $db->qn('hide_after') . ' = ' . $db->q('0000-00-00 00:00:00')
 				. ' or '
 				. $db->qn('hide_after') . ' > ' . $now
@@ -205,12 +205,12 @@ class ShlMsg_Manager
 
 			$whereClause = implode(' and ', $where);
 			$orderBy = array('display_type' => 'DESC', 'created_on' => 'DESC');
-			$msgs = $countOnly ? ShlDbHelper::count($this->_tableName, '*', $whereClause)
-				: ShlDbHelper::selectObjectList($this->_tableName, '*', $whereClause, array(), $orderBy);
+			$msgs = $countOnly ? \ShlDbHelper::count($this->_tableName, '*', $whereClause)
+				: \ShlDbHelper::selectObjectList($this->_tableName, '*', $whereClause, array(), $orderBy);
 		}
 		catch (Exception $e)
 		{
-			JFactory::getApplication()->enqueueMessage($e->getMessage(), 'error');
+			\JFactory::getApplication()->enqueueMessage($e->getMessage(), 'error');
 			$msgs = array();
 		}
 
@@ -224,7 +224,7 @@ class ShlMsg_Manager
 			throw new RuntimeException('ShLib: trying to delete msg without scope or type.', 404);
 		}
 
-		ShlDbHelper::delete($this->_tableName, $options);
+		\ShlDbHelper::delete($this->_tableName, $options);
 	}
 
 	public function acknowledgeById($uid)
@@ -251,7 +251,7 @@ class ShlMsg_Manager
 		}
 		else
 		{
-			$msg = ShlDbHelper::selectAssoc($this->_tableName, '*', $options);
+			$msg = \ShlDbHelper::selectAssoc($this->_tableName, '*', $options);
 			if (empty($msg))
 			{
 				throw new RuntimeException('ShLib: Cannot find db record trying to acknowledge a message.', 404);
@@ -262,7 +262,7 @@ class ShlMsg_Manager
 		switch ($action)
 		{
 			case self::ACTION_CAN_CLOSE:
-				ShlDbHelper::update($this->_tableName, array('acked_on' => ShlSystem_Date::getUTCNow()), $options);
+				\ShlDbHelper::update($this->_tableName, array('acked_on' => \ShlSystem_Date::getUTCNow()), $options);
 				break;
 			case self::ACTION_CANNOT_CLOSE:
 				break;
@@ -276,7 +276,7 @@ class ShlMsg_Manager
 			case self::ACTION_ON_CLOSE_DELAY_1M:
 				$hideUntil = new DateTime('now', new DateTimeZone('UTC'));
 				$hideUntil->add(new DateInterval($this->getDelayFromActionCode($msg['action'])));
-				ShlDbHelper::update($this->_tableName, array('hide_until' => $hideUntil->format('Y-m-d H:i:s')), $options);
+				\ShlDbHelper::update($this->_tableName, array('hide_until' => $hideUntil->format('Y-m-d H:i:s')), $options);
 				break;
 			default:
 				throw new RuntimeException('ShLib:Invalid action code trying to acknowledge a message' . $msg['action'] . '.', 404);
@@ -286,7 +286,7 @@ class ShlMsg_Manager
 
 	public function addAssets($document, $options = array())
 	{
-		$htmlManager = ShlHtml_Manager::getInstance();
+		$htmlManager = \ShlHtml_Manager::getInstance();
 		$document->addStyleSheet($htmlManager->getMediaLink('msg', 'css', array('url_base' => JURI::root(true))));
 		$document->addScript($htmlManager->getMediaLink('msg', 'js', array('url_base' => JURI::root(true))));
 	}
@@ -331,7 +331,7 @@ class ShlMsg_Manager
 	{
 		if (empty($msg['scope']) || empty($msg['type']) || empty($msg['title']))
 		{
-			ShlSystem_Log::error('shlib', '%s::%d: %s', __METHOD__, __LINE__, 'Invalid message sent for storage ' . print_r($msg, true));
+			\ShlSystem_Log::error('shlib', '%s::%d: %s', __METHOD__, __LINE__, 'Invalid message sent for storage ' . print_r($msg, true));
 			return false;
 		}
 

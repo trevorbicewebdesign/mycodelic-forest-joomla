@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-03-04 13:58:23
+<?php /* Smarty version 2.6.30, created on 2019-02-03 11:30:56
          compiled from string:++Spiridon++Adara+ */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'string:  Spiridon  Adara ', 1, false),)), $this); ?>
