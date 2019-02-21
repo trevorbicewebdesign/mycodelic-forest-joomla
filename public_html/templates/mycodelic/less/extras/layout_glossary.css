@@ -1,0 +1,182 @@
+/**
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org
+ *------------------------------------------------------------------------------
+ */
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         https://github.com/t3framework/ 
+ *------------------------------------------------------------------------------
+*/
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+/* joomla 3.x 400px */
+@-webkit-keyframes toRightFromLeft {
+  49% {
+    -webkit-transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    -webkit-transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+@-moz-keyframes toRightFromLeft {
+  49% {
+    -moz-transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    -moz-transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+@keyframes toRightFromLeft {
+  49% {
+    transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+.glossary-nav {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 34px;
+}
+.glossary-nav nav {
+  padding: 0;
+}
+.glossary-nav nav.affix {
+  top: auto;
+  position: relative;
+}
+.glossary-nav nav .nav-pills {
+  background: #fff;
+}
+.glossary-nav nav .nav-pills > li {
+  display: block;
+  float: left;
+  margin: 0 1px 10px 0;
+}
+.glossary-nav nav .nav-pills > li > a {
+  background: #444;
+  color: #eee;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: normal;
+  padding: 0;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.glossary-nav nav .nav-pills > li > a:hover,
+.glossary-nav nav .nav-pills > li > a:active,
+.glossary-nav nav .nav-pills > li > a:focus {
+  background: #9fcdec;
+  color: #fff;
+}
+@media screen and (min-width: 991px) {
+  .glossary-nav nav.affix {
+    top: 57px;
+    position: fixed;
+  }
+  .glossary-nav nav .nav-pills > li > a {
+    font-size: 20px;
+  }
+}
+.glossary-group {
+  margin-bottom: 34px;
+  position: relative;
+}
+.glossary-group a[name] {
+  position: absolute;
+  top: -120px;
+}
+.glossary-group-title {
+  background: #f7f7f7;
+  color: #222;
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0 0 17px;
+  padding: 15px;
+  text-transform: uppercase;
+}
+.glossary-group-items ul {
+  padding: 0;
+  margin: 0;
+}
+.glossary-group-items ul > li {
+  list-style: none;
+  padding: 0;
+}
+.glossary-group-items ul > li > a {
+  color: #444;
+  display: block;
+  font-size: 16px;
+  padding: 5px 15px;
+}
+.glossary-group-items ul > li > a:hover,
+.glossary-group-items ul > li > a:active,
+.glossary-group-items ul > li > a:focus {
+  color: #9fcdec;
+  text-decoration: none;
+}
