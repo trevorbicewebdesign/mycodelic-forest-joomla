@@ -1,9 +1,12 @@
 <?php
 /**
- * @package   AkeebaBackup
- * @copyright Copyright (c)2006-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @package   akeebabackup
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
+
+// Protect from unauthorized access
+defined('_JEXEC') or die();
 
 // PHP 5.6 is modern enough. Anything else gets a warning.
 $minPHPVersion = '5.4.0';
