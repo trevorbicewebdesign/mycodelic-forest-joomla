@@ -11,6 +11,7 @@ namespace Akeeba\Backup\Admin\View\Backup;
 defined('_JEXEC') or die();
 
 use Akeeba\Backup\Admin\Helper\Status;
+use Akeeba\Backup\Admin\Helper\Utils;
 use Akeeba\Backup\Admin\Model\Backup;
 use Akeeba\Backup\Admin\Model\ControlPanel;
 use Akeeba\Backup\Admin\View\ViewTraits\ProfileIdAndName;
@@ -210,20 +211,9 @@ class Html extends BaseView
 		$default_description = $this->getDefaultDescription();
 
 		// Load data from the model state
-		$backup_description  = $model->getState('description', $default_description);
-		$comment             = $model->getState('comment', '');
-		$returnurl           = $model->getState('returnurl');
-
-		// Only allow non-empty, internal URLs for the redirection
-		if (empty($returnurl))
-		{
-			$returnurl = '';
-		}
-
-		if (!JUri::isInternal($returnurl))
-		{
-			$returnurl = '';
-		}
+		$backup_description  = $model->getState('description', $default_description, 'string');
+		$comment             = $model->getState('comment', '', 'html');
+		$returnurl           = Utils::safeDecodeReturnUrl($model->getState('returnurl', ''));
 
 		// Get the maximum execution time and bias
 		$engineConfiguration = Factory::getConfiguration();
@@ -250,7 +240,7 @@ class Html extends BaseView
 		$this->useIFRAME                    = $engineConfiguration->get('akeeba.basic.useiframe', 0) == 1;
 		$this->returnURL                    = $returnurl;
 		$this->unwriteableOutput            = $unwritableOutput;
-		$this->autoStart                    = $model->getState('autostart');
+		$this->autoStart                    = $model->getState('autostart', 0, 'boolean');
 		$this->desktopNotifications         = $this->container->params->get('desktop_notifications', '0') ? 1 : 0;
 		$this->autoResume                   = $engineConfiguration->get('akeeba.advanced.autoresume', 1);
 		$this->autoResumeTimeout            = $engineConfiguration->get('akeeba.advanced.autoresume_timeout', 10);

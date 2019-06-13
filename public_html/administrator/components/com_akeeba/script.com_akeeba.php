@@ -35,14 +35,14 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 	 *
 	 * @var   string
 	 */
-	protected $minimumPHPVersion = '5.4.0';
+	protected $minimumPHPVersion = '5.6.0';
 
 	/**
 	 * The minimum Joomla! version required to install this extension
 	 *
 	 * @var   string
 	 */
-	protected $minimumJoomlaVersion = '3.4.0';
+	protected $minimumJoomlaVersion = '3.8.0';
 
 	/**
 	 * Obsolete files and folders to remove from the free version only. This is used when you move a feature from the
@@ -50,8 +50,8 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 	 *
 	 * @var   array
 	 */
-	protected $removeFilesFree = array(
-		'files'   => array(
+	protected $removeFilesFree = [
+		'files'   => [
 			// Pro component features
 			'administrator/components/com_akeeba/BackupEngine/Archiver/Directftp.php',
 			'administrator/components/com_akeeba/BackupEngine/Archiver/directftp.ini',
@@ -107,7 +107,7 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			'administrator/components/com_akeeba/BackupEngine/Postproc/Webdav.php',
 			'administrator/components/com_akeeba/BackupEngine/Scan/large.ini',
 			'administrator/components/com_akeeba/BackupEngine/Scan/Large.php',
-			
+
 			'administrator/components/com_akeeba/Controller/Alice.php',
 			'administrator/components/com_akeeba/Controller/Discover.php',
 			'administrator/components/com_akeeba/Controller/IncludeFolders.php',
@@ -127,7 +127,7 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			'administrator/components/com_akeeba/Model/RemoteFiles.php',
 			'administrator/components/com_akeeba/Model/S3Import.php',
 			'administrator/components/com_akeeba/Model/Upload.php',
-			
+
 			'administrator/components/com_akeeba/BackupPlatform/Joomla3x/Filter/Components.php',
 			'administrator/components/com_akeeba/BackupPlatform/Joomla3x/Filter/Extensiondirs.php',
 			'administrator/components/com_akeeba/BackupPlatform/Joomla3x/Filter/Extensionfiles.php',
@@ -141,8 +141,8 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			'administrator/components/com_akeeba/Master/Installers/abi.jpa',
 			'administrator/components/com_akeeba/Master/Installers/angie-generic.ini',
 			'administrator/components/com_akeeba/Master/Installers/angie-generic.jpa',
-		),
-		'folders' => array(
+		],
+		'folders' => [
 			// Pro component features
 			'administrator/components/com_akeeba/Alice',
 			'administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/Pro',
@@ -156,8 +156,8 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			'administrator/components/com_akeeba/View/S3Import',
 			'administrator/components/com_akeeba/View/Upload',
 			'administrator/components/com_akeeba/BackupEngine/Postproc/Connector',
-		)
-	);
+		],
+	];
 
 	/**
 	 * Obsolete files and folders to remove from both paid and free releases. This is used when you refactor code and
@@ -165,10 +165,10 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 	 *
 	 * @var   array
 	 */
-	protected $removeFilesAllVersions = array(
-		'files'   => array(
-            // Outdated CLI scripts
-            'cli/akeeba-update.php',
+	protected $removeFilesAllVersions = [
+		'files'   => [
+			// Outdated CLI scripts
+			'cli/akeeba-update.php',
 
 			// Outdated media files
 			'media/com_akeeba/icons/akeeba-48.png',
@@ -300,16 +300,16 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			// Obsolete Azure files
 			'administrator/components/com_akeeba/BackupEngine/Postproc/Connector/Azure/Credentials/Sharedsignature.php',
 
-            // Obsolete AES-128 CTR implementation in Javascript
+			// Obsolete AES-128 CTR implementation in Javascript
 			'media/com_akeeba/js/Encryption.min.js',
 			'media/com_akeeba/js/Encryption.min.map',
 
-            // PHP 7.2 compatibility
-            'administrator/components/com_akeeba/BackupEngine/Base/Object.php',
+			// PHP 7.2 compatibility
+			'administrator/components/com_akeeba/BackupEngine/Base/Object.php',
 
 			// Obsolete media files
-            'media/com_akeeba/icons/akeeba-ui-32.png',
-            'media/com_akeeba/changelog.png',
+			'media/com_akeeba/icons/akeeba-ui-32.png',
+			'media/com_akeeba/changelog.png',
 
 			// Microsoft sucks. Go get some real storage from a company that knows what they are doing.
 			'administrator/components/com_akeeba/BackupEngine/Postproc/onedrivebusiness.ini',
@@ -319,8 +319,67 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			// Old FOF 3 XML manifest files
 			'libraries/fof30/lib_fof30.xml',
 			'administrator/manifests/libraries/lib_fof30.xml',
-		),
-		'folders' => array(
+
+			// Migration of Akeeba Engine to JSON format
+			"administrator/components/com_akeeba/BackupEngine/Dump/native.ini",
+			"administrator/components/com_akeeba/BackupEngine/Dump/reverse.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/none.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/webdav.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/sugarsync.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/email.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/box.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/dropbox2.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/ovh.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/cloudme.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/idrivesync.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/ftpcurl.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/dreamobjects.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/azure.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/sftp.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/amazons3.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/cloudfiles.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/googlestorage.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/googlestoragejson.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/swift.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/sftpcurl.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/onedrive.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/googledrive.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/backblaze.ini",
+			"administrator/components/com_akeeba/BackupEngine/Postproc/ftp.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/zipnative.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/directftp.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/directsftpcurl.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/zip.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/directftpcurl.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/directsftp.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/jps.ini",
+			"administrator/components/com_akeeba/BackupEngine/Archiver/jpa.ini",
+			"administrator/components/com_akeeba/BackupEngine/Scan/smart.ini",
+			"administrator/components/com_akeeba/BackupEngine/Scan/large.ini",
+			"administrator/components/com_akeeba/BackupEngine/Filter/Stack/dateconditional.ini",
+			"administrator/components/com_akeeba/BackupEngine/Filter/Stack/errorlogs.ini",
+			"administrator/components/com_akeeba/BackupEngine/Filter/Stack/hoststats.ini",
+			"administrator/components/com_akeeba/BackupEngine/Core/04.quota.ini",
+			"administrator/components/com_akeeba/BackupEngine/Core/02.advanced.ini",
+			"administrator/components/com_akeeba/BackupEngine/Core/01.basic.ini",
+			"administrator/components/com_akeeba/BackupEngine/Core/scripting.ini",
+			"administrator/components/com_akeeba/BackupEngine/Core/05.tuning.ini",
+
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/02.advanced.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/Pro/04.quota.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/Pro/02.advanced.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/Pro/01.basic.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/Pro/02.platform.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/Pro/03.filters.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Config/Pro/05.tuning.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Filter/Stack/finder.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Filter/Stack/myjoomla.ini",
+			"administrator/components/com_akeeba/BackupPlatform/Joomla3x/Filter/Stack/actionlogs.ini",
+
+			// Obsolete eAccelerator warning
+			"administrator/components/com_akeeba/View/eaccelerator.php",
+		],
+		'folders' => [
 			// Directories used up to version 4.1 (inclusive)
 			// -- Back-end
 			'administrator/components/com_akeeba/akeeba',
@@ -338,7 +397,7 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			'administrator/components/com_akeeba/models',
 			'administrator/components/com_akeeba/platform',
 			'administrator/components/com_akeeba/tables',
-            'administrator/components/com_akeeba/views/alices',
+			'administrator/components/com_akeeba/views/alices',
 			'administrator/components/com_akeeba/views/browser',
 			'administrator/components/com_akeeba/views/buadmin',
 			'administrator/components/com_akeeba/views/config',
@@ -374,8 +433,11 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 
 			// Dropbox v1 integration
 			'administrator/components/com_akeeba/BackupEngine/Postproc/Connector/Dropbox',
-		)
-	);
+
+			// Common tables (they're installed by FOF)
+			'administrator/components/com_akeeba/sql/common',
+		],
+	];
 
 	/**
 	 * Runs on installation
@@ -485,20 +547,6 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			}
 		}
 
-		if (is_object($model) && class_exists('Akeeba\\Backup\\Admin\\Model\\UsageStatistics')
-			&& ($model instanceof Akeeba\Backup\Admin\Model\UsageStatistics)
-			&& method_exists($model, 'checkAndFixCommonTables'))
-		{
-			try
-			{
-				$model->checkAndFixCommonTables();
-			}
-			catch (Exception $e)
-			{
-				// Do nothing if that failed.
-			}
-		}
-
 		// Parent method
 		parent::postflight($type, $parent);
 
@@ -527,6 +575,9 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 			// Migrate profiles if necessary
 			$this->migrateProfiles();
 		}
+
+		// Replace the system plugin with the actionlog plugin for logging user actions
+		$this->switchActionLogPlugins();
 	}
 
 	/**
@@ -1023,6 +1074,109 @@ HTML;
 			{
 				// Do not fail in this case
 			}
+		}
+	}
+
+	private function switchActionLogPlugins()
+	{
+		$db = \Joomla\CMS\Factory::getDbo();
+
+		// Does the plg_system_akeebaactionlog plugin exist? If not, there's nothing to do here.
+		$query = $db->getQuery(true)
+			->select('*')
+			->from('#__extensions')
+			->where($db->qn('type') . ' = ' . $db->q('plugin'))
+			->where($db->qn('folder') . ' = ' . $db->q('system'))
+			->where($db->qn('element') . ' = ' . $db->q('akeebaactionlog'));
+		try
+		{
+			$result = $db->setQuery($query)->loadAssoc();
+
+			if (empty($result))
+			{
+				return;
+			}
+
+			$eid = $result['extension_id'];
+		}
+		catch (Exception $e)
+		{
+			return;
+		}
+
+		// If plg_system_akeebaactionlog is enabled: enable plg_actionlog_akeebabackup
+		if (\Joomla\CMS\Plugin\PluginHelper::isEnabled('system', 'akeebaactionlog'))
+		{
+			$query = $db->getQuery(true)
+				->update($db->qn('#__extensions'))
+				->set($db->qn('enabled') . ' = ' . $db->q(1))
+				->where($db->qn('type') . ' = ' . $db->q('plugin'))
+				->where($db->qn('folder') . ' = ' . $db->q('actionlog'))
+				->where($db->qn('element') . ' = ' . $db->q('akeebabackup'));
+			try
+			{
+				$db->setQuery($query)->execute();
+			}
+			catch (Exception $e)
+			{
+			}
+		}
+
+		// Deactivate plg_system_akeebaactionlog
+		$query = $db->getQuery(true)
+			->update($db->qn('#__extensions'))
+			->set($db->qn('enabled') . ' = ' . $db->q(0))
+			->where($db->qn('type') . ' = ' . $db->q('plugin'))
+			->where($db->qn('folder') . ' = ' . $db->q('system'))
+			->where($db->qn('element') . ' = ' . $db->q('akeebaactionlog'));
+		try
+		{
+			$db->setQuery($query)->execute();
+		}
+		catch (Exception $e)
+		{
+		}
+
+		/**
+		 * Here's a bummer. If you try to uninstall the plg_system_akeebaactionlog plugin Joomla throws a nonsensical
+         * error message about the plugin's XML manifest missing -- after it has already uninstalled the plugin! This
+		 * error causes the package installation to fail which results in the extension being installed BUT the database
+		 * record of the package NOT being present which makes it impossible to uninstall.
+		 *
+		 * So I have to hack my way around it which is ugly but the only viable alternative :(
+		 */
+		try
+		{
+			// Safely delete the row in the extensions table
+			$row = JTable::getInstance('extension');
+			$row->load((int) $eid);
+			$row->delete($eid);
+
+			// Delete the plugin's files
+            $pluginPath = JPATH_PLUGINS . '/system/akeebaactionlog';
+
+			if (is_dir($pluginPath))
+			{
+				JFolder::delete($pluginPath);
+			}
+
+			// Delete the plugin's language files
+			$langFiles = [
+				JPATH_ADMINISTRATOR . '/language/en-GB/en-GB.plg_system_akeebaactionlog.ini',
+				JPATH_ADMINISTRATOR . '/language/en-GB/en-GB.plg_system_akeebaactionlog.sys.ini',
+			];
+
+			foreach ($langFiles as $file)
+			{
+				if (@is_file($file))
+				{
+					JFile::delete($file);
+				}
+			}
+		}
+		catch (Exception $e)
+		{
+			// I tried, I failed. Dear user, do NOT try to enable that old plugin. Bye!
 		}
 	}
 }
