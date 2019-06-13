@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         SCLogin
- * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2019 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.2.5
- * @build-date      2018/03/13
+ * @version         Release v8.0.5
+ * @build-date      2019/01/14
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -36,7 +36,7 @@ if ($params->get('showLoginForm'))
                 <div class="control-group pull-left" id="form-sclogin-username">
                     <div class="controls">
                         <div class="input-append">
-                            <input name="username" tabindex="0" <?php echo $params->get('autoFocusUsername') ? 'autofocus' : '';?> id="sclogin-username" alt="username" type="text" class="input-small"
+                            <input name="username" tabindex="0" <?php echo $params->get('autoFocusUsername') ? 'autofocus' : '';?> alt="username" type="text" class="sclogin-username input-small"
                                    placeholder="<?php echo JText::_('MOD_SCLOGIN_USERNAME'); ?>" required aria-required="true">
                             <?php echo $helper->getForgotUserButton(); ?>
                         </div>
@@ -45,7 +45,7 @@ if ($params->get('showLoginForm'))
                 <div class="control-group pull-left" id="form-sclogin-password">
                     <div class="controls">
                         <div class="input-append">
-                            <input name="<?php echo $passwordName; ?>" tabindex="0" id="sclogin-passwd" alt="password" type="password" class="input-small"
+                            <input name="<?php echo $passwordName; ?>" tabindex="0" alt="password" type="password" class="sclogin-passwd input-small"
                                    placeholder="<?php echo JText::_('MOD_SCLOGIN_PASSWORD') ?>" required aria-required="true">
                             <?php echo $helper->getForgotPasswordButton(); ?>
                         </div>

@@ -37,8 +37,8 @@ div.social-login.reconnect:nth-of-type(2) {
     padding:5px 0;
 }
 
-input#sclogin-username.input-block-level,
-input#sclogin-passwd.input-block-level {
+input.sclogin-username.input-block-level,
+input.sclogin-passwd.input-block-level {
     height: 30px;
 }
 
@@ -70,15 +70,15 @@ a.forgot.btn i {
     clear: both;
 }
 
-#sclogin-username,
-#sclogin-passwd {
+.sclogin-username,
+.sclogin-passwd {
     margin-top: 0px;
 }
 
 /* Vertical Layout */
 
-.sclogin-joomla-login.vertical input#sclogin-username.input-block-level,
-.sclogin-joomla-login.vertical input#sclogin-passwd.input-block-level {
+.sclogin-joomla-login.vertical input.sclogin-username.input-block-level,
+.sclogin-joomla-login.vertical input.sclogin-passwd.input-block-level {
     width: 87% !important;
 }
 
@@ -86,8 +86,8 @@ a.forgot.btn i {
     width: 13% !important;
 }
 
-.sclogin-joomla-login.vertical input#sclogin-username.input-append,
-.sclogin-joomla-login.vertical input#sclogin-passwd.input-append {
+.sclogin-joomla-login.vertical input.sclogin-username.input-append,
+.sclogin-joomla-login.vertical input.sclogin-passwd.input-append {
     width: 100%;
 }
 
@@ -144,7 +144,8 @@ a.forgot.btn i {
 }
 
 .sclogin #scprofile-pic,
-.sclogin .sclogin-greeting {
+.sclogin .sclogin-greeting,
+.sclogin .sclogin-profile-link{
     margin-bottom: 5px;
 }
 

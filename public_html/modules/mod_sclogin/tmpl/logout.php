@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         SCLogin
- * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2019 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.2.5
- * @build-date      2018/03/13
+ * @version         Release v8.0.5
+ * @build-date      2019/01/14
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -24,6 +24,11 @@ if ($params->get('greetingName') != 2)
     else
         $name = $user->get('name');
     echo '<div class="sclogin-greeting">' . JText::sprintf('MOD_SCLOGIN_WELCOME', $name) . '</div>';
+}
+
+if($params->get('showProfileLink'))
+{
+    echo '<div class="sclogin-profile-link"><a href="'.$helper->profileLink.'">'.JText::_('MOD_SCLOGIN_LOGOUT_SHOW_PROFILE_LINK').'</a></div>';
 }
 
 if ($params->get('showLogoutButton'))
