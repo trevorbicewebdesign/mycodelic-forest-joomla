@@ -15,6 +15,8 @@
 // no direct access
 defined('_JEXEC') or die;
 
+die("1234qwer");
+
 //check if t3 plugin is existed
 if (!defined('T3')) {
 	if (JError::$legacy) {

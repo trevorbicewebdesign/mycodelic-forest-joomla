@@ -15,6 +15,11 @@
 // no direct access
 defined('_JEXEC') or die;
 
+$app = JFactory::getApplication();
+$app->setHeader('Access-Control-Allow-Origin', '*');
+$app->sendHeaders();
+
+
 //check if t3 plugin is existed
 if (!defined('T3')) {
 	if (JError::$legacy) {
