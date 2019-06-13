@@ -336,7 +336,7 @@ class NSP_GK5_View {
 					JHTML::_('behavior.modal', 'a.gkmodal');
 				else {
 					$img_output .= '
-						<div class="gkpopup">
+						<div class="gkpopup '.md5($img_link).'">
 							<div class="gkpopup-content">
 								<img style="max-width:80%; max-height: 80%;" src="'.$img_link.'" />
 							</div>
@@ -346,19 +346,28 @@ class NSP_GK5_View {
 					$document = JFactory::getDocument();
 					$document->addScriptDeclaration('
 						jQuery(document).ready(function(){
-							jQuery("a.gkmodal").off().on("click", function(e) {
-								jQuery(this).prev().show();
-								jQuery(this).prev().off().on("click", function(e) {
+							jQuery("a.gkmodal.'.md5($img_link).'").off().on("click", function(e) {
+								var $popup = jQuery(".gkpopup.'.md5($img_link).'").first();
+								jQuery(\'body\').append($popup);
+
+								$popup.css({
+									"display": "block",
+									"position": "fixed",
+									"z-index": 9999
+								});
+
+								$popup.off().on("click", function(e) {
 									if (e.target.tagName !== "IMG")
 										jQuery(this).hide();
 								});
+								
 								e.preventDefault();
 								return false;
 							});
 						});
 					');
 				}
-				$img_class .= ' gkmodal';
+				$img_class .= ' gkmodal ' . md5($img_link);
 			}
 			
 			if($config['news_content_image_pos'] == 'center' && !$links) {

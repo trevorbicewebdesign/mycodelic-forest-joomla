@@ -60,15 +60,18 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 				<?php endif; ?>
 				<div class="nspArtScroll1">
 					<div class="nspArtScroll2 nspPages<?php echo $this->config['news_full_pages']; ?>">
-					<?php for($i = 0; $i < $news_html_tab_amount; $i++) : ?>
+					<?php $nrow = 0; for($i = 0; $i < $news_html_tab_amount; $i++) : ?>
 						<?php if($i == 0) : ?>
 						<div class="nspArtPage active nspCol<?php echo $this->config['news_full_pages']; ?>">
 						<?php endif; ?>
 							<?php 
 								$style = 'padding:'. $this->config['art_padding'] .';';
-								if(($i+1) % ($this->config['news_column']) == 1) $style .= 'clear:both;';
+								if(($i+1) % ($this->config['news_column']) == 1) {
+									$style .= 'clear:both;';
+									$nrow ++;
+								}
 							?>
-							<div class="nspArt nspCol<?php echo $this->config['news_column']; ?><?php echo (isset($news_featured_tab[$i]) && $news_featured_tab[$i] == '1') ? ' nspFeatured' : ''; ?>" style="<?php echo $style; ?>">
+							<div class="nspArt nspCol<?php echo $this->config['news_column']; ?><?php if(round($news_html_tab_amount/$this->config['news_column']) == $nrow ) echo ' lastChild'; ?><?php echo (isset($news_featured_tab[$i]) && $news_featured_tab[$i] == '1') ? ' nspFeatured' : ''; ?>" style="<?php echo $style; ?>">
 								<?php echo $news_html_tab[$i];?>
 							</div>
 						<?php if(($i > 0 && (($i+1) % ($this->config['news_column'] * $this->config['news_rows']) == 0) && $i != $news_html_tab_amount - 1) || ($this->config['news_column'] * $this->config['news_rows'] == 1 && $i != $news_html_tab_amount - 1)) : ?>
@@ -84,6 +87,7 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 						if(isset($this->config['articles_link']) && $this->config['articles_link'] == '1') : 
 							$article_bottom_url = $this->config['articles_link_url'];	
 					?>
+					<div class="readon-button-wrap">
 					<a href="<?php echo $article_bottom_url; ?>" class="readon-button">
 						<?php if($this->config['articles_link_label'] != '') : ?>
 							<?php echo $this->config['articles_link_label']; ?>
@@ -91,6 +95,7 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 							<?php echo JText::_('MOD_NEWS_PRO_GK5_ARTICLES_LINK_LABEL_DEFAULT'); ?>
 						<?php endif; ?>
 					</a>
+					</div>
 					<?php endif; ?>
 				</div>
 			</div>
