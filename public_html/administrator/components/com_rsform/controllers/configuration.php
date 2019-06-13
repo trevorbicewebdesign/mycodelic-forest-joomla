@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,24 +9,24 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformControllerConfiguration extends RsformController
 {
-	function __construct()
+	public function __construct()
 	{
 		parent::__construct();
 		
 		$this->registerTask('apply', 'save');
-		
-		$this->_db = JFactory::getDbo();
 	}
 
-	function edit()
+	public function edit()
 	{
-		JFactory::getApplication()->input->set('view', 	'configuration');
-		JFactory::getApplication()->input->set('layout', 	'default');
+	    $app = JFactory::getApplication();
+
+		$app->input->set('view', 	'configuration');
+        $app->input->set('layout', 	'default');
 		
 		parent::display();
 	}
 	
-	function cancel()
+	public function cancel()
 	{
 		$this->setRedirect('index.php?option=com_rsform');
 	}

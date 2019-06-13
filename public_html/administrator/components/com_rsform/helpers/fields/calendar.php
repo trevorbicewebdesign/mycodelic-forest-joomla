@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -14,14 +14,11 @@ class RSFormProFieldCalendar extends RSFormProField
 	protected $customId;
 	
 	// backend preview
-	public function getPreviewInput() {
+	public function getPreviewInput()
+	{
 		$layout  	= $this->getProperty('CALENDARLAYOUT', 'FLAT');
-		$caption 	= $this->getProperty('CAPTION','');
-		$codeIcon	= RSFormProHelper::getIcon('calendar');
 		
-		$html = '<td>'.$caption.'</td><td>'.$codeIcon.' '.JText::_('RSFP_COMP_FVALUE_'.$layout).'</td>';
-		
-		return $html;
+		return RSFormProHelper::getIcon('calendar') . ' ' . JText::_('RSFP_COMP_FVALUE_' . $layout);
 	}
 	
 	// functions used for rendering in front view

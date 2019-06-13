@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/licenses/gpl-2.0.html
 */
 
@@ -12,39 +12,77 @@ JFormHelper::loadFieldClass('list');
 class JFormFieldForms extends JFormFieldList
 {
 	protected $type = 'Forms';
-	
-	protected function getOptions() {
-		// Initialize variables.
-		$options = array();
-		
-		$directory = (string) $this->element['directory'] == 'true' || (string) $this->element['directory'] == '1';
-		
-		$db 	= JFactory::getDbo();
-		$query 	= $db->getQuery(true);
-		$query->select($db->qn('FormId'))
-			  ->select($db->qn('FormTitle'))
-			  ->select($db->qn('FormName'))
-			  ->from($db->qn('#__rsform_forms'));
-		
-		if ($directory) {
-			$subquery = $db->getQuery(true);
-			$subquery->select($db->qn('formId'))
-				->from($db->qn('#__rsform_directory'));
-			
-			$query->where('FormId IN ('.$subquery.')');
-		}
-		$db->setQuery($query);
-		
-		$forms = $db->loadObjectList();
-		foreach ($forms as $form) {
-			$tmp = JHtml::_('select.option', $form->FormId, sprintf('(%d) %s', $form->FormId, $form->FormName));
 
-			// Add the option object to the result set.
-			$options[] = $tmp;
+	protected $firstValue;
+
+    protected function getOptions()
+    {
+        $app        = JFactory::getApplication();
+        $db         = JFactory::getDbo();
+        $sortColumn = $app->getUserState('com_rsform.forms.filter_order', 'FormId');
+        $sortOrder  = $app->getUserState('com_rsform.forms.filter_order_Dir', 'ASC');
+        $options    = array();
+
+        $query = $db->getQuery(true)
+            ->select($db->qn('FormId'))
+            ->select($db->qn('FormTitle'))
+            ->select($db->qn('Lang'))
+            ->from($db->qn('#__rsform_forms'))
+            ->order($db->qn($sortColumn) . ' ' . $db->escape($sortOrder));
+        if ($results = $db->setQuery($query)->loadObjectList())
+        {
+            foreach ($results as $result)
+            {
+                $lang = RSFormProHelper::getCurrentLanguage($result->FormId);
+
+                if ($lang != $result->Lang)
+                {
+                    if ($translations = RSFormProHelper::getTranslations('forms', $result->FormId, $lang))
+                    {
+                        foreach ($translations as $field => $value)
+                        {
+                            if (isset($result->$field))
+                            {
+                                $result->$field = $value;
+                            }
+                        }
+                    }
+                }
+
+                $options[] = JHtml::_('select.option', $result->FormId, sprintf('(%d) %s', $result->FormId, $result->FormTitle));
+            }
+
+			$first = reset($results);
+
+			$this->firstValue = $first->FormId;
+        }
+
+        reset($options);
+
+        return $options;
+    }
+
+	public function getInput()
+	{
+		$html = parent::getInput();
+
+		if ($this->value)
+		{
+			$url = JRoute::_('index.php?option=com_rsform&view=forms&layout=edit&formId=' . $this->value);
+		}
+		elseif ($this->firstValue)
+		{
+			$url = JRoute::_('index.php?option=com_rsform&view=forms&layout=edit&formId=' . $this->firstValue);
+		}
+		else
+		{
+			$url = '#';
 		}
 
-		reset($options);
-		
-		return $options;
+		$html .= ' <a id="formLink" target="_blank" href="' . $url . '" class="btn btn-primary">' . JText::_('COM_RSFORM_EDIT_FORM') . '</a>';
+
+		JFactory::getDocument()->addScriptDeclaration("function generateFormLink() { document.getElementById('formLink').setAttribute('href', 'index.php?option=com_rsform&view=forms&layout=edit&formId=' + document.getElementById('{$this->id}').value); }");
+
+		return $html;
 	}
 }

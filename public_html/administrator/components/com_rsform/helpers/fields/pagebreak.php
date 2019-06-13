@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -12,20 +12,16 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/field.php';
 class RSFormProFieldPageBreak extends RSFormProField
 {
 	// backend preview
-	public function getPreviewInput() {
+	public function getPreviewInput()
+	{
 		$componentId = $this->getProperty('componentId');
 		$pages		 = $this->getProperty('PAGES');
-		
-		$totalPages  = count($pages);
 		$position	 = array_search($componentId, $pages);
+
+		$labelPrev 	= $this->getProperty('PREVBUTTON', JText::_('JPREV'));
+		$labelNext	= $this->getProperty('NEXTBUTTON', JText::_('JNEXT'));
 		
-		$labelPrev 		= $this->getProperty('PREVBUTTON', JText::_('JPREV'));
-		$labelNext		= $this->getProperty('NEXTBUTTON', JText::_('JNEXT'));
-		
-		$html = '<td>&nbsp;</td>';
-		$html.= '<td>'.($position > 0 ? '<input type="button" class="btn btn-warning" value="'.$this->escape($labelPrev).'" />' : '').' <input type="button" class="btn btn-success" value="'.$this->escape($labelNext).'" /></td>';
-		
-		return $html;
+		return ($position > 0 ? '<button type="button" class="btn btn-warning">' . $this->escape($labelPrev) . '</button>' : '').' <button type="button" class="btn btn-success">' . $this->escape($labelNext) . '</button>';
 	}
 	
 	// functions used for rendering in front view

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,8 +9,13 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformViewConfiguration extends JViewLegacy
 {
-	function display($tpl = null)
+	public function display($tpl = null)
 	{
+        if (!JFactory::getUser()->authorise('core.admin', 'com_rsform'))
+        {
+            throw new Exception(JText::_('COM_RSFORM_NOT_AUTHORISED_TO_USE_THIS_SECTION'));
+        }
+
 		$this->addToolbar();
 		
 		JToolbarHelper::apply('configuration.apply');
@@ -30,10 +35,9 @@ class RsformViewConfiguration extends JViewLegacy
 		parent::display($tpl);
 	}
 	
-	function triggerEvent($event, $args=null)
+	public function triggerEvent($event, $args=null)
 	{
-		$mainframe = JFactory::getApplication();
-		$mainframe->triggerEvent($event, $args);
+        JFactory::getApplication()->triggerEvent($event, $args);
 	}
 	
 	protected function addToolbar() {

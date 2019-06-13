@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -15,9 +15,8 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 	protected $processing;
 	
 	// backend preview
-	public function getPreviewInput() {
-		$caption 	= $this->getProperty('CAPTION', '');
-		
+	public function getPreviewInput()
+	{
 		$ordering 	= $this->getProperty('DATEORDERING');
 		$separator	= $this->getProperty('DATESEPARATOR');
 		$day   		= strpos($ordering, 'D');
@@ -61,8 +60,7 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		
 		ksort($items);
 		
-		$html = '<td>'.$caption.'</td><td>'.implode($separator, $items).'</td>';
-		return $html;
+		return implode($separator, $items);
 	}
 	
 	// functions used for rendering in front view

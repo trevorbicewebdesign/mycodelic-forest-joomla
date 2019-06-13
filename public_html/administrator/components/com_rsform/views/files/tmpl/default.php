@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -44,7 +44,7 @@ function rsform_close_window() {
 		</tr>
 		</thead>
 		<tr>
-			<td><a class="folder" href="index.php?option=com_rsform&amp;controller=files&amp;task=display&amp;folder=<?php echo urlencode($this->previous); ?>&amp;tmpl=component">..<?php echo JHtml::_('image', 'administrator/components/com_rsform/assets/images/up.gif', JText::_('BACK')); ?></a></td>
+			<td><a class="folder" href="index.php?option=com_rsform&amp;controller=files&amp;task=display&amp;folder=<?php echo urlencode($this->previous); ?>&amp;tmpl=component">..<?php echo JHtml::image('com_rsform/admin/icon-16-up.gif', JText::_('BACK'), null, true); ?></a></td>
 		</tr>
 	<?php foreach ($this->folders as $folder) { ?>
 		<tr>

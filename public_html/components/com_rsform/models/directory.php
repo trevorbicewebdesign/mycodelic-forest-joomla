@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -31,7 +31,7 @@ class RsformModelDirectory extends JModelLegacy
         }
 
         $this->getFields();
-        parent::__construct();
+        parent::__construct($config);
     }
 
     /**
@@ -89,6 +89,12 @@ class RsformModelDirectory extends JModelLegacy
         // Check if it's a search.
         $search = $this->getSearch();
 
+        // If 'Show Only Filtering Result' is enabled, don't create a query unless the user searches for something
+        if ($this->params->get('show_filtering_result', 0) && !strlen($search))
+		{
+			return false;
+		}
+
         // Get the SubmissionId
         $query->select($db->qn('s.SubmissionId'))
             ->from($db->qn('#__rsform_submission_values', 'sv'))
@@ -98,18 +104,21 @@ class RsformModelDirectory extends JModelLegacy
             ->order($db->qn($this->getListOrder()) . ' ' . $db->escape($this->getListDirn()));
 
         // Show only confirmed submissions?
-        if ($this->params->get('show_confirmed', 0)) {
+        if ($this->params->get('show_confirmed', 0))
+        {
             $query->where($db->qn('s.confirmed') . '=' . $db->q(1));
         }
 
         // Show only submissions for selected language
-        if ($lang = $this->params->get('lang', '')) {
+        if ($lang = $this->params->get('lang', ''))
+        {
             $query->where($db->qn('s.Lang') . '=' . $db->q($lang));
         }
 
         // Check if we need to show only submissions related to UserId.
         $userId = $this->params->def('userId', 0);
-        if ($userId == 'login') {
+        if ($userId == 'login')
+        {
             // Get only logged in user's submissions
             $user = JFactory::getUser();
 
@@ -119,7 +128,9 @@ class RsformModelDirectory extends JModelLegacy
             }
 
             $query->where($db->qn('s.UserId') . '=' . $db->q($user->get('id')));
-        } elseif ($userId) {
+        }
+        elseif ($userId)
+		{
             // Show only the submissions of these users
             $userIds = explode(',', $userId);
             $userIds = array_map('intval', $userIds);
@@ -127,38 +138,157 @@ class RsformModelDirectory extends JModelLegacy
             $query->where($db->qn('s.UserId') . ' IN (' . implode(',', $userIds) . ')');
         }
 
-        // Iterate through fields to build the query
-        foreach ($fields as $field) {
-            // If the field is viewable or searchable, we need to select() it.
-            if ($field->viewable || $field->searchable) {
-                if ($field->componentId < 0 && isset($headers[$field->componentId])) {
-                    // Static headers.
-                    // Select the value.
-                    if ($field->FieldName == 'confirmed') {
-                        // Make sure we display a text instead of 0 and 1.
-                        $query->select('IF(' . $db->qn('s.confirmed') . ' = ' . $db->q(1) . ', ' . $db->q(JText::_('RSFP_YES')) . ', ' . $db->q(JText::_('RSFP_NO')) . ') AS ' . $db->qn('confirmed'));
-                    } else {
-                        $query->select($db->qn('s.' . $field->FieldName));
-                    }
-                } else {
-                    // Dynamic headers.
-                    // Select the value.
-                    $query->select('GROUP_CONCAT(IF(' . $db->qn('sv.FieldName') . '=' . $db->q($field->FieldName) . ', ' . $db->qn('sv.FieldValue') . ', NULL)) AS ' . $db->qn($field->FieldName));
-                }
+        $needsSelect = array();
+		if ($filters = $this->params->get('filter_values', array()))
+		{
+			$allHaving = array();
+			$glue = $this->params->get('filter_glue', 'OR');
 
-                // If we're searching, add the field to the having() query.
-                if ($search && $field->searchable) {
-                    // DateSubmitted doesn't play well with LIKE
-                    if ($field->FieldId == '-1' && preg_match('#([^0-9\-: ])#', $search)) {
-                        continue;
-                    }
-                    $query->having($db->qn($field->FieldName) . ' LIKE ' . $db->q('%' . $db->escape($search, true) . '%', false), 'OR');
-                }
-            }
-        }
+			if (is_array($filters) && isset($filters['name']) && is_array($filters['name']))
+			{
+				for ($i = 0; $i < count($filters['name']); $i++)
+				{
+					$name = $filters['name'][$i];
+					if (isset($filters['operator'][$i]))
+					{
+						$operator = $filters['operator'][$i];
+					}
+					else
+					{
+						continue;
+					}
+
+					if (isset($filters['value'][$i]))
+					{
+						$value = $filters['value'][$i];
+					}
+					else
+					{
+						continue;
+					}
+
+					if ($this->isValidField($name))
+					{
+						$needsSelect[] = $name;
+						$having = $db->qn($name);
+
+						switch ($operator)
+						{
+							default:
+							case 'is':
+								$having .= ' = ' . $db->q($value);
+								break;
+
+							case 'is_not':
+								$having .= ' != ' . $db->q($value);
+								break;
+
+							case 'contains':
+								$having .= ' LIKE ' . $db->q('%' . $db->escape($value, true) . '%', false);
+								break;
+
+							case 'contains_not':
+								$having .= ' NOT LIKE ' . $db->q('%' . $db->escape($value, true) . '%', false);
+								break;
+
+							case 'starts':
+								$having .= ' LIKE ' . $db->q($db->escape($value, true) . '%', false);
+								break;
+
+							case 'starts_not':
+								$having .= ' NOT LIKE ' . $db->q($db->escape($value, true) . '%', false);
+								break;
+
+							case 'ends':
+								$having .= ' LIKE ' . $db->q('%' . $db->escape($value, true), false);
+								break;
+
+							case 'ends_not':
+								$having .= ' NOT LIKE ' . $db->q('%' . $db->escape($value, true), false);
+								break;
+						}
+
+						$allHaving[] = $having;
+					}
+				}
+			}
+
+			if ($allHaving)
+			{
+				$query->having('(' . implode(' ' . $glue . ' ', $allHaving) . ')', 'AND');
+			}
+		}
+
+        // Iterate through fields to build the query
+		if ($fields)
+		{
+			$allHaving = array();
+			foreach ($fields as $field)
+			{
+				// If the field is viewable or searchable, we need to select() it.
+				if ($field->viewable || $field->searchable || in_array($field->FieldName, $needsSelect))
+				{
+					if ($field->componentId < 0 && isset($headers[$field->componentId]))
+					{
+						// Static headers.
+						// Select the value.
+						if ($field->FieldName == 'confirmed') {
+							// Make sure we display a text instead of 0 and 1.
+							$query->select('IF(' . $db->qn('s.confirmed') . ' = ' . $db->q(1) . ', ' . $db->q(JText::_('RSFP_YES')) . ', ' . $db->q(JText::_('RSFP_NO')) . ') AS ' . $db->qn('confirmed'));
+						} else {
+							$query->select($db->qn('s.' . $field->FieldName));
+						}
+					}
+					else
+					{
+						// Dynamic headers.
+						// Select the value.
+						$query->select('GROUP_CONCAT(IF(' . $db->qn('sv.FieldName') . '=' . $db->q($field->FieldName) . ', ' . $db->qn('sv.FieldValue') . ', NULL)) AS ' . $db->qn($field->FieldName));
+					}
+
+					// If we're searching, add the field to the having() query.
+					if ($search && $field->searchable)
+					{
+						// DateSubmitted doesn't play well with LIKE
+						if ($field->FieldId == '-1' && preg_match('#([^0-9\-: ])#', $search))
+						{
+							continue;
+						}
+
+						$allHaving[] = $db->qn($field->FieldName) . ' LIKE ' . $db->q('%' . $db->escape($search, true) . '%', false);
+					}
+				}
+			}
+
+			if ($allHaving)
+			{
+				$query->having('(' . implode(' OR ', $allHaving) . ')', 'AND');
+			}
+		}
+
+		JFactory::getApplication()->triggerEvent('rsfp_onAfterManageDirectoriesQueryCreated', array(&$query, $this->params->get('formId')));
 
         return $query;
     }
+
+    protected function isValidField($name)
+	{
+		static $fields;
+
+		if ($fields === null)
+		{
+			$fields = RSFormProHelper::getDirectoryStaticHeaders();
+			if ($allFields = RSFormProHelper::getComponents($this->params->get('formId')))
+			{
+				foreach ($allFields as $field)
+				{
+					$fields[] = $field->name;
+				}
+			}
+		}
+
+		return in_array($name, $fields);
+	}
 
     public function setGroupConcatLimit()
     {
@@ -193,7 +323,7 @@ class RsformModelDirectory extends JModelLegacy
         $mainframe->triggerEvent('rsfp_onAfterManageDirectoriesQuery', array(&$items, $this->params->get('formId')));
         jimport('joomla.filesystem.file');
 
-        list($multipleSeparator, $uploadFields, $multipleFields, $secret) = RSFormProHelper::getDirectoryFormProperties($this->params->get('formId'));
+        list($multipleSeparator, $uploadFields, $multipleFields, $textareaFields, $secret) = RSFormProHelper::getDirectoryFormProperties($this->params->get('formId'));
         $this->uploadFields = $uploadFields;
         $this->multipleFields = $multipleFields;
 
@@ -201,12 +331,12 @@ class RsformModelDirectory extends JModelLegacy
             foreach ($items as $i => $item) {
                 foreach ($uploadFields as $field) {
                     if (isset($item->$field)) {
-                        $item->$field = '<a href="' . JRoute::_('index.php?option=com_rsform&task=submissions.view.file&hash=' . md5($item->SubmissionId . $secret . $field)) . '">' . htmlspecialchars(JFile::getName($item->$field)) . '</a>';
+                        $item->$field = '<a href="' . JRoute::_('index.php?option=com_rsform&task=submissions.view.file&hash=' . md5($item->SubmissionId . $secret . $field)) . '">' . RSFormProHelper::htmlEscape(JFile::getName($item->$field)) . '</a>';
                     }
                 }
                 foreach ($multipleFields as $field) {
                     if (isset($item->$field)) {
-                        $item->$field = str_replace("\n", $multipleSeparator, htmlentities($item->$field, ENT_COMPAT, 'utf-8'));
+                        $item->$field = str_replace("\n", $multipleSeparator, RSFormProHelper::htmlEscape($item->$field));
                     }
                 }
                 $items[$i] = $item;
@@ -218,10 +348,9 @@ class RsformModelDirectory extends JModelLegacy
 
     public function getAdditionalUnescaped()
     {
-
         $unescapedFields = array();
-        $mainframe = JFactory::getApplication();
-        $mainframe->triggerEvent('rsfp_b_onManageDirectoriesCreateUnescapedFields', array(array('fields' => & $unescapedFields, 'formId' => $this->params->get('formId'))));
+
+        JFactory::getApplication()->triggerEvent('rsfp_b_onManageDirectoriesCreateUnescapedFields', array(array('fields' => & $unescapedFields, 'formId' => $this->params->get('formId'))));
 
         return $unescapedFields;
 
@@ -258,8 +387,8 @@ class RsformModelDirectory extends JModelLegacy
         }
 
         // Grab submission
-        $this->_db->setQuery("SELECT * FROM #__rsform_submissions WHERE SubmissionId='" . $cid . "'");
-        $submission = $this->_db->loadObject();
+        require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
+        $submission = RSFormProSubmissionsHelper::getSubmission($cid, false);
 
         // Submission doesn't exist
         if (!$submission) {
@@ -331,69 +460,21 @@ class RsformModelDirectory extends JModelLegacy
 
     public function delete($id)
     {
-        $db = JFactory::getDbo();
-
-        $query = $db->getQuery(true)
-            ->select($db->qn('SubmissionId'))
-            ->select($db->qn('FormId'))
-            ->from($db->qn('#__rsform_submissions'))
-            ->where($db->qn('SubmissionId') . ' = ' . $db->q($id));
-        $db->setQuery($query);
-        if ($submission = $db->loadObject())
-        {
-            // If we have upload fields
-            if ($fields = RSFormProHelper::componentExists($submission->FormId, RSFORM_FIELD_FILEUPLOAD))
-            {
-                // Delete files first
-                foreach ($fields as $field)
-                {
-                    $query->clear()
-                        ->select($db->qn('FieldValue'))
-                        ->from($db->qn('#__rsform_submission_values'))
-                        ->where($db->qn('SubmissionId') . ' = ' . $db->q($submission->SubmissionId) )
-                        ->where($db->qn('FieldName') . ' = ' . $db->q($field) )
-                        ->where($db->qn('FieldValue') . ' != ' . $db->q($field) );
-
-                    if ($files = $db->setQuery($query)->loadColumn())
-                    {
-                        jimport('joomla.filesystem.file');
-
-                        foreach ($files as $file)
-                        {
-                            if (file_exists($file) && is_file($file))
-                            {
-                                JFile::delete($file);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Remove the submission
-            $query->clear()
-                ->delete($db->qn('#__rsform_submissions'))
-                ->where($db->qn('SubmissionId') . ' = ' . $db->q($submission->SubmissionId));
-            $db->setQuery($query);
-            $db->execute();
-
-            // Remove the values
-            $query->clear()
-                ->delete($db->qn('#__rsform_submission_values'))
-                ->where($db->qn('SubmissionId') . ' = ' . $db->q($submission->SubmissionId));
-            $db->setQuery($query);
-            $db->execute();
-        }
+        require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
+        RSFormProSubmissionsHelper::deleteSubmissions($id, true);
     }
 
 	public function save() {
 		jimport('joomla.filesystem.file');
 		jimport('joomla.filesystem.folder');
 
-		$cid    	= JFactory::getApplication()->input->getInt('id');
-		$form   	= JRequest::getVar('form', array(), 'post', 'none', JREQUEST_ALLOWRAW);
-		$static   	= JRequest::getVar('formStatic', array(), 'post', 'none', JREQUEST_ALLOWRAW);
-		$formId 	= JFactory::getApplication()->input->getInt('formId');
-		$files  	= JRequest::getVar('form', array(), 'files', 'none', JREQUEST_ALLOWRAW);
+		$app        = JFactory::getApplication();
+		$db         = JFactory::getDbo();
+		$cid    	= $app->input->getInt('id');
+        $formId 	= $app->input->getInt('formId');
+        $form       = $app->input->post->get('form', array(), 'array');
+        $static     = $app->input->post->get('formStatic', array(), 'array');
+        $files      = $app->input->files->get('form', array(), 'array');
 		$validation = RSFormProHelper::validateForm($formId, 'directory', $cid);
 
 		if (!empty($validation)) {
@@ -418,43 +499,53 @@ class RsformModelDirectory extends JModelLegacy
 		$this->_app->triggerEvent('rsfp_f_onBeforeDirectorySave', array(array('SubmissionId'=>&$cid,'formId'=>$formId,'post'=>&$form)));
 
 		// Handle file uploads first
-		if (!empty($files['error']))
-		foreach ($files['error'] as $field => $error)
+		if (!empty($files))
 		{
-			if (!in_array($field, $allowed) || $error) {
-				continue;
-			}
+            foreach ($files as $field => $file)
+            {
+                if (!in_array($field, $allowed) || $file['error'])
+                {
+                    continue;
+                }
 
-			// The above $validation should suffice
-			$this->_db->setQuery("SELECT FieldValue FROM #__rsform_submission_values WHERE FieldName='".$this->_db->escape($field)."' AND SubmissionId='".$cid."' LIMIT 1");
-			$original = $this->_db->loadResult();
+                // The above $validation should suffice
+                $query = $db->getQuery(true)
+                    ->select($db->qn('FieldValue'))
+                    ->from($db->qn('#__rsform_submission_values'))
+                    ->where($db->qn('FieldName') . ' = ' . $db->q($field))
+                    ->where($db->qn('SubmissionId') . ' = ' . $db->q($cid));
 
-			// Prefix
-			$componentId 	= RSFormProHelper::getComponentId($field, $formId);
-			$data 			= RSFormProHelper::getComponentProperties($componentId);
-			$prefix 		= uniqid('').'-';
-			if (isset($data['PREFIX']) && strlen(trim($data['PREFIX'])) > 0)
-				$prefix = RSFormProHelper::isCode($data['PREFIX']);
+                $original = $db->setQuery($query)->loadResult();
 
-			// Path
-			$realpath = realpath($data['DESTINATION'].DIRECTORY_SEPARATOR);
-			if (substr($realpath, -1) != DIRECTORY_SEPARATOR)
-				$realpath .= DIRECTORY_SEPARATOR;
+                // Prefix
+                $componentId = RSFormProHelper::getComponentId($field, $formId);
+                $data = RSFormProHelper::getComponentProperties($componentId);
+                $prefix = uniqid('') . '-';
+                if (isset($data['PREFIX']) && strlen(trim($data['PREFIX'])) > 0)
+                    $prefix = RSFormProHelper::isCode($data['PREFIX']);
 
-			// Filename
-			$file = $realpath.$prefix.$files['name'][$field];
+                // Path
+                $realpath = realpath($data['DESTINATION'] . DIRECTORY_SEPARATOR);
+                if (substr($realpath, -1) != DIRECTORY_SEPARATOR)
+                    $realpath .= DIRECTORY_SEPARATOR;
 
-			// Upload File
-			if (JFile::upload($files['tmp_name'][$field], $file, false, (bool) RSFormProHelper::getConfig('allow_unsafe')) && $file != $original) {
-				// Remove the original file to save up space
-				if (file_exists($original) && is_file($original)) {
-					JFile::delete($original);
-				}
+                // Filename
+                $path = $realpath . $prefix . $file['name'];
 
-				// Add to db (submission value)
-				$form[$field] = $file;
-			}
-		}
+                // Upload File
+                if ($file != $original && JFile::upload($file['tmp_name'], $path, false, (bool) RSFormProHelper::getConfig('allow_unsafe')))
+                {
+                    // Remove the original file to save up space
+                    if (file_exists($original) && is_file($original))
+                    {
+                        JFile::delete($original);
+                    }
+
+                    // Add to db (submission value)
+                    $form[$field] = $path;
+                }
+            }
+        }
 
 		// Update fields
 		foreach ($form as $field => $value)

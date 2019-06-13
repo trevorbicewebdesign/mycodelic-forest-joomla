@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/licenses/gpl-2.0.html
 */
 
@@ -9,7 +9,7 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 <div class="dashboard-container">
 	<div class="dashboard-info">
-		<img src="components/com_rsform/assets/images/rsformpro.png" align="middle" alt="RSForm! Pro" />
+        <?php echo JHtml::image('com_rsform/admin/rsformpro.png', JText::_('COM_RSFORM'), 'align="middle"',true); ?>
 		<table class="dashboard-table">
 			<tr>
 				<td nowrap="nowrap" class="text-right"><strong><?php echo JText::_('COM_RSFORM_PRODUCT_VERSION') ?>: </strong></td>

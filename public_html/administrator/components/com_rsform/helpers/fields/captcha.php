@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -11,7 +11,8 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/field.php';
 class RSFormProFieldCaptcha extends RSFormProField
 {
 	// backend preview
-	public function getPreviewInput() {
+	public function getPreviewInput()
+	{
 		$type 	 = $this->getProperty('IMAGETYPE', 'FREETYPE');
 		$caption = $this->getProperty('CAPTION', '');
 		
@@ -21,7 +22,6 @@ class RSFormProFieldCaptcha extends RSFormProField
 			$flow		 = $this->getProperty('FLOW', 'VERTICAL');
 			$componentId = $this->getProperty('componentId');
 			$refresh 	 = $this->getProperty('SHOWREFRESH', 'NO');
-			$attr		 = $this->getAttributes();
 			$type 		 = 'text';
 			
 			// Start building the image HTML
@@ -55,8 +55,7 @@ class RSFormProFieldCaptcha extends RSFormProField
 			$captchaOutput = $image.($flow == 'VERTICAL' ? '<br/>' :'').$input.$refreshBtn;
 		}
 		
-		$html = '<td>'.$caption.'</td><td>'.$captchaOutput.'</td>';
-		return $html;
+		return $captchaOutput;
 	}
 	
 	// functions used for rendering in front view
