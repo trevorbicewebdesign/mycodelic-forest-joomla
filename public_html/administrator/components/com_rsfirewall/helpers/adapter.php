@@ -14,23 +14,23 @@ if (version_compare(JVERSION, '3.0', '>=')) {
 	// Joomla! 3.0
 	if (!class_exists('JPane')) {
 		class JPane {
-			function getInstance() {
+			public function getInstance() {
 				return new JPane();
 			}
-			
-			function startPane($id) {
+
+			public function startPane($id) {
 				return JHtml::_('tabs.start', $id, array('useCookie' => 1));
 			}
-			
-			function startPanel($text, $id) {
+
+			public function startPanel($text, $id) {
 				return JHtml::_('tabs.panel', $text, $id);
 			}
-			
-			function endPanel() {
+
+			public function endPanel() {
 				return '';
 			}
-			
-			function endPane() {
+
+			public function endPane() {
 				return JHtml::_('tabs.end');
 			}
 		}

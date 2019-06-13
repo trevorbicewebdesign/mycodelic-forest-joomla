@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -15,9 +15,6 @@ defined('_JEXEC') or die('Restricted access');
 	</div>
 	<div id="j-main-container" class="span10">
 		<div id="dashboard-left">
-			<?php if (!$this->isJ30) { ?>
-				<?php echo $this->loadTemplate('buttons'); ?>
-			<?php } ?>
 			<?php if ($this->files) { ?>
 			<h2><?php echo JText::_('COM_RSFIREWALL_FILES_MODIFIED'); ?></h2>
 			<?php echo $this->loadTemplate('files'); ?>

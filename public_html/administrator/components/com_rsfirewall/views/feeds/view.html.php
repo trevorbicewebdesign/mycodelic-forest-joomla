@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -16,7 +16,6 @@ class RsfirewallViewFeeds extends JViewLegacy
 	protected $filterbar;
 	protected $sidebar;
 	protected $dropdown;
-	protected $isJ30;
 	
 	function display($tpl=null) {
 		$user = JFactory::getUser();
@@ -27,8 +26,6 @@ class RsfirewallViewFeeds extends JViewLegacy
 		}
 		
 		$this->addToolBar();
-		
-		$this->isJ30		= $this->get('isJ30');
 		
 		$this->items 		= $this->get('Items');
 		$this->pagination 	= $this->get('Pagination');

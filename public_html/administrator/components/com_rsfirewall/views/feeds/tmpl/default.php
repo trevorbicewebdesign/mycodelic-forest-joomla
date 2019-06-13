@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,7 +12,7 @@ $listOrder 	= $this->escape($this->state->get('list.ordering'));
 $listDirn 	= $this->escape($this->state->get('list.direction'));
 $saveOrder	= $listOrder == 'ordering';
 $ordering	= $listOrder == 'ordering';
-if ($saveOrder && $this->isJ30) {
+if ($saveOrder) {
 	$saveOrderingUrl = 'index.php?option=com_rsfirewall&task=feeds.saveOrderAjax&tmpl=component';
 	JHtml::_('sortablelist.sortable', 'articleList', 'adminForm', strtolower($listDirn), $saveOrderingUrl);
 }
@@ -32,19 +32,8 @@ if ($saveOrder && $this->isJ30) {
 			<th><?php echo JHtml::_('grid.sort', 'COM_RSFIREWALL_FEED_URL', 'url', $listDirn, $listOrder); ?></th>
 			<th width="1%" nowrap="nowrap"><?php echo JHtml::_('grid.sort', 'COM_RSFIREWALL_FEED_LIMIT', 'limit', $listDirn, $listOrder); ?></th>
 			<th width="1%" nowrap="nowrap"><?php echo JHtml::_('grid.sort', 'JPUBLISHED', 'published', $listDirn, $listOrder); ?></th>
-			<?php if ($this->isJ30) { ?>
 			<th width="1%" class="nowrap center">
-			<?php } else { ?>
-			<th width="100">
-			<?php } ?>
-				<?php if ($this->isJ30) { ?>
-					<?php echo JHtml::_('grid.sort', '<i class="icon-menu-2"></i>', 'ordering', $listDirn, $listOrder, null, 'asc', 'JGRID_HEADING_ORDERING'); ?>
-				<?php } else { ?>
-					<?php echo JHtml::_('grid.sort',  'JGRID_HEADING_ORDERING', 'ordering', $listDirn, $listOrder); ?>
-					<?php if ($saveOrder) { ?>
-						<?php echo JHtml::_('grid.order',  $this->items, 'filesave.png', 'feeds.saveorder'); ?>
-					<?php } ?>
-				<?php } ?>
+				<?php echo JHtml::_('grid.sort', '<i class="icon-menu-2"></i>', 'ordering', $listDirn, $listOrder, null, 'asc', 'JGRID_HEADING_ORDERING'); ?>
 			</th>
 		</tr>
 		</thead>
@@ -63,32 +52,18 @@ if ($saveOrder && $this->isJ30) {
 			<td width="1%" nowrap="nowrap"><?php echo $this->escape($item->limit); ?></td>
 			<td width="1%" nowrap="nowrap" align="center"><?php echo JHtml::_('jgrid.published', $item->published, $i, 'feeds.'); ?></td>
 			<td class="order center">
-				<?php if ($this->isJ30) { ?>
-					<?php
-					$disableClassName = '';
-					$disabledLabel	  = '';
+				<?php
+				$disableClassName = '';
+				$disabledLabel	  = '';
 
-					if (!$saveOrder) {
-						$disabledLabel    = JText::_('JORDERINGDISABLED');
-						$disableClassName = 'inactive tip-top';
-					} ?>
-					<span class="sortable-handler hasTooltip <?php echo $disableClassName; ?>" title="<?php echo $disabledLabel; ?>">
+				if (!$saveOrder) {
+					$disabledLabel    = JText::_('JORDERINGDISABLED');
+					$disableClassName = 'inactive tip-top';
+				} ?>
+				<span class="sortable-handler hasTooltip <?php echo $disableClassName; ?>" title="<?php echo $disabledLabel; ?>">
 						<i class="icon-menu"></i>
 					</span>
-					<input type="text" style="display:none" name="order[]" size="5" value="<?php echo $item->ordering; ?>" class="width-20 text-area-order" />
-				<?php } else { ?>
-					<?php if ($saveOrder) { ?>
-						<?php if ($listDirn == 'asc') { ?>
-							<span><?php echo $this->pagination->orderUpIcon($i, true, 'feeds.orderup', 'JLIB_HTML_MOVE_UP', $ordering); ?></span>
-							<span><?php echo $this->pagination->orderDownIcon($i, $this->pagination->total, true, 'feeds.orderdown', 'JLIB_HTML_MOVE_DOWN', $ordering); ?></span>
-						<?php } elseif ($listDirn == 'desc') { ?>
-							<span><?php echo $this->pagination->orderUpIcon($i, true, 'feeds.orderdown', 'JLIB_HTML_MOVE_UP', $ordering); ?></span>
-							<span><?php echo $this->pagination->orderDownIcon($i, $this->pagination->total, true, 'feeds.orderup', 'JLIB_HTML_MOVE_DOWN', $ordering); ?></span>
-						<?php } ?>
-					<?php } ?>
-					<?php $disabled = $saveOrder ?  '' : 'disabled="disabled"'; ?>
-					<input type="text" name="order[]" size="5" value="<?php echo $item->ordering;?>" <?php echo $disabled ?> class="text-area-order" />
-				<?php } ?>
+				<input type="text" style="display:none" name="order[]" size="5" value="<?php echo $item->ordering; ?>" class="width-20 text-area-order" />
 			</td>
 		</tr>
 	<?php } ?>
@@ -103,10 +78,6 @@ if ($saveOrder && $this->isJ30) {
 		<?php echo JHtml::_( 'form.token' ); ?>
 		<input type="hidden" name="boxchecked" value="0" />
 		<input type="hidden" name="task" value="" />
-		<?php if (!$this->isJ30) { ?>
-		<input type="hidden" name="filter_order" value="<?php echo $listOrder; ?>" />
-		<input type="hidden" name="filter_order_Dir" value="<?php echo $listDirn; ?>" />
-		<?php } ?>
 	</div>
 	</div>
 </form>

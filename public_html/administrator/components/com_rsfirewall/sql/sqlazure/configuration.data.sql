@@ -52,4 +52,5 @@ INSERT INTO [#__rsfirewall_configuration] ([name], [value], [type]) VALUES
 ('ipv6_whois', 'http://whois.domaintools.com/{ip}', 'text'),
 ('system_check_last_run', '', 'text'),
 ('deny_referer', '', 'text'),
-('check_proxy_ip_headers', 'HTTP_X_REAL_IP\nHTTP_CLIENT_IP\nHTTP_TRUE_CLIENT_IP\nHTTP_X_FWD_IP_ADDR\nHTTP_X_FORWARDED_FOR\nHTTP_X_FORWARDED\nHTTP_FORWARDED_FOR\nHTTP_FORWARDED\nHTTP_VIA\nHTTP_X_COMING_FROM\nHTTP_COMING_FROM\nHTTP_CF_CONNECTING_IP\nHTTP_INCAP_CLIENT_IP', 'array-text');
+('check_proxy_ip_headers', 'HTTP_X_REAL_IP\nHTTP_CLIENT_IP\nHTTP_TRUE_CLIENT_IP\nHTTP_X_FWD_IP_ADDR\nHTTP_X_FORWARDED_FOR\nHTTP_X_FORWARDED\nHTTP_FORWARDED_FOR\nHTTP_FORWARDED\nHTTP_VIA\nHTTP_X_COMING_FROM\nHTTP_COMING_FROM\nHTTP_CF_CONNECTING_IP\nHTTP_INCAP_CLIENT_IP', 'array-text'),
+('check_user_password', '1', 'int');

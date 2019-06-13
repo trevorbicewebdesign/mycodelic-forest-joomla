@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link           https://www.rsjoomla.com
  * @license        GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -21,7 +21,6 @@ class RsfirewallViewRsfirewall extends JViewLegacy
 	// version info
 	protected $version;
 	protected $code;
-	protected $isJ30;
 
 	public function display($tpl = null)
 	{
@@ -33,9 +32,6 @@ class RsfirewallViewRsfirewall extends JViewLegacy
 			$app->enqueueMessage(JText::_('COM_RSFIREWALL_WARNING_PLUGIN_DISABLED'), 'notice');
 		}
 
-		$this->isJ30 = $this->get('isJ30');
-
-		$this->buttons     = JHtml::_('icons.buttons', $this->get('Buttons'));
 		$this->version     = (string) new RSFirewallVersion;
 		$this->canViewLogs = JFactory::getUser()->authorise('logs.view', 'com_rsfirewall');
 		$this->code        = $this->get('code');

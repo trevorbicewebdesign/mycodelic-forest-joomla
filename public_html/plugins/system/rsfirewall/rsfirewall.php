@@ -1,21 +1,20 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
-class plgSystemRSFirewall extends JPlugin
+class plgSystemRsfirewall extends JPlugin
 {
 	protected $config;
 	protected $ip;
 	protected $referer;
 	protected $agent = '';
 	protected $reason = '';
-	protected $isJ30;
 	protected $files;
 	protected $logger;
 	protected $option;
@@ -38,12 +37,10 @@ class plgSystemRSFirewall extends JPlugin
 
 		if ($this->_autoLoadClass('RSInput')) {
 			$input = RSInput::create();
-			$jversion = new JVersion();
 
 			$this->agent   = $input->server->get('HTTP_USER_AGENT', '', 'none'); // user agent
 			$this->referer = $input->server->get('HTTP_REFERER', '', 'none');
 			$this->ip 	   = $this->getIP(); // ip address
-			$this->isJ30   = $jversion->isCompatible('3.0');
 		}
 
 		if ($this->_autoLoadClass('RSFirewallLogger')) {
@@ -53,8 +50,7 @@ class plgSystemRSFirewall extends JPlugin
 	}
 
 	protected function getOption() {
-		$app = JFactory::getApplication();
-		return $app->input->get('option');
+		return JFactory::getApplication()->input->get('option');
 	}
 
 	protected function _autoLoadClass($class) {
@@ -399,17 +395,13 @@ class plgSystemRSFirewall extends JPlugin
 	}
 
 	protected function createView($options=array()) {
-		$class = $this->isJ30 ? 'JViewLegacy' : 'JView';
-		if ($class == 'JView') {
-			jimport('joomla.application.component.view');
-		}
 		if (!defined('JPATH_COMPONENT')) {
 			define('JPATH_COMPONENT', JPATH_SITE.'/components/com_rsfirewall');
 		}
 
 		$options['base_path'] 	= JPATH_SITE.'/components/com_rsfirewall';
 		$options['layout'] 		= 'default';
-		$view = new $class($options);
+		$view = new JViewLegacy($options);
 
 		// Allow view to be overrided by the template
 		$view->addTemplatePath(JPATH_THEMES . '/' . JFactory::getApplication()->getTemplate() . '/html/com_rsfirewall/' . $view->getName());
@@ -664,7 +656,7 @@ class plgSystemRSFirewall extends JPlugin
 		);
 		// built-in exceptions
 		$app 		= JFactory::getApplication();
-		$options 	= array('com_config', 'com_rsfirewall', 'com_rsform', 'com_installer', 'com_plugins', 'com_templates', 'com_modules', 'com_advancedmodules');
+		$options 	= array('com_config', 'com_rsfirewall', 'com_rsform', 'com_rsseo', 'com_installer', 'com_plugins', 'com_templates', 'com_modules', 'com_advancedmodules');
 		if ($app->isAdmin() && in_array($this->option, $options)) {
 			return $default_exception;
 		}
@@ -793,21 +785,11 @@ class plgSystemRSFirewall extends JPlugin
 	protected function isMalwareUpload($file) {
 		static $model = null;
 		if (is_null($model)) {
-			if ($this->isJ30) {
-				JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_rsfirewall/models');
-				$model = JModelLegacy::getInstance('Check', 'RsfirewallModel', array(
-					'option' => 'com_rsfirewall',
-					'table_path' => JPATH_ADMINISTRATOR.'/components/com_rsfirewall/tables'
-				));
-			} else {
-				jimport('joomla.application.component.model');
-
-				JModel::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_rsfirewall/models');
-				$model = JModel::getInstance('Check', 'RsfirewallModel', array(
-					'option' => 'com_rsfirewall',
-					'table_path' => JPATH_ADMINISTRATOR.'/components/com_rsfirewall/tables'
-				));
-			}
+            JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_rsfirewall/models');
+            $model = JModelLegacy::getInstance('Check', 'RsfirewallModel', array(
+                'option' => 'com_rsfirewall',
+                'table_path' => JPATH_ADMINISTRATOR.'/components/com_rsfirewall/tables'
+            ));
 		}
 
 		return $model->checkSignatures($file);
@@ -1121,6 +1103,10 @@ class plgSystemRSFirewall extends JPlugin
 							$session->set('com_rsfirewall.logged_in', 1);
 							$this->logger->add('low', 'BACKEND_LOGIN_OK');
 						} else {
+							if ($this->config->get('enable_autoban_login')) {
+								$this->countAutoban(JText::_('COM_RSFIREWALL_AUTOBANNED_TOO_MANY_BACKEND_PASSWORD_ATTEMPTS'));
+							}
+
 							$this->logger->add('medium', 'BACKEND_LOGIN_ERROR');
 						}
 						$this->logger->save();
@@ -1262,6 +1248,11 @@ class plgSystemRSFirewall extends JPlugin
 												}
 											}
 
+											if ($ext == 'tar.gz')
+                                            {
+                                                $multi = false;
+                                            }
+
 											if ($multi) {
 												if (!$filter_uploads) {
 													$this->logger->add('low', 'UPLOAD_MULTIPLE_EXTS_ERROR', $file->name);
@@ -1321,14 +1312,30 @@ class plgSystemRSFirewall extends JPlugin
 			}
 
 			if ($app->isAdmin()) {
-				if ($this->option == 'com_users' && $app->input->get('view') == 'user' && $app->input->get('layout') == 'edit') {
-					JText::script('COM_RSFIREWALL_PASSWORD_INFO');
-					JText::script('COM_RSFIREWALL_PLEASE_TYPE_PASSWORD');
-					JText::script('COM_RSFIREWALL_PASSWORD_MORE_CHARACTERS');
-					JText::script('COM_RSFIREWALL_PASSWORD_WEAK');
-					JText::script('COM_RSFIREWALL_PASSWORD_MEDIUM');
-					JText::script('COM_RSFIREWALL_PASSWORD_STRONG');
-					$doc->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/password.js');
+				if ($this->option == 'com_users' && $app->input->get('view') == 'user' && $app->input->get('layout') == 'edit' && $this->config->get('check_user_password')) {
+                    JText::script('COM_RSFIREWALL_PASSWORD_INFO');
+                    JText::script('COM_RSFIREWALL_PLEASE_TYPE_PASSWORD');
+
+                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_LENGTH');
+                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_INTEGERS');
+                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_SYMBOLS');
+                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_UPPERCASE');
+                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_LOWERCASE');
+
+                    JHtml::_('rsfirewall_script', 'com_rsfirewall/password.js', array('relative' => true, 'version' => 'auto'));
+
+                    // get and set the global user parameters
+                    $params = JComponentHelper::getParams('com_users');
+                    $options = array(
+                        'minLength'     => $params->get('minimum_length'),
+                        'minIntegers'   => $params->get('minimum_integers'),
+                        'minSymbols'    => $params->get('minimum_symbols'),
+                        'minUppercase'  => $params->get('minimum_uppercase'),
+                        'minLowercase'  => $params->get('minimum_lowercase', 0),
+                    );
+
+                    $userOptionsScript = 'RSFirewallPassword.userOptions = '.json_encode($options);
+                    $doc->addScriptDeclaration($userOptionsScript);
 				}
 
 				// captcha is enabled in the backend
@@ -1351,17 +1358,58 @@ class plgSystemRSFirewall extends JPlugin
 		}
 	}
 
-	public function onAfterRender() {
-		$doc = JFactory::getDocument();
+	public function onAfterRender()
+    {
 		$app = JFactory::getApplication();
 
-		if ($app->isSite() && $this->config && $this->config->get('active_scanner_status') && $this->config->get('verify_emails') && $doc->getType() == 'html') {
-			if ($this->_autoLoadClass('RSFirewallReplacer')) {
-				$text = JResponse::getBody();
-				if (RSFirewallReplacer::replaceEmails($text)) {
-					JResponse::setBody($text);
-				}
-			}
+		if ($app->isAdmin())
+        {
+            return;
+        }
+
+        if (!$this->config || !$this->config->get('active_scanner_status') || !$this->config->get('verify_emails'))
+        {
+            return;
+        }
+
+        if (JFactory::getDocument()->getType() != 'html')
+        {
+            return;
+        }
+
+        if (!$this->_autoLoadClass('RSFirewallReplacer'))
+        {
+            return;
+        }
+
+        $html = $app->getBody();
+
+        if (strpos($html, '</head>') !== false)
+        {
+            list($head, $content) = explode('</head>', $html, 2);
+        }
+        else
+        {
+            $content = $html;
+        }
+
+        if (RSFirewallReplacer::replaceEmails($content))
+        {
+            $html = isset($head) ? ($head . '</head>' . $content) : $content;
+
+            $app->setBody($html);
+        }
+	}
+
+	public function onAfterInitialise()
+	{
+		$helper = JPATH_ADMINISTRATOR . '/components/com_rsfirewall/helpers/html.php';
+
+		if (file_exists($helper))
+		{
+			require_once $helper;
+
+			RSFirewallHtml::registerFunctions();
 		}
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,6 +12,7 @@ defined('_JEXEC') or die('Restricted access');
 JHtml::_('behavior.keepalive');
 JHtml::_('behavior.tooltip');
 JHtml::_('behavior.formvalidation');
+JHtml::_('formbehavior.chosen', '.advancedSelect');
 ?>
 <script type="text/javascript">
 Joomla.submitbutton = function(task)
@@ -59,6 +60,7 @@ function isChecked(name, value) {
 	return false;
 }
 
+<?php if ($this->geoip->php_version_compat) { ?>
 function checkAllCountries(value) {
 	var items = document.getElementsByName('jform[blocked_countries][]');
 	for (var i=0; i<items.length; i++) {
@@ -118,6 +120,7 @@ function fixCheckContinents() {
 		continents[i].checked = checked == countries.length;
 	}
 }
+<?php } ?>
 </script>
 <form action="<?php echo JRoute::_('index.php?option=com_rsfirewall&view=configuration'); ?>" method="post" name="adminForm" id="component-form" class="form-validate" enctype="multipart/form-data" autocomplete="off">
 	<div id="j-sidebar-container" class="span2">
@@ -149,6 +152,7 @@ function fixCheckContinents() {
 		</div>
 	</div>
 </form>
+<?php if ($this->geoip->php_version_compat) { ?>
 <script type="text/javascript">
 jQuery(document).ready(function($){
 	fixCheckAllCountries();
@@ -165,3 +169,4 @@ jQuery(document).ready(function($){
 	});
 });
 </script>
+<?php } ?>

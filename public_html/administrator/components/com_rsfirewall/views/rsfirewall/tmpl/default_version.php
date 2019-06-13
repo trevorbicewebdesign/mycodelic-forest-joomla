@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,7 +10,7 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 <div class="dashboard-container">
 	<div class="dashboard-info">
-		<img src="components/com_rsfirewall/assets/images/rsfirewall.png" align="middle" alt="RSFirewall!" />
+        <?php echo JHtml::_('image', 'com_rsfirewall/rsfirewall.png', 'RSFirewall!', 'align="middle"', true); ?>
 		<table class="dashboard-table">
 			<tr>
 				<td nowrap="nowrap"><strong><?php echo JText::_('COM_RSFIREWALL_PRODUCT_VERSION') ?>: </strong></td>
@@ -18,7 +18,7 @@ defined('_JEXEC') or die('Restricted access');
 			</tr>
 			<tr>
 				<td nowrap="nowrap"><strong><?php echo JText::_('COM_RSFIREWALL_COPYRIGHT_NAME') ?>: </strong></td>
-				<td nowrap="nowrap">&copy; 2009 - 2017 <a href="https://www.rsjoomla.com" target="_blank">RSJoomla!</a></td>
+				<td nowrap="nowrap">&copy; 2009 - 2019 <a href="https://www.rsjoomla.com" target="_blank">RSJoomla!</a></td>
 			</tr>
 			<tr>
 				<td nowrap="nowrap"><strong><?php echo JText::_('COM_RSFIREWALL_LICENSE_NAME') ?>: </strong></td>

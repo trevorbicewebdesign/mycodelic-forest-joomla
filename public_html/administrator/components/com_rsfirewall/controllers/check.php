@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -13,8 +13,8 @@ class RsfirewallControllerCheck extends JControllerLegacy
 	protected $folder_permissions 	 = 755;
 	protected $file_permissions 	 = 644;
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct($config = array()) {
+		parent::__construct($config);
 
 		$user = JFactory::getUser();
 		if (!$user->authorise('check.run', 'com_rsfirewall')) {
@@ -167,6 +167,26 @@ class RsfirewallControllerCheck extends JControllerLegacy
 		foreach ($result as $key => $value)
 		{
 			$data->{$key} = $value;
+		}
+
+		$this->showResponse($success, $data);
+	}
+
+	public function checkBackendPassword()
+	{
+		$model 		= $this->getModel('check');
+		$success 	= true;
+		$data		= new stdClass();
+		if ($model->getConfig()->get('backend_password_enabled'))
+		{
+			$data->result = true;
+			$data->message = JText::_('COM_RSFIREWALL_ADDITIONAL_BACKEND_PASSWORD_OK');
+		}
+		else
+		{
+			$data->result  = false;
+			$data->message = JText::sprintf('COM_RSFIREWALL_ADDITIONAL_BACKEND_PASSWORD_NOT_OK');
+			$data->details = JText::_('COM_RSFIREWALL_ADDITIONAL_BACKEND_PASSWORD_DETAILS');
 		}
 
 		$this->showResponse($success, $data);
@@ -414,11 +434,13 @@ class RsfirewallControllerCheck extends JControllerLegacy
 		if ($disable_functions) {
 			$disable_functions = explode(',', $disable_functions);
 			foreach ($disable_functions as $disable_function) {
-				$disable_function = trim($disable_function);
+				$disable_function = strtolower(trim($disable_function));
 				if (in_array($disable_function, $recommended_functions)) {
 					$used_functions[] = $disable_function;
 				}
 			}
+
+			$used_functions = array_unique($used_functions);
 
 			if ($used_functions && count($used_functions) == count($recommended_functions)) {
 				$data->result  = true;
@@ -527,7 +549,7 @@ class RsfirewallControllerCheck extends JControllerLegacy
 				foreach ($folders as $folder) {
 					if (($perms = $model->checkPermissions($folder)) > $this->folder_permissions) {
 						$tmp 		= new stdClass();
-						$tmp->path  = substr_replace($folder, '', 0, strlen(JPATH_SITE.$model->getDS()));
+						$tmp->path  = substr_replace($folder, '', 0, strlen(JPATH_SITE.DIRECTORY_SEPARATOR));
 						$tmp->perms = $perms;
 
 						$data->folders[] = $tmp;
@@ -535,7 +557,7 @@ class RsfirewallControllerCheck extends JControllerLegacy
 				}
 				if ($next_folder = end($folders)) {
 					$data->next_folder = $next_folder;
-					$data->next_folder_stripped = substr_replace($next_folder, '', 0, strlen(JPATH_SITE.$model->getDS()));
+					$data->next_folder_stripped = substr_replace($next_folder, '', 0, strlen(JPATH_SITE.DIRECTORY_SEPARATOR));
 				}
 			} else {
 				$data->stop = true;
@@ -575,7 +597,7 @@ class RsfirewallControllerCheck extends JControllerLegacy
 				foreach ($files as $file) {
 					if (($perms = $model->checkPermissions($file)) > $this->file_permissions) {
 						$tmp 		= new stdClass();
-						$tmp->path  = substr_replace($file, '', 0, strlen(JPATH_SITE.$model->getDS()));
+						$tmp->path  = substr_replace($file, '', 0, strlen(JPATH_SITE.DIRECTORY_SEPARATOR));
 						$tmp->perms = $perms;
 
 						$data->files[] = $tmp;
@@ -587,7 +609,7 @@ class RsfirewallControllerCheck extends JControllerLegacy
 					$data->stop = true;
 				} else {
 					$data->next_file 			= $file;
-					$data->next_file_stripped 	= substr_replace($file, '', 0, strlen(JPATH_SITE.$model->getDS()));
+					$data->next_file_stripped 	= substr_replace($file, '', 0, strlen(JPATH_SITE.DIRECTORY_SEPARATOR));
 				}
 			} else {
 				$success = false;
@@ -629,7 +651,7 @@ class RsfirewallControllerCheck extends JControllerLegacy
 					foreach ($files as $file) {
 						if ($result = $model->checkSignatures($file)) {
 							$tmp 			= new stdClass();
-							$tmp->path  	= substr_replace($file, '', 0, strlen(JPATH_SITE.$model->getDS()));
+							$tmp->path  	= substr_replace($file, '', 0, strlen(JPATH_SITE.DIRECTORY_SEPARATOR));
 							$tmp->match 	= $result['match'];
 							$tmp->reason 	= $result['reason'];
 							
@@ -647,7 +669,7 @@ class RsfirewallControllerCheck extends JControllerLegacy
 						$data->stop = true;
 					} else {
 						$data->next_file 			= $file;
-						$data->next_file_stripped 	= substr_replace($file, '', 0, strlen(JPATH_SITE.$model->getDS()));
+						$data->next_file_stripped 	= substr_replace($file, '', 0, strlen(JPATH_SITE.DIRECTORY_SEPARATOR));
 					}
 				} catch (Exception $e) {
 					$success = false;

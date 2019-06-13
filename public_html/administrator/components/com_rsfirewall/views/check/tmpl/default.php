@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -191,6 +191,14 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3"></td>
 						</tr>
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+							<td><span><?php echo JText::_('COM_RSFIREWALL_ADDITIONAL_BACKEND_PASSWORD_ENABLED'); ?></span></td>
+							<td class="com-rsfirewall-count"><span></span></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+						</tr>
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+							<td colspan="3"></td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
@@ -364,7 +372,8 @@ function RSFirewallStartCheck() {
 		'checkTemporaryFiles',
 		'checkHtaccess',
 		'checkSessionHandler',
-		'checkGoogleSafeBrowsing'
+		'checkGoogleSafeBrowsing',
+		'checkBackendPassword'
 	];
 	RSFirewall.System.Check.stopCheck = function() {
 		RSFirewall.$('#com-rsfirewall-joomla-configuration-progress').fadeOut('fast', function(){RSFirewall.$(this).remove()});

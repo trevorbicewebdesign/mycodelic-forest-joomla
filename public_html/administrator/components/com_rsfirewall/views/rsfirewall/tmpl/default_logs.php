@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -24,7 +24,7 @@ defined('_JEXEC') or die('Restricted access');
 		<tr class="row<?php echo $i % 2; ?>">
 			<td width="1%" nowrap="nowrap" class="com-rsfirewall-level-<?php echo $item->level; ?>"><?php echo JText::_('COM_RSFIREWALL_LEVEL_'.$item->level); ?></td>
 			<td width="1%" nowrap="nowrap"><?php echo $this->showDate($item->date); ?></td>
-			<td width="1%" nowrap="nowrap"><img src="components/com_rsfirewall/assets/images/flags/<?php echo $this->geoip->getCountryFlag($item->ip); ?>" /> <?php echo $this->geoip->show($item->ip); ?></td>
+			<td width="1%" nowrap="nowrap"><?php echo JHtml::_('image', 'com_rsfirewall/flags/' . $this->geoip->getCountryFlag($item->ip), $this->geoip->getCountryCode($item->ip), '', true); ?> <?php echo $this->geoip->show($item->ip); ?></td>
 			<td width="1%" nowrap="nowrap"><?php echo (int) $item->user_id; ?></td>
 			<td width="1%" nowrap="nowrap"><?php echo $this->escape($item->username); ?></td>
 			<td class="com-rsfirewall-break-word"><?php echo $this->escape($item->page); ?></td>

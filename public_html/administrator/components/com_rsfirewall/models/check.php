@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,7 +10,6 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsfirewallModelCheck extends JModelLegacy
 {
-	const DS = DIRECTORY_SEPARATOR;
 	const HASHES_DIR = '/components/com_rsfirewall/assets/hashes/';
 	const SIGS_DIR = '/components/com_rsfirewall/assets/sigs/';
 	const DICTIONARY = '/components/com_rsfirewall/assets/dictionary/passwords.txt';
@@ -25,8 +24,8 @@ class RsfirewallModelCheck extends JModelLegacy
 
 	protected $log = false;
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct($config = array()) {
+		parent::__construct($config);
 
 		// Enable logging
 		if ($this->getConfig()->get('log_system_check') && is_writable(JFactory::getConfig()->get('log_path'))) {
@@ -47,11 +46,7 @@ class RsfirewallModelCheck extends JModelLegacy
 		if ($error) {
 			$prepend .= '** ERROR ** ';
 		}
-		file_put_contents($path, $prepend.$data."\n", FILE_APPEND);
-	}
-
-	public function getDS() {
-		return self::DS;
+		return file_put_contents($path, $prepend.$data."\n", FILE_APPEND);
 	}
 
 	public function getConfig() {
@@ -199,8 +194,7 @@ class RsfirewallModelCheck extends JModelLegacy
 	}
 
 	public function checkSQLPassword() {
-		$config = new JConfig();
-		if (($password = $this->checkWeakPassword($config->password)) !== false) {
+		if (($password = $this->checkWeakPassword(JFactory::getConfig()->get('password'))) !== false) {
 			return $password;
 		}
 
@@ -221,13 +215,11 @@ class RsfirewallModelCheck extends JModelLegacy
 	}
 
 	public function hasFTPPassword() {
-		$config = new JConfig();
-		return $config->ftp_pass != '';
+		return JFactory::getConfig()->get('ftp_pass') != '';
 	}
 
 	public function isSEFEnabled() {
-		$config = new JConfig();
-		return $config->sef > 0;
+		return JFactory::getConfig()->get('sef') > 0;
 	}
 
 	public function buildConfiguration($overwrite=null) {
@@ -462,7 +454,7 @@ class RsfirewallModelCheck extends JModelLegacy
 			$handle = @opendir($folder);
 			while (($file = readdir($handle)) !== false) {
 				if ($file != '.' && $file != '..' && !in_array($file, $ignore)) {
-					$dir = $folder . self::DS . $file;
+					$dir = $folder . DIRECTORY_SEPARATOR . $file;
 					if (is_file($dir)) {
 						if ($fullpath) {
 							$arr[] = $dir;
@@ -501,7 +493,7 @@ class RsfirewallModelCheck extends JModelLegacy
 			if ($handle) {
 				while (($file = readdir($handle)) !== false) {
 					if ($file != '.' && $file != '..') {
-						$dir = $folder . self::DS . $file;
+						$dir = $folder . DIRECTORY_SEPARATOR . $file;
 						if (is_dir($dir)) {
 							if ($fullpath) {
 								$arr[] = $dir;
@@ -533,10 +525,10 @@ class RsfirewallModelCheck extends JModelLegacy
 	}
 
 	protected function getParent($path) {
-		$parts   = explode(self::DS, $path);
+		$parts   = explode(DIRECTORY_SEPARATOR, $path);
 		array_pop($parts);
 
-		return implode(self::DS, $parts);
+		return implode(DIRECTORY_SEPARATOR, $parts);
 	}
 
 	protected function getAdjacentFolder($folder) {
@@ -626,7 +618,7 @@ class RsfirewallModelCheck extends JModelLegacy
 
 							return true;
 						}
-						$dir = $folder . self::DS . $file;
+						$dir = $folder . DIRECTORY_SEPARATOR . $file;
 						if ($file != '.' && $file != '..' && is_dir($dir)) {
 							// is it ignored? if so, continue
 							if (in_array($dir, $this->ignored['folders'])) {
@@ -679,7 +671,7 @@ class RsfirewallModelCheck extends JModelLegacy
 				if (!is_link($folder)) {
 					if ($scan_subdirs) {
 						while (($file = readdir($handle)) !== false) {
-							$path = $folder . self::DS . $file;
+							$path = $folder . DIRECTORY_SEPARATOR . $file;
 							if ($file != '.' && $file != '..' && is_dir($path)) {
 								// is it ignored? if so, continue
 								if (in_array($path, $this->ignored['folders'])) {
@@ -719,7 +711,7 @@ class RsfirewallModelCheck extends JModelLegacy
 
 			// no more subdirectories here, search for files
 			while (($file = readdir($handle)) !== false) {
-				$path = $folder . self::DS . $file;
+				$path = $folder . DIRECTORY_SEPARATOR . $file;
 				if ($file != '.' && $file != '..' && is_file($path)) {
 					// is it ignored? if so, continue
 					if (in_array($path, $this->ignored['files'])) {
@@ -1553,7 +1545,6 @@ class RsfirewallModelCheck extends JModelLegacy
 		
 		$basename 	= $this->basename($file);
 		$dirname	= dirname($file);
-		$ds 		= $this->getDS();
 
 		foreach ($signatures as $signature)
 		{
@@ -1605,7 +1596,7 @@ class RsfirewallModelCheck extends JModelLegacy
 			}
 
 			// Check if there are php files in the /images folder
-			if (strpos($dirname, JPATH_SITE.$ds.'images') === 0) {
+			if (strpos($dirname, JPATH_SITE.DIRECTORY_SEPARATOR.'images') === 0) {
 				$this->addLogEntry("[checkSignatures] Malware found (".JText::sprintf('COM_RSFIREWALL_SUSPICIOUS_FILE_IN_FOLDER', 'images').")");
 
 				return array('match' => $basename, 'reason' => JText::sprintf('COM_RSFIREWALL_SUSPICIOUS_FILE_IN_FOLDER', 'images'));
@@ -1620,13 +1611,13 @@ class RsfirewallModelCheck extends JModelLegacy
 				'language',
 
 				// admin view
-				'administrator'.$ds.'components',
-				'administrator'.$ds.'templates',
-				'administrator'.$ds.'modules',
-				'administrator'.$ds.'language');
+				'administrator'.DIRECTORY_SEPARATOR.'components',
+				'administrator'.DIRECTORY_SEPARATOR.'templates',
+				'administrator'.DIRECTORY_SEPARATOR.'modules',
+				'administrator'.DIRECTORY_SEPARATOR.'language');
 
 				foreach ($folders as $folder) {
-					if ($dirname == JPATH_SITE.$ds.$folder) {
+					if ($dirname == JPATH_SITE.DIRECTORY_SEPARATOR.$folder) {
 						$this->addLogEntry("[checkSignatures] Malware found (".JText::sprintf('COM_RSFIREWALL_SUSPICIOUS_FILE_IN_FOLDER', $folder).")");
 
 						return array('match' => $basename, 'reason' => JText::sprintf('COM_RSFIREWALL_SUSPICIOUS_FILE_IN_FOLDER', $folder));
@@ -1639,8 +1630,18 @@ class RsfirewallModelCheck extends JModelLegacy
 			{
 				return array('match' => $basename, 'reason' => JText::_('COM_RSFIREWALL_SUSPICIOUS_SPACE_FILE'));
 			}
-			
-			if ($basename[0] == '.' && !in_array(strtolower($basename), array('.htaccess', '.htpasswd', '.htusers', '.htgroups')))
+
+			$ignoredDotFiles = array(
+				'.htaccess',
+				'.htpasswd',
+				'.htusers',
+				'.htgroups',
+				'.gitignore',
+				'.gitattributes',
+				'.mailmap',
+				'.php_cs',
+			);
+			if ($basename[0] == '.' && !in_array(strtolower($basename), $ignoredDotFiles) && $ext != 'yml')
 			{
 				return array('match' => $basename, 'reason' => JText::_('COM_RSFIREWALL_SUSPICIOUS_HIDDEN_FILE'));
 			}
@@ -1675,7 +1676,7 @@ class RsfirewallModelCheck extends JModelLegacy
 			$last_file = end($files);
 			// this shouldn't happen
 			if (!$files) {
-				$last_file = $root.self::DS.'index.php';
+				$last_file = $root.DIRECTORY_SEPARATOR.'index.php';
 			}
 		}
 

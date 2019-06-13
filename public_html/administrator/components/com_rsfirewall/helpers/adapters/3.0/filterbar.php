@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -41,8 +41,7 @@ class RSFilterBar
 	
 	public function show() {
 		if ($this->sortFields || $this->orderDir) {
-			$doc = JFactory::getDocument();
-			$doc->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/ordertable.js');
+		    JHtml::_('rsfirewall_script', 'com_rsfirewall/ordertable.js', array('relative' => true, 'version' => 'auto'));
 		}
 		?>
 		<div id="filter-bar" class="btn-toolbar">

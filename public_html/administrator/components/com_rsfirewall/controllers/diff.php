@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -13,9 +13,9 @@ class RsfirewallControllerDiff extends JControllerLegacy
 	protected $folder_permissions = 755;
 	protected $file_permissions = 644;
 
-	public function __construct()
+	public function __construct($config = array())
 	{
-		parent::__construct();
+		parent::__construct($config);
 
 		$user = JFactory::getUser();
 		if (!$user->authorise('check.run', 'com_rsfirewall'))

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -192,11 +192,6 @@ class RsfirewallModelLogs extends JModelList
 		unset($results);
 
 		return $prepared;
-	}
-
-	public function getIsJ30() {
-		$jversion = new JVersion();
-		return $jversion->isCompatible('3.0');
 	}
 
 	public function getFilterBar() {
