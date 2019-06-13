@@ -185,9 +185,8 @@ jQuery (document).ready(function($){
 
     };
 
-    var handleClick = function (e) {        
-        if ($(e.target).closest('a').length) {
-            if (!e.target.href) return;
+    var handleClick = function (e) {
+        if (e.target.tagName == 'A') {
             // handle the anchor link
             var arr1 = e.target.href.split('#'),
                 arr2 = location.href.split('#');
@@ -200,7 +199,6 @@ jQuery (document).ready(function($){
                         $('html,body').animate({scrollTop: anchor.offset().top},'slow');
                 }, 1000);
             }
-            return;
         }
         stopBubble(e);
         return true;

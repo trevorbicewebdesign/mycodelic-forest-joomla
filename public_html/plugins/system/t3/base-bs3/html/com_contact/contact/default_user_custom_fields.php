@@ -52,15 +52,11 @@ $userFieldGroups    = array();
 								<?php continue; ?>
 							<?php endif; ?>
 
-							<?php if ($field->params->get('showlabel')) : ?>
-								<?php echo '<dt>' . JText::_($field->label) . '</dt>'; ?>
-							<?php endif; ?>
-
+							<?php echo '<dt>' . $field->label . '</dt>'; ?>
 							<?php echo '<dd>' . $field->value . '</dd>'; ?>
 						<?php endforeach; ?>
 						</dl>
 					</div>
-
 				</div>
 			</div>
 		</div>
@@ -77,15 +73,11 @@ $userFieldGroups    = array();
 						<?php continue; ?>
 					<?php endif; ?>
 
-					<?php if ($field->params->get('showlabel')) : ?>
-						<?php echo '<dt>' . JText::_($field->label) . '</dt>'; ?>
-					<?php endif; ?>
-
+					<?php echo '<dt>' . $field->label . '</dt>'; ?>
 					<?php echo '<dd>' . $field->value . '</dd>'; ?>
 				<?php endforeach; ?>
 				</dl>
 			</div>
-
 		<?php echo JHtml::_('bootstrap.endTab'); ?>
 	<?php endif; ?>
 	<!-- // Tabs -->

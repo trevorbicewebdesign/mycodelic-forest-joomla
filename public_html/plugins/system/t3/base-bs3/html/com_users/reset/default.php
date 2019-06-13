@@ -29,13 +29,21 @@ JHtml::_('behavior.formvalidator');
 	<form id="user-registration" action="<?php echo JRoute::_('index.php?option=com_users&task=reset.request'); ?>" method="post" class="form-validate form-horizontal">
 
 		<?php foreach ($this->form->getFieldsets() as $fieldset): ?>
+		<p><?php echo JText::_($fieldset->label); ?></p>
 
 		<fieldset>
-				<?php if (isset($fieldset->label)) : ?>
-					<p><?php echo JText::_($fieldset->label); ?></p>
+			<?php foreach ($this->form->getFieldset($fieldset->name) as $name => $field): ?>
+				<?php if ($field->hidden === false) : ?>
+					<div class="form-group">
+						<div class="col-sm-3 control-label">
+							<?php echo $field->label; ?>
+						</div>
+						<div class="col-sm-9">
+							<?php echo $field->input; ?>
+						</div>
+					</div>
 				<?php endif; ?>
-				<?php echo $this->form->renderFieldset($fieldset->name); ?>
-
+			<?php endforeach; ?>
 		</fieldset>
 		<?php endforeach; ?>
 
