@@ -4,29 +4,60 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
+class ComposerStaticInit20ef2cc289198584e1cd62ef6c06974c
 {
     public static $files = array (
+        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
         'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
         '3919eeb97e98d4648304477f8ef734ba' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/Crypt/Random.php',
+        'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
+        'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
+        '5636a0a89fc28f9cfa8624493b142015' => __DIR__ . '/..' . '/civicrm/civicrm-setup/civicrm-setup-autoload.php',
+        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        'def43f6c87e4f8dfd0c9e1b1bab14fe8' => __DIR__ . '/..' . '/symfony/polyfill-iconv/bootstrap.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'c' => 
+        array (
+            'cweagans\\Composer\\' => 18,
+        ),
         'Z' => 
         array (
             'Zend\\Validator\\' => 15,
             'Zend\\Stdlib\\' => 12,
             'Zend\\Escaper\\' => 13,
         ),
+        'S' => 
+        array (
+            'Symfony\\Polyfill\\Iconv\\' => 23,
+            'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Component\\Process\\' => 26,
+            'Symfony\\Component\\Finder\\' => 25,
+            'Symfony\\Component\\Filesystem\\' => 29,
+            'Symfony\\Component\\EventDispatcher\\' => 34,
+            'Symfony\\Component\\DependencyInjection\\' => 38,
+            'Symfony\\Component\\Config\\' => 25,
+        ),
         'P' => 
         array (
+            'Psr\\SimpleCache\\' => 16,
+            'Psr\\Log\\' => 8,
+            'Psr\\Http\\Message\\' => 17,
             'PhpOffice\\PhpWord\\' => 18,
             'PhpOffice\\Common\\' => 17,
         ),
         'M' => 
         array (
+            'MimeType\\' => 9,
             'MJS\\TopSort\\Tests\\' => 18,
             'MJS\\TopSort\\' => 12,
+        ),
+        'G' => 
+        array (
+            'GuzzleHttp\\Psr7\\' => 16,
+            'GuzzleHttp\\Promise\\' => 19,
+            'GuzzleHttp\\' => 11,
         ),
         'F' => 
         array (
@@ -43,6 +74,10 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
     );
 
     public static $prefixDirsPsr4 = array (
+        'cweagans\\Composer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/cweagans/composer-patches/src',
+        ),
         'Zend\\Validator\\' => 
         array (
             0 => __DIR__ . '/..' . '/zendframework/zend-validator/src',
@@ -55,6 +90,50 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
         array (
             0 => __DIR__ . '/..' . '/zendframework/zend-escaper/src',
         ),
+        'Symfony\\Polyfill\\Iconv\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-iconv',
+        ),
+        'Symfony\\Polyfill\\Ctype\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
+        ),
+        'Symfony\\Component\\Process\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/process',
+        ),
+        'Symfony\\Component\\Finder\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/finder',
+        ),
+        'Symfony\\Component\\Filesystem\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/filesystem',
+        ),
+        'Symfony\\Component\\EventDispatcher\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
+        ),
+        'Symfony\\Component\\DependencyInjection\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/dependency-injection',
+        ),
+        'Symfony\\Component\\Config\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/config',
+        ),
+        'Psr\\SimpleCache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/simple-cache/src',
+        ),
+        'Psr\\Log\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+        ),
+        'Psr\\Http\\Message\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/http-message/src',
+        ),
         'PhpOffice\\PhpWord\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpword/src/PhpWord',
@@ -63,6 +142,10 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
         array (
             0 => __DIR__ . '/..' . '/phpoffice/common/src/Common',
         ),
+        'MimeType\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/katzien/php-mime-type/src',
+        ),
         'MJS\\TopSort\\Tests\\' => 
         array (
             0 => __DIR__ . '/..' . '/marcj/topsort/tests/Tests',
@@ -70,6 +153,18 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
         'MJS\\TopSort\\' => 
         array (
             0 => __DIR__ . '/..' . '/marcj/topsort/src',
+        ),
+        'GuzzleHttp\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
+        ),
+        'GuzzleHttp\\Promise\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
+        ),
+        'GuzzleHttp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
         'FontLib\\' => 
         array (
@@ -99,30 +194,6 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
             array (
                 0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
             ),
-            'Symfony\\Component\\Process\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/symfony/process',
-            ),
-            'Symfony\\Component\\Finder\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/symfony/finder',
-            ),
-            'Symfony\\Component\\Filesystem\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/symfony/filesystem',
-            ),
-            'Symfony\\Component\\EventDispatcher\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
-            ),
-            'Symfony\\Component\\DependencyInjection\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/symfony/dependency-injection',
-            ),
-            'Symfony\\Component\\Config\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/symfony/config',
-            ),
             'Svg\\' => 
             array (
                 0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src',
@@ -134,10 +205,6 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
         ),
         'P' => 
         array (
-            'Psr\\Log\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/psr/log',
-            ),
             'PHPUnit_' => 
             array (
                 0 => __DIR__ . '/../..' . '/packages',
@@ -162,6 +229,17 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
             array (
                 0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
             ),
+            'Mail' => 
+            array (
+                0 => __DIR__ . '/..' . '/pear/mail',
+            ),
+        ),
+        'L' => 
+        array (
+            'Log' => 
+            array (
+                0 => __DIR__ . '/..' . '/pear/log',
+            ),
         ),
         'F' => 
         array (
@@ -175,6 +253,10 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
             'Crypt' => 
             array (
                 0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+            ),
+            'Console' => 
+            array (
+                0 => __DIR__ . '/..' . '/pear/console_getopt',
             ),
             'Civi\\' => 
             array (
@@ -197,6 +279,10 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
                 0 => __DIR__ . '/..' . '/pear/auth_sasl',
             ),
         ),
+    );
+
+    public static $fallbackDirsPsr0 = array (
+        0 => __DIR__ . '/..' . '/pear/pear-core-minimal/src',
     );
 
     public static $classMap = array (
@@ -236,6 +322,7 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
         'ezcBaseConfigurationInitializer' => __DIR__ . '/..' . '/zetacomponents/base/src/interfaces/configuration_initializer.php',
         'ezcBaseDoubleClassRepositoryPrefixException' => __DIR__ . '/..' . '/zetacomponents/base/src/exceptions/double_class_repository_prefix.php',
         'ezcBaseException' => __DIR__ . '/..' . '/zetacomponents/base/src/exceptions/exception.php',
+        'ezcBaseExportable' => __DIR__ . '/..' . '/zetacomponents/base/src/interfaces/exportable.php',
         'ezcBaseExtensionNotFoundException' => __DIR__ . '/..' . '/zetacomponents/base/src/exceptions/extension_not_found.php',
         'ezcBaseFeatures' => __DIR__ . '/..' . '/zetacomponents/base/src/features.php',
         'ezcBaseFile' => __DIR__ . '/..' . '/zetacomponents/base/src/file.php',
@@ -299,6 +386,7 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
         'ezcMailMultipartReportParser' => __DIR__ . '/..' . '/zetacomponents/mail/src/parser/parts/multipart_report_parser.php',
         'ezcMailNoSuchMessageException' => __DIR__ . '/..' . '/zetacomponents/mail/src/exceptions/no_such_message.php',
         'ezcMailOffsetOutOfRangeException' => __DIR__ . '/..' . '/zetacomponents/mail/src/exceptions/offset_out_of_range.php',
+        'ezcMailOptions' => __DIR__ . '/..' . '/zetacomponents/mail/src/options/mail_options.php',
         'ezcMailParser' => __DIR__ . '/..' . '/zetacomponents/mail/src/parser/parser.php',
         'ezcMailParserOptions' => __DIR__ . '/..' . '/zetacomponents/mail/src/options/parser_options.php',
         'ezcMailParserSet' => __DIR__ . '/..' . '/zetacomponents/mail/src/parser/interfaces/parser_set.php',
@@ -344,10 +432,11 @@ class ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit5cdee2268f29abd76073fe42de4e8d15::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit20ef2cc289198584e1cd62ef6c06974c::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit20ef2cc289198584e1cd62ef6c06974c::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit20ef2cc289198584e1cd62ef6c06974c::$prefixesPsr0;
+            $loader->fallbackDirsPsr0 = ComposerStaticInit20ef2cc289198584e1cd62ef6c06974c::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit20ef2cc289198584e1cd62ef6c06974c::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -14,17 +14,19 @@
             <action name="civicrm.import_sql_datasource" title="CiviCRM: import SQL datasource" description="When importing, consume data directly from a SQL datasource" />
             <action name="civicrm.edit_groups" title="CiviCRM: edit groups" description="Create new groups, edit group settings (e.g. group name, visibility...), delete groups" />
             <action name="civicrm.administer_civicrm" title="CiviCRM: administer CiviCRM" description="Perform all tasks in the Administer CiviCRM control panel and Import Contacts" />
-            <action name="civicrm.skip_ids_check" title="CiviCRM: skip IDS check" description="IDS system is bypassed for users with this permission. Prevents false errors for admin users." />
+            <action name="civicrm.skip_ids_check" title="CiviCRM: skip IDS check" description="Warning: Give to trusted roles only; this permission has security implications. IDS system is bypassed for users with this permission. Prevents false errors for admin users." />
             <action name="civicrm.access_uploaded_files" title="CiviCRM: access uploaded files" description="View / download files including images and photos" />
-            <action name="civicrm.profile_listings_and_forms" title="CiviCRM: profile listings and forms" description="Access the profile Search form and listings" />
-            <action name="civicrm.profile_listings" title="CiviCRM: profile listings" description="" />
-            <action name="civicrm.profile_create" title="CiviCRM: profile create" description="Use profiles in Create mode" />
-            <action name="civicrm.profile_edit" title="CiviCRM: profile edit" description="Use profiles in Edit mode" />
-            <action name="civicrm.profile_view" title="CiviCRM: profile view" description="" />
+            <action name="civicrm.profile_listings_and_forms" title="CiviCRM: profile listings and forms" description="Warning: Give to trusted roles only; this permission has privacy implications. Add/edit data in online forms and access public searchable directories." />
+            <action name="civicrm.profile_listings" title="CiviCRM: profile listings" description="Warning: Give to trusted roles only; this permission has privacy implications. Access public searchable directories." />
+            <action name="civicrm.profile_create" title="CiviCRM: profile create" description="Add data in a profile form." />
+            <action name="civicrm.profile_edit" title="CiviCRM: profile edit" description="Edit data in a profile form." />
+            <action name="civicrm.profile_view" title="CiviCRM: profile view" description="View data in a profile." />
             <action name="civicrm.access_all_custom_data" title="CiviCRM: access all custom data" description="View all custom fields regardless of ACL rules" />
             <action name="civicrm.view_all_activities" title="CiviCRM: view all activities" description="View all activities (for visible contacts)" />
             <action name="civicrm.delete_activities" title="CiviCRM: Delete activities" description="" />
-            <action name="civicrm.access_civicrm" title="CiviCRM: access CiviCRM" description="Master control for access to the main CiviCRM backend and API" />
+            <action name="civicrm.edit_inbound_email_basic_information" title="CiviCRM: edit inbound email basic information" description="Edit all inbound email activities (for visible contacts) basic information. Content editing not allowed." />
+            <action name="civicrm.edit_inbound_email_basic_information_and_content" title="CiviCRM: edit inbound email basic information and content" description="Edit all inbound email activities (for visible contacts) basic information and content." />
+            <action name="civicrm.access_civicrm" title="CiviCRM: access CiviCRM backend and API" description="Master control for access to the main CiviCRM backend and API. Give to trusted roles only." />
             <action name="civicrm.access_contact_dashboard" title="CiviCRM: access Contact Dashboard" description="View Contact Dashboard (for themselves and visible contacts)" />
             <action name="civicrm.translate_civicrm" title="CiviCRM: translate CiviCRM" description="Allow User to enable multilingual" />
             <action name="civicrm.manage_tags" title="CiviCRM: manage tags" description="Create and rename tags" />
@@ -36,6 +38,7 @@
             <action name="civicrm.force_merge_duplicate_contacts" title="CiviCRM: force merge duplicate contacts" description="Delete Contacts must also be granted in order for this to work." />
             <action name="civicrm.view_debug_output" title="CiviCRM: view debug output" description="View results of debug and backtrace" />
             <action name="civicrm.view_all_notes" title="CiviCRM: view all notes" description="View notes (for visible contacts) even if they're marked admin only" />
+            <action name="civicrm.add_contact_notes" title="CiviCRM: add contact notes" description="Create notes for contacts" />
             <action name="civicrm.access_ajax_api" title="CiviCRM: access AJAX API" description="Allow API access even if Access CiviCRM is not granted" />
             <action name="civicrm.access_contact_reference_fields" title="CiviCRM: access contact reference fields" description="Allow entering data into contact reference fields" />
             <action name="civicrm.create_manual_batch" title="CiviCRM: create manual batch" description="Create an accounting batch (with Access to CiviContribute and View Own/All Manual Batches)" />
@@ -53,37 +56,22 @@
             <action name="civicrm.export_all_manual_batches" title="CiviCRM: export all manual batches" description="Export all accounting batches" />
             <action name="civicrm.administer_payment_processors" title="CiviCRM: administer payment processors" description="Add, Update, or Disable Payment Processors" />
             <action name="civicrm.edit_message_templates" title="CiviCRM: edit message templates" description="" />
+            <action name="civicrm.edit_system_workflow_message_templates" title="CiviCRM: edit system workflow message templates" description="" />
+            <action name="civicrm.edit_user_driven_message_templates" title="CiviCRM: edit user-driven message templates" description="" />
             <action name="civicrm.view_my_invoices" title="CiviCRM: view my invoices" description="Allow users to view/ download their own invoices" />
             <action name="civicrm.edit_api_keys" title="CiviCRM: edit api keys" description="Edit API keys" />
             <action name="civicrm.edit_own_api_keys" title="CiviCRM: edit own api keys" description="Edit user's own API keys" />
-            <action name="civicrm.access_civireport" title="CiviReport: access CiviReport" description="View reports" />
-            <action name="civicrm.access_report_criteria" title="CiviReport: access Report Criteria" description="Change report search criteria" />
-            <action name="civicrm.administer_private_reports" title="CiviReport: administer private reports" description="Edit all private reports" />
-            <action name="civicrm.administer_reserved_reports" title="CiviReport: administer reserved reports" description="Edit all reports that have been marked as reserved" />
-            <action name="civicrm.administer_reports" title="CiviReport: administer Reports" description="Manage report templates" />
-            <action name="civicrm.view_report_sql" title="CiviReport: view report sql" description="View sql used in CiviReports" />
+            <action name="civicrm.send_sms" title="CiviCRM: send SMS" description="Send an SMS" />
+            <action name="civicrm.access_civigrant" title="CiviGrant: access CiviGrant" description="View all grants" />
+            <action name="civicrm.edit_grants" title="CiviGrant: edit grants" description="Create and update grants" />
+            <action name="civicrm.delete_in_civigrant" title="CiviGrant: delete in CiviGrant" description="Delete grants" />
+            <action name="civicrm.access_civimember" title="CiviMember: access CiviMember" description="View memberships" />
+            <action name="civicrm.edit_memberships" title="CiviMember: edit memberships" description="Create and update memberships" />
+            <action name="civicrm.delete_in_civimember" title="CiviMember: delete in CiviMember" description="Delete memberships" />
             <action name="civicrm.access_civimail" title="CiviMail: access CiviMail" description="" />
             <action name="civicrm.access_civimail_subscribe_unsubscribe_pages" title="CiviMail: access CiviMail subscribe/unsubscribe pages" description="Subscribe/unsubscribe from mailing list group" />
             <action name="civicrm.delete_in_civimail" title="CiviMail: delete in CiviMail" description="Delete Mailing" />
             <action name="civicrm.view_public_civimail_content" title="CiviMail: view public CiviMail content" description="" />
-            <action name="civicrm.access_civigrant" title="CiviGrant: access CiviGrant" description="View all grants" />
-            <action name="civicrm.edit_grants" title="CiviGrant: edit grants" description="Create and update grants" />
-            <action name="civicrm.delete_in_civigrant" title="CiviGrant: delete in CiviGrant" description="Delete grants" />
-            <action name="civicrm.delete_in_civicase" title="CiviCase: delete in CiviCase" description="Delete cases" />
-            <action name="civicrm.administer_civicase" title="CiviCase: administer CiviCase" description="Define case types, access deleted cases" />
-            <action name="civicrm.access_my_cases_and_activities" title="CiviCase: access my cases and activities" description="View and edit only those cases managed by this user" />
-            <action name="civicrm.access_all_cases_and_activities" title="CiviCase: access all cases and activities" description="View and edit all cases (for visible contacts)" />
-            <action name="civicrm.add_cases" title="CiviCase: add cases" description="Open a new case" />
-            <action name="civicrm.access_civicontribute" title="CiviContribute: access CiviContribute" description="Record backend contributions (with edit contributions) and view all contributions (for visible contacts)" />
-            <action name="civicrm.edit_contributions" title="CiviContribute: edit contributions" description="Record and update contributions" />
-            <action name="civicrm.make_online_contributions" title="CiviContribute: make online contributions" description="" />
-            <action name="civicrm.delete_in_civicontribute" title="CiviContribute: delete in CiviContribute" description="Delete contributions" />
-            <action name="civicrm.access_civimember" title="CiviMember: access CiviMember" description="View memberships" />
-            <action name="civicrm.edit_memberships" title="CiviMember: edit memberships" description="Create and update memberships" />
-            <action name="civicrm.delete_in_civimember" title="CiviMember: delete in CiviMember" description="Delete memberships" />
-            <action name="civicrm.access_civipledge" title="CiviPledge: access CiviPledge" description="View pledges" />
-            <action name="civicrm.edit_pledges" title="CiviPledge: edit pledges" description="Create and update pledges" />
-            <action name="civicrm.delete_in_civipledge" title="CiviPledge: delete in CiviPledge" description="Delete pledges" />
             <action name="civicrm.access_civievent" title="CiviEvent: access CiviEvent" description="Create events, view all events, and view participant records (for visible contacts)" />
             <action name="civicrm.edit_event_participants" title="CiviEvent: edit event participants" description="Record and update backend event registrations" />
             <action name="civicrm.edit_all_events" title="CiviEvent: edit all events" description="Edit events even without specific ACL granted" />
@@ -92,6 +80,18 @@
             <action name="civicrm.view_event_participants" title="CiviEvent: view event participants" description="" />
             <action name="civicrm.delete_in_civievent" title="CiviEvent: delete in CiviEvent" description="Delete participants and events that you can edit" />
             <action name="civicrm.manage_event_profiles" title="CiviEvent: manage event profiles" description="Allow users to create, edit and copy event-related profile forms used for online event registration." />
+            <action name="civicrm.delete_in_civicase" title="CiviCase: delete in CiviCase" description="Delete cases" />
+            <action name="civicrm.administer_civicase" title="CiviCase: administer CiviCase" description="Define case types, access deleted cases" />
+            <action name="civicrm.access_my_cases_and_activities" title="CiviCase: access my cases and activities" description="View and edit only those cases managed by this user" />
+            <action name="civicrm.access_all_cases_and_activities" title="CiviCase: access all cases and activities" description="View and edit all cases (for visible contacts)" />
+            <action name="civicrm.add_cases" title="CiviCase: add cases" description="Open a new case" />
+            <action name="civicrm.access_civireport" title="CiviReport: access CiviReport" description="View reports" />
+            <action name="civicrm.access_report_criteria" title="CiviReport: access Report Criteria" description="Change report search criteria" />
+            <action name="civicrm.save_report_criteria" title="CiviReport: save Report Criteria" description="Save report search criteria" />
+            <action name="civicrm.administer_private_reports" title="CiviReport: administer private reports" description="Edit all private reports" />
+            <action name="civicrm.administer_reserved_reports" title="CiviReport: administer reserved reports" description="Edit all reports that have been marked as reserved" />
+            <action name="civicrm.administer_reports" title="CiviReport: administer Reports" description="Manage report templates" />
+            <action name="civicrm.view_report_sql" title="CiviReport: view report sql" description="View sql used in CiviReports" />
             <action name="civicrm.administer_civicampaign" title="CiviCampaign: administer CiviCampaign" description="Create new campaign, survey and petition types and their status" />
             <action name="civicrm.manage_campaign" title="CiviCampaign: manage campaign" description="Create new campaigns, surveys and petitions, reserve respondents" />
             <action name="civicrm.reserve_campaign_contacts" title="CiviCampaign: reserve campaign contacts" description="Reserve campaign contacts for surveys and petitions" />
@@ -99,5 +99,12 @@
             <action name="civicrm.interview_campaign_contacts" title="CiviCampaign: interview campaign contacts" description="Record survey and petition responses from their reserved contacts" />
             <action name="civicrm.gotv_campaign_contacts" title="CiviCampaign: GOTV campaign contacts" description="Record that contacts voted" />
             <action name="civicrm.sign_civicrm_petition" title="CiviCampaign: sign CiviCRM Petition" description="" />
+            <action name="civicrm.access_civicontribute" title="CiviContribute: access CiviContribute" description="Record backend contributions (with edit contributions) and view all contributions (for visible contacts)" />
+            <action name="civicrm.edit_contributions" title="CiviContribute: edit contributions" description="Record and update contributions" />
+            <action name="civicrm.make_online_contributions" title="CiviContribute: make online contributions" description="" />
+            <action name="civicrm.delete_in_civicontribute" title="CiviContribute: delete in CiviContribute" description="Delete contributions" />
+            <action name="civicrm.access_civipledge" title="CiviPledge: access CiviPledge" description="View pledges" />
+            <action name="civicrm.edit_pledges" title="CiviPledge: edit pledges" description="Create and update pledges" />
+            <action name="civicrm.delete_in_civipledge" title="CiviPledge: delete in CiviPledge" description="Delete pledges" />
   </section>
 </access>
