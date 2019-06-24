@@ -1,12 +1,11 @@
 <?php
 /**
  * Akeeba Engine
- * The modular PHP5 site backup engine
+ * The PHP-only site backup engine
  *
- * @copyright Copyright (c)2006-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
- *
  */
 
 namespace Akeeba\Engine\Core\Domain;
@@ -68,7 +67,7 @@ class Installer extends Part
 		if ($this->installerSettings->extrainfo)
 		{
 			$data = $this->createExtrainfo();
-			$archive->addVirtualFile('extrainfo.ini', $this->installerSettings->installerroot, $data);
+			$archive->addVirtualFile('extrainfo.json', $this->installerSettings->installerroot, $data);
 		}
 
 		if ($this->installerSettings->password)
@@ -197,14 +196,16 @@ ENDHTML;
 		$backupdate = gmdate('Y-m-d H:i:s');
 		$phpversion = PHP_VERSION;
 		$rootPath = Platform::getInstance()->get_site_root();
-		$ret = <<<ENDINI
-; Akeeba Backup $abversion - Extra information used during restoration
-host="$host"
-backup_date="$backupdate"
-akeeba_version="$abversion"
-php_version="$phpversion"
-root="$rootPath"
-ENDINI;
+
+		$data = [
+			'host'           => $host,
+			'backup_date'    => $backupdate,
+			'akeeba_version' => $abversion,
+			'php_version'    => $phpversion,
+			'root'           => $rootPath,
+		];
+
+		$ret = json_encode($data, JSON_PRETTY_PRINT);
 
 		return $ret;
 	}

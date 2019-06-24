@@ -1,7 +1,7 @@
 <?php
 /**
- * @package   AkeebaBackup
- * @copyright Copyright (c)2006-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @package   akeebabackup
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -12,6 +12,7 @@ defined('_JEXEC') or die();
 
 use Akeeba\Backup\Admin\Controller\Mixin\CustomACL;
 use Akeeba\Backup\Admin\Controller\Mixin\PredefinedTaskList;
+use Akeeba\Backup\Admin\Helper\Utils;
 use Akeeba\Backup\Admin\Model\ConfigurationWizard;
 use Akeeba\Backup\Admin\Model\Updates;
 use Akeeba\Engine\Factory;
@@ -85,13 +86,8 @@ class ControlPanel extends Controller
 		}
 
 		$this->container->platform->setSessionVar('profile', $newProfile, 'akeeba');
-		$url       = '';
 		$returnurl = $this->input->get('returnurl', '', 'base64');
-
-		if (!empty($returnurl))
-		{
-			$url = base64_decode($returnurl);
-		}
+		$url       = Utils::safeDecodeReturnUrl($returnurl);
 
 		if (empty($url))
 		{
@@ -166,13 +162,8 @@ HTML;
 		}
 
 		// Redirect back to the control panel
-		$url       = '';
 		$returnurl = $this->input->get('returnurl', '', 'base64');
-
-		if (!empty($returnurl))
-		{
-			$url = base64_decode($returnurl);
-		}
+		$url       = Utils::safeDecodeReturnUrl($returnurl);
 
 		if (empty($url))
 		{

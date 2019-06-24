@@ -1,7 +1,7 @@
 <?php
 /**
- * @package   AkeebaBackup
- * @copyright Copyright (c)2006-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @package   akeebabackup
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -79,10 +79,10 @@ class Browser extends Model
 			$isWritable = is_writable($folder);
 			$subfolders = JFolder::folders($folder);
 		}
-		
+
 		// In case we can't identify the parent folder, use ourselves.
 		$parent      = $folder;
-		$breadcrumbs = array();
+		$breadcrumbs = [];
 
 		// Try to get the parent directory
 		$pathparts = explode(DIRECTORY_SEPARATOR, $folder);
@@ -105,9 +105,10 @@ class Browser extends Model
 					$part = DIRECTORY_SEPARATOR;
 				}
 
-				$crumb['label']  = $part;
-				$crumb['folder'] = $path;
-				$breadcrumbs[]   = $crumb;
+				$breadcrumbs[] = [
+					'label'  => $part,
+					'folder' => $path,
+				];
 			}
 
 			$junk   = array_pop($pathparts);

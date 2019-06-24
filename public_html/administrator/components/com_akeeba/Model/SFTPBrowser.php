@@ -1,7 +1,7 @@
 <?php
 /**
- * @package   AkeebaBackup
- * @copyright Copyright (c)2006-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @package   akeebabackup
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -90,14 +90,14 @@ class SFTPBrowser extends Model
 
 		// Parse directory to parts
 		$parsed_dir  = trim($dir, '/');
-		$this->parts = empty($parsed_dir) ? array() : explode('/', $parsed_dir);
+		$this->parts = empty($parsed_dir) ? [] : explode('/', $parsed_dir);
 
 		// Find the path to the parent directory
 		$this->parent_directory = '';
 
-		if (!empty($parts))
+		if (!empty($this->parts))
 		{
-			$copy_of_parts = $parts;
+			$copy_of_parts = $this->parts;
 			array_pop($copy_of_parts);
 
 			$this->parent_directory = '/';
@@ -150,7 +150,7 @@ class SFTPBrowser extends Model
 		}
 
 		// Get a raw directory listing (hoping it's a UNIX server!)
-		$list = array();
+		$list = [];
 		$dir  = ltrim($dir, '/');
 
 		if (empty($dir))
@@ -161,14 +161,14 @@ class SFTPBrowser extends Model
 
 			// Parse directory to parts
 			$parsed_dir  = trim($dir, '/');
-			$this->parts = empty($parsed_dir) ? array() : explode('/', $parsed_dir);
+			$this->parts = empty($parsed_dir) ? [] : explode('/', $parsed_dir);
 
 			// Find the path to the parent directory
 			$this->parent_directory = '';
 
-			if (!empty($parts))
+			if (!empty($this->parts))
 			{
-				$copy_of_parts = $parts;
+				$copy_of_parts = $this->parts;
 				array_pop($copy_of_parts);
 
 				$this->parent_directory = '/';

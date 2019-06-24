@@ -1,11 +1,8 @@
 <?php
 /**
- * @package    AkeebaBackup
- * @subpackage backuponupdate
- * @copyright Copyright (c)2006-2018 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license    GNU General Public License version 3, or later
- *
- * @since      3.11.1
+ * @package   akeebabackup
+ * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU General Public License version 3, or later
  */
 
 defined('_JEXEC') or die();
@@ -23,10 +20,9 @@ class JFormFieldBackupprofiles extends JFormField
 	/**
 	 * Element name
 	 *
-	 * @access    protected
 	 * @var        string
 	 */
-	var $_name = 'Backupprofiles';
+	protected $name = 'Backupprofiles';
 
 	function getInput()
 	{
@@ -66,6 +62,6 @@ class JFormFieldBackupprofiles extends JFormField
 			array_unshift($objectList, $defaultItem);
 		}
 
-		return JHTML::_('select.genericlist', $objectList, $this->name, 'class="inputbox"', $key, $val, $this->value, $this->id);
+		return JHtml::_('select.genericlist', $objectList, $this->name, 'class="inputbox"', $key, $val, $this->value, $this->id);
 	}
 }
