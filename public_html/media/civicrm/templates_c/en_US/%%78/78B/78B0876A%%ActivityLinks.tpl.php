@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:43:49
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:31:00
          compiled from CRM/Activity/Form/ActivityLinks.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Activity/Form/ActivityLinks.tpl', 1, false),array('block', 'ts', 'CRM/Activity/Form/ActivityLinks.tpl', 34, false),array('modifier', 'escape', 'CRM/Activity/Form/ActivityLinks.tpl', 71, false),)), $this); ?>

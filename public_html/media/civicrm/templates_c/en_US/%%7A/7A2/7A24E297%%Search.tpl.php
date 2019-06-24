@@ -1,71 +1,91 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:36:25
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:27:40
          compiled from CRM/Group/Form/Search.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Group/Form/Search.tpl', 1, false),array('block', 'ts', 'CRM/Group/Form/Search.tpl', 28, false),array('function', 'crmURL', 'CRM/Group/Form/Search.tpl', 67, false),array('function', 'help', 'CRM/Group/Form/Search.tpl', 67, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Group/Form/Search.tpl', 1, false),array('block', 'ts', 'CRM/Group/Form/Search.tpl', 29, false),array('function', 'crmURL', 'CRM/Group/Form/Search.tpl', 79, false),array('function', 'help', 'CRM/Group/Form/Search.tpl', 79, false),)), $this); ?>
 <?php $this->_tag_stack[] = array('crmScope', array('extensionKey' => "")); $_block_repeat=true;smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><div class="crm-block crm-form-block crm-group-search-form-block">
-
-<h3><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Find Groups<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></h3>
-<table class="form-layout">
-  <tr>
-    <td>
-      <?php echo $this->_tpl_vars['form']['title']['label']; ?>
+  <div class="crm-accordion-wrapper crm-search_builder-accordion <?php if ($this->_tpl_vars['rows'] && ! $this->_tpl_vars['showSearchForm']): ?>collapsed<?php endif; ?>">
+    <div class="crm-accordion-header crm-master-accordion-header">
+      <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Find Groups<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
+    </div>
+    <div class="crm-accordion-body">
+      <div id="searchForm">
+        <table class="form-layout">
+          <tr>
+            <td>
+              <?php echo $this->_tpl_vars['form']['title']['label']; ?>
 <br />
-      <?php echo $this->_tpl_vars['form']['title']['html']; ?>
+              <?php echo $this->_tpl_vars['form']['title']['html']; ?>
 <br />
-      <span class="description font-italic">
+              <span class="description font-italic">
           <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Complete OR partial group name.<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
       </span>
-    </td>
-    <td>
-      <?php echo $this->_tpl_vars['form']['created_by']['label']; ?>
+            </td>
+            <td>
+              <?php echo $this->_tpl_vars['form']['created_by']['label']; ?>
 <br />
-      <?php echo $this->_tpl_vars['form']['created_by']['html']; ?>
+              <?php echo $this->_tpl_vars['form']['created_by']['html']; ?>
 <br />
-      <span class="description font-italic">
+              <span class="description font-italic">
           <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Complete OR partial creator name.<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
       </span>
-    </td>
-    <td id="group_type-block">
-      <?php echo $this->_tpl_vars['form']['group_type_search']['label']; ?>
+            </td>
+            <td>
+              <?php echo $this->_tpl_vars['form']['visibility']['label']; ?>
 <br />
-      <?php echo $this->_tpl_vars['form']['group_type_search']['html']; ?>
+              <?php echo $this->_tpl_vars['form']['visibility']['html']; ?>
 <br />
-      <span class="description font-italic">
-          <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Filter search by group type(s).<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
-      </span>
-    </td>
-    <td>
-      <?php echo $this->_tpl_vars['form']['visibility']['label']; ?>
-<br />
-      <?php echo $this->_tpl_vars['form']['visibility']['html']; ?>
-<br />
-      <span class="description font-italic">
+              <span class="description font-italic">
           <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Filter search by visibility.<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
       </span>
-    </td>
-    <td>
-      <?php echo $this->_tpl_vars['form']['group_status']['label']; ?>
+            </td>
+          </tr>
+          <tr>
+            <td id="group_type-block">
+              <?php echo $this->_tpl_vars['form']['group_type_search']['label']; ?>
 <br />
-      <?php echo $this->_tpl_vars['form']['group_status']['html']; ?>
+              <?php echo $this->_tpl_vars['form']['group_type_search']['html']; ?>
+<br />
+              <span class="description font-italic">
+          <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Filter search by group type(s).<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
+      </span>
+            </td>
+            <td>
+              <?php echo $this->_tpl_vars['form']['group_status']['label']; ?>
+<br />
+              <?php echo $this->_tpl_vars['form']['group_status']['html']; ?>
 
-    </td>
-  </tr>
-</table>
-</div>
+            </td>
+            <td>
+              <?php echo $this->_tpl_vars['form']['component_mode']['label']; ?>
+<br />
+              <?php echo $this->_tpl_vars['form']['component_mode']['html']; ?>
+
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
 <div class="css_right">
   <a class="crm-hover-button action-item" href="<?php echo CRM_Utils_System::crmURL(array('q' => "reset=1&update_smart_groups=1"), $this);?>
 "><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Update Smart Group Counts<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></a> <?php echo smarty_function_help(array('id' => 'update_smart_groups'), $this);?>
 
 </div>
+<?php if (call_user_func ( array ( 'CRM_Core_Permission' , 'check' ) , 'edit groups' )): ?>
+  <?php $this->assign('editableClass', 'crm-editable'); ?>
+<?php endif; ?>
 <table class="crm-group-selector crm-ajax-table" data-order='[[0,"asc"]]'>
   <thead>
     <tr>
-      <th data-data="title" cell-class="crm-group-name crm-editable crmf-title" class='crm-group-name'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Name<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
+      <th data-data="title" cell-class="crm-group-name <?php echo $this->_tpl_vars['editableClass']; ?>
+ crmf-title" class='crm-group-name'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Name<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
       <th data-data="count" cell-class="crm-group-count right" class='crm-group-count'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Count<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
       <th data-data="created_by" cell-class="crm-group-created_by" class='crm-group-created_by'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Created By<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
-      <th data-data="description" data-orderable="false" cell-class="crm-group-description crmf-description crm-editable" class='crm-group-description'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Description<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
+      <th data-data="description" data-orderable="false" cell-class="crm-group-description crmf-description <?php echo $this->_tpl_vars['editableClass']; ?>
+" class='crm-group-description'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Description<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
       <th data-data="group_type" cell-class="crm-group-group_type" class='crm-group-group_type'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Group Type<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
-      <th data-data="visibility" cell-class="crm-group-visibility crmf-visibility crm-editable" cell-data-type="select" class='crm-group-visibility'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Visibility<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
+      <th data-data="visibility" cell-class="crm-group-visibility crmf-visibility <?php echo $this->_tpl_vars['editableClass']; ?>
+" cell-data-type="select" class='crm-group-visibility'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Visibility<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
       <?php if ($this->_tpl_vars['showOrgInfo']): ?>
         <th data-data="org_info" data-orderable="false" cell-class="crm-group-org_info" class='crm-group-org_info'><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Organization<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></th>
       <?php endif; ?>
@@ -116,6 +136,7 @@ unset($_smarty_tpl_vars);
           d.group_type = groupTypes,
           d.visibility = $(".crm-group-search-form-block select#visibility").val(),
           d.status = groupStatus,
+          d.component_mode = $(".crm-group-search-form-block select#component_mode").val(),
           d.showOrgInfo = '; ?>
 "<?php echo $this->_tpl_vars['showOrgInfo']; ?>
 "<?php echo ',
@@ -227,16 +248,23 @@ unset($_smarty_tpl_vars);
                 appendHTML += \'<tr id="row_\'+val.group_id+\'_\'+parent_id+\'" data-entity="group" data-id="\'+val.group_id+\'" class="crm-entity parent_is_\'+parent_id+\' crm-row-child">\';
                 if ( val.is_parent ) {
                   appendHTML += \'<td class="crm-group-name crmf-title \' + levelClass + \'">\' + \''; ?>
-<span class="collapsed show-children" title="<?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>show child groups<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>"/></span><div class="crmf-title crm-editable" style="display:inline"><?php echo '\' + val.title + \'</div></td>\';
+<span class="collapsed show-children" title="<?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>show child groups<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>"/></span><div class="crmf-title <?php echo $this->_tpl_vars['editableClass']; ?>
+" style="display:inline"><?php echo '\' + val.title + \'</div></td>\';
                 }
                 else {
-                  appendHTML += \'<td class="crm-group-name  crmf-title crm-editable \' + levelClass + \'"><span class="crm-no-children"></span>\' + val.title + \'</td>\';
+                  appendHTML += \'<td class="crm-group-name  crmf-title '; ?>
+<?php echo $this->_tpl_vars['editableClass']; ?>
+<?php echo ' \' + levelClass + \'"><span class="crm-no-children"></span>\' + val.title + \'</td>\';
                 }
                 appendHTML += \'<td class="right">\' + val.count + "</td>";
                 appendHTML += "<td>" + val.created_by + "</td>";
-                appendHTML += \'<td class="crm-editable crmf-description">\' + (val.description || \'\') + "</td>";
+                appendHTML += \'<td class="'; ?>
+<?php echo $this->_tpl_vars['editableClass']; ?>
+<?php echo ' crmf-description">\' + (val.description || \'\') + "</td>";
                 appendHTML += "<td>" + val.group_type + "</td>";
-                appendHTML += \'<td class="crm-editable crmf-visibility" data-type="select">\' + val.visibility + "</td>";
+                appendHTML += \'<td class="'; ?>
+<?php echo $this->_tpl_vars['editableClass']; ?>
+<?php echo ' crmf-visibility" data-type="select">\' + val.visibility + "</td>";
                 if (showOrgInfo) {
                   appendHTML += "<td>" + val.org_info + "</td>";
                 }

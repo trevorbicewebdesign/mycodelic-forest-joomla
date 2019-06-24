@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 16:11:38
+<?php /* Smarty version 2.6.31, created on 2019-06-22 13:12:49
          compiled from CRM/Contact/Form/Search/AdvancedCriteria.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 50, false),array('function', 'crmURL', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 88, false),array('function', 'help', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 106, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 50, false),array('function', 'crmURL', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 81, false),array('function', 'help', 'CRM/Contact/Form/Search/AdvancedCriteria.tpl', 99, false),)), $this); ?>
 <?php $this->_tag_stack[] = array('crmScope', array('extensionKey' => "")); $_block_repeat=true;smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><?php echo '
 <script type="text/javascript">
 CRM.$(function($) {
@@ -35,14 +35,9 @@ CRM.$(function($) {
     return false;
   });
   // TODO: Why are the modes numeric? If they used the string there would be no need for this map
-  var modes = {
-    \'2\': \'CiviContribute\',
-    \'3\': \'CiviEvent\',
-    \'4\': \'activity\',
-    \'5\': \'CiviMember\',
-    \'6\': \'CiviCase\',
-    \'8\': \'CiviMail\'
-  };
+  var modes = '; ?>
+<?php echo $this->_tpl_vars['component_mappings']; ?>
+<?php echo ';
   // Handle change of results mode
   $(\'#component_mode\').change(function() {
     // Reset task dropdown
@@ -52,7 +47,7 @@ CRM.$(function($) {
       $(\'.crm-\' + mode + \'-accordion.collapsed\').crmAccordionToggle();
       loadPanes(mode);
     }
-    if ($(\'#component_mode\').val() == \'7\') {
+    if (\'related_contact\' === modes[$(\'#component_mode\').val()]) {
       $(\'#crm-display_relationship_type\').show();
     }
     else {
@@ -107,10 +102,10 @@ $this->_tpl_vars = $_smarty_tpl_vars;
 unset($_smarty_tpl_vars);
  ?><?php echo '</div></div>'; ?><?php $_from = $this->_tpl_vars['allPanes']; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array'); }if (count($_from)):
     foreach ($_from as $this->_tpl_vars['paneName'] => $this->_tpl_vars['paneValue']):
-?><?php echo '<div class="crm-accordion-wrapper crm-ajax-accordion crm-'; ?><?php echo $this->_tpl_vars['paneValue']['id']; ?><?php echo '-accordion '; ?><?php if ($this->_tpl_vars['paneValue']['open'] == 'true' && $this->_tpl_vars['openedPanes'][$this->_tpl_vars['paneName']]): ?><?php echo ' '; ?><?php else: ?><?php echo 'collapsed'; ?><?php endif; ?><?php echo '"><div class="crm-accordion-header" id="'; ?><?php echo $this->_tpl_vars['paneValue']['id']; ?><?php echo '">'; ?><?php echo $this->_tpl_vars['paneName']; ?><?php echo '</div><div class="crm-accordion-body '; ?><?php echo $this->_tpl_vars['paneValue']['id']; ?><?php echo '"></div></div><!-- Surplus /div is required (not sure why but breakage is obvious when you remove it) -->'; ?><?php endforeach; endif; unset($_from); ?><?php echo '<div class="spacer"></div><table class="form-layout"><tr><td>'; ?><?php $_smarty_tpl_vars = $this->_tpl_vars;
-$this->_smarty_include(array('smarty_include_tpl_file' => "CRM/common/formButtons.tpl", 'smarty_include_vars' => array('location' => 'botton')));
+?><?php echo '<div class="crm-accordion-wrapper crm-ajax-accordion crm-'; ?><?php echo $this->_tpl_vars['paneValue']['id']; ?><?php echo '-accordion '; ?><?php if ($this->_tpl_vars['paneValue']['open'] == 'true' || $this->_tpl_vars['openedPanes'][$this->_tpl_vars['paneName']]): ?><?php echo ' '; ?><?php else: ?><?php echo 'collapsed'; ?><?php endif; ?><?php echo '"><div class="crm-accordion-header" id="'; ?><?php echo $this->_tpl_vars['paneValue']['id']; ?><?php echo '">'; ?><?php echo $this->_tpl_vars['paneName']; ?><?php echo '</div><div class="crm-accordion-body '; ?><?php echo $this->_tpl_vars['paneValue']['id']; ?><?php echo '"></div></div><!-- Surplus /div is required (not sure why but breakage is obvious when you remove it) -->'; ?><?php endforeach; endif; unset($_from); ?><?php echo '<div class="spacer"></div><table class="form-layout"><tr><td>'; ?><?php $_smarty_tpl_vars = $this->_tpl_vars;
+$this->_smarty_include(array('smarty_include_tpl_file' => "CRM/common/formButtons.tpl", 'smarty_include_vars' => array('location' => 'bottom')));
 $this->_tpl_vars = $_smarty_tpl_vars;
 unset($_smarty_tpl_vars);
- ?><?php echo '</td></tr></table>'; ?>
+ ?><?php echo '<div class="crm-submit-buttons reset-advanced-search"><a href="'; ?><?php echo CRM_Utils_System::crmURL(array('p' => 'civicrm/contact/search/advanced','q' => 'reset=1'), $this);?><?php echo '" id="resetAdvancedSearch" class="crm-hover-button" title="'; ?><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><?php echo 'Clear all search criteria'; ?><?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?><?php echo '"><i class="crm-i fa-undo"></i>&nbsp;'; ?><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><?php echo 'Reset Form'; ?><?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?><?php echo '</a></div></td></tr></table>'; ?>
 
 <?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>

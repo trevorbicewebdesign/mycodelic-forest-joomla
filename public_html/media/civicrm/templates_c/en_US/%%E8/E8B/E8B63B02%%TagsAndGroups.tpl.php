@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:43:28
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:30:30
          compiled from CRM/Contact/Form/Edit/TagsAndGroups.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Edit/TagsAndGroups.tpl', 1, false),)), $this); ?>
@@ -14,7 +14,7 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
           <td>
             <div class="crm-section tag-section">
               <?php if ($this->_tpl_vars['title']): ?><?php echo $this->_tpl_vars['form']['tag']['label']; ?>
-<?php endif; ?>
+<br><?php endif; ?>
               <?php echo $this->_tpl_vars['form']['tag']['html']; ?>
 
             </div>
@@ -32,7 +32,7 @@ unset($_smarty_tpl_vars);
             <?php if ($this->_tpl_vars['groupElementType'] == 'select'): ?>
               <div class="crm-section group-section">
               <?php if ($this->_tpl_vars['title']): ?><?php echo $this->_tpl_vars['form']['group']['label']; ?>
-<?php endif; ?>
+<br><?php endif; ?>
               <?php echo $this->_tpl_vars['form']['group']['html']; ?>
 
             </div>

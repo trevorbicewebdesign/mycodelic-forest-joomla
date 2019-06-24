@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:36:09
+<?php /* Smarty version 2.6.31, created on 2019-06-18 11:51:10
          compiled from CRM/common/openFlashChart.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/openFlashChart.tpl', 1, false),)), $this); ?>
@@ -28,7 +28,9 @@ packages/OpenFlashChart/open-flash-chart.swf"<?php echo ';
              image: function(src) { return "<img src=\'data:image/png;base64," + $(\'#\'+src)[0].get_img_binary() + "\' />"},
              popup: function(src) {
              var img_win = window.open(\'\', \'Save Chart as Image\');
-           img_win.document.write(\'<html><head><title>Save Chart as Image<\\/title><\\/head><body>\' + OFC.jquery.image(src) + \' <\\/body><\\/html>\');
+             // HTML, HEAD, and BODY tags in JS literals obfuscated to avoid being parsed as DOM elements.
+             var html = \'html\', head = \'head\', body = \'body\';
+           img_win.document.write(\'<\' + html + \'><\' + head + \'><title>Save Chart as Image<\\/title><\\/\' + head + \'><\' + body + \'>\' + OFC.jquery.image(src) + \' <\\/\' + body + \'><\\/\' + html + \'>\');
            img_win.document.close();
                        }
                  }

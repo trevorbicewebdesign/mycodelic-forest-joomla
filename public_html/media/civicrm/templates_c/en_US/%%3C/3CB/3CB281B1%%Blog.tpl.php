@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:36:12
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:27:17
          compiled from CRM/Dashlet/Page/Blog.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Dashlet/Page/Blog.tpl', 1, false),array('block', 'ts', 'CRM/Dashlet/Page/Blog.tpl', 68, false),array('modifier', 'escape', 'CRM/Dashlet/Page/Blog.tpl', 52, false),array('modifier', 'strip_tags', 'CRM/Dashlet/Page/Blog.tpl', 64, false),array('modifier', 'mb_substr', 'CRM/Dashlet/Page/Blog.tpl', 64, false),)), $this); ?>

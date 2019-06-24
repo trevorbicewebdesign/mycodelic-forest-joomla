@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:43:28
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:30:30
          compiled from CRM/Contact/Form/Edit/Website.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Edit/Website.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/Edit/Website.tpl', 32, false),array('function', 'help', 'CRM/Contact/Form/Edit/Website.tpl', 33, false),array('modifier', 'crmAddClass', 'CRM/Contact/Form/Edit/Website.tpl', 42, false),)), $this); ?>
@@ -21,8 +21,10 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
 &nbsp;</td>
     <td><?php echo $this->_tpl_vars['form']['website'][$this->_tpl_vars['blockId']]['website_type_id']['html']; ?>
 </td>
-    <td colspan="3"><?php if ($this->_tpl_vars['blockId'] > 1): ?> <a href="#" title="<?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Delete Website Block<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>" onClick="removeBlock('Website','<?php echo $this->_tpl_vars['blockId']; ?>
-'); return false;"><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>delete<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></a><?php endif; ?></td>
+    <?php if ($this->_tpl_vars['blockId'] > 1): ?>
+      <td colspan="3"><a href="#" title="<?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Delete Website Block<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>" onClick="removeBlock('Website','<?php echo $this->_tpl_vars['blockId']; ?>
+'); return false;"><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>delete<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></a></td>
+    <?php endif; ?>
 </tr>
 <?php if (! $this->_tpl_vars['addBlock']): ?>
 <tr>
@@ -32,5 +34,4 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
 </td>
 </tr>
 <?php endif; ?>
-
 <?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>

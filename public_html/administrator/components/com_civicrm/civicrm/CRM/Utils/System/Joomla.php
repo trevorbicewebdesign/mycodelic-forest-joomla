@@ -1,9 +1,9 @@
 <?php
 /*
  +--------------------------------------------------------------------+
- | CiviCRM version 4.7                                                |
+ | CiviCRM version 5                                                  |
  +--------------------------------------------------------------------+
- | Copyright CiviCRM LLC (c) 2004-2017                                |
+ | Copyright CiviCRM LLC (c) 2004-2019                                |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -28,13 +28,14 @@
 /**
  *
  * @package CRM
- * @copyright CiviCRM LLC (c) 2004-2017
+ * @copyright CiviCRM LLC (c) 2004-2019
  */
 
 /**
  * Joomla specific stuff goes here.
  */
 class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
+
   /**
    * Class constructor.
    */
@@ -76,7 +77,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     }
 
     // Prepare the values for a new Joomla user.
-    $values = array();
+    $values = [];
     $values['name'] = $fullname;
     $values['username'] = trim($params['cms_name']);
     $values['password1'] = $values['password2'] = $params['cms_pass'];
@@ -98,7 +99,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $ufID = CRM_Utils_Type::escape($ufID, 'Integer');
     $ufName = CRM_Utils_Type::escape($ufName, 'String');
 
-    $values = array();
+    $values = [];
     $user = JUser::getInstance($ufID);
 
     $values['email'] = $ufName;
@@ -142,7 +143,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $db->setQuery($query, 0, 10);
     $users = $db->loadAssocList();
 
-    $row = array();
+    $row = [];
     if (count($users)) {
       $row = $users[0];
     }
@@ -152,13 +153,13 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
       $dbEmail = CRM_Utils_Array::value('email', $row);
       if (strtolower($dbName) == strtolower($name)) {
         $errors['cms_name'] = ts('The username %1 is already taken. Please select another username.',
-          array(1 => $name)
+          [1 => $name]
         );
       }
       if (strtolower($dbEmail) == strtolower($email)) {
         $resetUrl = str_replace('administrator/', '', $config->userFrameworkBaseURL) . 'index.php?option=com_users&view=reset';
         $errors[$emailName] = ts('The email address %1 already has an account associated with it. <a href="%2">Have you forgotten your password?</a>',
-          array(1 => $email, 2 => $resetUrl)
+          [1 => $email, 2 => $resetUrl]
         );
       }
     }
@@ -189,7 +190,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     if (is_array($breadCrumbs)) {
       foreach ($breadCrumbs as $crumbs) {
         if (stripos($crumbs['url'], 'id%%')) {
-          $args = array('cid', 'mid');
+          $args = ['cid', 'mid'];
           foreach ($args as $a) {
             $val = CRM_Utils_Request::retrieve($a, 'Positive', CRM_Core_DAO::$_nullObject,
               FALSE, NULL, $_GET
@@ -264,7 +265,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
 
     if ($config->userFrameworkFrontend) {
       $script = 'index.php';
-      if (JRequest::getVar("Itemid")) {
+      if (JRequest::getVar("Itemid") && (strpos($path, 'civicrm/payment/ipn') === FALSE)) {
         $Itemid = "{$separator}Itemid=" . JRequest::getVar("Itemid");
       }
     }
@@ -317,8 +318,8 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     global $database;
     $query = $db->getQuery(TRUE);
     $query->select($db->quoteName('email'))
-          ->from($db->quoteName('#__users'))
-          ->where($db->quoteName('id') . ' = ' . $user->id);
+      ->from($db->quoteName('#__users'))
+      ->where($db->quoteName('id') . ' = ' . $user->id);
     $database->setQuery($query);
     $user->email = $database->loadResult();
   }
@@ -333,12 +334,12 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $user = NULL;
 
     if ($loadCMSBootstrap) {
-      $bootStrapParams = array();
+      $bootStrapParams = [];
       if ($name && $password) {
-        $bootStrapParams = array(
+        $bootStrapParams = [
           'name' => $name,
           'pass' => $password,
-        );
+        ];
       }
       CRM_Utils_System::loadBootStrap($bootStrapParams, TRUE, TRUE, FALSE);
     }
@@ -357,7 +358,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $db->setQuery($query, 0, 0);
     $users = $db->loadObjectList();
 
-    $row = array();
+    $row = [];
     if (count($users)) {
       $row = $users[0];
     }
@@ -403,7 +404,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
       if (!$contactID) {
         return FALSE;
       }
-      return array($contactID, $dbId, mt_rand());
+      return [$contactID, $dbId, mt_rand()];
     }
 
     return FALSE;
@@ -446,14 +447,20 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $contactID = CRM_Core_BAO_UFMatch::getContactId($uid);
     if (!empty($password)) {
       $instance = JFactory::getApplication('site');
-      $params = array(
+      $params = [
         'username' => $username,
         'password' => $password,
-      );
+      ];
       //perform the login action
       $instance->login($params);
     }
 
+    // Save details in Joomla session
+    $user = JFactory::getUser($uid);
+    $jsession = JFactory::getSession();
+    $jsession->set('user', $user);
+
+    // Save details in Civi session
     $session = CRM_Core_Session::singleton();
     $session->set('ufID', $uid);
     $session->set('userID', $contactID);
@@ -529,7 +536,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
    */
   public function getBasePath() {
     global $civicrm_root;
-    $joomlaPath = explode('/administrator', $civicrm_root);
+    $joomlaPath = explode(DIRECTORY_SEPARATOR . 'administrator', $civicrm_root);
     $joomlaBase = $joomlaPath[0];
     return $joomlaBase;
   }
@@ -547,7 +554,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
    *
    * @return bool
    */
-  public function loadBootStrap($params = array(), $loadUser = TRUE, $throwError = TRUE, $realPath = NULL, $loadDefines = TRUE) {
+  public function loadBootStrap($params = [], $loadUser = TRUE, $throwError = TRUE, $realPath = NULL, $loadDefines = TRUE) {
     $joomlaBase = self::getBasePath();
 
     // load BootStrap here if needed
@@ -557,7 +564,6 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
       define('DS', DIRECTORY_SEPARATOR);
       define('JPATH_BASE', $joomlaBase . '/administrator');
       require $joomlaBase . '/administrator/includes/defines.php';
-      require $joomlaBase . '/administrator/includes/framework.php';
     }
 
     // Get the framework.
@@ -565,23 +571,37 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
       require $joomlaBase . '/libraries/import.legacy.php';
     }
     require $joomlaBase . '/libraries/cms.php';
-    require $joomlaBase . '/libraries/import.php';
-    require $joomlaBase . '/libraries/joomla/event/dispatcher.php';
-    require_once $joomlaBase . '/configuration.php';
     self::getJVersion($joomlaBase);
+
+    if (version_compare(JVERSION, '3.8', 'lt')) {
+      require $joomlaBase . '/libraries/import.php';
+      require $joomlaBase . '/libraries/joomla/event/dispatcher.php';
+    }
+
+    require_once $joomlaBase . '/configuration.php';
 
     if (version_compare(JVERSION, '3.0', 'lt')) {
       require $joomlaBase . '/libraries/joomla/environment/uri.php';
       require $joomlaBase . '/libraries/joomla/application/component/helper.php';
     }
-    else {
+    elseif (version_compare(JVERSION, '3.8', 'lt')) {
       jimport('joomla.environment.uri');
     }
 
-    jimport('joomla.application.cli');
+    if (version_compare(JVERSION, '3.8', 'lt')) {
+      jimport('joomla.application.cli');
+    }
 
     if (!defined('JDEBUG')) {
       define('JDEBUG', FALSE);
+    }
+
+    // Set timezone for Joomla on Cron
+    $config = JFactory::getConfig();
+    $timezone = $config->get('offset');
+    if ($timezone) {
+      date_default_timezone_set($timezone);
+      CRM_Core_Config::singleton()->userSystem->setMySQLTimeZone();
     }
 
     // CRM-14281 Joomla wasn't available during bootstrap, so hook_civicrm_config never executes.
@@ -636,6 +656,16 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
   /**
    * @inheritDoc
    */
+  public function getUser($contactID) {
+    $user_details = parent::getUser($contactID);
+    $user = JFactory::getUser($user_details['id']);
+    $user_details['name'] = $user->name;
+    return $user_details;
+  }
+
+  /**
+   * @inheritDoc
+   */
   public function getUserIDFromUserObject($user) {
     return !empty($user->id) ? $user->id : NULL;
   }
@@ -662,7 +692,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
    *   CRM_Core_Module
    */
   public function getModules() {
-    $result = array();
+    $result = [];
 
     $db = JFactory::getDbo();
     $query = $db->getQuery(TRUE);
@@ -672,7 +702,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     $plugins = $db->setQuery($query)->loadAssocList();
     foreach ($plugins as $plugin) {
       // question: is the folder really a critical part of the plugin's name?
-      $name = implode('.', array('joomla', $plugin['type'], $plugin['folder'], $plugin['element']));
+      $name = implode('.', ['joomla', $plugin['type'], $plugin['folder'], $plugin['element']]);
       $result[] = new CRM_Core_Module($name, $plugin['enabled'] ? TRUE : FALSE);
     }
 
@@ -776,7 +806,7 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
       '',
       $config->imageUploadDir
     );
-    return array($url, NULL, $siteRoot);
+    return [$url, NULL, $siteRoot];
   }
 
   /**
@@ -818,15 +848,6 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
     else {
       parent::outputError($content);
     }
-  }
-
-  /**
-   * Append Joomla js to coreResourcesList.
-   *
-   * @param array $list
-   */
-  public function appendCoreResources(&$list) {
-    $list[] = 'js/crm.joomla.js';
   }
 
   /**
@@ -881,11 +902,11 @@ class CRM_Utils_System_Joomla extends CRM_Utils_System_Base {
       }
     }
 
-    return array(
+    return [
       'contactCount' => $contactCount,
       'contactMatching' => $contactMatching,
       'contactCreated' => $contactCreated,
-    );
+    ];
   }
 
 }

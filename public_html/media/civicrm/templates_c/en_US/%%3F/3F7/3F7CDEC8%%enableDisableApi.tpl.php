@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:36:25
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:27:40
          compiled from CRM/common/enableDisableApi.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/enableDisableApi.tpl', 1, false),array('block', 'ts', 'CRM/common/enableDisableApi.tpl', 34, false),)), $this); ?>
@@ -14,7 +14,13 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
     }
 
     function refresh() {
-      $a.trigger(\'crmPopupFormSuccess\');
+      // the opposite of the current status based on row class
+      var newStatus = $row.hasClass(\'disabled\');
+      $a.trigger(\'crmPopupFormSuccess\', {
+        \'entity\': info.entity,
+        \'id\': info.id,
+        \'enabled\': newStatus
+      });
       CRM.refreshParent($row);
     }
 

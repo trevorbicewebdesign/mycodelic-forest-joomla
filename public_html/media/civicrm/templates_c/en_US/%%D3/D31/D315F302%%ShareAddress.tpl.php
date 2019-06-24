@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:43:28
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:30:30
          compiled from CRM/Contact/Form/ShareAddress.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/ShareAddress.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/ShareAddress.tpl', 106, false),array('function', 'help', 'CRM/Contact/Form/ShareAddress.tpl', 29, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/ShareAddress.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Form/ShareAddress.tpl', 117, false),array('function', 'help', 'CRM/Contact/Form/ShareAddress.tpl', 29, false),array('modifier', 'json_encode', 'CRM/Contact/Form/ShareAddress.tpl', 57, false),)), $this); ?>
 <?php $this->_tag_stack[] = array('crmScope', array('extensionKey' => "")); $_block_repeat=true;smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><tr>
   <td>
     <?php echo $this->_tpl_vars['form']['address'][$this->_tpl_vars['blockId']]['use_shared_address']['html']; ?>
@@ -14,6 +14,14 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
 
       <?php echo $this->_tpl_vars['form']['address'][$this->_tpl_vars['blockId']]['master_contact_id']['html']; ?>
 
+      <div class="shared-address-update-employer" style="display: none;">
+        <?php echo $this->_tpl_vars['form']['address'][$this->_tpl_vars['blockId']]['update_current_employer']['html']; ?>
+
+        <?php echo $this->_tpl_vars['form']['address'][$this->_tpl_vars['blockId']]['update_current_employer']['label']; ?>
+
+        <?php echo smarty_function_help(array('id' => "id-sharedAddress-updateRelationships",'file' => "CRM/Contact/Form/Contact"), $this);?>
+
+      </div>
       <div class="shared-address-list">
         <?php if (! empty ( $this->_tpl_vars['sharedAddresses'][$this->_tpl_vars['blockId']]['shared_address_display'] )): ?>
           <?php $_from = $this->_tpl_vars['sharedAddresses'][$this->_tpl_vars['blockId']]['shared_address_display']['options']; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array'); }if (count($_from)):
@@ -43,6 +51,10 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
     var blockNo = '; ?>
 <?php echo $this->_tpl_vars['blockId']; ?>
 <?php echo ',
+      contactType = '; ?>
+<?php echo json_encode($this->_tpl_vars['contactType']); ?>
+<?php echo ',
+      $employerSection = $(\'#shared-address-\' + blockNo + \' .shared-address-update-employer\'),
       $contentArea = $(\'#shared-address-\' + blockNo + \' .shared-address-list\'),
       $masterElement = $(\'input[name="address[\' + blockNo + \'][master_id]"]\');
 
@@ -70,8 +82,12 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
       $masterElement.val(\'\');
 
       if (!sharedContactId || isNaN(sharedContactId)) {
+        $employerSection.hide();
         return;
       }
+
+      var otherContactType = $el.select2(\'data\').extra.contact_type;
+      $employerSection.toggle(contactType === \'Individual\' && otherContactType === \'Organization\');
 
       $.post(CRM.url(\'civicrm/ajax/inline\'), {
           \'contact_id\': sharedContactId,

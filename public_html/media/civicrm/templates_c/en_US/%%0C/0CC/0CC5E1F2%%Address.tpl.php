@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:43:49
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:31:00
          compiled from CRM/Contact/Page/Inline/Address.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Page/Inline/Address.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Page/Inline/Address.tpl', 28, false),array('function', 'crmURL', 'CRM/Contact/Page/Inline/Address.tpl', 44, false),array('modifier', 'nl2br', 'CRM/Contact/Page/Inline/Address.tpl', 51, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Page/Inline/Address.tpl', 1, false),array('block', 'ts', 'CRM/Contact/Page/Inline/Address.tpl', 28, false),array('function', 'crmURL', 'CRM/Contact/Page/Inline/Address.tpl', 49, false),array('modifier', 'nl2br', 'CRM/Contact/Page/Inline/Address.tpl', 56, false),)), $this); ?>
 <?php $this->_tag_stack[] = array('crmScope', array('extensionKey' => "")); $_block_repeat=true;smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><div id="address-block-<?php echo $this->_tpl_vars['locationIndex']; ?>
 " class="address <?php if ($this->_tpl_vars['add']): ?>crm-address_type_<?php echo $this->_tpl_vars['add']['location_type']; ?>
 <?php else: ?>add-new<?php endif; ?><?php if ($this->_tpl_vars['permission'] == 'edit'): ?> crm-inline-edit" data-dependent-fields='["#crm-contactinfo-content", ".crm-inline-edit.address:not(.add-new)"]' data-edit-params='{"cid": "<?php echo $this->_tpl_vars['contactId']; ?>
@@ -15,7 +15,12 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
         <span class="crm-i fa-pencil"></span> <?php if ($this->_tpl_vars['add']): ?><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Edit address<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?><?php else: ?><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Add address<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?><?php endif; ?>
       </div>
     <?php endif; ?>
-    <?php if ($this->_tpl_vars['add']): ?>
+    <?php if (! $this->_tpl_vars['add']): ?>
+      <div class="crm-summary-row">
+        <div class="crm-label"><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Address<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></div>
+        <div class="crm-content"></div>
+      </div>
+    <?php else: ?>
       <div class="crm-summary-row <?php if ($this->_tpl_vars['add']['is_primary'] == 1): ?> primary<?php endif; ?>">
         <div class="crm-label">
           <?php $this->_tag_stack[] = array('ts', array('1' => $this->_tpl_vars['add']['location_type'])); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>%1 Address<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>

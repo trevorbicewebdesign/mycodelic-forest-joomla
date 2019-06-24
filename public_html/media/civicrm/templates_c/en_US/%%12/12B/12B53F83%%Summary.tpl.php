@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:43:49
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:31:00
          compiled from CRM/Contact/Page/View/Summary.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Page/View/Summary.tpl', 1, false),array('block', 'crmButton', 'CRM/Contact/Page/View/Summary.tpl', 58, false),array('block', 'ts', 'CRM/Contact/Page/View/Summary.tpl', 59, false),array('block', 'crmRegion', 'CRM/Contact/Page/View/Summary.tpl', 145, false),array('modifier', 'cat', 'CRM/Contact/Page/View/Summary.tpl', 42, false),array('modifier', 'escape', 'CRM/Contact/Page/View/Summary.tpl', 128, false),array('modifier', 'colorContrast', 'CRM/Contact/Page/View/Summary.tpl', 169, false),array('function', 'help', 'CRM/Contact/Page/View/Summary.tpl', 92, false),array('function', 'crmURL', 'CRM/Contact/Page/View/Summary.tpl', 164, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Page/View/Summary.tpl', 1, false),array('block', 'crmButton', 'CRM/Contact/Page/View/Summary.tpl', 58, false),array('block', 'ts', 'CRM/Contact/Page/View/Summary.tpl', 59, false),array('block', 'crmRegion', 'CRM/Contact/Page/View/Summary.tpl', 146, false),array('modifier', 'cat', 'CRM/Contact/Page/View/Summary.tpl', 42, false),array('modifier', 'escape', 'CRM/Contact/Page/View/Summary.tpl', 128, false),array('function', 'help', 'CRM/Contact/Page/View/Summary.tpl', 92, false),)), $this); ?>
 <?php $this->_tag_stack[] = array('crmScope', array('extensionKey' => "")); $_block_repeat=true;smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><?php if ($this->_tpl_vars['action'] == 2): ?>
   <?php $_smarty_tpl_vars = $this->_tpl_vars;
 $this->_smarty_include(array('smarty_include_tpl_file' => "CRM/Contact/Form/Contact.tpl", 'smarty_include_vars' => array()));
@@ -67,7 +67,7 @@ unset($_smarty_tpl_vars);
 
         <?php elseif (call_user_func ( array ( 'CRM_Core_Permission' , 'check' ) , 'delete contacts' )): ?>
           <li class="crm-delete-action crm-contact-delete">
-            <?php $this->_tag_stack[] = array('crmButton', array('p' => 'civicrm/contact/view/delete','q' => "&reset=1&delete=1&cid=".($this->_tpl_vars['contactId']),'class' => 'delete','icon' => 'trash')); $_block_repeat=true;smarty_block_crmButton($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>
+            <?php $this->_tag_stack[] = array('crmButton', array('p' => 'civicrm/contact/view/delete','q' => "reset=1&delete=1&cid=".($this->_tpl_vars['contactId']),'class' => 'delete','icon' => 'trash')); $_block_repeat=true;smarty_block_crmButton($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>
               <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Delete Contact<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
             <?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_crmButton($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>
           </li>
@@ -120,8 +120,10 @@ unset($_smarty_tpl_vars);
             <a href="<?php echo $this->_tpl_vars['tabValue']['url']; ?>
 " title="<?php echo ((is_array($_tmp=$this->_tpl_vars['tabValue']['title'])) ? $this->_run_mod_handler('escape', true, $_tmp) : smarty_modifier_escape($_tmp)); ?>
 ">
-              <?php echo $this->_tpl_vars['tabValue']['title']; ?>
-
+              <i class="<?php if ($this->_tpl_vars['tabValue']['icon']): ?><?php echo $this->_tpl_vars['tabValue']['icon']; ?>
+<?php else: ?>crm-i fa-puzzle-piece<?php endif; ?>"></i>
+              <span><?php echo $this->_tpl_vars['tabValue']['title']; ?>
+</span>
               <?php if (empty ( $this->_tpl_vars['tabValue']['hideCount'] )): ?><em><?php echo $this->_tpl_vars['tabValue']['count']; ?>
 </em><?php endif; ?>
             </a>
@@ -166,58 +168,12 @@ unset($_smarty_tpl_vars);
                 </div>
               <?php endif; ?>
                 <div class="<?php if (! empty ( $this->_tpl_vars['imageURL'] )): ?> float-left<?php endif; ?>">
-                  <div class="crm-clear crm-summary-block">
-                    <div class="crm-summary-row">
-                      <div class="crm-label" id="tagLink">
-                        <a href="<?php echo CRM_Utils_System::crmURL(array('p' => 'civicrm/contact/view','q' => "reset=1&cid=".($this->_tpl_vars['contactId'])."&selectedChild=tag"), $this);?>
-"
-                           title="<?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Edit Tags<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>"><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Tags<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></a>
-                      </div>
-                      <div class="crm-content" id="tags">
-                        <?php $_from = $this->_tpl_vars['contactTag']; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array'); }if (count($_from)):
-    foreach ($_from as $this->_tpl_vars['tagId'] => $this->_tpl_vars['tagName']):
-?>
-                          <span class="crm-tag-item" <?php if (! empty ( $this->_tpl_vars['allTags'][$this->_tpl_vars['tagId']]['color'] )): ?>style="background-color: <?php echo $this->_tpl_vars['allTags'][$this->_tpl_vars['tagId']]['color']; ?>
-; color: <?php echo ((is_array($_tmp=$this->_tpl_vars['allTags'][$this->_tpl_vars['tagId']]['color'])) ? $this->_run_mod_handler('colorContrast', true, $_tmp) : smarty_modifier_colorContrast($_tmp)); ?>
-;"<?php endif; ?> title="<?php echo ((is_array($_tmp=$this->_tpl_vars['allTags'][$this->_tpl_vars['tagId']]['description'])) ? $this->_run_mod_handler('escape', true, $_tmp) : smarty_modifier_escape($_tmp)); ?>
-">
-                            <?php echo $this->_tpl_vars['tagName']; ?>
-
-                          </span>
-                        <?php endforeach; endif; unset($_from); ?>
-                      </div>
-                    </div>
-                    <div class="crm-summary-row">
-                      <div class="crm-label"><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Contact Type<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></div>
-                      <div class="crm-content crm-contact_type_label">
-                        <?php if (isset ( $this->_tpl_vars['contact_type_label'] )): ?><?php echo $this->_tpl_vars['contact_type_label']; ?>
-<?php endif; ?>
-                      </div>
-                    </div>
-                    <div class="crm-summary-row">
-                      <div class="crm-label">
-                        <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>Contact ID<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?><?php if (! empty ( $this->_tpl_vars['userRecordUrl'] )): ?> / <?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>User ID<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?><?php endif; ?>
-                      </div>
-                      <div class="crm-content">
-                        <span class="crm-contact-contact_id"><?php echo $this->_tpl_vars['contactId']; ?>
-</span>
-                        <?php if (! empty ( $this->_tpl_vars['userRecordUrl'] )): ?>
-                          <span class="crm-contact-user_record_id">
-                            &nbsp;/&nbsp;<a title="View user record" class="user-record-link"
-                                            href="<?php echo $this->_tpl_vars['userRecordUrl']; ?>
-"><?php echo $this->_tpl_vars['userRecordId']; ?>
-</a>
-                          </span>
-                        <?php endif; ?>
-                      </div>
-                    </div>
-                    <div class="crm-summary-row">
-                      <div class="crm-label"><?php $this->_tag_stack[] = array('ts', array()); $_block_repeat=true;smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>External ID<?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_ts($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?></div>
-                      <div class="crm-content crm-contact_external_identifier_label">
-                        <?php if (isset ( $this->_tpl_vars['external_identifier'] )): ?><?php echo $this->_tpl_vars['external_identifier']; ?>
-<?php endif; ?>
-                      </div>
-                    </div>
+                  <div class="crm-summary-basic-block crm-summary-block">
+                    <?php $_smarty_tpl_vars = $this->_tpl_vars;
+$this->_smarty_include(array('smarty_include_tpl_file' => "CRM/Contact/Page/Inline/Basic.tpl", 'smarty_include_vars' => array()));
+$this->_tpl_vars = $_smarty_tpl_vars;
+unset($_smarty_tpl_vars);
+ ?>
                   </div>
                 </div>
               <?php $_block_content = ob_get_contents(); ob_end_clean(); $_block_repeat=false;echo smarty_block_crmRegion($this->_tag_stack[count($this->_tag_stack)-1][1], $_block_content, $this, $_block_repeat); }  array_pop($this->_tag_stack); ?>

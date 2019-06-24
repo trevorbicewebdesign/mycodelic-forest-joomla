@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:36:09
+<?php /* Smarty version 2.6.31, created on 2019-06-18 11:51:10
          compiled from CRM/Contact/Page/DashBoard.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Page/DashBoard.tpl', 1, false),)), $this); ?>

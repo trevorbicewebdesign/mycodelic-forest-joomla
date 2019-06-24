@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:36:10
+<?php /* Smarty version 2.6.31, created on 2019-06-18 11:48:35
          compiled from CRM/common/l10n.js.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/l10n.js.tpl', 1, false),array('block', 'ts', 'CRM/common/l10n.js.tpl', 45, false),array('modifier', 'date_format', 'CRM/common/l10n.js.tpl', 26, false),array('modifier', 'json_encode', 'CRM/common/l10n.js.tpl', 30, false),array('function', 'crmURL', 'CRM/common/l10n.js.tpl', 41, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/l10n.js.tpl', 1, false),array('block', 'ts', 'CRM/common/l10n.js.tpl', 49, false),array('modifier', 'date_format', 'CRM/common/l10n.js.tpl', 26, false),array('modifier', 'json_encode', 'CRM/common/l10n.js.tpl', 30, false),array('function', 'crmURL', 'CRM/common/l10n.js.tpl', 45, false),)), $this); ?>
 <?php $this->_tag_stack[] = array('crmScope', array('extensionKey' => "")); $_block_repeat=true;smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?>// http://civicrm.org/licensing
 // <script> Generated <?php echo ((is_array($_tmp=time())) ? $this->_run_mod_handler('date_format', true, $_tmp, '%d %b %Y %H:%M:%S') : smarty_modifier_date_format($_tmp, '%d %b %Y %H:%M:%S')); ?>
 
@@ -13,10 +13,18 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
 ;
   CRM.config.lcMessages = <?php echo json_encode($this->_tpl_vars['config']->lcMessages); ?>
 ;
+  CRM.config.locale = <?php echo json_encode($this->_tpl_vars['locale']); ?>
+;
+  CRM.config.cid = <?php echo json_encode($this->_tpl_vars['cid']); ?>
+;
   $.datepicker._defaults.dateFormat = CRM.config.dateInputFormat = <?php echo json_encode($this->_tpl_vars['config']->dateInputFormat); ?>
 ;
   CRM.config.timeIs24Hr = <?php if ($this->_tpl_vars['config']->timeInputFormat == 2): ?>true<?php else: ?>false<?php endif; ?>;
   CRM.config.ajaxPopupsEnabled = <?php echo json_encode($this->_tpl_vars['ajaxPopupsEnabled']); ?>
+;
+  CRM.config.allowAlertAutodismissal = <?php echo json_encode($this->_tpl_vars['allowAlertAutodismissal']); ?>
+;
+  CRM.config.resourceCacheCode = <?php echo json_encode($this->_tpl_vars['resourceCacheCode']); ?>
 ;
 
   // Merge entityRef settings
@@ -117,6 +125,12 @@ smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CR
     params: {},
     functions: []
   };
+
+  // Load polyfill
+  if (!(\'Promise\' in window)) {
+    CRM.loadScript(CRM.config.resourceBase + \'bower_components/es6-promise/es6-promise.auto.min.js\');
+  }
+
 })(jQuery);
 '; ?>
 

@@ -1,7 +1,7 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:36:09
+<?php /* Smarty version 2.6.31, created on 2019-06-18 11:51:10
          compiled from CRM/common/joomla.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
-smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/joomla.tpl', 1, false),array('block', 'ts', 'CRM/common/joomla.tpl', 40, false),array('block', 'crmRegion', 'CRM/common/joomla.tpl', 70, false),array('modifier', 'truncate', 'CRM/common/joomla.tpl', 30, false),array('function', 'crmNavigationMenu', 'CRM/common/joomla.tpl', 34, false),)), $this); ?>
+smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/joomla.tpl', 1, false),array('block', 'ts', 'CRM/common/joomla.tpl', 36, false),array('block', 'crmRegion', 'CRM/common/joomla.tpl', 66, false),array('modifier', 'truncate', 'CRM/common/joomla.tpl', 30, false),)), $this); ?>
 <?php $this->_tag_stack[] = array('crmScope', array('extensionKey' => "")); $_block_repeat=true;smarty_block_crmScope($this->_tag_stack[count($this->_tag_stack)-1][1], null, $this, $_block_repeat);while ($_block_repeat) { ob_start(); ?><?php if ($this->_tpl_vars['config']->debug): ?>
 <?php $_smarty_tpl_vars = $this->_tpl_vars;
 $this->_smarty_include(array('smarty_include_tpl_file' => "CRM/common/debug.tpl", 'smarty_include_vars' => array()));
@@ -13,10 +13,6 @@ unset($_smarty_tpl_vars);
 <div id="crm-container" class="crm-container<?php if ($this->_tpl_vars['urlIsPublic']): ?> crm-public<?php endif; ?>" lang="<?php echo ((is_array($_tmp=$this->_tpl_vars['config']->lcMessages)) ? $this->_run_mod_handler('truncate', true, $_tmp, 2, "", true) : smarty_modifier_truncate($_tmp, 2, "", true)); ?>
 " xml:lang="<?php echo ((is_array($_tmp=$this->_tpl_vars['config']->lcMessages)) ? $this->_run_mod_handler('truncate', true, $_tmp, 2, "", true) : smarty_modifier_truncate($_tmp, 2, "", true)); ?>
 ">
-
-<div id="crm-nav-menu-container"></div>
-<?php echo smarty_function_crmNavigationMenu(array('is_default' => 1), $this);?>
-
 
 <table border="0" cellpadding="0" cellspacing="0" id="crm-content">
   <tr>

@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.30, created on 2018-07-09 15:43:28
+<?php /* Smarty version 2.6.31, created on 2019-06-22 12:30:30
          compiled from CRM/Contact/Form/Edit/Address/CustomData.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Contact/Form/Edit/Address/CustomData.tpl', 1, false),)), $this); ?>
@@ -19,24 +19,11 @@ _<?php echo $this->_tpl_vars['blockId']; ?>
 
         </div>
         <div>
-            <?php if ($this->_tpl_vars['cd_edit']['help_pre']): ?>
-                <div class="messages help"><?php echo $this->_tpl_vars['cd_edit']['help_pre']; ?>
-</div>
-            <?php endif; ?>
-            <table class="form-layout-compressed">
-                <?php $_from = $this->_tpl_vars['cd_edit']['fields']; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array'); }if (count($_from)):
-    foreach ($_from as $this->_tpl_vars['field_id'] => $this->_tpl_vars['element']):
-?>
-                    <?php $_smarty_tpl_vars = $this->_tpl_vars;
-$this->_smarty_include(array('smarty_include_tpl_file' => "CRM/Contact/Form/Edit/Address/CustomField.tpl", 'smarty_include_vars' => array()));
+        <?php $_smarty_tpl_vars = $this->_tpl_vars;
+$this->_smarty_include(array('smarty_include_tpl_file' => "CRM/Custom/Form/Edit/CustomData.tpl", 'smarty_include_vars' => array('customDataEntity' => 'address')));
 $this->_tpl_vars = $_smarty_tpl_vars;
 unset($_smarty_tpl_vars);
  ?>
-                <?php endforeach; endif; unset($_from); ?>
-            </table>
-            <div class="spacer"></div>
-            <?php if ($this->_tpl_vars['cd_edit']['help_post']): ?><div class="messages help"><?php echo $this->_tpl_vars['cd_edit']['help_post']; ?>
-</div><?php endif; ?>
         </div>
     </div>
 
