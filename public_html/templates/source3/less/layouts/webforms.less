@@ -1,5 +1,7 @@
 @media screen and (max-width: @screen-md) {
 	#webforms {
+		padding-left: 20px;
+   		padding-right: 20px;
 		font-size:			4vw;
 		.content-wrapper {
 			.webform-header img{
@@ -12,8 +14,53 @@
 	}
 }
 #webforms {
-	font-family:			"Open Sans";
 	
+	font-family:			"Open Sans";
+	.formResponsive input, 
+	.formResponsive textarea,
+	.formResponsive select{
+		width:100%;
+		box-sizing:border-box;
+		min-height:40px;
+	}
+	.formResponsive textarea {
+		height:100px;
+		display:inline-block;
+ 		vertical-align:middle;
+	}
+	.formResponsive .formRow [class*="formSpan"]{
+		min-height:auto !important;
+	}
+	.formResponsive input[type="radio"], 
+	.formResponsive input[type="checkbox"] {
+		width:30px;
+	}
+	.rsform-block-address-1 label,
+	.rsform-block-address-2 label,
+	.rsform-block-city label,
+	.rsform-block-state label,
+	.rsform-block-zipcode label,
+	.rsform-block-email label,
+	.rsform-block-country label,
+	.rsform-block-cell-phone label,
+	.rsform-block-lname label,
+	.rsform-block-fname label {
+		display:none !important;
+	}
+	.rsform-block-attending label {
+		padding-left:0px !important;
+	}
+	.rsform-block-no-address {
+		font-size:12px;
+		input {
+			height:20px;
+			min-height:auto;
+			margin-right:10px !important;
+		}
+		label {
+			padding-left:0px !important;	
+		}
+	}
 	.content-wrapper {
 		box-sizing:		border-box;
 		max-width:		430px;
@@ -26,8 +73,17 @@
 			max-width:		100%;
 		}
 	}
+	h1 {
+		font-size: 			35px;
+		width:				100%;
+		margin: 			0px;
+		text-align:			center;
+		font-family: 		'Fredericka the Great', cursive;
+		text-transform: 	uppercase;
+		font-weight: 		normal;
+	}
 	h2 {
-		
+		font-size:20px;
 		width:				100%;
 		text-align:			center;
 	}
@@ -62,7 +118,7 @@
     		display: 			inline-block;
 	}
 	.formResponsive select {
-		font-size:		4vw;
+		
 	}
 	
 	.form-row.contant-address,
