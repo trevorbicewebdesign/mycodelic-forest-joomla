@@ -19,3 +19,4 @@
 /public_html/t3-assets/
 *-cache-com_*
 *-cache-plg_*
+export-database.sh 
