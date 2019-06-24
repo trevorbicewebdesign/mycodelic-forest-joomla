@@ -1,0 +1,141 @@
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         https://github.com/t3framework/ 
+ *------------------------------------------------------------------------------
+*/
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+/* joomla 3.x 400px */
+@-webkit-keyframes toRightFromLeft {
+  49% {
+    -webkit-transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    -webkit-transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+@-moz-keyframes toRightFromLeft {
+  49% {
+    -moz-transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    -moz-transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+@keyframes toRightFromLeft {
+  49% {
+    transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+.com_community #community-wrap label input,
+.com_community #community-wrap .form-field input {
+  display: inline-block;
+  margin-top: 0;
+  vertical-align: middle;
+}
+.com_community #community-wrap .cGuest .row-fluid.hero-area {
+  margin-left: 0;
+  margin-right: 0;
+}
+.com_community #community-wrap .js_dropDownMaster dt,
+.com_community #community-wrap .js_dropDownParent li > a {
+  height: 28px;
+}
+.com_community #community-wrap .js-toolbar .navbar-inner {
+  min-height: 40px;
+}
+.com_community #community-wrap .js-toolbar .nav-collapse {
+  display: block;
+}
+.com_community #community-wrap .js-toolbar .nav > li > a {
+  height: 38px;
+  line-height: 25px;
+}
+.com_community #community-wrap .js-toolbar .dropdown-menu > li {
+  border: 0;
+}
+.com_community #community-wrap .cStream-Content .row-fluid {
+  margin-left: 0;
+  margin-right: 0;
+}
+.com_community #community-wrap .cProfile-Preferences .js_dropDownMaster dt,
+.com_community #community-wrap .cProfile-Preferences .js_dropDownParent li > a {
+  height: 26px;
+  line-height: 20px;
+}
+.com_community #community-wrap .cProfile-Preferences label input {
+  display: inline-block;
+  margin-top: 0;
+  vertical-align: middle;
+}
+.com_community #community-wrap .cSearch .label-checkbox input {
+  display: inline-block;
+  margin-top: 0;
+  vertical-align: middle;
+}
+.com_community #community-wrap .advance-search label input {
+  display: inline-block;
+  margin-top: 0;
+  vertical-align: middle;
+}
+.com_community #community-wrap .cGroups-Create label input {
+  display: inline-block;
+  margin-top: 0;
+  vertical-align: middle;
+}
