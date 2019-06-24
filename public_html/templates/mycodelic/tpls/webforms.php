@@ -40,24 +40,22 @@ defined('_JEXEC') or die;
 		}
 		//]]>
 	</script>
-	<link href="https://fonts.googleapis.com/css?family=Fredericka+the+Great" rel="stylesheet">
 <?php 
 	// $this->loadBlock('home-head') ;
 	// $this->addCss('layouts/home-template');
 	$this->addCss('layouts/webforms');
 	?>
-	
 </head>
 <body id="webforms">
 	<div class="content-wrapper">
 	<div class="container">
 		<div class="webform-header">
-			<img src="/templates/source3/images/webforms-logo.svg" />
+			<img src="/templates/mycodelic/images/webforms-logo.svg" />
 		</div>
 		<jdoc:include type="component" />
 		<hr/>
 		<div class="footer">
-		)'( Mycodelic Forest <?php echo date("Y"); ?>
+		)'( Mycodelic Forest 2018
 		</div>
 	</div>
 	</div>
