@@ -1,0 +1,312 @@
+[04-Jul-2019 11:02:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:03:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:04:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:05:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:06:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:07:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:08:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:09:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:10:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:11:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:12:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:13:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:14:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:15:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:16:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:17:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:18:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:19:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:20:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:21:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:22:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:23:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:24:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:25:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:26:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:27:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:28:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:29:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:30:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:31:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:32:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:33:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:34:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:35:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:36:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:37:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:38:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:39:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:40:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:41:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:42:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:43:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:44:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:45:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:46:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:47:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:48:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:49:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:50:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:51:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:52:01 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
+[04-Jul-2019 11:53:02 CST6CDT] PHP Fatal error:  Uncaught Error: Class 'JFactory' not found in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php:65
+Stack trace:
+#0 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/civicrm.config.php(3): include_once()
+#1 /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/bin/cron.php(29): require_once('/home/trevorbi/...')
+#2 {main}
+  thrown in /home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php on line 65
