@@ -62,7 +62,7 @@ if (!defined('CIVICRM_UF')) {
     define('CIVICRM_UF', 'Joomla');
   }
 }
-
+$config = JFactory::getConfig();
 /**
  * Content Management System (CMS) Datasource:
  *
@@ -73,7 +73,7 @@ if (!defined('CIVICRM_UF')) {
  *      define( 'CIVICRM_UF_DSN', 'mysql://cms_db_username:cms_db_password@db_server/cms_database?new_link=true');
  */
 if (!defined('CIVICRM_UF_DSN') && CIVICRM_UF !== 'UnitTests') {
-  define( 'CIVICRM_UF_DSN'           , 'mysql://trevorbi_mycode:!UE^Iz[D031T@localhost/trevorbi_mycodelic?new_link=true');
+  define( 'CIVICRM_UF_DSN'           , "mysql://{$config->get('user')}:{$config->get('password')}@{$config->get('host')}/{$config->get('db')}?new_link=true");
 }
 
 // %%extraSettings%%
@@ -106,7 +106,7 @@ if (!defined('CIVICRM_DSN')) {
     define('CIVICRM_DSN', $GLOBALS['_CV']['TEST_DB_DSN']);
   }
   else {
-    define('CIVICRM_DSN', 'mysql://trevorbi_mycode:!UE^Iz[D031T@localhost/trevorbi_mycodelic?new_link=true');
+    define('CIVICRM_DSN', "mysql://{$config->get('user')}:{$config->get('password')}@{$config->get('host')}/{$config->get('db')}?new_link=true");
   }
 }
 
@@ -178,9 +178,9 @@ if (!defined('CIVICRM_LOGGING_DSN')) {
 
 global $civicrm_root;
 
-$civicrm_root = '/home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm';
+$civicrm_root = JPATH_ROOT.'/administrator/components/com_civicrm/civicrm';
 if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
-  define( 'CIVICRM_TEMPLATE_COMPILEDIR', '/home/trevorbi/mycodelicforest.org/public_html/media/civicrm/templates_c');
+  define( 'CIVICRM_TEMPLATE_COMPILEDIR', JPATH_ROOT.'/media/civicrm/templates_c');
 }
 
 /**
