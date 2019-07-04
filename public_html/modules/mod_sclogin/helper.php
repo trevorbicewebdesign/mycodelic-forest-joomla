@@ -1,10 +1,10 @@
 <?php
 /**
  * @package         SCLogin
- * @copyright (c)   2009-2018 by SourceCoast - All Rights Reserved
+ * @copyright (c)   2009-2019 by SourceCoast - All Rights Reserved
  * @license         http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL
- * @version         Release v7.2.5
- * @build-date      2018/03/13
+ * @version         Release v8.0.5
+ * @build-date      2019/01/14
  */
 
 // no direct access
@@ -268,7 +268,7 @@ class modSCLoginHelper
         }
         else
         {
-            $this->profileLink = '';
+            $this->profileLink = JRoute::_('index.php?option=com_users&view=profile', false);
             $this->registerLink = JRoute::_('index.php?option=com_users&view=registration', false);
         }
 // common for J!, JomSocial, and Virtuemart
@@ -525,11 +525,11 @@ class modSCLoginHelper
 
             if ($registerType == "communitybuilder" && file_exists(JPATH_ADMINISTRATOR . '/components/com_comprofiler/plugin.foundation.php'))
             {
-                $forgotButton = '<a href="' . $forgotSharedLink . '" class="forgot btn width-auto hasTooltip" tabindex="-1" data-placement="right" data-original-title="' . $forgotSharedText . '"><i class="icon-question-sign' . $buttonImageColor . '" title="' . $forgotSharedText . '"></i></a>';
+                $forgotButton = '<a href="' . $forgotSharedLink . '" class="forgot btn width-auto hasTooltip" tabindex="-1" data-placement="right" title="' . $forgotSharedText . '"><i class="icon-question-sign' . $buttonImageColor . '"></i></a>';
             }
             else
             {
-                $forgotButton = '<a href="' . $forgotButtonLink . '" class="forgot btn width-auto hasTooltip" tabindex="-1" data-placement="right" data-original-title="' . $forgotButtonText . '"><i class="icon-question-sign' . $buttonImageColor . '" title="' . $forgotButtonText . '"></i></a>';
+                $forgotButton = '<a href="' . $forgotButtonLink . '" class="forgot btn width-auto hasTooltip" tabindex="-1" data-placement="right" title="' . $forgotButtonText . '"><i class="icon-question-sign' . $buttonImageColor . '"></i></a>';
             }
         }
         return $forgotButton;
