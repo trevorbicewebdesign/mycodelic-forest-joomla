@@ -35,7 +35,7 @@
 			$response = array();
 			
 			if($getAllCode == true)
-				$response["all"] = __("All Languages",REVSLIDER_TEXTDOMAIN);
+				$response["all"] = __ug("All Languages",REVSLIDER_TEXTDOMAIN);
 			
 			foreach($arrLangs as $code=>$arrLang){
 				$name = $arrLang["native_name"];
@@ -151,7 +151,7 @@
 			$langs = self::getArrLanguages();
 			
 			if($code == "all")
-				return(__("All Languages", REVSLIDER_TEXTDOMAIN));
+				return(__ug("All Languages", REVSLIDER_TEXTDOMAIN));
 			
 			if(array_key_exists($code, $langs))
 				return($langs[$code]);

@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Unite Revolution Slider for Joomla 1.7-2.5
+ * @package Unite Slider for Joomla 1.7-2.5
  * @author UniteCMS.net
  * @copyright (C) 2012 Unite CMS, All Rights Reserved. 
  * @license GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
@@ -26,17 +26,41 @@ defined('_JEXEC') or die;
 			if(defined("JVERSION")){
 				$version = JVERSION;
 				$version = (int)$version;
-				return($version == 3);
+				return($version >= 3);
 			}
 			
 			if(class_exists("JVersion")){
 				$jversion = new JVersion;
 				$version = $jversion->getShortVersion();
 				$version = (int)$version;
-				return($version == 3);
+				return($version >= 3);
 			}			
 			
 			return(!defined("DS"));
+		}
+		
+		
+		/**
+		 * check if joomla 3.5
+		 */
+		public static function isJoomla35(){
+			
+			if(self::isJoomla3() == false)
+				return(false);
+			
+			$objVersion = new JVersion();
+			$isCompatible = $objVersion->isCompatible("3.5");
+			return($isCompatible);
+		}
+		
+		
+		/**
+		 * return true / false if joomla 35
+		 */
+		public static function isJoomla35Str(){
+			$isJoomla35 = self::isJoomla35();
+			$isJoomla35 = UniteFunctionsRev::boolToStr($isJoomla35);
+			return($isJoomla35);
 		}
 		
 		
@@ -119,6 +143,16 @@ defined('_JEXEC') or die;
 			
 			$document->addStyleSheet($urlStyle,"text/css",null,$attribs);
 		}
+		
+		
+		/**
+		 * add style declaration
+		 */
+		public static function addStyleDeclaration($style){
+			$document = JFactory::getDocument();
+			$document->addStyleDeclaration($style);
+		}
+		
 		
 		/**
 		 * 
@@ -412,6 +446,11 @@ defined('_JEXEC') or die;
 		 * convert relative url to full url
 		 */
 		public static function urlToFull($urlImage){
+		    
+		    $urlImage = trim($urlImage);
+		    if(empty($urlImage))
+		        return($urlImage);
+		    
 			$urlBase = GlobalsRevSlider::$url_base;
 			$urlLow = strtolower($urlImage);
 			

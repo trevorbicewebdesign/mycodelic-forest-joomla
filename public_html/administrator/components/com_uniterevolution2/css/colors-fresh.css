@@ -38,7 +38,7 @@
     margin-bottom: 20px;
     padding: 0;
 }
-
+.postbox.layer_sortbox {margin-bottom:0;}
 .js .sidebar-name:hover h3,
 .js .postbox h3:hover {
     color: #000;

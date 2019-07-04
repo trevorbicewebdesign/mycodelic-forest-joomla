@@ -57,9 +57,9 @@
 			$urlIconEdit = self::$url_plugin."images/icon-edit.png";
 			$urlIconPreview = self::$url_plugin."images/preview.png";
 			
-			$textDelete = __("Delete Slide",REVSLIDER_TEXTDOMAIN);
-			$textEdit = __("Edit Slide",REVSLIDER_TEXTDOMAIN);
-			$textPreview = __("Preview Slide",REVSLIDER_TEXTDOMAIN);
+			$textDelete = __ug("Delete Slide",REVSLIDER_TEXTDOMAIN);
+			$textEdit = __ug("Edit Slide",REVSLIDER_TEXTDOMAIN);
+			$textPreview = __ug("Preview Slide",REVSLIDER_TEXTDOMAIN);
 			
 			$htmlBefore = "";
 			$htmlBefore .= "<li class='item_operation operation_delete'><a data-operation='delete' href='javascript:void(0)'>"."\n";
@@ -92,7 +92,7 @@
 		
 		//get button links
 		$urlNewPost = UniteFunctionsWPRev::getUrlNewPost();
-		$linkNewPost = UniteFunctionsRev::getHtmlLink($urlNewPost, __("<i class='revicon-pencil-1'></i>New Post",REVSLIDER_TEXTDOMAIN),"button_new_post","button-primary revblue",true);
+		$linkNewPost = UniteFunctionsRev::getHtmlLink($urlNewPost, __ug("<i class='revicon-pencil-1'></i>New Post",REVSLIDER_TEXTDOMAIN),"button_new_post","button-primary revblue",true);
 		
 		//get ordering
 		$arrSortBy = UniteFunctionsWPRev::getArrSortBy();

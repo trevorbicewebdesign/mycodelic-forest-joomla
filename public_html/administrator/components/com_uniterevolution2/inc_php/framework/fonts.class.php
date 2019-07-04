@@ -15,14 +15,14 @@ if(!class_exists('ThemePunch_Fonts')) {
 		 */
 		public function add_new_font($new_font){
 			
-			if(!isset($new_font['url']) || strlen($new_font['url']) < 3) return __('Wrong parameter received', TP_TEXTDOMAIN);
-			if(!isset($new_font['handle']) || strlen($new_font['handle']) < 3) return __('Wrong handle received', TP_TEXTDOMAIN);
+			if(!isset($new_font['url']) || strlen($new_font['url']) < 3) return __ug('Wrong parameter received', TP_TEXTDOMAIN);
+			if(!isset($new_font['handle']) || strlen($new_font['handle']) < 3) return __ug('Wrong handle received', TP_TEXTDOMAIN);
 			
 			$fonts = $this->get_all_fonts();
 			
 			if(!empty($fonts)){
 				foreach($fonts as $font){
-					if($font['handle'] == $new_font['handle']) return __('Font with handle already exist, choose a different handle', TP_TEXTDOMAIN);
+					if($font['handle'] == $new_font['handle']) return __ug('Font with handle already exist, choose a different handle', TP_TEXTDOMAIN);
 				}
 			}
 			
@@ -41,8 +41,8 @@ if(!class_exists('ThemePunch_Fonts')) {
 		 */
 		public function edit_font_by_handle($edit_font){
 			
-			if(!isset($edit_font['handle']) || strlen($edit_font['handle']) < 3) return __('Wrong Handle received', TP_TEXTDOMAIN);
-			if(!isset($edit_font['url']) || strlen($edit_font['url']) < 3) return __('Wrong Params received', TP_TEXTDOMAIN);
+			if(!isset($edit_font['handle']) || strlen($edit_font['handle']) < 3) return __ug('Wrong Handle received', TP_TEXTDOMAIN);
+			if(!isset($edit_font['url']) || strlen($edit_font['url']) < 3) return __ug('Wrong Params received', TP_TEXTDOMAIN);
 			
 			$fonts = $this->get_all_fonts();
 			
@@ -79,7 +79,7 @@ if(!class_exists('ThemePunch_Fonts')) {
 				}
 			}
 			
-			return __('Font not found! Wrong handle given.', TP_TEXTDOMAIN);
+			return __ug('Font not found! Wrong handle given.', TP_TEXTDOMAIN);
 		}
 		
 		

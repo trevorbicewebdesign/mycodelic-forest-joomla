@@ -65,7 +65,7 @@ var UniteSettingsRev = new function(){
 	 * on selects change - impiment the hide/show, enabled/disables functionality
 	 */
 	var onSettingChange = function(){
-
+				
 		var controlValue = this.value.toLowerCase();
 		var controlName = this.name;
 		
@@ -126,7 +126,7 @@ var UniteSettingsRev = new function(){
 	 * combine controls to one object, and init control events.
 	 */
 	var initControls = function(){
-				
+		
 		//combine controls
 		for(key in g_settingsObj){
 			var obj = g_settingsObj[key];
@@ -171,8 +171,12 @@ var UniteSettingsRev = new function(){
 				jQuery(this).data('int',setInterval(function() {
 					if(input.val() != oldval){
 						oldval = input.val();
-						jQuery('#css_preview').css(input.data('linkto'), oldval);
-						jQuery('input[name="css_'+input.data('linkto')+'"]').val(oldval);
+						var linkTo = input.data('linkto');
+						if(linkTo){
+							jQuery('#css_preview').css(input.data('linkto'), oldval);
+							jQuery('input[name="css_'+input.data('linkto')+'"]').val(oldval);
+						}
+					
 					}
 				} ,200));
 			}
@@ -227,9 +231,11 @@ var UniteSettingsRev = new function(){
 	/**
 	 * image search
 	 */
+	
 	var initImageSearch = function(){
 		
 		jQuery(".button-image-select").click(function(){
+			jQuery(this).css('opacity', '0');
 			var settingID = this.id.replace("_button","");
 			UniteAdminRev.openAddImageDialog("Choose Image",function(urlImage, imageID){
 				//update input:
@@ -240,7 +246,14 @@ var UniteSettingsRev = new function(){
 				
 			});
 		});
-		
+
+		jQuery('body').live('click',function(){
+			var settingID = this.id.replace("_button_remove","");
+			jQuery("#"+settingID).val('');
+
+			jQuery("#" + settingID + "_button_preview").html('');
+		});
+
 		jQuery(".button-image-remove").click(function(){
 			var settingID = this.id.replace("_button_remove","");
 			jQuery("#"+settingID).val('');
@@ -306,11 +319,14 @@ var UniteSettingsRev = new function(){
 		
 		//init checklist
 		jQuery(".settings_wrapper .input_checklist").each(function(){
+			
 			var select = jQuery(this);
+			
 			var ominWidth = select.data("minwidth");
 						
-			if (ominWidth==undefined) ominWidth="none"
-				
+			if (ominWidth==undefined) 
+				ominWidth="none"
+			
 			select.dropdownchecklist({
 					zIndex:1000,
 					minWidth:ominWidth,

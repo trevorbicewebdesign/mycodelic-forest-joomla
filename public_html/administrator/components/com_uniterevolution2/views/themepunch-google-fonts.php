@@ -27,15 +27,15 @@
 				
 				?>
 				<div class="postbox eg-postbox" style="width:100%;min-width:500px">
-					<h3 class="box-closed"><span style="font-weight:400"><?php _e('Font Family:', REVSLIDER_TEXTDOMAIN); ?></span><span style="text-transform:uppercase;"><?php echo $title; ?> </span><div class="postbox-arrow"></div></h3>
+					<h3 class="box-closed"><span style="font-weight:400"><?php _uge('Font Family:', REVSLIDER_TEXTDOMAIN); ?></span><span style="text-transform:uppercase;"><?php echo $title; ?> </span><div class="postbox-arrow"></div></h3>
 					<div class="inside" style="display:none;padding:0px !important;margin:0px !important;height:100%;position:relative;background:#ebebeb">
 						<div class="tp-googlefont-row">
-							<div class="eg-cus-row-l"><label><?php _e('Handle:', REVSLIDER_TEXTDOMAIN); ?></label> tp-<input type="text" name="esg-font-handle[]" value="<?php echo @$font['handle']; ?>" readonly="readonly"></div>
-							<div class="eg-cus-row-l"><label><?php _e('Parameter:', REVSLIDER_TEXTDOMAIN); ?></label><input type="text" name="esg-font-url[]" value="<?php echo @$font['url']; ?>"></div>
+							<div class="eg-cus-row-l"><label><?php _uge('Handle:', REVSLIDER_TEXTDOMAIN); ?></label> tp-<input type="text" name="esg-font-handle[]" value="<?php echo @$font['handle']; ?>" readonly="readonly"></div>
+							<div class="eg-cus-row-l"><label><?php _uge('Parameter:', REVSLIDER_TEXTDOMAIN); ?></label><input type="text" name="esg-font-url[]" value="<?php echo @$font['url']; ?>"></div>
 						</div>
 						<div class="tp-googlefont-save-wrap-settings">
-							<a class="button-primary revblue eg-font-edit" href="javascript:void(0);"><?php _e('Edit', REVSLIDER_TEXTDOMAIN); ?></a>
-							<a class="button-primary revred eg-font-delete" href="javascript:void(0);"><?php _e('Remove', REVSLIDER_TEXTDOMAIN); ?></a>
+							<a class="button-primary revblue eg-font-edit" href="javascript:void(0);"><?php _uge('Edit', REVSLIDER_TEXTDOMAIN); ?></a>
+							<a class="button-primary revred eg-font-delete" href="javascript:void(0);"><?php _uge('Remove', REVSLIDER_TEXTDOMAIN); ?></a>
 						</div>
 					</div>
 				</div>
@@ -44,21 +44,21 @@
 		}
 		?>
 		<div>
-			<i style="font-size:10px;color:#777"><?php _e('Copy the Google Font Family from <a href="http://www.google.com/fonts" target="_blank">http://www.google.com/fonts</a> like: <strong>Open+Sans:400,700,600</strong>', REVSLIDER_TEXTDOMAIN); ?></i>
+			<i style="font-size:10px;color:#777"><?php _uge('Copy the Google Font Family from <a href="http://www.google.com/fonts" target="_blank">http://www.google.com/fonts</a> like: <strong>Open+Sans:400,700,600</strong>', REVSLIDER_TEXTDOMAIN); ?></i>
 		</div>
 	</div>
 
-	<a class="button-primary revblue" id="eg-font-add" href="javascript:void(0);"><?php _e('Add New Font', REVSLIDER_TEXTDOMAIN); ?></a>
+	<a class="button-primary revblue" id="eg-font-add" href="javascript:void(0);"><?php _uge('Add New Font', REVSLIDER_TEXTDOMAIN); ?></a>
 	
-	<div id="font-dialog-wrap" class="essential-dialog-wrap" title="<?php _e('Add Font', REVSLIDER_TEXTDOMAIN); ?>"  style="display: none; padding:20px !important;">
+	<div id="font-dialog-wrap" class="essential-dialog-wrap" title="<?php _uge('Add Font', REVSLIDER_TEXTDOMAIN); ?>"  style="display: none; padding:20px !important;">
 		
-		<div class="tp-googlefont-cus-row-l"><label><?php _e('Handle:', REVSLIDER_TEXTDOMAIN); ?></label><span style="margin-left:-20px;margin-right:2px;"><strong>tp-</strong></span><input type="text" name="eg-font-handle" value="" /></div>
+		<div class="tp-googlefont-cus-row-l"><label><?php _uge('Handle:', REVSLIDER_TEXTDOMAIN); ?></label><span style="margin-left:-20px;margin-right:2px;"><strong>tp-</strong></span><input type="text" name="eg-font-handle" value="" /></div>
 		<div style="margin-top:0px; padding-left:100px; margin-bottom:20px;">
-			<i style="font-size:12px;color:#777; line-height:20px;"><?php _e('Unique WordPress handle (Internal use only)', REVSLIDER_TEXTDOMAIN); ?></i>
+			<i style="font-size:12px;color:#777; line-height:20px;"><?php _uge('Unique WordPress handle (Internal use only)', REVSLIDER_TEXTDOMAIN); ?></i>
 		</div>
-		<div class="tp-googlefont-cus-row-l"><label><?php _e('Parameter:', REVSLIDER_TEXTDOMAIN); ?></label><input type="text" name="eg-font-url" value="" /></div>
+		<div class="tp-googlefont-cus-row-l"><label><?php _uge('Parameter:', REVSLIDER_TEXTDOMAIN); ?></label><input type="text" name="eg-font-url" value="" /></div>
 		<div style="padding-left:100px;">
-			<i style="font-size:12px;color:#777; line-height:20px;"><?php _e('Copy the Google Font Family from <a href="http://www.google.com/fonts" target="_blank">http://www.google.com/fonts</a><br/>i.e.:<strong>Open+Sans:400,600,700</strong>', REVSLIDER_TEXTDOMAIN); ?></i>
+			<i style="font-size:12px;color:#777; line-height:20px;"><?php _uge('Copy the Google Font Family from <a href="http://www.google.com/fonts" target="_blank">http://www.google.com/fonts</a><br/>i.e.:<strong>Open+Sans:400,600,700</strong>', REVSLIDER_TEXTDOMAIN); ?></i>
 		</div>
 		
 	</div>

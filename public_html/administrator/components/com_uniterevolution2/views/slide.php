@@ -16,7 +16,7 @@
 	$slide = new RevSlide();
 	$slide->initByID($slideID);
 	$slideParams = $slide->getParams();
-	
+		
 	//dmp($slideParams);exit();
 	
 	$operations = new RevOperations();
@@ -26,9 +26,15 @@
 	$slider = new RevSlider();
 	$slider->initByID($sliderID);
 	$sliderParams = $slider->getParams();
+	$sliderType = $slider->getParam("slider_type");
+	
+	$sliderTitle = $slider->getParam("title");
+	$sliderTitle = htmlspecialchars($sliderTitle);
 	
 	$arrSlideNames = $slider->getArrSlideNames();
 	
+	//$slide1 = $arrSlideNames[3];
+		
 	//check if slider is template
 	$sliderTemplate = $slider->getParam("template","false");
 		
@@ -48,6 +54,9 @@
 	
 	$settingsLayerOutput = new UniteSettingsProductSidebarRev();
 	$settingsSlideOutput = new UniteSettingsRevProductRev();
+	$settingsSlideAdvancedOutput = new UniteSettingsRevProductRev();
+	$settingsSlideLinkOutput = new UniteSettingsRevProductRev();
+	$settingsSlideTransitionOutput = new UniteSettingsRevProductRev();
 		
 	$arrLayers = $slide->getLayers();
 	
@@ -56,11 +65,16 @@
 	//get settings objects
 	$settingsLayer = self::getSettings("layer_settings");	
 	$settingsSlide = self::getSettings("slide_settings");
+	$settingsSlideAdvanced = self::getSettings("slide_settings_advanced");
+	$settingsSlideLink = self::getSettings("slide_settings_link");
+	$settingsSlideTransition = self::getSettings("slide_settings_transition");
+	
 	
 	$cssContent = self::getSettings("css_captions_content");
 	$arrCaptionClasses = $operations->getArrCaptionClasses($cssContent);
 	$arrFontFamily = $operations->getArrFontFamilys($slider);
 	$arrCSS = $operations->getCaptionsContentArray();
+	
 	$arrButtonClasses = $operations->getButtonClasses();
 	$urlCaptionsCSS = GlobalsRevSlider::$urlCaptionsCSSAdmin;
 
@@ -72,10 +86,18 @@
 	
 	//set stored values from "slide params"
 	$settingsSlide->setStoredValues($slideParams);
-		
+	$settingsSlideAdvanced->setStoredValues($slideParams);
+	$settingsSlideLink->setStoredValues($slideParams);
+	$settingsSlideTransition->setStoredValues($slideParams);
+	
+	
 	//init the settings output object
 	$settingsLayerOutput->init($settingsLayer);
 	$settingsSlideOutput->init($settingsSlide);
+	$settingsSlideAdvancedOutput->init($settingsSlideAdvanced);
+	$settingsSlideLinkOutput->init($settingsSlideLink);
+	$settingsSlideTransitionOutput->init($settingsSlideTransition);
+	
 	
 	//set various parameters needed for the page
 	$width = $sliderParams["width"];
@@ -97,22 +119,36 @@
 	
 	$closeUrl = self::getViewUrl(RevSliderAdmin::VIEW_SLIDES,"id=".$sliderID);
 	
+	
 	$jsonLayers = UniteFunctionsRev::jsonEncodeForClientSide($arrLayers);
 	$jsonCaptions = UniteFunctionsRev::jsonEncodeForClientSide($arrCaptionClasses);
 	$jsonFontFamilys = UniteFunctionsRev::jsonEncodeForClientSide($arrFontFamily);
 	$arrCssStyles = UniteFunctionsRev::jsonEncodeForClientSide($arrCSS);
-	
+		
 	$arrCustomAnim = UniteFunctionsRev::jsonEncodeForClientSide($arrAnim);
-	
+		
 	//bg type params
 	$bgType = UniteFunctionsRev::getVal($slideParams, "background_type","image");
+		
 	$slideBGColor = UniteFunctionsRev::getVal($slideParams, "slide_bg_color","#E7E7E7");
 	$divLayersClass = "slide_layers";
 	$bgSolidPickerProps = 'class="inputColorPicker slide_bg_color disabled" disabled="disabled"';
 	
 	$bgFit = UniteFunctionsRev::getVal($slideParams, "bg_fit","cover");
-	$bgFitX = intval(UniteFunctionsRev::getVal($slideParams, "bg_fit_x","100"));
-	$bgFitY = intval(UniteFunctionsRev::getVal($slideParams, "bg_fit_y","100"));
+	$bgFitX = UniteFunctionsRev::getVal($slideParams, "bg_fit_x","100");
+	$bgFitY = UniteFunctionsRev::getVal($slideParams, "bg_fit_y","100");
+	
+	if($bgFitX != "auto")
+		$bgFitX = intval($bgFitX);
+	
+	if($bgFitY != "auto")
+		$bgFitY = intval($bgFitY);
+	
+	if(is_numeric($bgFitX))
+		$bgFitX .= "%";
+	
+	if(is_numeric($bgFitY))
+		$bgFitY .= "%";
 	
 	$bgPosition = UniteFunctionsRev::getVal($slideParams, "bg_position","center top");
 	$bgPositionX = intval(UniteFunctionsRev::getVal($slideParams, "bg_position_x","0"));
@@ -149,7 +185,8 @@
 		case "image":
 			$style_wrapper .= "background-image:url('".$imageUrl."');";
 			if($bgFit == 'percentage'){
-				$style_wrapper .= "background-size: ".$bgFitX.'% '.$bgFitY.'%;';
+				
+				$style_wrapper .= "background-size: ".$bgFitX.' '.$bgFitY.';';
 			}else{
 				$style_wrapper .= "background-size: ".$bgFit.";";
 			}
@@ -163,7 +200,7 @@
 		case "external":
 			$style_wrapper .= "background-image:url('".$slideBGExternal."');";
 			if($bgFit == 'percentage'){
-				$style_wrapper .= "background-size: ".$bgFitX.'% '.$bgFitY.'%;';
+				$style_wrapper .= "background-size: ".$bgFitX.' '.$bgFitY.';';
 			}else{
 				$style_wrapper .= "background-size: ".$bgFit.";";
 			}

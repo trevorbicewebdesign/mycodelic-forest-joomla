@@ -22,13 +22,13 @@
 		 */
 		public static function getArrFilterTypes(){
 			
-				$arrEventsSort = array("none" => __("All Events",REVSLIDER_TEXTDOMAIN),
-									   "today" => __("Today",REVSLIDER_TEXTDOMAIN),
-									   "tomorrow"=>__("Tomorrow",REVSLIDER_TEXTDOMAIN),
-									   "future"=>__("Future",REVSLIDER_TEXTDOMAIN),
-									   "past"=>__("Past",REVSLIDER_TEXTDOMAIN),
-									   "month"=>__("This Month",REVSLIDER_TEXTDOMAIN),
-									   "nextmonth"=>__("Next Month",REVSLIDER_TEXTDOMAIN)
+				$arrEventsSort = array("none" => __ug("All Events",REVSLIDER_TEXTDOMAIN),
+									   "today" => __ug("Today",REVSLIDER_TEXTDOMAIN),
+									   "tomorrow"=>__ug("Tomorrow",REVSLIDER_TEXTDOMAIN),
+									   "future"=>__ug("Future",REVSLIDER_TEXTDOMAIN),
+									   "past"=>__ug("Past",REVSLIDER_TEXTDOMAIN),
+									   "month"=>__ug("This Month",REVSLIDER_TEXTDOMAIN),
+									   "nextmonth"=>__ug("Next Month",REVSLIDER_TEXTDOMAIN)
 				);
 				
 			return($arrEventsSort);
@@ -153,8 +153,8 @@
 		 */
 		public static function getArrSortBy(){
 			$arrSortBy = array();
-			$arrSortBy["event_start_date"] = __("Event Start Date",REVSLIDER_TEXTDOMAIN);
-			$arrSortBy["event_end_date"] = __("Event End Date",REVSLIDER_TEXTDOMAIN);
+			$arrSortBy["event_start_date"] = __ug("Event Start Date",REVSLIDER_TEXTDOMAIN);
+			$arrSortBy["event_end_date"] = __ug("Event End Date",REVSLIDER_TEXTDOMAIN);
 			return($arrSortBy);			
 		}
 		

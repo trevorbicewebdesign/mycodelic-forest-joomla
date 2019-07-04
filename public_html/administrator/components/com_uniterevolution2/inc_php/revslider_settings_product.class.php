@@ -115,13 +115,13 @@
 			<table>
 				<tr>
 					<td>
-						<?php _e("Screen Width",REVSLIDER_TEXTDOMAIN)?>1:
+						<?php _uge("Screen Width",REVSLIDER_TEXTDOMAIN)?>1:
 					</td>
 					<td>
 						<input id="<?php echo $id?>_w1" name="<?php echo $id?>_w1" type="text" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $w1?>">
 					</td>
 					<td>
-						<?php _e("Slider Width",REVSLIDER_TEXTDOMAIN)?>1: 
+						<?php _uge("Slider Width",REVSLIDER_TEXTDOMAIN)?>1: 
 					</td>
 					<td>
 						<input id="<?php echo $id?>_sw1" name="<?php echo $id?>_sw1" type="text" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $sw1?>">
@@ -129,13 +129,13 @@
 				</tr>
 				<tr>
 					<td>
-						<?php _e("Screen Width",REVSLIDER_TEXTDOMAIN)?>2: 
+						<?php _uge("Screen Width",REVSLIDER_TEXTDOMAIN)?>2: 
 					</td>
 					<td>
 						<input id="<?php echo $id?>_w2" name="<?php echo $id?>_w2" type="text" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $w2?>">
 					</td>
 					<td>
-						<?php _e("Slider Width",REVSLIDER_TEXTDOMAIN)?>2: 
+						<?php _uge("Slider Width",REVSLIDER_TEXTDOMAIN)?>2: 
 					</td>
 					<td>
 						<input id="<?php echo $id?>_sw2" name="<?php echo $id?>_sw2" type="text" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $sw2?>">
@@ -143,13 +143,13 @@
 				</tr>
 				<tr>
 					<td>
-						<?php _e("Screen Width",REVSLIDER_TEXTDOMAIN)?>3: 
+						<?php _uge("Screen Width",REVSLIDER_TEXTDOMAIN)?>3: 
 					</td>
 					<td>
 						<input id="<?php echo $id?>_w3" name="<?php echo $id?>_w3" type="text" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $w3?>">
 					</td>
 					<td>
-						<?php _e("Slider Width",REVSLIDER_TEXTDOMAIN)?>3:
+						<?php _uge("Slider Width",REVSLIDER_TEXTDOMAIN)?>3:
 					</td>
 					<td>
 						<input id="<?php echo $id?>_sw3" name="<?php echo $id?>_sw3" type="text" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $sw3?>">
@@ -157,13 +157,13 @@
 				</tr>
 				<tr>
 					<td>
-						<?php _e("Screen Width",REVSLIDER_TEXTDOMAIN)?>4: 
+						<?php _uge("Screen Width",REVSLIDER_TEXTDOMAIN)?>4: 
 					</td>
 					<td>
 						<input type="text" id="<?php echo $id?>_w4" name="<?php echo $id?>_w4" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $w4?>">
 					</td>
 					<td>
-						<?php _e("Slider Width",REVSLIDER_TEXTDOMAIN)?>4: 
+						<?php _uge("Slider Width",REVSLIDER_TEXTDOMAIN)?>4: 
 					</td>
 					<td>
 						<input type="text" id="<?php echo $id?>_sw4" name="<?php echo $id?>_sw4" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $sw4?>">
@@ -171,13 +171,13 @@
 				</tr>
 				<tr>
 					<td>
-						<?php _e("Screen Width",REVSLIDER_TEXTDOMAIN)?>5:
+						<?php _uge("Screen Width",REVSLIDER_TEXTDOMAIN)?>5:
 					</td>
 					<td>
 						<input type="text" id="<?php echo $id?>_w5" name="<?php echo $id?>_w5" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $w5?>">
 					</td>
 					<td>
-						<?php _e("Slider Width",REVSLIDER_TEXTDOMAIN)?>5:
+						<?php _uge("Slider Width",REVSLIDER_TEXTDOMAIN)?>5:
 					</td>
 					<td>
 						<input type="text" id="<?php echo $id?>_sw5" name="<?php echo $id?>_sw5" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $sw5?>">
@@ -185,13 +185,13 @@
 				</tr>
 				<tr>
 					<td>
-						<?php _e("Screen Width",REVSLIDER_TEXTDOMAIN)?>6:
+						<?php _uge("Screen Width",REVSLIDER_TEXTDOMAIN)?>6:
 					</td>
 					<td>
 						<input type="text" id="<?php echo $id?>_w6" name="<?php echo $id?>_w6" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $w6?>">
 					</td>
 					<td>
-						<?php _e("Slider Width",REVSLIDER_TEXTDOMAIN)?>6:
+						<?php _uge("Slider Width",REVSLIDER_TEXTDOMAIN)?>6:
 					</td>
 					<td>
 						<input type="text" id="<?php echo $id?>_sw6" name="<?php echo $id?>_sw6" class="textbox-small" <?php echo $strDisabled?> value="<?php echo $sw6?>">
@@ -214,14 +214,14 @@
 			
 			$sliderType = UniteFunctionsRev::getVal($setting, "slider_type");
 			
-			$textNormalW = __("Grid Width:",REVSLIDER_TEXTDOMAIN);
-			$textNormalH = __("Grid Height:",REVSLIDER_TEXTDOMAIN);
+			$textNormalW = __ug("Grid Width:",REVSLIDER_TEXTDOMAIN);
+			$textNormalH = __ug("Grid Height:",REVSLIDER_TEXTDOMAIN);
 			
-			$textFullWidthW = __("Grid Width:",REVSLIDER_TEXTDOMAIN);
-			$textFullWidthH = __("Grid Height:",REVSLIDER_TEXTDOMAIN);
+			$textFullWidthW = __ug("Grid Width:",REVSLIDER_TEXTDOMAIN);
+			$textFullWidthH = __ug("Grid Height:",REVSLIDER_TEXTDOMAIN);
 			
-			$textFullScreenW = __("Grid Width:",REVSLIDER_TEXTDOMAIN);
-			$textFullScreenH = __("Grid Height:",REVSLIDER_TEXTDOMAIN);
+			$textFullScreenW = __ug("Grid Width:",REVSLIDER_TEXTDOMAIN);
+			$textFullScreenH = __ug("Grid Height:",REVSLIDER_TEXTDOMAIN);
 			
 			//set default text (fixed, responsive) 
 			switch($sliderType){

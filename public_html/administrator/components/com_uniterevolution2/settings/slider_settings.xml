@@ -18,10 +18,6 @@
 			<option value="on" text="On" />
 			<option value="off" text="Off" />
 		</field>
-		<field name="simplify_ie8_ios4" type="radio" default="off" label="Simplify on IOS4/IE8" description="Simplyfies the Slider on IOS4 and IE8">
-			<option value="on" text="On" />
-			<option value="off" text="Off" />
-		</field>	
 	</fieldset>
 	
 	<fieldset name="stopslider" label="Loop and Progress" icon="eg-icon-chart-bar">
@@ -56,6 +52,11 @@
 		<field name="margin_right" type="text" label="Margin Right" default="0" unit="px" datatype="number" description="The right margin of the slider wrapper div" />
 		<field type="control" ctype="disable" parent="position" child="margin_left" value="center" />
 		<field type="control" ctype="disable" parent="position" child="margin_right" value="center" />
+		<field name="position_behind" type="radio" default="false" label="Put Behind Menu" description="Try to put the slider behind the menu giving it z-index:0">
+			<option value="true" text="Yes" />
+			<option value="false" text="No" />
+		</field>
+	
 	</fieldset>
 	<fieldset name="appearance" label="Appearance" icon="eg-icon-droplet">
 		<field name="shadow_type" type="list" default="2" label="Shadow Type" description="The Shadow display underneath the banner. The shadow apply to fixed and responsive modes only, the full width slider don't have a shadow.">
@@ -201,6 +202,7 @@
 	
 	<fieldset name="spinner" label="Spinner" icon="eg-icon-back-in-time">
 		<field name="use_spinner" type="list" default="0" label="Choose Spinner" description="Select a Spinner for your Slider">
+			<option value="-1" text="off" />
 			<option value="0" text="0" />
 			<option value="1" text="1" />
 			<option value="2" text="2" />
@@ -306,6 +308,21 @@
 		</field>
 		<field name="first_transition_duration" type="text" default="300" datatype="number" label="First Transition Duration" description="First slide transition duration (Default:300, min: 100 max 2000)" unit="ms" />
 		<field name="first_transition_slot_amount" type="text" default="7" datatype="number" label="First Transition Slot Amount" description="The number of slots or boxes the slide is divided into. If you use boxfade, over 7 slots can be juggy" unit="ms" />
+		<field type="bulk_control_end" />
+	</fieldset>
+	<fieldset name="fallbacks" label="Fallbacks" icon="eg-icon-ccw-1">
+		<field name="simplify_ie8_ios4" type="radio" default="off" label="Simplify on IOS4/IE8" description="Simplyfies the Slider on IOS4 and IE8">
+			<option value="on" text="On" />
+			<option value="off" text="Off" />
+		</field>
+		<field name="show_alternative_type" type="list" default="off" label="Use Alternative" description="Disables the Slider on the setting you make and shows an alternative image instead">
+			<option value="off" text="Off" />
+			<option value="mobile" text="On Mobile" />
+			<option value="ie8" text="On IE8" />
+			<option value="mobile-ie8" text="On Mobile and IE8" />
+		</field>
+		<field type="bulk_control_start" parent="show_alternative_type" ctype="disable" value="off" />
+			<field name="show_alternate_image" type="text" default="" label="Alternate Image" class="text-sidebar-long" description="The image that will used as the alternative to the Slider" />
 		<field type="bulk_control_end" />
 	</fieldset>
 	<fieldset name="reset_slide_settings" label="Global Overwrites" icon="eg-icon-reply">

@@ -48,7 +48,7 @@ var UniteCssEditorRev = new function(){
 	var initEditorDialog = function(){
 
 		jQuery("#button_edit_css").click(function(){
-			if(!UniteLayersRev.getLayerGeneralParamsStatus()) return false; //false if fields are disabled
+			if(!g_objLayers.getLayerGeneralParamsStatus()) return false; //false if fields are disabled
 			if(jQuery.trim(jQuery('#layer_caption').val()).length == 0) return false; //check if classname is empty
 			
 			jQuery("#css_preview").attr('style', ''); //clear the preview
@@ -90,41 +90,55 @@ var UniteCssEditorRev = new function(){
 										modal: true,
 										buttons: {
 											'Save as new': function(){
-												var id = checkIfHandleExists(jQuery('input[name="css_save_as"]').val());
-												var update = true;
-												if(id !== false){
-													update = false;
-													if(confirm("Class already exists, overwrite?")){
-														updateStylesInDb(jQuery('input[name="css_save_as"]').val(), id);
-														update = true;
+												
+												var update_name = jQuery('input[name="css_save_as"]').val();
+												
+												if(update_name != ''){
+													var id = checkIfHandleExists(update_name);
+													var update = true;
+													if(id !== false){
+														update = false;
+														if(confirm("Class already exists, overwrite?")){
+															updateStylesInDb(update_name, id);
+															update = true;
+														}
+													}else{
+														updateStylesInDb(update_name, false);
+														jQuery('#layer_caption').val(update_name);
+														g_objLayers.updateLayerFromFields();
+													}
+												
+													if(update){
+														jQuery("#dialog-change-css").dialog("close");
+														jQuery(this).dialog("close");
+														jQuery("#css_editor_wrap").dialog("close");
 													}
 												}else{
-													updateStylesInDb(jQuery('input[name="css_save_as"]').val(), false);
-													jQuery('#layer_caption').val(jQuery('input[name="css_save_as"]').val());
-													UniteLayersRev.updateLayerFromFields();
-												}
-												if(update){
-													jQuery("#dialog-change-css").dialog("close");
-													jQuery(this).dialog("close");
-													jQuery("#css_editor_wrap").dialog("close");
+													alert('Class must be a valid CSS class name');
 												}
 											}
 										}
 									});
 								},
 								Save: function() {
-									var id = checkIfHandleExists(jQuery('input[name="layer_caption"]').val());
-									if(id !== false){
-										if(confirm("Really overwrite Class?")){
-											updateStylesInDb(jQuery('input[name="layer_caption"]').val(), id);
+									var update_name = jQuery('input[name="layer_caption"]').val();
+																		
+									var id = checkIfHandleExists(update_name);
+									if(update_name != ''){
+										if(id !== false){
+											if(confirm("Really overwrite Class?")){
+												updateStylesInDb(update_name, id);
+												jQuery(this).dialog("close");
+												jQuery("#css_editor_wrap").dialog("close");
+											}
+										}else{
+											updateStylesInDb(update_name, false);
+											g_objLayers.updateLayerFromFields();
 											jQuery(this).dialog("close");
 											jQuery("#css_editor_wrap").dialog("close");
 										}
 									}else{
-										updateStylesInDb(jQuery('input[name="layer_caption"]').val(), false);
-										UniteLayersRev.updateLayerFromFields();
-										jQuery(this).dialog("close");
-										jQuery("#css_editor_wrap").dialog("close");
+										alert('Class must be a valid CSS class name');
 									}
 								}
 							}
@@ -1019,6 +1033,7 @@ var UniteCssEditorRev = new function(){
 	 * delete class from db if exists
 	 */
 	var deleteStylesInDb = function(handle, id){
+		
 		UniteAdminRev.setErrorMessageID("dialog_error_message");
 		
 		UniteAdminRev.ajaxRequest("delete_captions_css",handle,function(response){
@@ -1039,7 +1054,7 @@ var UniteCssEditorRev = new function(){
 		//refresh styles
 		setTimeout(function() {
 			if(urlCssCaptions)
-				UniteAdminRev.loadCssFile(urlCssCaptions,"rs-plugin-captions-css");
+				UniteAdminRev.loadCssFile(urlCssCaptions,"css_rs-plugin-captions");
 		},1000);
 	}
 	
@@ -1047,6 +1062,8 @@ var UniteCssEditorRev = new function(){
 	 * update styles for class/create new class
 	 */
 	var updateStylesInDb = function(handle, id){
+		
+		//throw new Error("maxim");
 		
 		UniteAdminRev.setErrorMessageID("dialog_error_message");
 		
@@ -1090,7 +1107,7 @@ var UniteCssEditorRev = new function(){
 		//refresh styles
 		setTimeout(function() {
 			if(urlCssCaptions)
-				UniteAdminRev.loadCssFile(urlCssCaptions,"rs-plugin-captions-css");
+				UniteAdminRev.loadCssFile(urlCssCaptions,"css_rs-plugin-captions");
 		},1000);
 		
 	}
