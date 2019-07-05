@@ -14,7 +14,15 @@
 
 defined('_JEXEC') or die;
 ?>
-
+<?php
+$app = JFactory::getApplication();
+$menu = $app->getMenu();
+if ($menu->getActive() == $menu->getDefault( 'en-GB' )) :
+    $parallax = 1;
+else:
+    $parallax = 2;
+endif;
+?>
 <!DOCTYPE html>
 <html lang="<?php echo $this->language; ?>" dir="<?php echo $this->direction; ?>"
 	  class='<jdoc:include type="pageclass" />'>
@@ -27,20 +35,7 @@ defined('_JEXEC') or die;
 	?>
 	
 <style>
-#parallax-1 {
-	background-image: 	url(/templates/mycodelic/images/34106547_10155519758463372_2974331639221452800_o.jpg);
-	background-size:	100% auto;
-	
-	min-height:		100vh;	
-	background-attachment:fixed;
-}
-#parallax-2 {
-	background-image: 	url(/templates/mycodelic/images/screen-shot-2013-08-26-at-1-06-50-am.png);
-	background-size:	100% auto;
-	
-	height:			50vh;	
-	background-attachment:fixed;
-}
+
 #logo-parallax {
 	position:			relative;
 	margin-top:		20vh;
@@ -48,7 +43,7 @@ defined('_JEXEC') or die;
 	-webkit-filter: 	drop-shadow( -5px -5px 15px #000 ); 
             filter: 	drop-shadow( -5px -5px 15px #000 );	
 }
-#parallax-2 #logo-parallax {
+#parallax_2 #logo-parallax {
 	position:			relative;
 	margin-top:		10vh;
 	max-width:		25vw;
@@ -68,25 +63,12 @@ defined('_JEXEC') or die;
 				<div class="pagetop-wrapper2" >
 					<?php $this->loadBlock('top_drawer') ?>	
 					<?php $this->loadBlock('slideshow') ?>
-				</div>
-				<?php $app = JFactory::getApplication();
-				$menu = $app->getMenu();
-				if ($menu->getActive() == $menu->getDefault( 'en-GB' )) :
-					
-				
-				?>
-				<a href="/">
-				<div id="parallax-1" data-stellar-background-ratio="0.5" data-stellar-vertical-offset="0">
-					<img id="logo-parallax" src="/templates/mycodelic/images/Mycodelic-Forest-logo_white.svg" style=""  data-stellar-ratio=".8" />
-				</div>
-				</a>
-				<?php else: ?>
-				<a href="/">
-				<div id="parallax-2" data-stellar-background-ratio="0.5" data-stellar-vertical-offset="0">
-					<img id="logo-parallax" src="/templates/mycodelic/images/Mycodelic-Forest-logo_white.svg" style=""  data-stellar-ratio=".8" />
-				</div>
-				</a>
-				<?php endif; ?>
+                    <a id="parallax_logo_<?php echo $parallax; ?>" class="parallax_logo" href="/">
+                        <div id="parallax_<?php echo $parallax; ?>" data-stellar-background-ratio="0.5" data-stellar-vertical-offset="0">
+                            <img id="logo-parallax" src="/templates/mycodelic/images/Mycodelic-Forest-logo_white.svg" style=""  data-stellar-ratio=".8" />
+                        </div>
+                    </a>
+                </div>
 			</div>
 		</div>
 		
