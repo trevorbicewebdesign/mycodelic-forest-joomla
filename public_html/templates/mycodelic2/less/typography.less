@@ -10,7 +10,7 @@
  * @Link:         http://t3-framework.org 
  *------------------------------------------------------------------------------
  */
- 
+@import url('https://fonts.googleapis.com/css?family=Megrim&display=swap');
 body {
     background-color: @body-bg;
 }
@@ -414,16 +414,30 @@ pre {
 
 h1,
 .items-row h2.article-title a {
-	color:#C31A1A;
-	font-family: 'Goblin One', cursive !important;
 	font-weight: normal !important;
 }
 h1.page-title {
-	font-family: 'Flavors', cursive !important;
 	display:			inline-block;
 	font-size:	50px !important;	
-	 background: linear-gradient(to right,red, orange , yellow, green, cyan, blue, violet);
+	background: linear-gradient(to right,red, orange , yellow, green, cyan, blue, violet);
 	  -webkit-background-clip: text;
 	  -webkit-text-fill-color: transparent;
 	 text-shadow: 0px 0px 2px rgba(255,255,255,.2); 
+}
+
+h1,h2,h3,h4,h5 {
+    font-family: 'Megrim', cursive;
+}
+h1 {
+    display:inline-block;
+    font-size:3em;
+    background: linear-gradient(to right,red, orange , yellow, green, cyan, blue, violet);
+	  -webkit-background-clip: text;
+	  -webkit-text-fill-color: transparent;
+	text-shadow: 0px 0px 2px rgba(255,255,255,.2); 
+    text-align:center;
+}
+.t3-module h3 {
+    display:inline-block;
+    color:#FFFFFF;
 }

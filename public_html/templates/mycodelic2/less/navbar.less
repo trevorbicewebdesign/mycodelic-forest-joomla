@@ -11,6 +11,15 @@
  *------------------------------------------------------------------------------
  */
 
+.nav-pills {
+    li > a {
+        border-radius:0px;
+        &:focus,
+        &:hover{
+            background: none;
+        }
+    }
+}
 
 // -------------------------------------------------------
 //  DEFAULT BOOTSTRAP NAVBAR (navbars.less)
@@ -317,6 +326,7 @@
       //font awesome
       li > a .fa {
         margin-right: 5px;
+          
       }
 
       > li > a {
@@ -335,6 +345,7 @@
         }
 
         > li > a {
+          
           // Link states
           &:hover,
           &:focus {
