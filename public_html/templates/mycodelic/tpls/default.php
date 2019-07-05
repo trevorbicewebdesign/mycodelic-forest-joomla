@@ -27,20 +27,7 @@ defined('_JEXEC') or die;
 	?>
 	
 <style>
-#parallax-1 {
-	background-image: 	url(/templates/mycodelic/images/34106547_10155519758463372_2974331639221452800_o.jpg);
-	background-size:	100% auto;
-	
-	min-height:		100vh;	
-	background-attachment:fixed;
-}
-#parallax-2 {
-	background-image: 	url(/templates/mycodelic/images/screen-shot-2013-08-26-at-1-06-50-am.png);
-	background-size:	100% auto;
-	
-	height:			50vh;	
-	background-attachment:fixed;
-}
+
 #logo-parallax {
 	position:			relative;
 	margin-top:		20vh;
