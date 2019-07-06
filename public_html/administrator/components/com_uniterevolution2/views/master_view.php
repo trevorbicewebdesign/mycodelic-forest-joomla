@@ -23,6 +23,9 @@
 	var g_urlAjaxActions = "<?php echo UniteBaseClassRev::$url_ajax_actions?>";
 	var g_settingsObj = {};
 	var ajaxurl = "<?php echo self::$url_ajax?>";
+	var g_isJoomla35 = <?php echo UniteFunctionJoomlaRev::isJoomla35Str()?>;
+	var g_revSliderAdmin = null;
+	var g_objLayers = null;
 	
 </script>
 
@@ -50,7 +53,7 @@
 <div class="tp-plugin-version">&copy; All rights reserved, <a href="http://unitecms.net" target="_blank">Unite CMS</a>  ver. <?php echo $revSliderVersion?>
 <!-- 
 
-	<a id="button_upload_plugin" class="button-primary revpurple update_plugin" href="javascript:void(0)"><?php _e("Update Plugin",REVSLIDER_TEXTDOMAIN)?></a>
+	<a id="button_upload_plugin" class="button-primary revpurple update_plugin" href="javascript:void(0)"><?php _uge("Update Plugin",REVSLIDER_TEXTDOMAIN)?></a>
  -->	
 </div>
 

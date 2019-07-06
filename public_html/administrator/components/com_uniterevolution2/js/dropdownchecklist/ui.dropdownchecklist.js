@@ -1,4 +1,7 @@
 ;(function($) {
+	
+	var g_containerHeight = 1350;
+	
 /*
     * ui.dropdownchecklist
     *
@@ -441,6 +444,10 @@
 			}
             var divWidth = dropContainerDiv.outerWidth();
             var divHeight = dropContainerDiv.outerHeight();
+            
+            if(divHeight == 0)
+            	divHeight = g_containerHeight;
+            
             return { width: divWidth, height: divHeight };
         },
 		_appendOptions: function(parent, container, parentIndex, indent, forceDisabled) {

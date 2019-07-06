@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @package Unite Revolution Slider Module for Joomla 1.7-2.5
+ * @package Unite Slider Module for Joomla 1.7-2.5
  * @version 1.0
  * @author UniteCMS.net
  * @copyright (C) 2012- Unite CMS
@@ -12,7 +12,7 @@
 defined('_JEXEC') or die;
 
 global $revSliderVersion;
-$revSliderVersion = "4.6";
+$revSliderVersion = "5.0.16";
 
 $currentFile = __FILE__;
 $currentFolder = dirname($currentFile);

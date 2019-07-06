@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @package Unite Revolution Slider Module for Joomla 1.7-2.5
+ * @package Unite Slider Module for Joomla 1.7-2.5
  * @version 1.0
  * @author UniteCMS.net
  * @copyright (C) 2012- Unite CMS
@@ -25,20 +25,27 @@ defined('_JEXEC') or die;
 	$include_jquery = $params->get("include_jquery","true");
 	
 	if($include_jquery == "true"){
-		if(UniteFunctionJoomlaRev::isJqueryIncluded() == false){
-			$jsPrefix = "http";
-			if(JURI::getInstance()->isSSL() == true)
-				$jsPrefix = "https";
+		
+		$isJoomla3 = UniteFunctionJoomlaRev::isJoomla3();
 				
-			$document->addScript("{$jsPrefix}://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js?app=revolution_slider");
+		if($isJoomla3 == false){	//load jquery in old way
+			if(UniteFunctionJoomlaRev::isJqueryIncluded() == false){
+				$jsPrefix = "http";
+				if(JURI::getInstance()->isSSL() == true)
+					$jsPrefix = "https";
 			
+				$document->addScript("{$jsPrefix}://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js?app=revolution_slider");
+			}
+		}else{
+			JHtml::_('jquery.framework');
 		}
+		
+		
 	}
 	
 	$loadType = $params->get("js_load_type","head");
 	$isJSInBody = ($loadType == "body")?true:false;
 	$noConflictMode = ($params->get("no_conflict_mode") == "true")?true:false;
-	
 	
 	//css includes
 	$document->addStyleSheet(GlobalsRevSlider::$url_item_plugin."css/settings.css");

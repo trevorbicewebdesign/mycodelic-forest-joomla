@@ -167,6 +167,7 @@
 			
 			//put the settings into form id
 			
+			$arrJs[] = "if(typeof g_settingsObj['$formID'] == 'undefined')";
 			$arrJs[] = "g_settingsObj['$formID'] = {}";
 			
 			//put controls json object:

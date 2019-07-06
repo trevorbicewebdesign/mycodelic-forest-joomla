@@ -41,12 +41,33 @@ var SqueezeBox = new function(){
 /**
  * 
  * on inset image, taken from iframe
+ * document.ready is for protection
  */
-function jInsertFieldValue(urlImage,fieldID){
+
+var jInsertFieldValue, insertValueTimeout;
+
+jQuery(document).ready(function(){
 	
-	if(typeof SqueezeBox.onClose == "function")
-		SqueezeBox.onClose(urlImage);
-}
+	if(!jInsertFieldValue){
+		jInsertFieldValue = function(urlImage,fieldID){
+			
+			if(jQuery.now() < insertValueTimeout)
+				return(false);
+			
+			insertValueTimeout = jQuery.now()+100;
+			
+			if(typeof SqueezeBox.onClose == "function")
+				SqueezeBox.onClose(urlImage);
+		}
+	}
+	
+});
+
+
+// Create Base64 Object
+var Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9+/=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/rn/g,"n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
+
+
 
 var UniteAdminRev = new function(){
 	
@@ -597,7 +618,9 @@ var UniteAdminRev = new function(){
 	 * load css file on the fly
 	 * replace current item if exists
 	 */
-	t.loadCssFile = function(urlCssFile,replaceID){
+	t.loadCssFile = function(urlCssFile, replaceID){
+				
+		urlCssFile = urlCssFile.replace("&amp;","&"); 
 		
 		var rand = Math.floor((Math.random()*100000)+1);
 		
@@ -713,25 +736,26 @@ var UniteAdminRev = new function(){
 		var desc_small_size = 200;
 		
 		//prepare data
-		var entry = obj.entry;
 		var data = {};
 		data.id = jQuery("#youtube_id").val();
 		data.id = jQuery.trim(data.id);
 		data.video_type = "youtube";
-		data.title = entry.title.$t;
-		data.author = entry.author[0].name.$t;
-		data.link = entry.link[0].href;
-		data.description = entry.media$group.media$description.$t;
-		data.desc_small = data.description;
+		if(obj[0].width <= 170 || obj[0].height <= 140){
+			data.title = 'YouTube: Maybe wrong YoutTube ID given';
+		}else{
+			data.title = 'YouTube';
+		}
+		data.author = 'YouTube';
+		data.link = '';
+		data.description = '';
+		data.desc_small = '';
 		
 		if(data.description.length > desc_small_size)
 			data.desc_small = data.description.slice(0,desc_small_size)+"...";
 		
-		var thumbnails = entry.media$group.media$thumbnail;
-		
-		data.thumb_small = {url:thumbnails[0].url,width:thumbnails[0].width,height:thumbnails[0].height};
-		data.thumb_medium = {url:thumbnails[1].url,width:thumbnails[1].width,height:thumbnails[1].height};
-		data.thumb_big = {url:thumbnails[2].url,width:thumbnails[2].width,height:thumbnails[2].height};
+		data.thumb_small = {url:obj[0].src,width:320,height:240};
+		data.thumb_medium = {url:obj[0].src,width:320,height:240};
+		data.thumb_big = {url:obj[0].src,width:obj[0].width,height:obj[0].height};
 		
 		//set html in dialog
 		setYoutubeDialogHtml(data);
@@ -868,6 +892,7 @@ var UniteAdminRev = new function(){
 		jQuery('#input_video_speed option[value="1"]').attr("selected",true);
 		jQuery('#input_video_loop option[value="none"]').attr("selected",true);
 		jQuery("#input_video_preview").val("");
+		jQuery("#input_use_poster_on_mobile").prop("checked","");
 		
 		jQuery("#youtube_id").val("");
 		jQuery("#vimeo_id").val("");
@@ -882,8 +907,9 @@ var UniteAdminRev = new function(){
 		//open the dialog
 		dialogVideo.dialog({
 				buttons:buttons,
-				minWidth:830,
-				minHeight:820,
+				minWidth:900,
+				minHeight:600,
+				maxHeight:600,
 				modal:true,
 				dialogClass:"tpdialogs"
 		});
@@ -946,6 +972,12 @@ var UniteAdminRev = new function(){
 		}else{
 			jQuery("#input_video_autoplay").prop("checked","");
 			jQuery("#showautoplayfirsttime").hide();
+		}
+
+		if(data.use_poster_on_mobile && data.use_poster_on_mobile == true){
+			jQuery("#input_use_poster_on_mobile").prop("checked","checked");
+		}else{
+			jQuery("#input_use_poster_on_mobile").prop("checked","");
 		}
 		
 		if(data.autoplayonlyfirsttime && data.autoplayonlyfirsttime == true)
@@ -1047,11 +1079,22 @@ var UniteAdminRev = new function(){
 	
 	//add params from textboxes to object
 	var addTextboxParamsToObj = function(obj){
+		
+		switch(obj.video_type){
+			case "youtube":
+				obj.id = jQuery("#youtube_id").val();
+			break;
+			case "vimeo":
+				obj.id = jQuery("#vimeo_id").val();
+			break;
+		}
+		
 		obj.width = jQuery("#input_video_width").val();
 		obj.height = jQuery("#input_video_height").val();
 		obj.args = jQuery("#input_video_arguments").val();
 		obj.previewimage = jQuery("#input_video_preview").val();
 		obj.autoplay = jQuery("#input_video_autoplay").is(":checked");
+		obj.use_poster_on_mobile = jQuery("#input_use_poster_on_mobile").is(":checked");
 		obj.autoplayonlyfirsttime = jQuery("#input_video_autoplay_first_time").is(":checked");
 		obj.nextslide = jQuery("#input_video_nextslide").is(":checked");
 		obj.forcerewind = jQuery("#input_video_force_rewind").is(":checked");
@@ -1139,7 +1182,6 @@ var UniteAdminRev = new function(){
 		
 		//set youtube search action
 		jQuery("#button_youtube_search").click(function(){
-			
 			//init data
 			setYoutubeDialogHtml(false);
 			jQuery("#video_hidden_controls").hide();
@@ -1150,9 +1192,12 @@ var UniteAdminRev = new function(){
 			
 			youtubeID = getYoutubeIDFromUrl(youtubeID);
 			
-			var urlAPI = "https://gdata.youtube.com/feeds/api/videos/"+youtubeID+"?v=2&alt=json-in-script&callback=UniteAdminRev.onYoutubeCallback";
-			
-			jQuery.getScript(urlAPI);
+			var img = new Image();
+			img.onload = function() {
+				var img = jQuery(this)
+				UniteAdminRev.onYoutubeCallback(img);
+			}
+			img.src = "https://img.youtube.com/vi/"+youtubeID+"/sddefault.jpg"
 			
 			jQuery("#video_content").show();
 			
@@ -1187,9 +1232,9 @@ var UniteAdminRev = new function(){
 			}else{		//in case of vimeo and youtube 
 				if(!lastVideoData)
 					return(false);
-				
+								
 				lastVideoData = addTextboxParamsToObj(lastVideoData);
-				
+								
 				if(typeof lastVideoCallback == "function")
 					lastVideoCallback(lastVideoData);
 				
@@ -1286,9 +1331,50 @@ var UniteAdminRev = new function(){
 	}
 	
 	
-	//run the init function
-	jQuery(document).ready(function(){
-		initVideoDialog();
+	/**
+	 * init joomla 3 fancybox changes
+	 */
+	function initJoomla35FancyboxChanges(){
+		
+		var objContent = jQuery("#fancybox-content");
+		
+		//check when the frame is ready
+		function checkFancyboxIframe(){
+			
+			var objIframe = jQuery("#fancybox-frame");
+			
+			var isFound = false;
+			if(objIframe.length){
+				var objDocument = objIframe.contents();
+				var objButton = objDocument.find(".button-save-selected");
+				if(objButton.length)
+					isFound = true;
+			}
+			
+			if(isFound == false){
+				setTimeout(checkFancyboxIframe, 500);
+				return(false);
+			}
+			
+			objButton.click(function(){
+				var urlImage = objDocument.find("#f_url").val();
+				if(jQuery.trim(urlImage) != ""){
+					jInsertFieldValue(urlImage);
+					SqueezeBox.close();
+				}
+			});
+			
+		}
+		
+		setTimeout(checkFancyboxIframe, 500);
+		
+	}
+	
+	
+	/**
+	 * init fancybox open media dialog
+	 */
+	function initFancyboxTrigger(){
 		
 		//init fancybox trigger
 		jQuery("#fancybox_trigger").fancybox({
@@ -1297,9 +1383,23 @@ var UniteAdminRev = new function(){
 			'autoScale'			: false,
 			'transitionIn'		: 'none',
 			'transitionOut'		: 'none',
-			'type'				: 'iframe'
+			'type'				: 'iframe',
+			'onStart':function(){
+								
+				if(g_isJoomla35 == true)
+					initJoomla35FancyboxChanges();
+			}
 		});
 		
+		
+	}
+	
+	
+	//run the init function
+	jQuery(document).ready(function(){
+		initVideoDialog();
+		
+		initFancyboxTrigger();
 		
 		//init update dialog:
 		jQuery("#button_upload_plugin").click(function(){
@@ -1421,12 +1521,22 @@ var UniteAdminRev = new function(){
 		return raw.toLowerCase().replace(/ /g, '-').replace(/[^-0-9a-z]/g,'');
 	}
 	
-	t.initAccordion = function(){
-		jQuery(".postbox-arrow").each(function(i) {
-
+	t.initAccordion = function(objParent){
+		
+		if(objParent)
+			var objArrows = objParent.find(".postbox-arrow");
+		else
+			var objArrows = jQuery(".postbox-arrow");
+		
+		objArrows.each(function(i) {
+			
 			jQuery(this).closest('h3').click(function(){
+								
 				var handle = jQuery(this);
-
+				
+				var content = handle.siblings(".toggled-content");
+				content.toggle();
+				
 				//open
 				if(!handle.hasClass("box-closed")){
 					handle.closest('.postbox').find('.inside').slideUp("fast");
@@ -1452,7 +1562,6 @@ var UniteAdminRev = new function(){
 
 
 //user functions:
-
 function trace(data,clear){
 	UniteAdminRev.trace(data,clear);
 }

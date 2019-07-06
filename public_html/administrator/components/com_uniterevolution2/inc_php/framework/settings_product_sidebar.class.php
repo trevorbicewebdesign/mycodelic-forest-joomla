@@ -430,7 +430,7 @@
 				?>
 					<div class="radio_inner_wrapper">
 						<input type="radio" id="<?php echo $radioID?>" value="<?php echo $value?>" name="<?php echo $setting["name"]?>" <?php echo $disabled?> <?php echo $checked?>/>
-						<label for="<?php echo $radioID?>" style="cursor:pointer;"><?php _e($text)?></label>
+						<label for="<?php echo $radioID?>" style="cursor:pointer;"><?php _uge($text)?></label>
 					</div>
 				<?php				
 			endforeach;
@@ -467,7 +467,7 @@
 			<select id="<?php echo $setting["id"]?>" name="<?php echo $setting["name"]?>" <?php echo $disabled?> <?php echo $class?>>
 			<?php
 			foreach($setting["items"] as $value=>$text):
-				$text = __($text,REVSLIDER_TEXTDOMAIN);
+				$text = __ug($text,REVSLIDER_TEXTDOMAIN);
 				$selected = "";
 				if($value == $setting["value"]) $selected = 'selected="selected"';
 				?>
@@ -509,7 +509,7 @@
 				$rowStyle = "style='$rowStyle'";
 			
 			?>
-				<span class="spanSettingsStaticText"><?php echo __($setting["text"],REVSLIDER_TEXTDOMAIN)?></span>
+				<span class="unite-settings-static-text"><?php echo __ug($setting["text"],REVSLIDER_TEXTDOMAIN)?></span>
 			<?php 
 		}
 		
@@ -559,7 +559,7 @@
 			
 			//modify text:
 			$text = UniteFunctionsRev::getVal($setting,"text","");
-			$text = __($text,REVSLIDER_TEXTDOMAIN);
+			$text = __ug($text,REVSLIDER_TEXTDOMAIN);
 			
 			// prevent line break (convert spaces to nbsp)
 			$text = str_replace(" ","&nbsp;",$text);
@@ -572,10 +572,10 @@
 			if(isset($setting["textWidth"])) $textWidth = 'width="'.$setting["textWidth"].'"';
 			
 			$description = UniteFunctionsRev::getVal($setting, "description");
-			$description = __($description,REVSLIDER_TEXTDOMAIN);
+			$description = __ug($description,REVSLIDER_TEXTDOMAIN);
 			
 			$unit = UniteFunctionsRev::getVal($setting, "unit");
-			$unit = __($unit,REVSLIDER_TEXTDOMAIN);
+			$unit = __ug($unit,REVSLIDER_TEXTDOMAIN);
 			
 			$required = UniteFunctionsRev::getVal($setting, "required");
 			
@@ -599,14 +599,12 @@
 					<?php if($toDrawText == true):?>
 						<div id="<?php echo $settingID?>_text" class='setting_text' title="<?php echo $description?>" <?php echo $attribsText?>><?php echo $text.$info ?></div>
 					<?php endif?>
-					
-					<?php if(!empty($addHtmlBefore)):?>
-						<div class="settings_addhtmlbefore"><?php echo $addHtmlBefore?></div>
-					<?php endif?>
-					
 					<div class='setting_input'>
 						<?php $this->drawInputs($setting);?>
 					</div>
+					<?php if(!empty($addHtmlBefore)):?>
+						<div class="settings_addhtmlbefore"><?php echo $addHtmlBefore?></div>
+					<?php endif?>
 					<?php if(!empty($unit)):?>
 						<div class='setting_unit'><?php echo $unit?></div>
 					<?php endif?>
@@ -733,7 +731,7 @@
 					
 				$text = $sap["text"];
 				$icon = $sap["icon"];
-				$text = __($text,REVSLIDER_TEXTDOMAIN);
+				$text = __ug($text,REVSLIDER_TEXTDOMAIN);
 				
 				?>
 					<div class="<?php echo $class?>">
@@ -881,7 +879,7 @@
 		 */
 		public function drawCssEditor(){
 			?>
-			<div id="css_editor_wrap" title="<?php _e("Style Editor",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
+			<div id="css_editor_wrap" title="<?php _uge("Style Editor",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
 
 				<div class="tp-present-wrapper-parent"><div class="tp-present-wrapper"><div class="tp-present-caption"><div id="css_preview" class="">example</div></div></div></div>
 				<ul class="list_idlehover">
@@ -890,37 +888,37 @@
 					<div style="clear:both"></div>
 				</ul>
 				<div id="css-editor-accordion">
-					<h3><?php _e("Simple Editor:",REVSLIDER_TEXTDOMAIN)?></h3>
+					<h3><?php _uge("Simple Editor:",REVSLIDER_TEXTDOMAIN)?></h3>
 					<div class="css_editor_novice_wrap">
 						<table style="border-spacing:0px">
-							<tr class="css-edit-enable"><td colspan="4"><input class="css_edit_novice" type="checkbox" name="css_allow" /> <?php _e("enable ",REVSLIDER_TEXTDOMAIN) ?> <span id="css_editor_allow"></span></td></tr>
+							<tr class="css-edit-enable"><td colspan="4"><input class="css_edit_novice" type="checkbox" name="css_allow" /> <?php _uge("enable ",REVSLIDER_TEXTDOMAIN) ?> <span id="css_editor_allow"></span></td></tr>
 							<!--<tr class="css-edit-enable css-edit-title topborder"><td colspan="4"></td></tr>-->
 							<tr class="css-edit-title"><td colspan="4">Font</td></tr>
 							<tr class="css-edit-title noborder"><td colspan="4"></td></tr>														
 							<tr>
-								<td><?php _e("Family:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Family:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<input class="css_edit_novice" style="width:160px; line-height:17px;margin-top:3px;" id="font_family" type="text" name="css_font-family" value="" />
 									<div id="font_family_down" class="ui-state-default ui-corner-all" style="margin-right:0px"><span class="ui-icon ui-icon-arrowthick-1-s"></span></div>
 								</td>
-								<td><?php _e("Size:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Size:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<div id='font-size-slider'></div>
 									<input class="css_edit_novice" type="hidden" name="css_font-size" value="" disabled="disabled" />
 								</td>
 							</tr>
 							<tr>
-								<td><?php _e("Color:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Color:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td><input type="text" name="css_color" data-linkto="color" style="width:160px" class="inputColorPicker css_edit_novice w100" value="" /></td>
 								
-								<td><?php _e("Line-Height:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Line-Height:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<div id='line-height-slider'></div>
 									<input class="css_edit_novice" type="hidden" name="css_line-height" value="" disabled="disabled" />
 								</td>
 							</tr>
 							<tr>
-								<td><?php _e("Padding:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Padding:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<div class="sub_main_wrapper">
 										<div class="subslider_wrapper"><input class="css_edit_novice pad-input sub-input" type="text" name="css_padding[]" value="" /></div>
@@ -930,17 +928,17 @@
 										<div style="clear:both"></div>
 									</div>
 								</td>
-								<td><?php _e("Weight:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Weight:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<div id='font-weight-slider'></div>
 									<input class="css_edit_novice" type="hidden" name="css_font-weight" value="" disabled="disabled" />
 								</td>
 							</tr>
 							<tr>
-								<td><?php _e("Style:",REVSLIDER_TEXTDOMAIN) ?></td>
-								<td><input type="checkbox" name="css_font-style" class="css_edit_novice" /> <?php _e("italic",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Style:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><input type="checkbox" name="css_font-style" class="css_edit_novice" /> <?php _uge("italic",REVSLIDER_TEXTDOMAIN) ?></td>
 								
-								<td><?php _e("Decoration:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Decoration:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<select class="css_edit_novice w100" style="cursor:pointer" name="css_text-decoration">
 										<option value="none">none</option>
@@ -954,12 +952,12 @@
 							<tr class="css-edit-title"><td colspan="4">Background</td></tr>
 							<tr class="css-edit-title noborder"><td colspan="4"></td></tr>														
 							<tr>
-								<td><?php _e("Color:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Color:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<input type="text" name="css_background-color" style="width:160px;float:left" data-linkto="background-color" class="inputColorPicker css_edit_novice" value="" />
 									<a href="javascript:void(0);" id="reset-background-color"><i class="revicon-ccw editoricon" style="float:left"></i></a>
 								</td>
-								<td><?php _e("Transparency:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Transparency:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<div id='background-transparency-slider'></div>
 									<input class="css_edit_novice" type="hidden" name="css_background-transparency" value="" disabled="disabled" />
@@ -969,20 +967,20 @@
 							<tr class="css-edit-title"><td colspan="4">Border</td></tr>
 							<tr class="css-edit-title noborder"><td colspan="4"></td></tr>														
 							<tr>
-								<td><?php _e("Color:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Color:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<input type="text" name="css_border-color-show" data-linkto="border-color" style="width:160px;float:left" class="inputColorPicker css_edit_novice" value="" />
 									<input type="hidden" name="css_border-color" class="css_edit_novice" value="" disabled="disabled" />
 									<a href="javascript:void(0);" id="reset-border-color"><i class="revicon-ccw editoricon" style="float:left"></i></a>
 								</td>
-								<td><?php _e("Width:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Width:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<div id='border-width-slider'></div>
 									<input class="css_edit_novice" type="hidden" name="css_border-width" value="" disabled="disabled" />
 								</td>
 							</tr>
 							<tr>
-								<td><?php _e("Style:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Style:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<select class="css_edit_novice w100" style="cursor:pointer" name="css_border-style">
 										<option value="none">none</option>
@@ -992,7 +990,7 @@
 										<option value="double">double</option>
 									</select>
 								</td>
-								<td><?php _e("Radius:",REVSLIDER_TEXTDOMAIN) ?></td>
+								<td><?php _uge("Radius:",REVSLIDER_TEXTDOMAIN) ?></td>
 								<td>
 									<div class="sub_main_wrapper">										
 										<div class="subslider_wrapper"><input class="css_edit_novice corn-input sub-input" type="text" name="css_border-radius[]" value="" /><div class="subslider"></div></div>
@@ -1007,23 +1005,23 @@
 						</table>
 						<div class="css_editor-disable-inputs">&nbsp;</div>
 					</div>
-					<h3 class="notopradius" style="margin-top:20px"><?php _e("Advanced Editor:",REVSLIDER_TEXTDOMAIN)?></h3>
+					<h3 class="notopradius" style="margin-top:20px"><?php _uge("Advanced Editor:",REVSLIDER_TEXTDOMAIN)?></h3>
 					<div>
 						<textarea id="textarea_edit_expert" rows="20" cols="81"></textarea>
 					</div>
 				</div>
 			</div>
 			
-			<div id="dialog-change-css" title="<?php _e("Save Styles",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
+			<div id="dialog-change-css" title="<?php _uge("Save Styles",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
 				<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 50px 0;"></span><?php
-				_e('Overwrite the current selected class ',REVSLIDER_TEXTDOMAIN);
+				_uge('Overwrite the current selected class ',REVSLIDER_TEXTDOMAIN);
 				echo '"<span id="current-class-handle"></span>"';
-				_e(' or save the styles as a new class?',REVSLIDER_TEXTDOMAIN)?></p>
+				_uge(' or save the styles as a new class?',REVSLIDER_TEXTDOMAIN)?></p>
 			</div>
 			
-			<div id="dialog-change-css-save-as" title="<?php _e("Save As",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
+			<div id="dialog-change-css-save-as" title="<?php _uge("Save As",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
 				<p>
-					<?php _e('Save as class:',REVSLIDER_TEXTDOMAIN)?><br />
+					<?php _uge('Save as class:',REVSLIDER_TEXTDOMAIN)?><br />
 					<input type="text" name="css_save_as" value="" />
 				</p>
 			</div>
@@ -1038,21 +1036,21 @@
 		 */
 		public function drawGlobalCssEditor(){
 			?>
-			<div id="css_static_editor_wrap" title="<?php _e("Global Style Editor",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
+			<div id="css_static_editor_wrap" title="<?php _uge("Global Style Editor",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
 				<div id="css-static-accordion">
-					<h3><?php _e("Dynamic Styles (Not Editable):",REVSLIDER_TEXTDOMAIN)?></h3>
+					<h3><?php _uge("Dynamic Styles (Not Editable):",REVSLIDER_TEXTDOMAIN)?></h3>
 					<div class="css_editor_novice_wrap">
 						<textarea id="textarea_show_dynamic_styles" rows="20" cols="81"></textarea>
 					</div>
-					<h3 class="notopradius" style="margin-top:20px"><?php _e("Static Styles:",REVSLIDER_TEXTDOMAIN)?></h3>
+					<h3 class="notopradius" style="margin-top:20px"><?php _uge("Static Styles:",REVSLIDER_TEXTDOMAIN)?></h3>
 					<div>
 						<textarea id="textarea_edit_static" rows="20" cols="81"></textarea>
 					</div>
 				</div>
 			</div>
 			
-			<div id="dialog-change-css-static" title="<?php _e("Save Static Styles",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
-				<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 50px 0;"></span><?php _e('Overwrite current static styles?',REVSLIDER_TEXTDOMAIN)?></p>
+			<div id="dialog-change-css-static" title="<?php _uge("Save Static Styles",REVSLIDER_TEXTDOMAIN) ?>" style="display:none;">
+				<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 50px 0;"></span><?php _uge('Overwrite current static styles?',REVSLIDER_TEXTDOMAIN)?></p>
 			</div>
 			<?php
 		}

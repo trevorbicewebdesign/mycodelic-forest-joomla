@@ -36,7 +36,7 @@
 			$db = new UniteDBRev();	
 			$arrStyles = $db->fetch($tableCss);
 			$cssStyles = UniteCssParserRev::parseDbArrayToCss($arrStyles, "\n");
-			
+						
 			//compress
 			$cssStyles = UniteCssParserRev::compress_css($cssStyles);
 			$cssInnerStyles = str_replace('.tp-caption', '', $cssStyles);
@@ -122,7 +122,7 @@
 			$arrSlides = $slider->getArrSlidersWithSlidesShort(RevSlider::SLIDER_TYPE_TEMPLATE);
 			$arrOutput = $arrOutput + $arrSlides;	//union arrays
 			
-			$settings->addSelect("slide_template", $arrOutput, __("Choose Slide Template",REVSLIDER_TEXTDOMAIN),"default");
+			$settings->addSelect("slide_template", $arrOutput, __ug("Choose Slide Template",REVSLIDER_TEXTDOMAIN),"default");
 			
 			/*
 			$params = array("class"=>"textbox_small","description"=>"Overwrite the global excerpt words limit option for this post");
@@ -554,7 +554,7 @@
 				foreach($result as $key => $value){
 					$customAnimations[$key]['id'] = $value['id'];
 					$customAnimations[$key]['handle'] = $value['handle'];
-					$customAnimations[$key]['params'] = json_decode(str_replace("'", '"', $value['params']), true);
+					$customAnimations[$key]['params'] = json_decode($value['params'], true);
 				}
 			}
 			
@@ -569,7 +569,7 @@
 			$db = new UniteDBRev();
 			
 			$result = $db->fetch(GlobalsRevSlider::$table_layer_anims, "handle = '".$handle."'");
-			if(!empty($result)) return json_decode(str_replace("'", '"', $result[0]['params']), true);
+			if(!empty($result)) return json_decode($result[0]['params'], true);
 			
 			return false;
 		}
@@ -587,7 +587,7 @@
 				$customAnimations = array();
 				$customAnimations['id'] = $result[0]['id'];
 				$customAnimations['handle'] = $result[0]['handle'];
-				$customAnimations['params'] = json_decode(str_replace("'", '"', $result[0]['params']), true);
+				$customAnimations['params'] = json_decode($result[0]['params'], true);
 				return $customAnimations;
 			}
 			
@@ -645,7 +645,7 @@
 			//parse css captions file
 			$parser = new UniteCssParserRev();
 			$parser->initContent($contentCSS);
-			$arrCaptionClasses = $parser->getArrClasses();
+			$arrCaptionClasses = $parser->getArrClasses('','',true);
 			return($arrCaptionClasses);
 		}
 		
@@ -743,7 +743,7 @@
 		public static function getCaptionsContentArray($handle = false){
 			$db = new UniteDBRev();
 			$result = $db->fetch(GlobalsRevSlider::$table_css);
-						
+			
 			$contentCSS = UniteCssParserRev::parseDbArrayToArray($result, $handle);
 			
 			return($contentCSS);
@@ -822,13 +822,10 @@
 		 */ 
 		public function updateCaptionsContentData($content){
 			
-			
 			if(isset($content['handle'])) { 	
 				$db = new UniteDBRev();
 				
 				$handle = $content['handle'];
-				
-				//$params = str_replace("'", '"', $params);
 				
 				$params = UniteFunctionsRev::getVal($content,"params");
 				$params = json_encode($params);
@@ -843,14 +840,12 @@
 				$arrUpdate["params"] = $params;
 				$arrUpdate["hover"] = $hover;
 				$arrUpdate["settings"] = $settings;
-				
+								
 				$arrWhere = array('handle' => '.tp-caption.'.$handle);
 													
 				$result = $db->update(GlobalsRevSlider::$table_css, $arrUpdate, $arrWhere);
-				
-				//dmp($arrUpdate);dmp($result);exit();
-				
 			}
+			
 			
 			$this->updateDynamicCaptions();
 			
@@ -858,6 +853,7 @@
 			$operations = new RevOperations();
 			$cssContent = $operations->getCaptionsContent();
 			$arrCaptions = $operations->getArrCaptionClasses($cssContent);
+
 			return($arrCaptions);
 		}
 		
@@ -1116,7 +1112,7 @@
 					<body style="padding:0px;margin:0px;">						
 						<?php if($wpmlActive == true):?>
 							<div style="margin-bottom:10px;text-align:center;">
-							<?php _e("Choose language",REVSLIDER_TEXTDOMAIN)?>: <?php echo $selectLangChoose?>
+							<?php _uge("Choose language",REVSLIDER_TEXTDOMAIN)?>: <?php echo $selectLangChoose?>
 							</div>
 							
 							<script type="text/javascript">
@@ -1199,7 +1195,7 @@
 		<body style="padding:0px;margin:0px;">
 		<?php if($wpmlActive == true):?>
 		<div style="margin-bottom:10px;text-align:center;">
-		<?php _e("Choose language",REVSLIDER_TEXTDOMAIN)?>: <?php echo $selectLangChoose?>
+		<?php _uge("Choose language",REVSLIDER_TEXTDOMAIN)?>: <?php echo $selectLangChoose?>
 		</div>
 		
 		<script type="text/javascript">
@@ -1252,7 +1248,7 @@
 		echo $custom_css."\n\n";
 		
 		echo '/*****************'."\n";
-		echo ' ** '.__('CAPTIONS CSS', REVSLIDER_TEXTDOMAIN)."\n";
+		echo ' ** '.__ug('CAPTIONS CSS', REVSLIDER_TEXTDOMAIN)."\n";
 		echo ' ****************/'."\n\n";
 		$db = new UniteDBRev();
 		$styles = $db->fetch(GlobalsRevSlider::$table_css);
@@ -1285,16 +1281,16 @@
 		.rev_cont_title a:hover	  { background-color:#9b59b6}
 		</style>
 		<p><?php $dir = wp_upload_dir(); ?>
-		<?php _e('Replace image path:', REVSLIDER_TEXTDOMAIN); ?> <?php _e('From:', REVSLIDER_TEXTDOMAIN); ?> <input type="text" name="orig_image_path" value="<?php echo @$dir['baseurl']; ?>" /> <?php _e('To:', REVSLIDER_TEXTDOMAIN); ?> <input type="text" name="replace_image_path" value="" /> <input id="rev_replace_images" type="button" name="replace_images" value="<?php _e('Replace', REVSLIDER_TEXTDOMAIN); ?>" />
+		<?php _uge('Replace image path:', REVSLIDER_TEXTDOMAIN); ?> <?php _uge('From:', REVSLIDER_TEXTDOMAIN); ?> <input type="text" name="orig_image_path" value="<?php echo @$dir['baseurl']; ?>" /> <?php _uge('To:', REVSLIDER_TEXTDOMAIN); ?> <input type="text" name="replace_image_path" value="" /> <input id="rev_replace_images" type="button" name="replace_images" value="<?php _uge('Replace', REVSLIDER_TEXTDOMAIN); ?>" />
 		</p>
 		
-		<div class="rev_cont_title"><?php _e('Header', REVSLIDER_TEXTDOMAIN); ?> <a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_head_content"  href="javascript:void(0);" original-title=""><?php _e('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a><div style="clear:both"></div></div>
+		<div class="rev_cont_title"><?php _uge('Header', REVSLIDER_TEXTDOMAIN); ?> <a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_head_content"  href="javascript:void(0);" original-title=""><?php _uge('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a><div style="clear:both"></div></div>
 		<textarea id="rev_head_content" readonly="true" style="width: 100%; height: 100px; color:#3498db"><?php echo $head_content; ?></textarea>
-		<div class="rev_cont_title"><?php _e('CSS', REVSLIDER_TEXTDOMAIN); ?><a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_style_content"  href="javascript:void(0);" original-title=""><?php _e('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a></div>
+		<div class="rev_cont_title"><?php _uge('CSS', REVSLIDER_TEXTDOMAIN); ?><a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_style_content"  href="javascript:void(0);" original-title=""><?php _uge('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a></div>
 		<textarea id="rev_style_content" readonly="true" style="width: 100%; height: 100px;"><?php echo $style_content; ?></textarea>
-		<div class="rev_cont_title"><?php _e('Body', REVSLIDER_TEXTDOMAIN); ?><a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_the_content"  href="javascript:void(0);" original-title=""><?php _e('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a></div>
+		<div class="rev_cont_title"><?php _uge('Body', REVSLIDER_TEXTDOMAIN); ?><a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_the_content"  href="javascript:void(0);" original-title=""><?php _uge('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a></div>
 		<textarea id="rev_the_content" readonly="true" style="width: 100%; height: 100px;"><?php echo $content; ?></textarea>
-		<div class="rev_cont_title"><?php _e('Script', REVSLIDER_TEXTDOMAIN); ?><a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_script_content"  href="javascript:void(0);" original-title=""><?php _e('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a></div>
+		<div class="rev_cont_title"><?php _uge('Script', REVSLIDER_TEXTDOMAIN); ?><a class="button-primary revpurple export_slider_standalone copytoclip" data-idt="rev_script_content"  href="javascript:void(0);" original-title=""><?php _uge('Mark to Copy', REVSLIDER_TEXTDOMAIN); ?></a></div>
 		<textarea id="rev_script_content" readonly="true" style="width: 100%; height: 100px;"><?php echo $script_content; ?></textarea>
 		
 		<script>
@@ -1315,7 +1311,7 @@
 		 */
 		public function loadingMessageOutput(){
 			?>
-			<div class="message_loading_preview"><?php _e("Loading Preview...",REVSLIDER_TEXTDOMAIN)?></div>
+			<div class="message_loading_preview"><?php _uge("Loading Preview...",REVSLIDER_TEXTDOMAIN)?></div>
 			<?php 
 		}
 		

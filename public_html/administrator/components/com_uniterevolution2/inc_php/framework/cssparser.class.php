@@ -21,7 +21,7 @@
 		 * 
 		 * get array of slide classes, between two sections.
 		 */
-		public function getArrClasses($startText = "",$endText=""){
+		public function getArrClasses($startText = "",$endText="",$explodeonspace=false){
 			
 			$content = $this->cssContent;
 			
@@ -44,10 +44,8 @@
 			$arrClasses = array();
 			foreach($lines as $key=>$line){
 				$line = trim($line);
-				
 				if(strpos($line, "{") === false)
 					continue;
-
 				//skip unnessasary links
 				if(strpos($line, ".caption a") !== false)
 					continue;
@@ -60,9 +58,14 @@
 				$class = trim($class);
 				
 				//skip captions like this: .tp-caption.imageclass img
-				if(strpos($class," ") !== false)
-					continue;
-				
+				if(strpos($class," ") !== false){
+					if(!$explodeonspace){
+						continue;
+					}else{
+						$class = explode(',', $class);
+						$class = $class[0];
+					}
+				}
 				//skip captions like this: .tp-caption.imageclass:hover, :before, :after
 				if(strpos($class,":") !== false)
 					continue;
@@ -120,36 +123,31 @@
 		
 		public static function parseDbArrayToCss($cssArray, $nl = "\n\r"){
 			
-			//dmp($cssArray);exit();
-			
 			$css = '';
 			foreach($cssArray as $id => $attr){
-								
-				$params = $attr['params'];
-				
-				$styles = json_decode($params);
-				
-				if(empty($styles))
-					$styles = json_decode($params);
-
-				if(!empty($styles))
-					$styles = (array)$styles;
-				
-				//$styles = json_decode(str_replace("'", '"', $attr['params']), true);
-				$css.= $attr['handle']." {".$nl;
+				$stripped = '';
+				if(strpos($attr['handle'], '.tp-caption') !== false){
+					$stripped = trim(str_replace('.tp-caption', '', $attr['handle']));
+				}
+				$styles = json_decode($attr['params'], true);
+				$css.= $attr['handle'];
+				if(!empty($stripped)) $css.= ', '.$stripped;
+				$css.= " {".$nl;
 				if(is_array($styles)){
 					foreach($styles as $name => $style){
 						$css.= $name.':'.$style.";".$nl;
 					}
 				}
 				$css.= "}".$nl.$nl;
-								
+				
 				//add hover
 				$setting = json_decode($attr['settings'], true);
 				if(@$setting['hover'] == 'true'){
 					$hover = json_decode($attr['hover'], true);
 					if(is_array($hover)){
-						$css.= $attr['handle'].":hover {".$nl;
+						$css.= $attr['handle'].":hover";
+						if(!empty($stripped)) $css.= ', '.$stripped.':hover';
+						$css.= " {".$nl;
 						foreach($hover as $name => $style){
 							$css.= $name.':'.$style.";".$nl;
 						}
@@ -163,8 +161,15 @@
 		public static function parseArrayToCss($cssArray, $nl = "\n\r"){
 			$css = '';
 			foreach($cssArray as $id => $attr){
+				$stripped = '';
+				if(strpos($attr['handle'], '.tp-caption') !== false){
+					$stripped = trim(str_replace('.tp-caption', '', $attr['handle']));
+				}
 				$styles = (array)$attr['params'];
-				$css.= $attr['handle']." {".$nl;
+				$css.= $attr['handle'];
+				if(!empty($stripped)) $css.= ', '.$stripped;
+				$css.= " {".$nl;
+				
 				if(is_array($styles) && !empty($styles)){
 					foreach($styles as $name => $style){
 						if($name == 'background-color' && strpos($style, 'rgba') !== false){ //rgb && rgba
@@ -183,7 +188,9 @@
 				if(@$setting['hover'] == 'true'){
 					$hover = (array)$attr['hover'];
 					if(is_array($hover)){
-						$css.= $attr['handle'].":hover {".$nl;
+						$css.= $attr['handle'].":hover";
+						if(!empty($stripped)) $css.= ', '.$stripped.":hover";
+						$css.= " {".$nl;
 						foreach($hover as $name => $style){
 							if($name == 'background-color' && strpos($style, 'rgba') !== false){ //rgb && rgba
 								$rgb = explode(',', str_replace('rgba', 'rgb', $style));
@@ -218,9 +225,11 @@
 		public static function parseDbArrayToArray($cssArray, $handle = false){
 			
 			if(!is_array($cssArray) || empty($cssArray)) return false;
-			
+						
 			foreach($cssArray as $key => $css){
+				
 				if($handle != false){
+					
 					if($cssArray[$key]['handle'] == '.tp-caption.'.$handle){
 						$cssArray[$key]['params'] = json_decode($css['params']);
 						$cssArray[$key]['hover'] = json_decode($css['hover']);
@@ -229,17 +238,17 @@
 					}else{
 						unset($cssArray[$key]);
 					}
+					
 				}else{
 					$cssArray[$key]['params'] = json_decode($css['params']);
 					$cssArray[$key]['hover'] = json_decode($css['hover']);
 					$cssArray[$key]['settings'] = json_decode($css['settings']);
 				}
 			}
-
+			
 			
 			return $cssArray;
 		}
-		
 		
 		public static function compress_css($buffer){
 			/* remove comments */
@@ -252,10 +261,9 @@
 			$buffer = preg_replace("/\s*([\{\}:,])\s*/", "$1", $buffer);
 			/* remove last ; */
 			$buffer = str_replace(';}', "}", $buffer);
-		
+			
 			return $buffer;
 		}
-		
 		
 	}
 

@@ -5,12 +5,12 @@
 				<?php
 				if($sliderTemplate){
 					?>
-					<div class="view_title"><i class="revicon-pencil-1"></i><?php _e("New Slider Template",REVSLIDER_TEXTDOMAIN)?></div>
+					<div class="view_title"><i class="revicon-pencil-1"></i><?php _uge("New Slider Template",REVSLIDER_TEXTDOMAIN)?></div>
 					<?php
 					$template_value = 'true';
 				}else{
 					?>
-					<div class="view_title"><i class="revicon-pencil-1"></i><?php _e("New Slider",REVSLIDER_TEXTDOMAIN)?></div>
+					<div class="view_title"><i class="revicon-pencil-1"></i><?php _uge("New Slider",REVSLIDER_TEXTDOMAIN)?></div>
 					<?php
 					$template_value = 'false';
 				}
@@ -18,18 +18,18 @@
 				
 				<input type="hidden" id="revslider_template" value="<?php echo $template_value; ?>"></input>
 				
-				<a href="<?php echo GlobalsRevSlider::LINK_HELP_SLIDER?>" class="button-secondary float_right mtop_10 mleft_10" target="_blank"><?php _e("Help",REVSLIDER_TEXTDOMAIN)?></a>
+				<a href="<?php echo GlobalsRevSlider::LINK_HELP_SLIDER?>" class="button-secondary float_right mtop_10 mleft_10" target="_blank"><?php _uge("Help",REVSLIDER_TEXTDOMAIN)?></a>
 
 			</div>
 			<div class="settings_panel">
 				<div class="settings_panel_left">
 					<div id="main_dlier_settings_wrapper" class="postbox unite-postbox ">
-					  <h3 class="box-closed"><span><?php _e("Main Slider Settings",REVSLIDER_TEXTDOMAIN) ?></span></h3>
+					  <h3 class="box-closed"><span><?php _uge("Main Slider Settings",REVSLIDER_TEXTDOMAIN) ?></span></h3>
 					  <div class="p10">
 							<?php $settingsSliderMain->draw("form_slider_main",true)?>
 
 							<div id="layout-preshow">
-								<strong>Layout Example</strong><?php _e("(Can be different based on Theme Style)",REVSLIDER_TEXTDOMAIN)?>
+								<strong>Layout Example</strong><?php _uge("(Can be different based on Theme Style)",REVSLIDER_TEXTDOMAIN)?>
 								<div class="divide20"></div>
 								<div id="layout-preshow-page">
 									<div class="layout-preshow-text">BROWSER</div>
@@ -47,11 +47,11 @@
 							
 							<div class="divide20"></div>
 						<?php if($permission): // permission ?>
-							<a id="button_save_slider" class='button-primary revgreen' href='javascript:void(0)' ><i class="revicon-cog"></i><span id="create_slider_text"><?php _e("Create Slider",REVSLIDER_TEXTDOMAIN)?></span></a>
+							<a id="button_save_slider" class='button-primary revgreen' href='javascript:void(0)' ><i class="revicon-cog"></i><span id="create_slider_text"><?php _uge("Create Slider",REVSLIDER_TEXTDOMAIN)?></span></a>
 						<?php endif; // end permission ?>
 							
 							<span class="hor_sap"></span>
-							<a id="button_cancel_save_slider" class='button-primary revred' href='<?php echo self::getViewUrl("sliders") ?>' ><i class="revicon-cancel"></i><?php _e("Close",REVSLIDER_TEXTDOMAIN)?> </a>
+							<a id="button_cancel_save_slider" class='button-primary revred' href='<?php echo self::getViewUrl("sliders") ?>' ><i class="revicon-cancel"></i><?php _uge("Close",REVSLIDER_TEXTDOMAIN)?> </a>
 					  </div>
 					</div>
 				</div>
@@ -66,11 +66,13 @@
 		var g_jsonTaxWithCats = <?php echo $jsonTaxWithCats?>;
 
 		jQuery(document).ready(function(){
-
-			RevSliderAdmin.initAddSliderView();
+	    	if(!g_revSliderAdmin)
+	    		g_revSliderAdmin = new RevSliderAdmin();
+		
+	    	g_revSliderAdmin.initAddSliderView();
 			
 			<?php if($sliderTemplate){ ?>
-			RevSliderAdmin.initSliderViewTemplate();
+			g_revSliderAdmin.initSliderViewTemplate();
 			<?php } ?>
 		});
 	</script>
