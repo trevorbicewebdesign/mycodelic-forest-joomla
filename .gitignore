@@ -2,6 +2,7 @@
 *.LCK
 /database/civicrm_job_log.sql
 *.sql
+/public_html/administrator/components/com_akeeba/backup/
 /public_html/media/civicrm/upload/cache/
 /public_html/media/civicrm/ConfigAndLog/
 /public_html/media/civicrm/templates_c/Cached*
