@@ -21,6 +21,10 @@ defined('_JEXEC') or die;
 			<?php if($this->hasMessage()) : ?>
 			<jdoc:include type="message" />
 			<?php endif ?>
+            
+            <div class="tbw-content-top">
+			<jdoc:include type="modules" name="<?php $this->_p('content-top') ?>" style="T3Xhtml" />
+			</div>
 			
 			<jdoc:include type="component" />
 			<?php if ($this->countModules('content-bottom')) : ?>
