@@ -10,7 +10,7 @@ $group_id = $params->get('civi_crm_groupid');
 $groups = civicrm_api3('Group', 'get', array());
 
 $result = civicrm_api3('Contact', 'get', array(   
-  'return' => "id",   
+  'return'          => "id",   
   'filter.group_id' => array(0 => $group_id)
 ));
 foreach($result['values'] as $index=>$val){
@@ -21,15 +21,26 @@ foreach($result['values'] as $index=>$val){
 	  //each key of the result array is an attribute of the api
 		$civiUser = $api->lastResult->values[0];
 	}
-    $contacts[] = $civiUser->display_name;
-	
+    $contacts[] = $civiUser;	
 }
 
 ?>
 
 <h3><?php echo $groups['values'][$group_id]['title']; ?></h3>
 <div class="container">
-<?php foreach($contacts as $index=>$contact): ?>
-    <div class='col-lg-3'><?php echo $contact; ?></div>
-<?php endforeach; ?>
+<?php 
+if(is_array($contacts) && count($contacts)>0):
+    foreach($contacts as $index=>$contact): 
+        if(empty($contact->nick_name)){
+            $name = $contact->display_name;
+        }
+        else {
+            $name = "{$contact->nick_name} ({$contact->display_name})";
+        }
+        ?>
+        <div class='col-lg-3'><?php echo $name; ?></div>
+    <?php endforeach; ?>   
+<?php else : ?>
+    <div>No contacts found.</div>
+<?php endif; ?>
 </div>
