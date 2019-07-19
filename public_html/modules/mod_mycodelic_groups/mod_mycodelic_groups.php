@@ -1,9 +1,9 @@
 <?php
 defined('_JEXEC') or die('Restricted access');
-require_once('/home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm/api/class.api.php');
+require_once(JPATH_ROOT.'/administrator/components/com_civicrm/civicrm/api/class.api.php');
 $api = new civicrm_api3(array(
   // Specify location of "civicrm.settings.php".
-  'conf_path' => '/home/trevorbi/mycodelicforest.org/public_html/administrator/components/com_civicrm/',
+  'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
 ));  
 
 $apiParams = array(
