@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assets>
+	<scripts>
+		<file>js/script.js</file>
+	</scripts>
+	
+	<stylesheets>
+		<file>fonts/font-awesome/css/font-awesome.min.css</file>
+        <file>https://fonts.googleapis.com/css?family=Titan+One</file>
+        <file>https://fonts.googleapis.com/css?family=Sedgwick+Ave+Display</file>
+        <file>https://fonts.googleapis.com/css?family=Megrim</file>
+        <file>https://fonts.googleapis.com/css?family=Goblin+One</file>
+        <file>https://fonts.googleapis.com/css?family=Flavors</file>
+	</stylesheets>
+	
+</assets>

@@ -2,15 +2,15 @@
 <extension type="component" version="4.5.5" method="upgrade" client="administrator">
     <name>com_uniterevolution2</name>
     <creationDate>August 2012</creationDate>
-    <author>Unite CMS</author>
+    <author>Unite CMS / Valiano</author>
 	<copyright>Copyright (C) 2012 UniteCMS.net, All rights reserved.</copyright>
 	<license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
 	<authorEmail>support@unitecms.net</authorEmail>
 	<authorUrl>http://www.unitecms.net</authorUrl>
-    <version>4.6</version>
+    <version>5.0.16</version>
 	
 	<description>
-		Revolution Slider extension and module installation success!
+		Unite Slider extension and module installation success!
 	</description>
 	
 	<install>
@@ -65,9 +65,13 @@
     </administration>
 	
 	<modules>
-		<module folder="modules" module="mod_unite_revolution2" name="Unite Revolution Slider" />
+		<module folder="modules" module="mod_unite_revolution2" name="Unite Slider" />
 	</modules>
 	
 	<scriptfile>install.php</scriptfile>
 	
+    <updateservers>
+        <server type="extension" priority="1" name="Unite Slider"><![CDATA[http://unitecms.net/update/unite-slider.xml]]></server>
+    </updateservers>
+		
 </extension>

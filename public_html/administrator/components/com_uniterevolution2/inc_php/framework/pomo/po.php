@@ -161,6 +161,7 @@ class PO extends Gettext_Translations {
 	 * @param string $with prepend lines with this string
 	 */
 	function prepend_each_line($string, $with) {
+		
 		$php_with = var_export($with, true);
 		$lines = explode("\n", $string);
 		// do not prepend the string on the last empty line, artefact by explode

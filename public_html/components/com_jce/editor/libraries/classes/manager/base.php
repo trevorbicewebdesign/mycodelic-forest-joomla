@@ -1,30 +1,21 @@
 <?php
 
 /**
- * @package       JCE
- * @copyright     Copyright (c) 2009-2017 Ryan Demmer. All rights reserved.
+ * @copyright     Copyright (c) 2009-2019 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
- * other free or open source software licenses.
+ * other free or open source software licenses
  */
-defined('_JEXEC') or die('RESTRICTED');
-
-// Load class dependencies
-wfimport('editor.libraries.classes.plugin');
-wfimport('editor.libraries.classes.browser');
+defined('JPATH_PLATFORM') or die;
 
 class WFMediaManagerBase extends WFEditorPlugin
 {
-
     protected $_filetypes = 'jpg,jpeg,png,gif';
 
     private static $browser = array();
 
-    /**
-     * @access  public
-     */
     public function __construct($config = array())
     {
         // use the full "manager" layout by default
@@ -53,8 +44,8 @@ class WFMediaManagerBase extends WFEditorPlugin
     }
 
     /**
-     * Get the File Browser instance
-     * @access public
+     * Get the File Browser instance.
+     *
      * @return object WFBrowserExtension
      */
     protected function getFileBrowser()
@@ -79,7 +70,7 @@ class WFMediaManagerBase extends WFEditorPlugin
         $this->getFileBrowser()->addAction($name, $options);
     }
 
-    protected function addFileBrowserButton($type = 'file', $name, $options = array())
+    protected function addFileBrowserButton($type, $name, $options = array())
     {
         $this->getFileBrowser()->addButton($type, $name, $options);
     }
@@ -95,15 +86,13 @@ class WFMediaManagerBase extends WFEditorPlugin
     }
 
     /**
-     * Display the plugin
-     * @access public
+     * Display the plugin.
      */
     public function display()
     {
         parent::display();
 
         $document = WFDocument::getInstance();
-        $layout = JRequest::getCmd('layout', 'plugin');
 
         $view = $this->getView();
         $browser = $this->getFileBrowser();
@@ -120,9 +109,9 @@ class WFMediaManagerBase extends WFEditorPlugin
         $document->addScriptDeclaration('FileBrowser.options=' . json_encode($options) . ';');
     }
 
-    public function getFileTypes()
+    public function getFileTypes($format = 'array', $list = '')
     {
-        return $this->getFileBrowser()->getFileTypes("array");
+        return $this->getFileBrowser()->getFileTypes($format, $list);
     }
 
     protected function setFileTypes($filetypes)
@@ -132,7 +121,7 @@ class WFMediaManagerBase extends WFEditorPlugin
 
     private function getFileSystem()
     {
-        $filesystem = $this->getParam('filesystem.name', '', '', 'string', false);
+        $filesystem = $this->getParam('filesystem.name', '');
 
         // if an object, get the name
         if (is_object($filesystem)) {
@@ -161,6 +150,7 @@ class WFMediaManagerBase extends WFEditorPlugin
 
             $id3 = new getID3();
         }
+
         return $id3;
     }
 
@@ -169,7 +159,7 @@ class WFMediaManagerBase extends WFEditorPlugin
         jimport('joomla.filesystem.file');
         clearstatcache();
 
-        $meta = array('width' => '', 'height' => '', 'time' => '');
+        $meta = array('width' => '', 'height' => '', 'time' => '', 'x' => '', 'y' => '');
 
         $ext = JFile::getExt($path);
 
@@ -201,9 +191,10 @@ class WFMediaManagerBase extends WFEditorPlugin
             $meta['width'] = round($size[0]);
             $meta['height'] = round($size[1]);
         }
+
         if ($ext == 'wmv' && $meta['x'] == '') {
-            $meta['width'] = round($fileinfo['asf']['video_media']['2']['image_width']);
-            $meta['height'] = round(($fileinfo['asf']['video_media']['2']['image_height']) + 60);
+            $meta['width'] = round($fileinfo['asf']['video_media']['1']['image_width']);
+            $meta['height'] = round(($fileinfo['asf']['video_media']['1']['image_height']));
         }
 
         return $meta;
@@ -225,6 +216,25 @@ class WFMediaManagerBase extends WFEditorPlugin
             return $data;
         }
 
+        // svg
+        if (preg_match('#\.svg$#i', $file)) {
+            $svg = @simplexml_load_file($path);
+
+            if ($svg && isset($svg['viewBox'])) {
+                list($start_x, $start_y, $end_x, $end_y) = explode(' ', $svg['viewBox']);
+
+                $width = (int) $end_x;
+                $height = (int) $end_y;
+
+                if ($width && $height) {
+                    $data['width'] = $width;
+                    $data['height'] = $height;
+
+                    return $data;
+                }
+            }
+        }
+
         // video and audio
         if (preg_match('#\.(avi|wmv|wm|asf|asx|wmx|wvx|mov|qt|mpg|mpeg|m4a|swf|dcr|rm|ra|ram|divx|mp4|ogv|ogg|webm|flv|f4v|mp3|ogg|wav|xap)$#i', $file)) {
 
@@ -243,31 +253,48 @@ class WFMediaManagerBase extends WFEditorPlugin
     }
 
     /**
-     * Get the Media Manager configuration
-     * @access private
+     * Get the Media Manager configuration.
+     *
      * @return array
      */
     protected function getFileBrowserConfig($config = array())
     {
         $filetypes = $this->getParam('extensions', $this->get('_filetypes'));
-        $textcase = $this->getParam('editor.websafe_textcase', 'any');
+        $textcase = $this->getParam('editor.websafe_textcase', '');
 
-        if (!empty($textcase) && is_array($textcase)) {
-            $textcase = count($textcase) > 1 ? 'any' : array_shift($textcase);
+        // implode textcase array to create string
+        if (is_array($textcase)) {
+            $textcase = implode(',', $textcase);
+        }
+        
+        $filter = $this->getParam('editor.dir_filter', array());
+
+        // explode to array if string - 2.7.x...2.7.11
+        if (!is_array($filter)) {
+            $filter = explode(',', $filter);
         }
 
-        $filter = (array) $this->getParam('editor.dir_filter', array());
-
         // remove empty values
-        $filter = array_filter($filter);
+        $filter = array_filter((array) $filter);
 
-        // get directory from parameter
-        $dir = $this->getParam('dir');
+        // get base directory from editor parameter
+        $baseDir = $this->getParam('editor.dir', '', '', false);
+        
+        // get directory from plugin parameter, fallback to base directory as it cannot itself be empty
+        $dir = $this->getParam($this->getName() . '.dir', $baseDir);
 
-        // fix Link plugin legacy "direction" conflict
-        if ($this->get('caller') === 'link') {
-            $fallback = $this->getParam('editor.dir');
-            $dir = $this->getParam($this->getName() . '.dir', $fallback);
+        // get websafe spaces parameter and convert legacy values
+        $websafe_spaces = $this->getParam('editor.websafe_allow_spaces', '_');
+
+        if (is_numeric($websafe_spaces)) {
+            // legacy replacement
+            if ($websafe_spaces == 0) {
+                $websafe_spaces = '_';
+            }
+            // convert to space
+            if ($websafe_spaces == 1) {
+                $websafe_spaces = ' ';
+            }
         }
 
         $base = array(
@@ -276,7 +303,7 @@ class WFMediaManagerBase extends WFEditorPlugin
             'filetypes' => $filetypes,
             'filter' => $filter,
             'upload' => array(
-                'max_size' => $this->getParam('max_size', 1024, '', 'string', false),
+                'max_size' => $this->getParam('max_size', 1024),
                 'validate_mimetype' => (int) $this->getParam('editor.validate_mimetype', 1),
                 'add_random' => (int) $this->getParam('editor.upload_add_random', 0),
                 'total_files' => (float) $this->getParam('editor.total_files', 0),
@@ -285,7 +312,6 @@ class WFMediaManagerBase extends WFEditorPlugin
             ),
             'folder_tree' => $this->getParam('editor.folder_tree', 1),
             'list_limit' => $this->getParam('editor.list_limit', 'all'),
-            'use_cookies' => $this->getParam('editor.use_cookies', true),
             'features' => array(
                 'upload' => $this->getParam('upload', 1),
                 'folder' => array(
@@ -301,7 +327,7 @@ class WFMediaManagerBase extends WFEditorPlugin
                 ),
             ),
             'websafe_mode' => $this->getParam('editor.websafe_mode', 'utf-8'),
-            'websafe_spaces' => $this->getParam('editor.websafe_allow_spaces', 0),
+            'websafe_spaces' => $websafe_spaces,
             'websafe_textcase' => $textcase,
             'date_format' => $this->getParam('editor.date_format', '%d/%m/%Y, %H:%M'),
             'position' => $this->getParam('editor.filebrowser_position', $this->getParam('editor.browser_position', 'bottom')),

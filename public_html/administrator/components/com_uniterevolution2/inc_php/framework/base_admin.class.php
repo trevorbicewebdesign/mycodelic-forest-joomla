@@ -212,13 +212,10 @@
 				JHtml::_('bootstrap.framework');				
 			}
 			
-			$urlJqueryUI = "https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js";
-			self::addScriptAbsoluteUrl($urlJqueryUI,"jquery-ui");
 			
-			self::addScriptCommon("jquery-migrate.min","jquery-migrate");
+			self::addStyle("jquery-ui.min","jui-smoothness","css/jui/new");
 			
-			//self::addStyle("jquery-ui-1.10.3.custom.min","jui-smoothness","css/jui/new");
-			self::addStyleAbsoluteUrl('https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/themes/base/jquery-ui.css', 'jui-smoothness');
+			self::addScriptCommon("jquery-ui.min","jquery-ui");
 			
 			self::addScriptCommon("settings","unite_settings");
 			self::addScriptCommon("admin","unite_admin");

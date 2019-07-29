@@ -11,13 +11,10 @@
 		define("WP_CONTENT_DIR",JPATH_BASE."/images/");
 	}
 	
-	/**
-	 * 
-	 * _e() emulator
-	 */
-	if(function_exists("_e") == false){
-	
-		function _e($string, $textdomain = null){
+/**
+ * echo function
+ */
+		function _uge($string, $textdomain = null){
 			
 			if(GlobalsRevSlider::ENABLE_TRANSLATIONS == false){
 				echo $string;
@@ -28,27 +25,23 @@
 			$str = $wpTranslate->translate($string);
 			echo $str;
 		}
-	}
-	
-	
+
+		
 	/**
 	 * 
-	 * __() emulator
+	 * __ug() emulator
 	 */	
-	if(function_exists("__") == false){
-	 
-		function __($string, $textdomain = null){
-			
-			if(GlobalsRevSlider::ENABLE_TRANSLATIONS == false)
-				return($string);
-			
-			global $wpTranslate;
-			$str = $wpTranslate->translate($string);
-			return($str);
-		}
+	function __ug($string, $textdomain = null){
+		
+		if(GlobalsRevSlider::ENABLE_TRANSLATIONS == false)
+			return($string);
+		
+		global $wpTranslate;
+		$str = $wpTranslate->translate($string);
+		return($str);
 	}
 	
-			
+		
 	/**
 	 * 
 	 * add_action() emulator
@@ -174,8 +167,14 @@
 			if(empty($url))
 				UniteFunctionsRev::throwError("wp register style error: empty url. handle: {$handle}");
 			
+			$attribs = array();
+			if(!empty($handle)){
+				$handle = str_replace(" ", "_", $handle);
+				$attribs["id"] = "css_".$handle;
+			}
+			
 			$document = JFactory::getDocument();
-			$document->addStyleSheet($url);
+			$document->addStyleSheet($url, "text/css", null, $attribs);
 		 }
 	}
 	

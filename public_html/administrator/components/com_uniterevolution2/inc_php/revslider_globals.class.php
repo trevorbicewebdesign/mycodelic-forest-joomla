@@ -5,7 +5,7 @@
 	class GlobalsRevSlider{
 		
 		const SHOW_DEBUG = false;
-		const SLIDER_REVISION = '4.6';
+		const SLIDER_REVISION = '5.0.4';
 		const ENABLE_TRANSLATIONS = true;
 		const TABLE_SLIDERS_NAME = "revslider_sliders";
 		const TABLE_SLIDES_NAME = "revslider_slides";
@@ -99,8 +99,8 @@
 			self::$url_media = self::$url_base."media/".GlobalsRevSlider::PLUGIN_NAME."/";
 			self::$url_item_plugin = self::$url_media."assets/rs-plugin/";
 			
-			GlobalsRevSlider::$urlCaptionsCSS = self::$url_component_client."&action=getcaptions";
-			GlobalsRevSlider::$urlCaptionsCSSAdmin = self::$url_component_admin."&action=getcaptions";
+			GlobalsRevSlider::$urlCaptionsCSS = self::$url_component_client."&amp;action=getcaptions";
+			GlobalsRevSlider::$urlCaptionsCSSAdmin = self::$url_component_admin."&amp;action=getcaptions";
 			GlobalsRevSlider::$urlDynamicCaptionsCSS = self::$url_item_plugin."css/dynamic-captions.css";
 			GlobalsRevSlider::$urlStaticCaptionsCSS = self::$url_item_plugin."css/static-captions.css";
 			

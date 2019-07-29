@@ -10,6 +10,7 @@ class UniteTranslateRev{
 	 * load language
 	 */
 	public function __construct($domain){
+		
 		$this->domain = $domain;
 		$this->get_translations_for_domain($domain);
 		
@@ -28,7 +29,6 @@ class UniteTranslateRev{
 	
 		$mo = new MO();
 		$current_language = JFactory::getLanguage();
-		
 		$mo_file = JPATH_COMPONENT . DIRECTORY_SEPARATOR."language".DIRECTORY_SEPARATOR. $domain ."-". $current_language->getTag() .".mo" ;
 		
 		

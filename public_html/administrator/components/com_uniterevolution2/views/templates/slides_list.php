@@ -1,12 +1,12 @@
 
 	<div class="postbox box-slideslist">
 		<h3>
-			<span class='slideslist-title'><?php _e("Slides List",REVSLIDER_TEXTDOMAIN)?></span>
-			<span id="saving_indicator" class='slideslist-loading'><?php _e("Saving Order",REVSLIDER_TEXTDOMAIN)?>...</span>
+			<span class='slideslist-title'><?php _uge("Slides List",REVSLIDER_TEXTDOMAIN)?></span>
+			<span id="saving_indicator" class='slideslist-loading'><?php _uge("Saving Order",REVSLIDER_TEXTDOMAIN)?>...</span>
 		</h3>
 		<div class="inside">
 			<?php if(empty($arrSlides)):?>
-			<?php _e("No Slides Found",REVSLIDER_TEXTDOMAIN)?>
+			<?php _uge("No Slides Found",REVSLIDER_TEXTDOMAIN)?>
 			<?php endif?>
 			
 			<?php
@@ -89,9 +89,9 @@
 							<span class="order-text"><?php echo $counter?></span>
 							<div class="state_loader" style="display:none;"></div>
 							<?php if($state == "published"):?>
-							<div class="icon_state state_published" data-slideid="<?php echo $slideid?>" title="<?php _e("Unpublish Slide",REVSLIDER_TEXTDOMAIN)?>"></div>
+							<div class="icon_state state_published" data-slideid="<?php echo $slideid?>" title="<?php _uge("Unpublish Slide",REVSLIDER_TEXTDOMAIN)?>"></div>
 							<?php else:?>
-							<div class="icon_state state_unpublished" data-slideid="<?php echo $slideid?>" title="<?php _e("Publish Slide",REVSLIDER_TEXTDOMAIN)?>"></div>
+							<div class="icon_state state_unpublished" data-slideid="<?php echo $slideid?>" title="<?php _uge("Publish Slide",REVSLIDER_TEXTDOMAIN)?>"></div>
 							<?php endif?>
 							
 							<div class="icon_slide_preview" title="Preview Slide" data-slideid="<?php echo $slideid?>"></div>
@@ -101,7 +101,7 @@
 					<?php if($permission_edit): // permission ?>
 						<span class="slide-col col-name">
 							<div class="slide-title-in-list"><?php echo $linkEdit?></div>
-							<a class='button-primary revgreen' href='<?php echo $urlEditSlide?>' style="width:120px; "><i class="revicon-pencil-1"></i><?php _e("Edit Slide",REVSLIDER_TEXTDOMAIN)?></a>
+							<a class='button-primary revgreen' href='<?php echo $urlEditSlide?>' style="width:120px; "><i class="revicon-pencil-1"></i><?php _uge("Edit Slide",REVSLIDER_TEXTDOMAIN)?></a>
 						</span>
 					<?php endif; // end permission?>
 						
@@ -130,20 +130,20 @@
 					<?php if($permission): // permission ?>
 						
 						<span class="slide-col col-operations">
-							<a id="" class='button-primary revred button_delete_slide ' style="width:120px; margin-top:8px !important" data-slideid="<?php echo $slideid?>" href='javascript:void(0)'><i class="revicon-trash"></i><?php _e("Delete",REVSLIDER_TEXTDOMAIN)?></a>
-							<span class="loader_round loader_delete" style="display:none;"><?php _e("Deleting Slide...",REVSLIDER_TEXTDOMAIN)?></span>
-							<a id="button_duplicate_slide_<?php echo $slideid?>" style="width:120px; " class='button-primary revyellow button_duplicate_slide' href='javascript:void(0)'><i class="revicon-picture"></i><?php _e("Duplicate",REVSLIDER_TEXTDOMAIN)?></a>
+							<a id="" class='button-primary revred button_delete_slide ' style="width:120px; margin-top:8px !important" data-slideid="<?php echo $slideid?>" href='javascript:void(0)'><i class="revicon-trash"></i><?php _uge("Delete",REVSLIDER_TEXTDOMAIN)?></a>
+							<span class="loader_round loader_delete" style="display:none;"><?php _uge("Deleting Slide...",REVSLIDER_TEXTDOMAIN)?></span>
+							<a id="button_duplicate_slide_<?php echo $slideid?>" style="width:120px; " class='button-primary revyellow button_duplicate_slide' href='javascript:void(0)'><i class="revicon-picture"></i><?php _uge("Duplicate",REVSLIDER_TEXTDOMAIN)?></a>
 							<?php
 								$copyButtonClass = "button-primary revblue  button_copy_slide";
-								$copyButtonTitle = __("Open copy / move dialog",REVSLIDER_TEXTDOMAIN);
+								$copyButtonTitle = __ug("Open copy / move dialog",REVSLIDER_TEXTDOMAIN);
 								
 								 if($numSliders == 0){
 								 	$copyButtonClass .= " button-disabled";
 								 	$copyButtonTitle = "Copy / move disabled, no more sliders found";
 							 	}
 							?>
-							<a id="button_copy_slide_<?php echo $slideid?>" class='<?php echo $copyButtonClass?>' title="<?php echo $copyButtonTitle?>" style="width:120px; " href='javascript:void(0)'><i class="revicon-picture"></i><?php _e("Copy / Move",REVSLIDER_TEXTDOMAIN)?></a>							
-							<span class="loader_round loader_copy mtop_10 mleft_20 display_block" style="display:none;"><?php _e("Working...",REVSLIDER_TEXTDOMAIN)?></span>
+							<a id="button_copy_slide_<?php echo $slideid?>" class='<?php echo $copyButtonClass?>' title="<?php echo $copyButtonTitle?>" style="width:120px; " href='javascript:void(0)'><i class="revicon-picture"></i><?php _uge("Copy / Move",REVSLIDER_TEXTDOMAIN)?></a>							
+							<span class="loader_round loader_copy mtop_10 mleft_20 display_block" style="display:none;"><?php _uge("Working...",REVSLIDER_TEXTDOMAIN)?></span>
 						</span>
 						
 						<span class="slide-col col-handle">

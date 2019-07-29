@@ -26,26 +26,8 @@ defined('_JEXEC') or die;
 	$this->addCss('layouts/home-template');
 	?>
 	
-<link href="https://fonts.googleapis.com/css?family=Titan+One" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Sedgwick+Ave+Display" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Megrim" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Goblin+One" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Flavors" rel="stylesheet">
 <style>
-#parallax-1 {
-	background-image: 	url(/templates/mycodelic/images/34106547_10155519758463372_2974331639221452800_o.jpg);
-	background-size:	100% auto;
-	
-	min-height:		100vh;	
-	background-attachment:fixed;
-}
-#parallax-2 {
-	background-image: 	url(/templates/mycodelic/images/screen-shot-2013-08-26-at-1-06-50-am.png);
-	background-size:	100% auto;
-	
-	height:			50vh;	
-	background-attachment:fixed;
-}
+
 #logo-parallax {
 	position:			relative;
 	margin-top:		20vh;
@@ -104,7 +86,7 @@ defined('_JEXEC') or die;
 				</div>
 			</div>
 			<div id="tbw-pagebottom">
-				<footer id="t3-footer" class="container t3-footer">
+				<footer class="container footer">
 					<?php $this->loadBlock('footer') ?>
 				</footer>
 			</div>

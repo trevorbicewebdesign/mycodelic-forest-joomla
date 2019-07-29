@@ -1,8 +1,8 @@
 
-	<!--  load good font -->
-	<?php
 
-		if($loadGoogleFont == "true"){
+	<!--  load good font -->
+
+	<?php if($loadGoogleFont == "true"){
 			$googleFont = $slider->getParam("google_font","");
 			if(!empty($googleFont)){
 				if(is_array($googleFont)){
@@ -14,227 +14,197 @@
 				}
 			}
 		}
-		
-		if($slide->isStaticSlide()){ //insert sliderid for preview
-			?>
+		if($slide->isStaticSlide()){ //insert sliderid for preview ?>
 		<input type="hidden" id="sliderid" value="<?php echo $slider->getID(); ?>" />
-		<?php
-		}
-		?>
-		
-
+		<?php } ?>
 	<div class="wrap settings_wrap">
 		<div class="clear_both"></div> 
-	
-		<div class="title_line">
+		<div class="title_line structure-change">
 			<div id="icon-options-general" class="icon32"></div>
-			<div class="view_title">
-				<?php _e('Slider:', REVSLIDER_TEXTDOMAIN); echo ' '.$slider->getParam("title",""); ?>, 
-			
-				<?php 
+			<div class="view_title"><a href="#"><span class="nm-slide-title">
+				<?php _uge('', REVSLIDER_TEXTDOMAIN); echo ' '.$sliderTitle ?>
+				<?php
 				if($sliderTemplate == "true"){
-					_e("Edit Template Slide",REVSLIDER_TEXTDOMAIN);
+					_uge("",REVSLIDER_TEXTDOMAIN);
 				}else{
-					_e("Edit Slide",REVSLIDER_TEXTDOMAIN);
+					_uge("",REVSLIDER_TEXTDOMAIN);
 				}
-				?> <?php echo $slideOrder?>, <?php _e("Title:",REVSLIDER_TEXTDOMAIN); ?> <?php echo $slideTitle?>
-			
+				?> <?php //echo $slideOrder?> <?php _uge("",REVSLIDER_TEXTDOMAIN); ?> <?php //echo $slideTitle?>	
+						</span>
+                <i class="fa fa-angle-down" aria-hidden="true"></i>
+                <div class="slider-name-box">
+                	<form>
+	                	<label><?php _uge("Name",REVSLIDER_TEXTDOMAIN);?></label>
+	                    <input type="text" value="<?php echo $sliderTitle?>" id="slider_title">
+	                    <button type="button" class="rename-slider"><?php _uge("Save",REVSLIDER_TEXTDOMAIN);?></button>
+                    </form>
+                </div>
+                
+                </a>
 			</div>
-			
-			<a href="<?php echo GlobalsRevSlider::LINK_HELP_SLIDE?>" class="button-primary float_right revblue mtop_10 mleft_10" target="_blank"><?php _e("Help",REVSLIDER_TEXTDOMAIN)?></a>			
-			
+				
+            
 		</div>
-
-
-		<div id="slide_selector" class="slide_selector">
-			<?php
-			$sID = $slider->getID();
-			
-			$useStaticLayers = $slider->getParam("enable_static_layers","off");
-			if($useStaticLayers == 'on'){
-				?>
-				<ul class="list_static_slide_links">
-					<li class="revgray nowrap">
-						<a href="<?php echo self::getViewUrl(RevSliderAdmin::VIEW_SLIDE,"id=static_$sID"); ?>" class="add_slide"><i class="eg-icon-lock"></i><span><?php _e("Static Layer",REVSLIDER_TEXTDOMAIN)?></span></a>
-					</li>
-				</ul>
-				<?php
-			}
-			?>
-		
-			<ul class="list_slide_links">
-			<?php
-			
-			foreach($arrSlideNames as $slidelistID=>$c_slide):
-
-				$slideName = $c_slide["name"];
-				$title = $c_slide["title"];
-				$arrChildrenIDs = $c_slide["arrChildrenIDs"];
-							
-				$class = "tipsy_enabled_top";
-				$titleclass = "";
-				$urlEditSlide = self::getViewUrl(RevSliderAdmin::VIEW_SLIDE,"id=$slidelistID");
-				if($slideID == $slidelistID || in_array($slideID, $arrChildrenIDs)){
-					$class .= " selected";
-					$titleclass = " slide_title";
-					$urlEditSlide = "javascript:void(0)";
-				}
-				
-				$addParams = "class='".$class."'";
-				$slideName = str_replace("'", "", $slideName);
-
-				?>
-				<li id="slidelist_item_<?php echo $slidelistID?>">
-					<a href="<?php echo $urlEditSlide?>" title='<?php echo $slideName?>' <?php echo $addParams?>><span class="nowrap<?php echo $titleclass?>"><?php echo $title?></span></a>
-				</li>
-				<?php
-				endforeach;?>
-			
-				 <?php if($permission): // permission ?>			
-				 <li>
-					<a id="link_add_slide" href="javascript:void(0);" class="add_slide"><span class="nowrap"><?php _e("Add Slide",REVSLIDER_TEXTDOMAIN)?></span></a>
-				 </li>
-				<?php endif; //end permission ?>
-				 
-				 <li>
-				 	<div id="loader_add_slide" class="loader_round" style="display:none"></div>
-				 </li>
-			</ul>
-		</div>
-		
-		<div class="clear"></div>
-		<!--<hr class="tabdivider">-->
-				
-		<?php if($wpmlActive == true && count($arrChildLangs) > 1):?>
-		<div class="clear"></div>
-		<div class="divide220"></div>
-			<div class="slide_langs_selector">
-			<span class="float_left ptop_15"> <?php _e("Choose slide language",REVSLIDER_TEXTDOMAIN)?>: </span> 
-			<ul class="list_slide_view_icons float_left">
-				<?php foreach($arrChildLangs as $arrLang):
-						$childSlideID = $arrLang["slideid"];
-						$lang = $arrLang["lang"];
-						$urlFlag = UniteWpmlRev::getFlagUrl($lang);
-						$langTitle = UniteWpmlRev::getLangTitle($lang);
-						
-						$class = "";
-						$urlEditSlide = self::getViewUrl(RevSliderAdmin::VIEW_SLIDE,"id=$childSlideID");							
-						
-						if($childSlideID == $slideID){
-							$class = "lang-selected";
-							$urlEditSlide = "javascript:void(0)";
-						}						
-				?>
-				<li>
-					<a href="<?php echo $urlEditSlide?>" class="tipsy_enabled_top <?php echo $class?>" title="<?php echo $langTitle?>">
-						<img class="icon_slide_lang" src="<?php echo $urlFlag?>" >
-					</a>
-				</li>
-				<?php endforeach?>
-			</ul>
-			<span class="float_left ptop_15 pleft_20"> <?php _e("All the language related operations are from",REVSLIDER_TEXTDOMAIN)?> <a href="<?php echo $closeUrl?>"><?php _e("slides view",REVSLIDER_TEXTDOMAIN)?></a>. </span> 			
-		</div>						
-		<div class="clear"></div>
-		<?php else:?>
-			
-			<div class="divide220"></div>
-				
-		<?php endif?>
-		
-		<?php
-		if(!$slide->isStaticSlide()){
-		?>
-		
-			<div id="slide_params_holder" class="postbox unite-postbox" style="max-width:100% !important;">
-				<h3 class="box-closed tp-accordion"><span class="postbox-arrow2">-</span><span><?php _e("General Slide Settings",REVSLIDER_TEXTDOMAIN) ?></span></h3>
-				<div class="toggled-content">
-					<form name="form_slide_params" id="form_slide_params">
-					<?php
-						$settingsSlideOutput->draw("form_slide_params",false);
-					?>
-						<input type="hidden" id="image_url" name="image_url" value="<?php echo $imageUrl?>" />
-						<input type="hidden" id="image_id" name="image_id" value="<?php echo $imageID?>" />
-					</form>
-				</div>
-			</div>
-
-		<?php
-		}
-		?>
-		
-
-		<div id="jqueryui_error_message" class="unite_error_message" style="display:none;">
-				<b>Warning!!! </b>The jquery ui javascript include that is loaded by some of the plugins are custom made and not contain needed components like 'autocomplete' or 'draggable' function.
-				Without those functions the editor may not work correctly. Please remove those custom jquery ui includes in order the editor will work correctly.
-		 </div>
-
-		<?php require self::getPathTemplate("edit_layers");?>
-		
-		
-		<?php
-		if(!$slide->isStaticSlide()){
-		?>
-			<a href="javascript:void(0)" id="button_save_slide" class="revgreen button-primary"><div class="updateicon"></div><?php _e("Update Slide",REVSLIDER_TEXTDOMAIN)?></a>
-		<?php }else{ ?>
-			<a href="javascript:void(0)" id="button_save_static_slide" class="revgreen button-primary"><div class="updateicon"></div><?php _e("Update Static Layers",REVSLIDER_TEXTDOMAIN)?></a>
-		<?php } ?>
-				
-		<span id="loader_update" class="loader_round" style="display:none;"><?php _e("updating",REVSLIDER_TEXTDOMAIN)?>...</span>
-		<span id="update_slide_success" class="success_message" class="display:none;"></span>
-		
-		<?php if($permission_setting): // permission ?>
-		<a href="<?php echo self::getViewUrl(RevSliderAdmin::VIEW_SLIDER,"id=$sliderID");?>" class="button-primary revblue"><?php _e("To Slider Settings",REVSLIDER_TEXTDOMAIN)?></a>
-		<?php endif; // end permission ?>
-		
-		<a id="button_close_slide" href="<?php echo $closeUrl?>" class="button-primary revyellow"><div class="closeicon"></div><?php _e("To Slide List",REVSLIDER_TEXTDOMAIN)?></a>
-		
-		<?php if($permission): // permission ?>
-		
-		<?php
-		if(!$slide->isStaticSlide()){
-		?>
-		<a href="javascript:void(0)" id="button_delete_slide" class="button-primary revred" original-title=""><i class="revicon-trash"></i><?php _e("Delete Slide",REVSLIDER_TEXTDOMAIN)?></a>
-		<?php } ?>
-		
-		<?php endif; // end permission ?>
-		
+        
+		<?php require self::getPathTemplate("edit_layers");?>        
+        
 	</div>
-
+    
+    
+    
+    
 	<div class="vert_sap"></div>
-
 	<?php require self::getPathTemplate("dialog_preview_slide");?>
-	<?php
-	if($slide->isStaticSlide())
+	<?php if($slide->isStaticSlide())
 		require self::getPathTemplate("dialog_preview_slider");
 	?>
-	
 	<!-- FIXED POSITIONED TOOLBOX -->
-		<div class="" style="position:fixed;right:-10px;top:148px;z-index:100;">
-			<?php
-			if(!$slide->isStaticSlide()){
-			?>
-			<a href="javascript:void(0)" id="button_save_slide-tb" class="revgreen button-primary button-fixed"><div style="font-size:16px; padding:10px 5px;" class="revicon-arrows-ccw"></div></a>
-			<?php }else{ ?>
-			<a href="javascript:void(0)" id="button_save_static_slide-tb" class="revgreen button-primary button-fixed"><div style="font-size:16px; padding:10px 5px;" class="revicon-arrows-ccw"></div></a>
-			<?php } ?>
-		</div>
-		
-	<div class="" style="position:fixed;right:-10px;top:100px;z-index:100;">
-		
+
+		<div class="" style="position:fixed;right:-10px;top:100px;z-index:100;">
 	</div>
+
 	
-	<?php
-	if($slide->isStaticSlide()){
-		$slideID = $slide->getID();
-	}
+
+	<?php if($slide->isStaticSlide()){ $slideID = $slide->getID(); }
 	?>
-	
 	<script type="text/javascript">
-		var g_messageDeleteSlide = "<?php _e("Delete this slide?",REVSLIDER_TEXTDOMAIN)?>";
+		var g_messageDeleteSlide = "<?php _uge("Delete this slide?",REVSLIDER_TEXTDOMAIN)?>";
 		jQuery(document).ready(function(){
-			
-			RevSliderAdmin.initEditSlideView(<?php echo $slideID?>,<?php echo $sliderID?>);
+	    	if(!g_revSliderAdmin)
+	    		g_revSliderAdmin = new RevSliderAdmin();
+		
+			g_revSliderAdmin.initEditSlideView(<?php echo $slideID?>,<?php echo $sliderID?>);
 		});
+	jQuery('.rename-slider').click(function(){
+	    var data = {};
+	    data.main = {};
+	    data.params = {};
+        data.params.delay = '<?php echo $slider->getParam("delay"); ?>';
+        data.params.shuffle = '<?php echo $slider->getParam("shuffle"); ?>';
+        data.params.lazy_load = '<?php echo $slider->getParam("lazy_load"); ?>';
+        data.params.enable_static_layers = '<?php echo $slider->getParam("enable_static_layers"); ?>';
+        data.params.next_slide_on_window_focus = '<?php echo $slider->getParam("next_slide_on_window_focus"); ?>';
+        data.params.stop_slider = '<?php echo $slider->getParam("stop_slider"); ?>';
+        data.params.stop_after_loops = '<?php echo $slider->getParam("stop_after_loops"); ?>';
+        data.params.stop_at_slide = '<?php echo $slider->getParam("stop_at_slide"); ?>';
+        data.params.show_timerbar = '<?php echo $slider->getParam("show_timerbar"); ?>';
+        data.params.loop_slide = '<?php echo $slider->getParam("loop_slide"); ?>';
+        data.params.position = '<?php echo $slider->getParam("position"); ?>';
+        data.params.margin_top = '<?php echo $slider->getParam("margin_top"); ?>';
+        data.params.margin_bottom = '<?php echo $slider->getParam("margin_bottom"); ?>';
+        data.params.margin_left = '<?php echo $slider->getParam("margin_left"); ?>';
+        data.params.margin_right = '<?php echo $slider->getParam("margin_right"); ?>';
+        data.params.position_behind = '<?php echo $slider->getParam("position_behind"); ?>';
+        data.params.shadow_type = '<?php echo $slider->getParam("shadow_type"); ?>';
+        data.params.background_color = '<?php echo $slider->getParam("background_color"); ?>';
+        data.params.background_dotted_overlay = '<?php echo $slider->getParam("background_dotted_overlay"); ?>';
+        data.params.show_background_image = '<?php echo $slider->getParam("show_background_image"); ?>';
+        data.params.background_image = '<?php echo $slider->getParam("background_image"); ?>';
+        data.params.bg_fit = '<?php echo $slider->getParam("bg_fit"); ?>';
+        data.params.bg_repeat = '<?php echo $slider->getParam("bg_repeat"); ?>';
+        data.params.bg_position = '<?php echo $slider->getParam("bg_position"); ?>';
+        data.params.stop_on_hover = '<?php echo $slider->getParam("stop_on_hover"); ?>';
+        data.params.keyboard_navigation = '<?php echo $slider->getParam("keyboard_navigation"); ?>';
+        data.params.navigation_style = '<?php echo $slider->getParam("navigation_style"); ?>';
+        data.params.navigaion_type = '<?php echo $slider->getParam("navigaion_type"); ?>';
+        data.params.navigaion_always_on = '<?php echo $slider->getParam("navigaion_always_on"); ?>';
+        data.params.hide_thumbs = '<?php echo $slider->getParam("hide_thumbs"); ?>';
+        data.params.navigaion_align_hor = '<?php echo $slider->getParam("navigaion_align_hor"); ?>';
+        data.params.navigaion_align_vert = '<?php echo $slider->getParam("navigaion_align_vert"); ?>';
+        data.params.navigaion_offset_hor = '<?php echo $slider->getParam("navigaion_offset_hor"); ?>';
+        data.params.navigaion_offset_vert = '<?php echo $slider->getParam("navigaion_offset_vert"); ?>';
+        data.params.leftarrow_align_hor = '<?php echo $slider->getParam("leftarrow_align_hor"); ?>';
+        data.params.leftarrow_align_vert = '<?php echo $slider->getParam("leftarrow_align_vert"); ?>';
+        data.params.leftarrow_offset_hor = '<?php echo $slider->getParam("leftarrow_offset_hor"); ?>';
+        data.params.leftarrow_offset_vert = '<?php echo $slider->getParam("leftarrow_offset_vert"); ?>';
+        data.params.rightarrow_align_hor = '<?php echo $slider->getParam("rightarrow_align_hor"); ?>';
+        data.params.rightarrow_align_vert = '<?php echo $slider->getParam("rightarrow_align_vert"); ?>';
+        data.params.rightarrow_offset_hor = '<?php echo $slider->getParam("rightarrow_offset_hor"); ?>';
+        data.params.rightarrow_offset_vert = '<?php echo $slider->getParam("rightarrow_offset_vert"); ?>';
+        data.params.thumb_width = '<?php echo $slider->getParam("thumb_width"); ?>';
+        data.params.thumb_height = '<?php echo $slider->getParam("thumb_height"); ?>';
+        data.params.thumb_amount = '<?php echo $slider->getParam("thumb_amount"); ?>';
+        data.params.use_spinner = '<?php echo $slider->getParam("use_spinner"); ?>';
+        data.params.spinner_color = '<?php echo $slider->getParam("spinner_color"); ?>';
+        data.params.use_parallax = '<?php echo $slider->getParam("use_parallax"); ?>';
+        data.params.disable_parallax_mobile = '<?php echo $slider->getParam("disable_parallax_mobile"); ?>';
+        data.params.parallax_type = '<?php echo $slider->getParam("parallax_type"); ?>';
+        data.params.parallax_bg_freeze = '<?php echo $slider->getParam("parallax_bg_freeze"); ?>';
+        data.params.parallax_level_1 = '<?php echo $slider->getParam("parallax_level_1"); ?>';
+        data.params.parallax_level_2 = '<?php echo $slider->getParam("parallax_level_2"); ?>';
+        data.params.parallax_level_3 = '<?php echo $slider->getParam("parallax_level_3"); ?>';
+        data.params.parallax_level_4 = '<?php echo $slider->getParam("parallax_level_4"); ?>';
+        data.params.parallax_level_5 = '<?php echo $slider->getParam("parallax_level_5"); ?>';
+        data.params.parallax_level_6 = '<?php echo $slider->getParam("parallax_level_6"); ?>';
+        data.params.parallax_level_7 = '<?php echo $slider->getParam("parallax_level_7"); ?>';
+        data.params.parallax_level_8 = '<?php echo $slider->getParam("parallax_level_8"); ?>';
+        data.params.parallax_level_9 = '<?php echo $slider->getParam("parallax_level_9"); ?>';
+        data.params.touchenabled = '<?php echo $slider->getParam("touchenabled"); ?>';
+        data.params.swipe_velocity = '<?php echo $slider->getParam("swipe_velocity"); ?>';
+        data.params.swipe_min_touches = '<?php echo $slider->getParam("swipe_min_touches"); ?>';
+        data.params.drag_block_vertical = '<?php echo $slider->getParam("drag_block_vertical"); ?>';
+        data.params.disable_on_mobile = '<?php echo $slider->getParam("disable_on_mobile"); ?>';
+        data.params.disable_kenburns_on_mobile = '<?php echo $slider->getParam("disable_kenburns_on_mobile"); ?>';
+        data.params.hide_slider_under = '<?php echo $slider->getParam("hide_slider_under"); ?>';
+        data.params.disable_kenburns_on_mobile = '<?php echo $slider->getParam("disable_kenburns_on_mobile"); ?>';
+        data.params.hide_defined_layers_under = '<?php echo $slider->getParam("hide_defined_layers_under"); ?>';
+        data.params.hide_all_layers_under = '<?php echo $slider->getParam("hide_all_layers_under"); ?>';
+        data.params.hide_arrows_on_mobile = '<?php echo $slider->getParam("hide_arrows_on_mobile"); ?>';
+        data.params.hide_thumbs_under_resolution = '<?php echo $slider->getParam("hide_thumbs_under_resolution"); ?>';
+        data.params.hide_thumbs_delay_mobile = '<?php echo $slider->getParam("hide_thumbs_delay_mobile"); ?>';
+        data.params.start_with_slide = '<?php echo $slider->getParam("start_with_slide"); ?>';
+        data.params.first_transition_active = '<?php echo $slider->getParam("first_transition_active"); ?>';
+        data.params.first_transition_type = '<?php echo $slider->getParam("first_transition_type"); ?>';
+        data.params.first_transition_duration = '<?php echo $slider->getParam("first_transition_duration"); ?>';
+        data.params.first_transition_slot_amount = '<?php echo $slider->getParam("first_transition_slot_amount"); ?>';
+        data.params.simplify_ie8_ios4 = '<?php echo $slider->getParam("simplify_ie8_ios4"); ?>';
+        data.params.show_alternative_type = '<?php echo $slider->getParam("show_alternative_type"); ?>';
+        data.params.show_alternate_image = '<?php echo $slider->getParam("show_alternate_image"); ?>';
+        data.params.reset_transitions = '<?php echo $slider->getParam("reset_transitions"); ?>';
+        data.params.reset_transition_duration = '<?php echo $slider->getParam("reset_transition_duration"); ?>';
+        data.params.load_googlefont = '<?php echo $slider->getParam("load_googlefont"); ?>';
+        data.main.title = jQuery('#slider_title').val();
+        data.sliderid = <?php echo $sliderID; ?>;
+        data.main.alias = '<?php echo $slider->getParam("alias"); ?>';
+        data.main.shortcode = '<?php echo $slider->getParam("shortcode"); ?>';
+        data.main.source_type = '<?php echo $slider->getParam("source_type"); ?>';
+        data.main.post_types = '<?php echo $slider->getParam("post_types"); ?>';
+        data.main.post_category = '<?php echo $slider->getParam("post_category"); ?>';
+        data.main.post_sortby = '<?php echo $slider->getParam("post_sortby"); ?>';
+        data.main.posts_sort_direction = '<?php echo $slider->getParam("posts_sort_direction"); ?>';
+        data.main.max_slider_posts = '<?php echo $slider->getParam("max_slider_posts"); ?>';
+        data.main.excerpt_limit = '<?php echo $slider->getParam("excerpt_limit"); ?>';
+        data.main.slider_template_id = '<?php echo $slider->getParam("slider_template_id"); ?>';
+        data.main.posts_list = '<?php echo $slider->getParam("posts_list"); ?>';
+        data.main.slider_type = '<?php echo $slider->getParam("slider_type"); ?>';
+        data.main.fullscreen_offset_container = '<?php echo $slider->getParam("fullscreen_offset_container"); ?>';
+        data.main.fullscreen_offset_size = '<?php echo $slider->getParam("fullscreen_offset_size"); ?>';
+        data.main.fullscreen_min_height = '<?php echo $slider->getParam("fullscreen_min_height"); ?>';
+        data.main.full_screen_align_force = '<?php echo $slider->getParam("full_screen_align_force"); ?>';
+        data.main.auto_height = '<?php echo $slider->getParam("auto_height"); ?>';
+        data.main.force_full_width = '<?php echo $slider->getParam("force_full_width"); ?>';
+        data.main.min_height = '<?php echo $slider->getParam("min_height"); ?>';
+        data.main.width = '<?php echo $slider->getParam("width"); ?>';
+        data.main.height = '<?php echo $slider->getParam("height"); ?>';
+        data.main.responsitive_w1 = '<?php echo $slider->getParam("responsitive_w1"); ?>';
+        data.main.responsitive_sw1 = '<?php echo $slider->getParam("responsitive_sw1"); ?>';
+        data.main.responsitive_w2 = '<?php echo $slider->getParam("responsitive_w2"); ?>';
+        data.main.responsitive_sw2 = '<?php echo $slider->getParam("responsitive_sw2"); ?>';
+        data.main.responsitive_w3 = '<?php echo $slider->getParam("responsitive_w3"); ?>';
+        data.main.responsitive_sw3 = '<?php echo $slider->getParam("responsitive_sw3"); ?>';
+        data.main.responsitive_w4 = '<?php echo $slider->getParam("responsitive_w4"); ?>';
+        data.main.responsitive_sw4 = '<?php echo $slider->getParam("responsitive_sw4"); ?>';
+        data.main.responsitive_w5 = '<?php echo $slider->getParam("responsitive_w5"); ?>';
+        data.main.responsitive_sw5 = '<?php echo $slider->getParam("responsitive_sw5"); ?>';
+        data.main.responsitive_w6 = '<?php echo $slider->getParam("responsitive_w6"); ?>';
+        data.main.responsitive_sw6 = '<?php echo $slider->getParam("responsitive_sw6"); ?>';
+        data.template = '<?php echo $slider->getParam("template"); ?>';
+        UniteAdminRev.ajaxRequest("update_slider" , data);
+		 jQuery('span.nm-slide-title').text(jQuery('#slider_title').val());
+	});
 	</script>
+
+
+
 
 

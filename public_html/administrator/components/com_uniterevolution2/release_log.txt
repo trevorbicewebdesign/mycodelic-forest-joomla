@@ -1,3 +1,282 @@
+version 5.0.16
+
+-bug fix: fixed "create_function" depricated for php 7.2
+
+version 5.0.14
+
+-bug fix: fixed the max-width and max-height default value for output
+
+version 5.0.13
+
+-bug fix: fixed full screen video positioning
+
+version 5.0.12
+
+-bug fix: fixed video layer dialog size
+
+version 5.0.11
+
+-bug fix: fixed user agent notice
+-bug fix: fixed background type select
+
+version 5.0.10
+
+-change: fixed non saving custom javascript and css
+version 5.0.9
+
+-change: fixed empty alt for transparent slides
+
+version 5.0.8
+
+-bug fix: fixed slider settings accordion
+
+version 5.0.7
+
+-bug fix: if empty image, replace by transparent image in preview
+
+version 5.0.6
+
+-bug fix: fixed background image bug
+
+version 5.0.5
+
+-bug fix: fixed slide long text bug
+
+version 5.0.4
+
+-bug fix: fixed static slides save
+
+version 5.0.3
+
+-bug fix: fixed bug with delete slider and delete slide
+
+version 5.0.2
+
+-bug fix: fixed transition params didn't saved
+
+version 5.0.1
+
+-bug fix: fixed background procentageright setting
+
+version 5.0
+
+-redesign slide view
+
+version 4.8
+
+-rename: renamed the slider to "unite slider" 
+
+version 4.7.4
+
+-bug fix: fixed php7 compatability
+
+version 4.7.3 b5
+
+-bug fix: removed "origin" from youtube output
+
+version 4.7.3 b3
+
+-bug fix: fixed some issue with import slider
+
+version 4.7.3 b2
+
+-change: changed the way that responsive styles are outputed
+
+version 4.7.3 b1
+
+-bug fix: fixed wrong url request in some of the systems
+
+version 4.7.3
+
+-bug fix: fixed expor zip
+
+version 4.7.2
+
+-set all links from inside the plugin so it could work offline
+
+version 4.7.1
+
+-bug fix: fixed froogaloop link in the slider js
+
+version 4.7
+
+-bug fix: enables full screen on youtube video play
+
+version 4.6.98 b2
+
+-bug fix: fixed joomla 3.5 add image dialog
+
+version 4.6.98 b1
+
+-protection: added protection against yt shortcode
+
+version 4.6.98
+
+-bug fix: fixed youtube autoplay after API change
+
+version 4.6.97
+
+-bug fix: fixed bug with wrong slide links
+
+version 4.6.96 b3
+
+-change: make export slider - nozip functionality
+
+version 4.6.96 b2
+
+-change: changed html5 video examples
+
+version 4.6.96 b1
+
+-change: added error message on export in case that the zip file not created
+
+version 4.6.96
+
+-bug fix: fixed style with ' don't saved
+
+version 4.6.95
+
+-bug fix: when duplicating or exporting slider, change slide links in slides and layers
+
+version 4.6.94
+
+-bug fix: fixed vimeo videos full screen on chrome
+
+version 4.6.93 b3
+
+-bug fix: restored hide/show for video dotted overlay for html5 video type only.
+
+version 4.6.93 b2
+
+-bug fix: fixed wp emulator __ug function
+
+version 4.6.93 b1
+
+-bug fix: fixed resize image layer jump in slide editor
+
+version 4.6.93
+
+-bug fix: the arrows and bullets didn't appeared on mobile
+
+version 4.6.92
+
+-bug fix: fixed caption save with underscore
+
+version 4.6.91
+
+-bug fix: fixed html5 video not autoplayed on autoplay first time option
+
+version 4.6.9
+
+-bug fix: fixed stop slide on youtube bug
+
+version 4.6.8
+
+-bug fix: updated slider js to the newest version
+
+version 4.6.5 b5
+
+-bug fix: fixed fancybox didn't opened bug in admin
+
+version 4.6.5 b4
+
+-bug fix: fixed isMobile() on slider output
+
+version 4.6.5 b3
+
+-bug fix: fixed youtube select
+
+version 4.6.5 b2
+
+-bug fix: fixed some php notice in output file
+
+version 4.6.5 b1
+
+-change: changed getcaptions link to "&amp" from "&"
+
+version 4.6.5 b1
+
+-change: changed language output function
+
+version 4.6.5
+
+-feature: Added option to show only the Preview Image of a video on mobile, disabling the video
+
+-change: Min. Height now gone if Fullscreen is selected
+
+-bug fix: 	Fixed Compatibility of Sandboxed GreenSock engine
+-bug fix:	Fixed Compatibility issues with W3C Total Cache Minifying engine
+-bug fix:	Fixed Static Layer Disappearing Issue
+-bug fix:	Fixed Lazy Loading and Preloading issues (Distorted images in FireFox)
+-bug fix:	Fixed an issue where the Parallax Effect if Mouse already hovered on the Slider in Firefox was not working well
+-bug fix:	Fixed an issue where exports can have wrong styles in it
+-bug fix:	Fixed Firefox HTML5 Video Playback
+-bug fix:	Fixed Thumbnail Vertical Offset Positions in Resized Screens
+
+version 4.6.3 b3
+
+-change: added more options to permissions
+
+version 4.6.3 b2
+
+-bug fix: fixed import from dynamic captions issue
+
+version 4.6.3 b1
+
+-bug fix: fixed slider import function
+
+version 4.6.3
+	
+bug fix: Fixed an issue where the Slide Link was not working correctly	
+	
+version 4.6.2
+
+-feature: Added "revkill" as method to remove the Slider from the page silently if needed
+-feature: Added "slideatend" event that triggers if the slide is at the end
+-feature: Added new Custom Controls for HTML5 Video Player to avoid Chrome "unclickable" buttons issue		  
+-feature: Added Rotating Loop Animation on Layers
+-feature: Spinner can now be disabled in the Slider Settings
+-feature: New fallback options for iOS4 and IE8 added in the Slider Settings (Alternative Image and/or simplyfied output)
+-feature: Added option to redraw Slider on browser tab focus
+
+-change: More changes on exporting Sliders for further compatibility
+-change: Saving CSS / a new CSS class through the style editor will now sanitize the classname
+-change: Setting the single slide setting in the Slide Editor to off will now set the values Arrows Type and Bullets Type to none
+-change: Improved minifying support
+-change: Easy auto settings for single loop option
+-change: Videos on mobile devices available again
+-change: Changed backend icon of static layers to avoid confusion
+-change: Removed console=1 from the YouTube default settings (only works for new added YouTube video layers)
+-change: Enabled unlimited speed parameter
+
+-bug fix: Improved the size and style handling of Layers in Slide Editor (resizing, rotating and lost values of parameters)</li>
+-bug fix: IE8 - line height "auto" broke the fullscreen slider. In case "auto" is set, the font size +4px will be calculated for line height</li>
+-bug fix: z-index bug for first layer in case dotted overlay exists fixed
+-bug fix: Chrome's max-width fallback from % to px. Slides accepting now only px values!
+-bug fix: Transition speed had no influence on real transitions
+-bug fix: Max transition can now have the same value as the max delay of the Slide
+-bug fix: Fixed missing Box Slide, Paper Cut and Box Fade transitions
+-bug fix: Fix of Lists in Captions - Formatting and Display issues	
+-bug fix: Link to Another Slide in Random Mode Bug linked to the wrong Slide Bug is fixed
+-bug fix: Undefined poster image on HTML5 videos fixed
+-bug fix: Fixed Vimeo/YouTube timings (delaying issues)
+-bug fix: Fixed KenBurn dotted overlay
+-bug fix: Fixed problem with loop animations
+-bug fix: Fixed navigation style issues
+-bug fix: Fixed Pan Zoom for mobile issues
+-bug fix: Fixed a bug where videos restarted on resize
+-bug fix: Fixed a bug where hide slider on mobile did not work on certain devices
+-bug fix: Fixed a bug with speed parameters
+-bug fix: Fixed a bug where caption naming in layers list was not updating anymore
+-bug fix: Further IE8 compatibility by changing CSS styles
+-bug fix: Fixed boxfade and boxslide animations
+-bug fix: Fixed a bug where the first layer z-index was always placed behind the dotted overlay
+
+
+version 4.6 b1
+
+-bug fix: added space in parameters output
+
 version 4.6
 
 -feature: Option to disable each video on mobile

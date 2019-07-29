@@ -151,7 +151,7 @@
 		 * 
 		 * get parameter from params array. if no default, then the param is a must!
 		 */
-		function getParam($name,$default=null,$validateType = null,$title=""){
+		public function getParam($name,$default=null,$validateType = null,$title=""){
 			
 			if($default === null){
 				if(!array_key_exists($name, $this->arrParams))
@@ -258,6 +258,26 @@
 		}
 		
 		
+		/**
+		 * modify params before save
+		 */
+		private function modifyParamsBeforeSave($params){
+			$googleFont = UniteFunctionsRev::getVal($params, "google_font");
+			
+			if(is_array($googleFont)){
+				
+				foreach($googleFont as $key=>$value){
+					$value = base64_decode($value);
+					$googleFont[$key] = $value;
+				}
+				
+				$params["google_font"] = $googleFont;
+				
+			}
+			
+			return($params);
+		}
+		
 		
 		/**
 		 * 
@@ -268,6 +288,9 @@
 			$arrMain = UniteFunctionsRev::getVal($options, "main");
 			$params = UniteFunctionsRev::getVal($options, "params");
 			$isTemplate = UniteFunctionsRev::getVal($options, "template");
+			
+			$params = $this->modifyParamsBeforeSave($params);
+			
 			
 			if($isTemplate == "true")
 				$params['template'] = "true";
@@ -370,6 +393,17 @@
 		}
 		
 		
+		/**
+		 * update old slide links after duplicating from old to new
+		 */
+		private function updateSlideLinks($arrSlideIDs){
+			$arrSlides = $this->getSlides();
+			foreach($arrSlides as $slide){
+				$slide->updateSlideLinks($arrSlideIDs);
+			}
+			
+		}
+		
 		
 		/**
 		 * 
@@ -409,15 +443,23 @@
 			
 			$this->db->update(GlobalsRevSlider::$table_sliders, $arrUpdate, array("id"=>$lastID));
 			
-			
 			//duplicate slides
 			$fields_slide = GlobalsRevSlider::FIELDS_SLIDE;
 			$fields_slide = str_replace("slider_id", $lastID, $fields_slide);
 			
-			$sqlSelect = "select ".$fields_slide." from ".GlobalsRevSlider::$table_slides." where slider_id=".$this->id;
-			$sqlInsert = "insert into ".GlobalsRevSlider::$table_slides." (".GlobalsRevSlider::FIELDS_SLIDE.") ($sqlSelect)";
-			
-			$this->db->runSql($sqlInsert);
+			$arrSlides = $this->getSlides();
+			$arrSlideIDs = array();
+			foreach($arrSlides as $slide){
+				$slideID = $slide->getID();
+				
+				$sqlSelect = "select ".$fields_slide." from ".GlobalsRevSlider::$table_slides." where id=".$slideID;
+				$sqlInsert = "insert into ".GlobalsRevSlider::$table_slides." (".GlobalsRevSlider::FIELDS_SLIDE.") ($sqlSelect)";
+				
+				$this->db->runSql($sqlInsert);
+				
+				$newSlideID = $this->db->getLastInsertID();
+				$arrSlideIDs["slide_{$slideID}"] = $newSlideID;
+			}
 			
 			//duplicate static slide if exists
 			$slide = new RevSlide();
@@ -429,6 +471,11 @@
 				
 				$this->db->insert(GlobalsRevSlider::$table_static_slides, $record);
 			}
+
+			//change old slide link id's to new
+			$newSlider = new RevSlider();
+			$newSlider->initByID($lastID);
+			$newSlider->updateSlideLinks($arrSlideIDs);
 			
 		}
 		
@@ -519,158 +566,221 @@
 		
 		
 		/**
+		* check zip atchive error codes
+		*/
+		private function checkZipErrors($code, $pathFile){
+			
+			if($code == TRUE)
+				return(true);
+			
+			$prefix = "File path: {$pathFile} <br> <br> Can't create zip file: ";
+			
+			switch($code){
+				case ZipArchive::ER_EXISTS:
+					UniteFunctionsRev::throwError($prefix."file already exists");
+				break;
+				case ZipArchive::ER_INCONS:
+					UniteFunctionsRev::throwError($prefix."Zip archive inconsistent.");
+				break;
+				case ZipArchive::ER_INVAL:
+					UniteFunctionsRev::throwError($prefix."Invalid argument.");
+				break;
+				case ZipArchive::ER_MEMORY:
+					UniteFunctionsRev::throwError($prefix."Malloc failure.");
+				break;
+				case ZipArchive::ER_NOENT:
+					UniteFunctionsRev::throwError($prefix."No such file.");
+				break;
+				case ZipArchive::ER_NOZIP:
+					UniteFunctionsRev::throwError($prefix."Not a zip archive.");
+				break;
+				case ZipArchive::ER_OPEN:
+					UniteFunctionsRev::throwError($prefix."Can't open file.");
+				break;
+				case ZipArchive::ER_READ:
+					UniteFunctionsRev::throwError($prefix."Read error.");
+				break;
+				case ZipArchive::ER_SEEK:
+					UniteFunctionsRev::throwError($prefix."Seek error.");
+				break;
+			}
+			
+			
+		}
+		
+		/**
 		 * 
 		 * export slider from data, output a file for download
 		 */
-		public function exportSlider($useDummy = false){
+		public function exportSlider($useDummy = false, $nozip = false){
 			
-			$export_zip = true;
-			
-			if(function_exists("unzip_file") == false){				
-				if( UniteZipRev::isZipExists() == false)
+			try{
+				
+				$export_zip = true;
+				
+				if(function_exists("unzip_file") == false){				
+					if( UniteZipRev::isZipExists() == false)
+						$export_zip = false;
+				}
+				
+				if(!class_exists('ZipArchive')) 
 					$export_zip = false;
-					//UniteFunctionsRev::throwError("The ZipArchive php extension not exists, can't create the export file. Please turn it on in php ini.");
-			}
-			
-			if(!class_exists('ZipArchive')) $export_zip = false;
-			//if(!class_exists('ZipArchive')) UniteFunctionsRev::throwError("The ZipArchive php extension not exists, can't create the export file. Please turn it on in php ini.");
-						
-			if($export_zip){
-				$zip = new ZipArchive;
-				$success = $zip->open(GlobalsRevSlider::$urlExportZip, ZipArchive::OVERWRITE);
-								
-				if($success == false)
-					UniteFunctionsRev::throwError("Can't create zip file: ".GlobalsRevSlider::$urlExportZip);
-					
-				$this->validateInited();
-				
-				
-				$sliderParams = $this->getParamsForExport();
-				$arrSlides = $this->getSlidesForExport($useDummy);
-				$arrStaticSlide = $this->getStaticSlideForExport($useDummy);
-				
-				$arrSliderExport = array("params"=>$sliderParams,"slides"=>$arrSlides);
-				if(!empty($arrStaticSlide))
-					$arrSliderExport['static_slides'] = $arrStaticSlide;
-				
-				$strExport = serialize($arrSliderExport);
-								
-				//$strExportAnim = serialize(RevOperations::getFullCustomAnimations());
-				
-				$exportname =(!empty($this->alias)) ? $this->alias.'.zip' : "slider_export.zip";
-				
-				
-				$usedCaptions = array();
-				$usedAnimations = array();
-				$usedImages = array();
-				
-				if(!empty($arrSlides) && count($arrSlides) > 0){
-					foreach($arrSlides as $key => $slide){
-						if(isset($slide['params']['image']) && $slide['params']['image'] != '') $usedImages[$slide['params']['image']] = true; //['params']['image'] background url
-						
-						if(isset($slide['layers']) && !empty($slide['layers']) && count($slide['layers']) > 0){
-							foreach($slide['layers'] as $lKey => $layer){
-								if(isset($layer['style']) && $layer['style'] != '') $usedCaptions[$layer['style']] = true;
-								if(isset($layer['animation']) && $layer['animation'] != '' && strpos($layer['animation'], 'customin') !== false) $usedAnimations[str_replace('customin-', '', $layer['animation'])] = true;
-								if(isset($layer['endanimation']) && $layer['endanimation'] != '' && strpos($layer['endanimation'], 'customout') !== false) $usedAnimations[str_replace('customout-', '', $layer['endanimation'])] = true;
-								if(isset($layer['image_url']) && $layer['image_url'] != '') $usedImages[$layer['image_url']] = true; //image_url if image caption
-							}
-						}
-					}
-				}
-				
-				if(!empty($arrStaticSlide) && count($arrStaticSlide) > 0){
-					foreach($arrStaticSlide as $key => $slide){
-						if(isset($slide['params']['image']) && $slide['params']['image'] != '') $usedImages[$slide['params']['image']] = true; //['params']['image'] background url
-						
-						if(isset($slide['layers']) && !empty($slide['layers']) && count($slide['layers']) > 0){
-							foreach($slide['layers'] as $lKey => $layer){
-								if(isset($layer['style']) && $layer['style'] != '') $usedCaptions[$layer['style']] = true;
-								if(isset($layer['animation']) && $layer['animation'] != '' && strpos($layer['animation'], 'customin') !== false) $usedAnimations[str_replace('customin-', '', $layer['animation'])] = true;
-								if(isset($layer['endanimation']) && $layer['endanimation'] != '' && strpos($layer['endanimation'], 'customout') !== false) $usedAnimations[str_replace('customout-', '', $layer['endanimation'])] = true;
-								if(isset($layer['image_url']) && $layer['image_url'] != '') $usedImages[$layer['image_url']] = true; //image_url if image caption
-							}
-						}
-					}
-				}
-								
-				
-				
-				$styles = '';
-				if(!empty($usedCaptions)){
-					$captions = array();
-					foreach($usedCaptions as $class => $val){
-						$cap = RevOperations::getCaptionsContentArray($class);
-						if(!empty($cap))
-							$captions[] = $cap;
-					}
-					$styles = UniteCssParserRev::parseArrayToCss($captions, "\n");
-				}
-								
-				$animations = '';
-				if(!empty($usedAnimations)){
-					$animation = array();
-					foreach($usedAnimations as $anim => $val){
-						$anima = RevOperations::getFullCustomAnimationByID($anim);
-						if($anima !== false) $animation[] = RevOperations::getFullCustomAnimationByID($anim);
-						
-					}
-					if(!empty($animation)) $animations = serialize($animation);
-				}
-				
-				
-				//add images to zip
-				if(!empty($usedImages)){
-										
-					foreach($usedImages as $urlImage => $val){
-						if($useDummy != "true"){ //only use dummy images
-						  $filepathImage = UniteFunctionJoomlaRev::getImageFilepathFromUrl($urlImage);						  						  
-						  $pathImage = UniteFunctionJoomlaRev::getPathImageFromUrl($urlImage);
-						  
-						  if(file_exists($filepathImage))
-						  	$zip->addFile($filepathImage, $pathImage);
-						}
-					}
-				}
-				
-				$zip->addFromString("slider_export.txt", $strExport); //add slider settings
-				if(strlen(trim($animations)) > 0) $zip->addFromString("custom_animations.txt", $animations); //add custom animations
-				if(strlen(trim($styles)) > 0) $zip->addFromString("dynamic-captions.css", $styles); //add dynamic styles
-				
-				//$zip->addFromString("custom_animations.txt", $strExportAnim); //add custom animations
-				//$zip->addFile(GlobalsRevSlider::$filepath_dynamic_captions,'dynamic-captions.css'); //add dynamic styles
 
-				$static_css = RevOperations::getStaticCss();
-				$zip->addFromString("static-captions.css", $static_css); //add slider settings
+				if($nozip === true)
+					$export_zip = false;
 				
-				//$zip->addFile(GlobalsRevSlider::$filepath_static_captions,'static-captions.css'); //add static styles
-				$zip->close();
+				if($export_zip){
+					$zip = new ZipArchive;
+					
+					$pathZipFile = GlobalsRevSlider::$urlExportZip;
+					//delete file if exists
+					
+					if(file_exists($pathZipFile))
+						unlink($pathZipFile);
+						
+					$success = $zip->open($pathZipFile, ZipArchive::CREATE);
+					
+					$this->checkZipErrors($success, $pathZipFile);
+					
+						
+					$this->validateInited();
+					
+					$sliderParams = $this->getParamsForExport();
+					$arrSlides = $this->getSlidesForExport($useDummy);
+					
+					$arrStaticSlide = $this->getStaticSlideForExport($useDummy);
+					
+					$arrSliderExport = array("params"=>$sliderParams,"slides"=>$arrSlides);
+					if(!empty($arrStaticSlide))
+						$arrSliderExport['static_slides'] = $arrStaticSlide;
+					
+					$strExport = serialize($arrSliderExport);
+													
+					$exportname =(!empty($this->alias)) ? $this->alias.'.zip' : "slider_export.zip";
+					
+					
+					$usedCaptions = array();
+					$usedAnimations = array();
+					$usedImages = array();
+					
+					if(!empty($arrSlides) && count($arrSlides) > 0){
+						foreach($arrSlides as $key => $slide){
+							if(isset($slide['params']['image']) && $slide['params']['image'] != '') $usedImages[$slide['params']['image']] = true; //['params']['image'] background url
+							
+							if(isset($slide['layers']) && !empty($slide['layers']) && count($slide['layers']) > 0){
+								foreach($slide['layers'] as $lKey => $layer){
+									if(isset($layer['style']) && $layer['style'] != '') $usedCaptions[$layer['style']] = true;
+									if(isset($layer['animation']) && $layer['animation'] != '' && strpos($layer['animation'], 'customin') !== false) $usedAnimations[str_replace('customin-', '', $layer['animation'])] = true;
+									if(isset($layer['endanimation']) && $layer['endanimation'] != '' && strpos($layer['endanimation'], 'customout') !== false) $usedAnimations[str_replace('customout-', '', $layer['endanimation'])] = true;
+									if(isset($layer['image_url']) && $layer['image_url'] != '') $usedImages[$layer['image_url']] = true; //image_url if image caption
+								}
+							}
+						}
+					}
+					
+					if(!empty($arrStaticSlide) && count($arrStaticSlide) > 0){
+						foreach($arrStaticSlide as $key => $slide){
+							if(isset($slide['params']['image']) && $slide['params']['image'] != '') $usedImages[$slide['params']['image']] = true; //['params']['image'] background url
+							
+							if(isset($slide['layers']) && !empty($slide['layers']) && count($slide['layers']) > 0){
+								foreach($slide['layers'] as $lKey => $layer){
+									if(isset($layer['style']) && $layer['style'] != '') $usedCaptions[$layer['style']] = true;
+									if(isset($layer['animation']) && $layer['animation'] != '' && strpos($layer['animation'], 'customin') !== false) $usedAnimations[str_replace('customin-', '', $layer['animation'])] = true;
+									if(isset($layer['endanimation']) && $layer['endanimation'] != '' && strpos($layer['endanimation'], 'customout') !== false) $usedAnimations[str_replace('customout-', '', $layer['endanimation'])] = true;
+									if(isset($layer['image_url']) && $layer['image_url'] != '') $usedImages[$layer['image_url']] = true; //image_url if image caption
+								}
+							}
+						}
+					}
+									
+					
+					
+					$styles = '';
+					if(!empty($usedCaptions)){
+						$captions = array();
+						foreach($usedCaptions as $class => $val){
+							$cap = RevOperations::getCaptionsContentArray($class);
+							if(!empty($cap))
+								$captions[] = $cap;
+						}
+						$styles = UniteCssParserRev::parseArrayToCss($captions, "\n");
+					}
+									
+					$animations = '';
+					if(!empty($usedAnimations)){
+						$animation = array();
+						foreach($usedAnimations as $anim => $val){
+							$anima = RevOperations::getFullCustomAnimationByID($anim);
+							if($anima !== false) $animation[] = RevOperations::getFullCustomAnimationByID($anim);
+							
+						}
+						if(!empty($animation)) $animations = serialize($animation);
+					}
+					
+					
+					//add images to zip
+					if(!empty($usedImages)){
+											
+						foreach($usedImages as $urlImage => $val){
+							if($useDummy != "true"){ //only use dummy images
+							  $filepathImage = UniteFunctionJoomlaRev::getImageFilepathFromUrl($urlImage);						  						  
+							  $pathImage = UniteFunctionJoomlaRev::getPathImageFromUrl($urlImage);
+							  
+							  if(file_exists($filepathImage))
+							  	$zip->addFile($filepathImage, $pathImage);
+							}
+						}
+					}
+					
+					$zip->addFromString("slider_export.txt", $strExport); //add slider settings
+					if(strlen(trim($animations)) > 0) $zip->addFromString("custom_animations.txt", $animations); //add custom animations
+					if(strlen(trim($styles)) > 0) $zip->addFromString("dynamic-captions.css", $styles); //add dynamic styles
+					
+					//$zip->addFromString("custom_animations.txt", $strExportAnim); //add custom animations
+					//$zip->addFile(GlobalsRevSlider::$filepath_dynamic_captions,'dynamic-captions.css'); //add dynamic styles
+	
+					$static_css = RevOperations::getStaticCss();
+					$zip->addFromString("static-captions.css", $static_css); //add slider settings
+					
+					//$zip->addFile(GlobalsRevSlider::$filepath_static_captions,'static-captions.css'); //add static styles
+					$zip->close();
+					
+					if(file_exists(GlobalsRevSlider::$urlExportZip) == false)
+						UniteFunctionsRev::throwError("Can't create zip file: <b>".GlobalsRevSlider::$urlExportZip."</b><br><br>Please check that the cache folder <b>".dirname(GlobalsRevSlider::$urlExportZip)."</b> is writable");
+	
+					
+					header("Content-type: application/zip");
+					header("Content-Disposition: attachment; filename=".$exportname);
+					header("Pragma: no-cache");
+					header("Expires: 0");
+					readfile(GlobalsRevSlider::$urlExportZip);
+					
+					@unlink(GlobalsRevSlider::$urlExportZip); //delete file after sending it to user
+				}else{ //fallback, do old export
+					$this->validateInited();
 				
-				
-				header("Content-type: application/zip");
-				header("Content-Disposition: attachment; filename=".$exportname);
-				header("Pragma: no-cache");
-				header("Expires: 0");
-				readfile(GlobalsRevSlider::$urlExportZip);
-				
-				@unlink(GlobalsRevSlider::$urlExportZip); //delete file after sending it to user
-			}else{ //fallback, do old export
-				$this->validateInited();
-			
-				$sliderParams = $this->getParamsForExport();
-				$arrSlides = $this->getSlidesForExport();
-				
-				$arrSliderExport = array("params"=>$sliderParams,"slides"=>$arrSlides);
-				
-				$strExport = serialize($arrSliderExport);
-				
-				if(!empty($this->alias))
-					$filename = $this->alias.".txt";
-				else
-					$filename = "slider_export.txt";
-				
-				UniteFunctionsRev::downloadFile($strExport,$filename);
+					$sliderParams = $this->getParamsForExport();
+					$arrSlides = $this->getSlidesForExport();
+					
+					$arrSliderExport = array("params"=>$sliderParams,"slides"=>$arrSlides);
+					
+					$strExport = serialize($arrSliderExport);
+					
+					if(!empty($this->alias))
+						$filename = $this->alias.".txt";
+					else
+						$filename = "slider_export.txt";
+					
+					UniteFunctionsRev::downloadFile($strExport,$filename);
+				}
+
+			}catch(Exception $e){
+				$message = $e->getMessage();
+				dmp($message);
+				exit();
 			}
+				
+			
 		}
 		
 		
@@ -687,7 +797,7 @@
 				
 				if($sliderExists)
 					$this->initByID($sliderID);
-					
+				
 				$filepath = $_FILES["import_file"]["tmp_name"];
 				
 				if(file_exists($filepath) == false)
@@ -769,9 +879,9 @@
 							//and set the current customin-oldID and customout-oldID in slider params to new ID from $id
 							$content = str_replace(array('customin-'.$animation['id'], 'customout-'.$animation['id']), array('customin-'.$id, 'customout-'.$id), $content);	
 						}
-						dmp(__("animations imported!",REVSLIDER_TEXTDOMAIN));
+						dmp(__ug("animations imported!",REVSLIDER_TEXTDOMAIN));
 					}else{
-						dmp(__("no custom animations found, if slider uses custom animations, the provided export may be broken...",REVSLIDER_TEXTDOMAIN));
+						dmp(__ug("no custom animations found, if slider uses custom animations, the provided export may be broken...",REVSLIDER_TEXTDOMAIN));
 					}
 					
 					//overwrite/append static-captions.css
@@ -789,18 +899,22 @@
 					$dynamicCss = UniteCssParserRev::parseCssToArray($dynamic);
 					
 					if(is_array($dynamicCss) && $dynamicCss !== false && count($dynamicCss) > 0){
+												
 						foreach($dynamicCss as $class => $styles){
 							//check if static style or dynamic style
 							$class = trim($class);
 							
+							
 							if((strpos($class, ':hover') === false && strpos($class, ':') !== false) || //before, after
 								strpos($class," ") !== false || // .tp-caption.imageclass img or .tp-caption .imageclass or .tp-caption.imageclass .img
-								strpos($class,".tp-caption") === false || // everything that is not tp-caption
 								(strpos($class,".") === false || strpos($class,"#") !== false) || // no class -> #ID or img
 								strpos($class,">") !== false){ //.tp-caption>.imageclass or .tp-caption.imageclass>img or .tp-caption.imageclass .img
 								continue;
 							}
 							
+							if(strpos($class,".tp-caption") === false)
+								$class = ".tp-caption".$class;
+															
 							//is a dynamic style
 							if(strpos($class, ':hover') !== false){
 								$class = trim(str_replace(':hover', '', $class));
@@ -815,19 +929,26 @@
 							$result = $db->fetch(GlobalsRevSlider::$table_css, "handle = '".$class."'");
 							
 							if(!empty($result)){ //update
+																
 								$db->update(GlobalsRevSlider::$table_css, $arrInsert, array('handle' => $class));
 							}else{ //insert
 								$arrInsert["handle"] = $class;
+																
 								$db->insert(GlobalsRevSlider::$table_css, $arrInsert);
 							}
 						}
-						dmp(__("dynamic styles imported!",REVSLIDER_TEXTDOMAIN));
+						dmp(__ug("dynamic styles imported!",REVSLIDER_TEXTDOMAIN));
 					}else{
-						dmp(__("no dynamic styles found, if slider uses dynamic styles, the provided export may be broken...",REVSLIDER_TEXTDOMAIN));
+						dmp(__ug("no dynamic styles found, if slider uses dynamic styles, the provided export may be broken...",REVSLIDER_TEXTDOMAIN));
 					}
-				}
+					
+				} //import zip
 				
-				$content = preg_replace('!s:(\d+):"(.*?)";!e', "'s:'.strlen('$2').':\"$2\";'", $content); //clear errors in string
+				/*
+				$contentNew = preg_replace('!s:(\d+):"(.*?)";!e', "'s:'.strlen('$2').':\"$2\";'", $content); //clear errors in string
+				if(!empty($contentNew))
+					$content = $contentNew;
+				*/
 				
 				$arrSlider = @unserialize($content);
 					if(empty($arrSlider))
@@ -842,8 +963,8 @@
 					$sliderParams["shortcode"] = $this->arrParams["shortcode"];
 				}
 				
-				if(isset($sliderParams["background_image"]))
-					$sliderParams["background_image"] = UniteFunctionsWPRev::getImageUrlFromPath($sliderParams["background_image"]);
+				//if(isset($sliderParams["background_image"]))
+					//$sliderParams["background_image"] = UniteFunctionsWPRev::getImageUrlFromPath($sliderParams["background_image"]);
 				
 				$json_params = json_encode($sliderParams);
 									
@@ -876,15 +997,16 @@
 				if(empty($sliderAlias))
 					$sliderAlias = "defaultslider";
 				
+				$arrSlideIDs = array();
 				
 				foreach($arrSlides as $slide){
+					$oldSlideID = $slide["id"];
 					
 					$params = $slide["params"];
 					$layers = $slide["layers"];
 					
 					$image = UniteFunctionsRev::getVal($params, "image");
 					$image = trim($image);
-					
 					
 					//convert params images:
 					if(!empty($image)){
@@ -913,12 +1035,12 @@
 									
 								}catch (Exception $e){
 									echo "can't extract image: {$image} <br>";
-									$params["image"] = UniteFunctionsWPRev::getImageUrlFromPath($image);
+									$params["image"] = $image; //UniteFunctionsWPRev::getImageUrlFromPath($image);
 								}
 								
 							}
 						}else{
-							$params["image"] = UniteFunctionsWPRev::getImageUrlFromPath($image);							
+							//$params["image"] = UniteFunctionsWPRev::getImageUrlFromPath($image);							
 						}
 						
 					}
@@ -955,13 +1077,13 @@
 										
 									}catch (Exception $e){
 										echo "can't extract image: {$image} <br>";
-										$layer["image_url"] = UniteFunctionsWPRev::getImageUrlFromPath($image);
+										$layer["image_url"] = $image; //UniteFunctionsWPRev::getImageUrlFromPath($image);
 									}
 									
 								}
 								
 							}else{
-								$layer["image_url"] = UniteFunctionsWPRev::getImageUrlFromPath($image);									
+								//$layer["image_url"] = UniteFunctionsWPRev::getImageUrlFromPath($image);									
 							}
 								
 						}
@@ -985,9 +1107,11 @@
 						
 					$arrCreate["layers"] = $my_layers;
 					$arrCreate["params"] = $my_params;
-										
-					$this->db->insert(GlobalsRevSlider::$table_slides,$arrCreate);									
-				
+
+					//create old->new id array
+					$newSlideID = $this->db->insert(GlobalsRevSlider::$table_slides,$arrCreate);									
+					$arrSlideIDs["slide_".$oldSlideID] = $newSlideID;
+					
 					//check if static slide exists and import
 					if(isset($arrSlider['static_slides']) && !empty($arrSlider['static_slides'])){
 						$static_slide = $arrSlider['static_slides'];
@@ -1005,7 +1129,7 @@
 										if($importZip === true){ //we have a zip, check if exists
 											$image = $zip->getStream('images/'.$params["image"]);
 											if(!$image){
-												echo $params["image"].__(' not found!<br>');
+												echo $params["image"].__ug(' not found!<br>');
 					
 											}else{
 												if(!isset($alreadyImported['zip://'.$filepath."#".'images/'.$params["image"]])){
@@ -1024,7 +1148,7 @@
 											}
 										}
 									}
-									$params["image"] = UniteFunctionsWPRev::getImageUrlFromPath($params["image"]);
+									//$params["image"] = UniteFunctionsWPRev::getImageUrlFromPath($params["image"]);
 								}
 							}
 					
@@ -1038,7 +1162,7 @@
 											if($importZip === true){ //we have a zip, check if exists
 												$image_url = $zip->getStream('images/'.$layer["image_url"]);
 												if(!$image_url){
-													echo $layer["image_url"].__(' not found!<br>');
+													echo $layer["image_url"].__ug(' not found!<br>');
 												}else{
 													if(!isset($alreadyImported['zip://'.$filepath."#".'images/'.$layer["image_url"]])){
 														$importImage = UniteFunctionsWPRev::import_media('zip://'.$filepath."#".'images/'.$layer["image_url"], $sliderParams["alias"].'/');
@@ -1055,7 +1179,8 @@
 											}
 										}
 									}
-									$layer["image_url"] = UniteFunctionsWPRev::getImageUrlFromPath($layer["image_url"]);
+									$layer["image_url"] = $layer["image_url"];
+									//$layer["image_url"] = UniteFunctionsWPRev::getImageUrlFromPath($layer["image_url"]);
 									$layers[$key] = $layer;
 								}
 							}
@@ -1084,7 +1209,12 @@
 						}
 					}
 					
-				}
+				}//foreach arrslides
+				
+				//update slide links
+				$newSlider = new RevSlider();
+				$newSlider->initByID($sliderID);
+				$newSlider->updateSlideLinks($arrSlideIDs);
 				
 			}catch(Exception $e){
 				$errorMessage = $e->getMessage();
@@ -1630,6 +1760,7 @@
 			$arrSlidesExport = array();
 			foreach($arrSlides as $slide){
 				$slideNew = array();
+				$slideNew["id"] = $slide->getID();
 				$slideNew["params"] = $slide->getParamsForExport();
 				$slideNew["slide_order"] = $slide->getOrder();
 				$slideNew["layers"] = $slide->getLayersForExport($useDummy);

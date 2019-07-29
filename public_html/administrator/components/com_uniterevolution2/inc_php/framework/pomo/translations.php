@@ -141,11 +141,15 @@ class Gettext_Translations extends Translations {
 	 *
 	 */
 	function gettext_select_plural_form($count) {
+		
+		return(false);
+		
 		if (!isset($this->_gettext_select_plural_form) || is_null($this->_gettext_select_plural_form)) {
 			list( $nplurals, $expression ) = $this->nplurals_and_expression_from_header($this->get_header('Plural-Forms'));
 			$this->_nplurals = $nplurals;
-			$this->_gettext_select_plural_form = $this->make_plural_form_function($nplurals, $expression);
+			//$this->_gettext_select_plural_form = $this->make_plural_form_function($nplurals, $expression);
 		}
+		
 		return call_user_func($this->_gettext_select_plural_form, $count);
 	}
 
@@ -164,11 +168,15 @@ class Gettext_Translations extends Translations {
 	 * plural forms header
 	 */
 	function make_plural_form_function($nplurals, $expression) {
+		/*
 		$expression = str_replace('n', '$n', $expression);
+		
 		$func_body = "
 			\$index = (int)($expression);
 			return (\$index < $nplurals)? \$index : $nplurals - 1;";
+				
 		return create_function('$n', $func_body);
+		*/
 	}
 
 	/**
@@ -221,7 +229,7 @@ class Gettext_Translations extends Translations {
 		if ('Plural-Forms' == $header) {
 			list( $nplurals, $expression ) = $this->nplurals_and_expression_from_header($this->get_header('Plural-Forms'));
 			$this->_nplurals = $nplurals;
-			$this->_gettext_select_plural_form = $this->make_plural_form_function($nplurals, $expression);
+			//$this->_gettext_select_plural_form = $this->make_plural_form_function($nplurals, $expression);
 		}
 	}
 }

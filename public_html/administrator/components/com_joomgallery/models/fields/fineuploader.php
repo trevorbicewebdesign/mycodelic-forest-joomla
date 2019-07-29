@@ -344,7 +344,7 @@ class JFormFieldFineuploader extends JFormField
       <span><?php echo JText::_('COM_JOOMGALLERY_AJAXUPLOAD_DRAGZONETEXT', true); ?></span>
     </div>
     <div class="qq-upload-button-selector qq-upload-button btn btn-large btn-success">
-      <div><i class="icon-plus icon-plus"></i> <?php echo JText::_('COM_JOOMGALLERY_AJAXUPLOAD_SELECT_IMAGES', true); ?></div>
+      <div><i class="fa fa-download"></i> <?php echo JText::_('COM_JOOMGALLERY_AJAXUPLOAD_SELECT_IMAGES', true); ?></div>
     </div>
     <div class="small"><?php echo JText::_('COM_JOOMGALLERY_AJAXUPLOAD_DRAGNDROPHINT'); ?></div>
     <span class="qq-drop-processing-selector qq-drop-processing">
