@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -11,7 +11,7 @@ defined('_JEXEC') or die('Restricted access');
 	<?php if ($this->submission->Lang) { ?>
 	<p><?php echo JText::sprintf('RSFP_SUBMISSION_SENT_IN', $this->submission->Lang); ?></p>
 	<?php } ?>
-	<table class="admintable">
+	<table class="admintable table table-bordered table-striped table-condensed">
 		<?php foreach ($this->staticHeaders as $header) { ?>
 		<tr>
 			<td width="200" style="width: 200px;" align="right" class="key"><?php echo JText::_('RSFP_'.$header); ?></td>

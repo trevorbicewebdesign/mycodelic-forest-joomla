@@ -1,13 +1,13 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2017 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
 defined('_JEXEC') or die;
 ?>
-<div id="template-manager-folder" class="container-fluid">
+<div class="container-fluid">
 	<div class="row-fluid text-center">
 		<div class="rsfp-column-option span3">
 			<div class="span12 rsfp-column-color"></div>

@@ -1,108 +1,161 @@
 <?php
 /**
  * @package RSForm! Pro
- * @copyright (C) 2007-2014 www.rsjoomla.com
+ * @copyright (C) 2007-2019 www.rsjoomla.com
  * @license GPL, http://www.gnu.org/copyleft/gpl.html
  */
 
 defined('_JEXEC') or die('Restricted access');
 
-class RsformModelDirectory extends JModelLegacy
+class RsformModelDirectory extends JModelList
 {
-	protected $_data = array();
-	protected $_total = 0;
-	protected $_query = '';
-	protected $_pagination = null;
-	protected $_db = null;
-
 	public $_directory = null;
 
-	public function __construct() {
-		parent::__construct();
+	public function __construct($config = array())
+	{
+		if (empty($config['filter_fields']))
+		{
+			$config['filter_fields'] = array(
+				'FormTitle',
+				'FormName',
+				'FormId'
+			);
+		}
 
-		$this->_db 		= JFactory::getDbo();
-		$app			= JFactory::getApplication();
-		$this->_query 	= $this->_buildQuery();
-
-		// Get pagination request variables
-		$limit 		= $app->getUserStateFromRequest('com_rsform.directory.limit', 'limit', JFactory::getConfig()->get('list_limit'), 'int');
-		$limitstart = $app->getUserStateFromRequest('com_rsform.directory.limitstart', 'limitstart', 0, 'int');
-
-		// In case limit has been changed, adjust it
-		$limitstart = ($limit != 0 ? (floor($limitstart / $limit) * $limit) : 0);
-
-		$this->setState('com_rsform.directory.limit', $limit);
-		$this->setState('com_rsform.directory.limitstart', $limitstart);
+		parent::__construct($config);
 	}
 
-	public function _buildQuery() {
-		$sortColumn	= $this->getSortColumn();
-		$sortOrder	= $this->getSortOrder();
-		
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('FormId'))
-			->select($this->_db->qn('FormTitle'))
-			->select($this->_db->qn('FormName'))
-			->select($this->_db->qn('Lang'))
-			->from($this->_db->qn('#__rsform_forms'))
-			->order($this->_db->qn($sortColumn) . ' ' . $this->_db->escape($sortOrder));
+	protected function populateState($ordering = 'FormId', $direction = 'asc')
+	{
+		$search = $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string');
+		$this->setState('filter_search', $search);
 
-		return (string) $query;
+		// List state information.
+		parent::populateState($ordering, $direction);
 	}
 
-	public function getForms() {
-		if (empty($this->_data)) {
-			$this->_db->setQuery($this->_query, $this->getState('com_rsform.directory.limitstart'), $this->getState('com_rsform.directory.limit'));
-			$this->_data = $this->_db->loadObjectList();
-			
-			foreach ($this->_data as $form)
+	protected function getListQuery()
+	{
+		$filter_search = $this->getState('filter_search');
+		$lang		   = JFactory::getLanguage();
+		$query		   = $this->_db->getQuery(true);
+		$or 	= array();
+		$ids 	= array();
+
+		// Flag to know if we need translations - no point in doing a join if we're only using the default language.
+		if (RSFormProHelper::getConfig('global.disable_multilanguage'))
+		{
+			$needs_translation = false;
+		}
+		else
+		{
+			// Must check if we've changed the language for some forms (each form has its own remembered language).
+			if ($sessions = JFactory::getSession()->get('com_rsform.form'))
 			{
-				$lang = RSFormProHelper::getCurrentLanguage($form->FormId);
-				if ($lang != $form->Lang)
+				// For each form in the session, we join a specific language and form id.
+				foreach ($sessions as $form => $data)
 				{
-					if ($translations = RSFormProHelper::getTranslations('forms', $form->FormId, $lang))
+					if (strpos($form, 'formId') === 0 && isset($data->lang))
 					{
-						foreach ($translations as $field => $value)
-						{
-							if (isset($form->$field))
-							{
-								$form->$field = $value;
-							}
-						}
+						$id 	= (int) substr($form, strlen('formId'));
+						$ids[] 	= $id;
+						$or[] 	= '(' . $this->_db->qn('t.lang_code') . ' = ' . $this->_db->q($data->lang) . ' AND ' . $this->_db->qn('t.form_id') . ' = ' . $this->_db->q($id) . ')';
 					}
 				}
+
+				// Now that we've joined the session forms, we must remove them so they do not show up as duplicates.
+				if ($ids)
+				{
+					$or[] = '(' . $this->_db->qn('t.lang_code') . ' = ' . $this->_db->q($lang->getTag()) . ' AND ' . $this->_db->qn('t.form_id') . ' NOT IN (' . implode(',', $this->_db->q($ids)) . '))';
+				}
+			}
+
+			$needs_translation = $lang->getTag() != $lang->getDefault() || $ids;
+		}
+
+		$query->select($this->_db->qn('f.FormId'))
+			->select($this->_db->qn('f.FormName'))
+			->select($this->_db->qn('f.Backendmenu'))
+			->select($this->_db->qn('f.Published'))
+			->select($this->_db->qn('d.formId', 'DirectoryFormId'))
+			->from($this->_db->qn('#__rsform_forms', 'f'));
+
+		if ($needs_translation)
+		{
+			$query->select('IFNULL(' . $this->_db->qn('t.value') . ', ' . $this->_db->qn('f.FormTitle') . ') AS FormTitle');
+		}
+		else
+		{
+			$query->select($this->_db->qn('f.FormTitle'));
+		}
+
+		if ($needs_translation)
+		{
+			$on = array(
+				$this->_db->qn('f.FormId') . ' = ' . $this->_db->qn('t.form_id'),
+				$this->_db->qn('t.reference') . ' = ' . $this->_db->q('forms'),
+				$this->_db->qn('t.reference_id') . ' = ' . $this->_db->q('FormTitle')
+			);
+
+			if ($or)
+			{
+				$on[] = '(' . implode(' OR ', $or) . ')';
+			}
+			else
+			{
+				$on[] = $this->_db->qn('t.lang_code') . ' = ' . $this->_db->q($lang->getTag());
+			}
+
+			$query->join('left', $this->_db->qn('#__rsform_translations', 't') . ' ON (' . implode(' AND ', $on) . ')');
+		}
+
+		if (!empty($filter_search))
+		{
+			$query->having('(' . $this->_db->qn('FormTitle') . ' LIKE ' . $this->_db->q('%' . $filter_search . '%') . ' OR ' . $this->_db->qn('FormName') . ' LIKE ' . $this->_db->q('%' . $filter_search . '%') . ')');
+		}
+
+		$query->join('left', $this->_db->qn('#__rsform_directory', 'd') . ' ON (' . $this->_db->qn('f.FormId') . ' = ' . $this->_db->qn('d.formId') . ')');
+
+		$query->order($this->_db->qn($this->getSortColumn()) . ' ' . $this->_db->escape($this->getSortOrder()));
+
+		return $query;
+	}
+
+	public function getForms()
+	{
+		return $this->getItems();
+	}
+
+	public function getFormTitle()
+	{
+		$formId = JFactory::getApplication()->input->getInt('formId');
+
+		$query = $this->_db->getQuery(true)
+			->select($this->_db->qn('FormTitle'))
+			->from($this->_db->qn('#__rsform_forms'))
+			->where($this->_db->qn('FormId') . ' = ' . $this->_db->q($formId));
+		$title = $this->_db->setQuery($query)->loadResult();
+
+		$lang = RSFormProHelper::getCurrentLanguage($formId);
+		if ($translations = RSFormProHelper::getTranslations('forms', $formId, $lang))
+		{
+			if (isset($translations['FormTitle']))
+			{
+				$title = $translations['FormTitle'];
 			}
 		}
 
-		return $this->_data;
+		return $title;
 	}
 
-	public function getTotal() {
-		if (empty($this->_total)) {
-			$this->_db->setQuery($this->_query);
-			$this->_db->execute();
-
-			$this->_total = $this->_db->getNumRows();
-		}
-
-		return $this->_total;
+	public function getSortColumn()
+	{
+		return $this->getState('list.ordering', 'FormId');
 	}
 
-	public function getPagination() {
-		if (empty($this->_pagination)) {
-			jimport('joomla.html.pagination');
-			$this->_pagination = new JPagination($this->getTotal(), $this->getState('com_rsform.directory.limitstart'), $this->getState('com_rsform.directory.limit'));
-		}
-
-		return $this->_pagination;
-	}
-
-	public function getSortColumn() {
-		return JFactory::getApplication()->getUserStateFromRequest('com_rsform.directory.filter_order', 'filter_order', 'FormId', 'string');
-	}
-
-	public function getSortOrder() {
-		return JFactory::getApplication()->getUserStateFromRequest('com_rsform.directory.filter_order_Dir', 'filter_order_Dir', 'ASC', 'word');
+	public function getSortOrder()
+	{
+		return $this->getState('list.direction', 'ASC');
 	}
 
 	public function getSideBar() {
@@ -120,6 +173,7 @@ class RsformModelDirectory extends JModelLegacy
 		if (!$table->formId) {
 			$table->enablecsv = 0;
 			$table->enablepdf = 0;
+			$table->HideEmptyValues = 0;
 			$table->ViewLayoutAutogenerate = 1;
 			$table->ViewLayoutName = 'dir-inline';
 		}
@@ -206,30 +260,26 @@ class RsformModelDirectory extends JModelLegacy
 		$orderingFields	  	= $input->get('dirorder',array(),'array');
 
 		// empty
-		$db->setQuery('DELETE FROM '.$db->qn('#__rsform_directory_fields').' WHERE '.$db->qn('formId').' = '.(int) $table->formId.'');
+        $query = $db->getQuery(true)
+            ->delete($db->qn('#__rsform_directory_fields'))
+            ->where($db->qn('formId') . ' = ' . $db->q($table->formId));
+
+		$db->setQuery($query);
 		$db->execute();
 
 		foreach ($fields as $field) {
-			$viewable		= (int) in_array($field->FieldId, $listingFields);
-			$searchable		= (int) in_array($field->FieldId, $searchableFields);
-			$editable		= (int) in_array($field->FieldId, $editableFields);
-			$indetails		= (int) in_array($field->FieldId, $detailsFields);
-			$incsv			= (int) in_array($field->FieldId, $csvFields);
-			$ordering		= $orderingFields[array_search($field->FieldId, $cids)];
+			$object = (object) array(
+			    'formId'        => $table->formId,
+			    'componentId'   => $field->FieldId,
+                'viewable'      => (int) in_array($field->FieldId, $listingFields),
+                'searchable'    => (int) in_array($field->FieldId, $searchableFields),
+                'editable'      => (int) in_array($field->FieldId, $editableFields),
+                'indetails'     => (int) in_array($field->FieldId, $detailsFields),
+                'incsv'         => (int) in_array($field->FieldId, $csvFields),
+                'ordering'      => $orderingFields[array_search($field->FieldId, $cids)]
+            );
 
-			$values = array(
-				"`formId`='".$table->formId."'",
-				"`componentId`='".$field->FieldId."'",
-				"`viewable`='".$viewable."'",
-				"`searchable`='".$searchable."'",
-				"`editable`='".$editable."'",
-				"`indetails`='".$indetails."'",
-				"`incsv`='".$incsv."'",
-				"`ordering`='".$ordering."'"
-			);
-
-			$db->setQuery("INSERT INTO #__rsform_directory_fields SET ".implode(", ", $values));
-			$db->execute();
+			$db->insertObject('#__rsform_directory_fields', $object);
 		}
 
 		return true;
@@ -274,6 +324,8 @@ class RsformModelDirectory extends JModelLegacy
 		$quickfields  = $this->getQuickFields();
 		$imagefields  = $this->getImagesFields();
 
+		$hideEmptyValues = $this->_directory->HideEmptyValues;
+
 		$out = include $layout;
 
 		if ($out != $this->_directory->ViewLayout && $this->_directory->formId) {
@@ -300,91 +352,10 @@ class RsformModelDirectory extends JModelLegacy
 		}
 	}
 
-	public function getQuickFields() {
-		$cids	= array();
-		$query	= $this->_db->getQuery(true);
-		$formId = JFactory::getApplication()->input->getInt('formId');
-		$fields = RSFormProHelper::getDirectoryFields($formId);
-
-		if (!empty($fields)) {
-			foreach ($fields as $field) {
-				if ($field->indetails)
-					$cids[] = $field->componentId;
-			}
-		}
-		$cids = array_map('intval', $cids);
-
-		if (!empty($cids)) {
-			$mainframe = JFactory::getApplication();
-			$all = array();
-			$query->clear();
-			$query->select($this->_db->qn('c.ComponentId'))
-				->select($this->_db->qn('c.ComponentTypeId'))
-				->select($this->_db->qn('ct.ComponentTypeName'))
-				->from($this->_db->qn('#__rsform_components', 'c'))
-				->join('LEFT', $this->_db->qn('#__rsform_component_types', 'ct') .'ON ('.$this->_db->qn('ct.ComponentTypeId').'='.$this->_db->qn('c.ComponentTypeId').')')
-				->join('LEFT',$this->_db->qn('#__rsform_directory_fields','d').' ON '.$this->_db->qn('d.ComponentId').' = '.$this->_db->qn('c.ComponentId'))
-				->where($this->_db->qn('c.FormId').'='.$this->_db->q($formId))
-				->where($this->_db->qn('c.Published').'='.$this->_db->q(1))
-				->where($this->_db->qn('d.indetails').'='.$this->_db->q(1))
-				->order($this->_db->qn('c.Order').' '.$this->_db->escape('asc'));
-			$this->_db->setQuery($query);
-
-			if ($components = $this->_db->setQuery($query)->loadObjectList()) {
-				$data = RSFormProHelper::getComponentProperties($components);
-				$i = 0;
-				foreach ($components as $component) {
-					if (!empty($data[$component->ComponentId])) {
-						$properties =& $data[$component->ComponentId];
-						if (isset($properties['NAME'])) {
-							// Populate the 'all' array
-							$componentPlaceholders = array(
-								'name' => $properties['NAME'],
-								'id'   => $component->ComponentTypeId,
-								'generate' => array(
-									'{' . $properties['NAME'] . ':caption}',
-									'{' . $properties['NAME'] . ':body}',
-									'{' . $properties['NAME'] . ':description}',
-									'{' . $properties['NAME'] . ':validation}',
-								),
-								'display'  => array(
-									'{' . $properties['NAME'] . ':caption}',
-									'{' . $properties['NAME'] . ':value}',
-									'{' . $properties['NAME'] . ':description}'
-								),
-							);
-
-							if ($component->ComponentTypeId == RSFORM_FIELD_FREETEXT) {
-								array_pop($componentPlaceholders['display']);
-							}
-
-							if ($component->ComponentTypeId == RSFORM_FIELD_FILEUPLOAD) {
-								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':path}';
-								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':localpath}';
-								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':filename}';
-							}
-
-							if ($component->ComponentTypeId == RSFORM_FIELD_SELECTLIST || $component->ComponentTypeId == RSFORM_FIELD_CHECKBOXGROUP || $component->ComponentTypeId == RSFORM_FIELD_RADIOGROUP) {
-								$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':text}';
-							}
-
-							if (isset($properties['ITEMS'])) {
-								if (strpos($properties['ITEMS'], '[p') !== false) {
-									$componentPlaceholders['display'][] = '{' . $properties['NAME'] . ':price}';
-								}
-							}
-
-							$mainframe->triggerEvent('rsfp_onAfterCreateQuickAddPlaceholders', array(&$componentPlaceholders, $component->ComponentTypeId));
-
-							$all[] = $componentPlaceholders;
-						}
-					}
-				}
-				return $all;
-			}
-		}
-
-		return array();
+	public function getQuickFields()
+	{
+		require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/quickfields.php';
+		return RSFormProQuickFields::getFieldNames('all');
 	}
 
 	public function getImagesFields() {
@@ -410,7 +381,7 @@ class RsformModelDirectory extends JModelLegacy
 				->where($this->_db->qn('c.FormId').' = '.(int) $formId)
 				->where($this->_db->qn('p.PropertyName').' = '.$this->_db->q('NAME'))
 				->where($this->_db->qn('c.ComponentId').' IN ('.implode(',',$cids).')')
-				->where($this->_db->qn('c.ComponentTypeId').' = 9')
+				->where($this->_db->qn('c.ComponentTypeId').' = ' . $this->_db->q(RSFORM_FIELD_FILEUPLOAD))
 				->where($this->_db->qn('c.Published').' = 1')
 				->order($this->_db->qn('d.ordering'));
 
@@ -426,16 +397,45 @@ class RsformModelDirectory extends JModelLegacy
 		if ($pks) {
 			$pks = array_map('intval', $pks);
 
-			$this->_db->setQuery("DELETE FROM #__rsform_directory WHERE formId IN (".implode(',',$pks).")");
+			$query = $this->_db->getQuery(true)
+                ->delete('#__rsform_directory')
+                ->where($this->_db->qn('formId') . ' IN (' . implode(',', $this->_db->q($pks)) . ')');
+			$this->_db->setQuery($query);
 			$this->_db->execute();
 
-			$this->_db->setQuery("DELETE FROM #__rsform_directory_fields WHERE formId IN (".implode(',',$pks).")");
+            $query = $this->_db->getQuery(true)
+                ->delete('#__rsform_directory_fields')
+                ->where($this->_db->qn('formId') . ' IN (' . implode(',', $this->_db->q($pks)) . ')');
+            $this->_db->setQuery($query);
 			$this->_db->execute();
 
-			$this->_db->setQuery("DELETE FROM #__rsform_emails WHERE formId IN (".implode(',',$pks).") AND `type` = 'directory'");
-			$this->_db->execute();
+            $query = $this->_db->getQuery(true)
+                ->delete('#__rsform_emails')
+                ->where($this->_db->qn('formId') . ' IN (' . implode(',', $this->_db->q($pks)) . ')')
+                ->where($this->_db->qn('type') . ' = ' . $this->_db->q('directory'));
+            $this->_db->setQuery($query);
+            $this->_db->execute();
 		}
 
 		return true;
+	}
+
+	public function getFilterBar()
+	{
+		require_once JPATH_COMPONENT.'/helpers/adapters/filterbar.php';
+
+		// Search filter
+		$options['search'] = array(
+			'label' => JText::_('JSEARCH_FILTER'),
+			'value' => $this->getState('filter_search')
+		);
+		$options['reset_button'] = true;
+
+		$options['limitBox'] = $this->getPagination()->getLimitBox();
+		$options['orderDir'] = false;
+
+		$bar = new RSFilterBar($options);
+
+		return $bar;
 	}
 }

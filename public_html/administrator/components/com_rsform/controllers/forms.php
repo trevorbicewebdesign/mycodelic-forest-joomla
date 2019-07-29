@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -9,9 +9,9 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformControllerForms extends RsformController
 {
-	public function __construct()
+	public function __construct($config = array())
 	{
-		parent::__construct();
+		parent::__construct($config);
 		
 		$this->registerTask('apply', 	 'save');
 		$this->registerTask('new', 	 	 'add');
@@ -259,7 +259,11 @@ class RsformControllerForms extends RsformController
 		$row->FormName = JFilterOutput::stringURLSafe($row->FormTitle);
 		$row->FormLayoutName = $session->get('com_rsform.wizard.FormLayout');		
 		if (empty($row->FormLayoutName))
-			$row->FormLayoutName = 'responsive';
+		{
+		    $rsformConfig = RSFormProConfig::getInstance();
+            $row->FormLayoutName = $rsformConfig->get('global.default_layout', 'responsive');
+            $row->LoadFormLayoutFramework = $rsformConfig->get('global.default_load_layout_framework', 1);
+        }
 		
 		$AdminEmail = $session->get('com_rsform.wizard.AdminEmail');
 		if ($AdminEmail)
@@ -637,10 +641,14 @@ class RsformControllerForms extends RsformController
 			
 			// copy language
 			$db->setQuery("SELECT * FROM #__rsform_translations WHERE `reference`='forms' AND `form_id`='".$formId."'");
-			if ($translations = $db->loadObjectList()) {
-				foreach ($translations as $translation) {
-					$db->setQuery("INSERT INTO #__rsform_translations SET `form_id`='".$newFormId."', `lang_code`='".$db->escape($translation->lang_code)."', `reference`='forms', `reference_id`='".$db->escape($translation->reference_id)."', `value`='".$db->escape($translation->value)."'");
-					$db->execute();
+			if ($translations = $db->loadObjectList())
+			{
+				foreach ($translations as $translation)
+				{
+				    $translation->id = null;
+				    $translation->form_id = $newFormId;
+
+                    $db->insertObject('#__rsform_translations', $translation);
 				}
 			}
 			
@@ -656,6 +664,34 @@ class RsformControllerForms extends RsformController
 					
 					$emailRelations[$email->id] = $new_email->id;
 				}
+
+                // Copy language
+                $query = $db->getQuery(true)
+                    ->select('*')
+                    ->from($db->qn('#__rsform_translations'))
+                    ->where($db->qn('form_id') . ' = ' . $db->q($formId))
+                    ->where($db->qn('reference') . ' = ' . $db->q('emails'));
+				if ($translatedEmails = $db->setQuery($query)->loadObjectList())
+                {
+                    foreach ($translatedEmails as $translatedEmail) {
+
+                        list($oldEmailId, $property) = explode('.', $translatedEmail->reference_id, 2);
+
+                        if (!isset($emailRelations[$oldEmailId])) {
+                            continue;
+                        }
+
+                        $emailTranslation = (object) array(
+                            'form_id'       => $newFormId,
+                            'lang_code'     => $translatedEmail->lang_code,
+                            'reference'     => 'emails',
+                            'reference_id'  => $emailRelations[$oldEmailId] . '.' . $property,
+                            'value'         => $translatedEmail->value
+                        );
+
+                        $db->insertObject('#__rsform_translations', $emailTranslation);
+                    }
+                }
 			}
 			
 			// copy mappings

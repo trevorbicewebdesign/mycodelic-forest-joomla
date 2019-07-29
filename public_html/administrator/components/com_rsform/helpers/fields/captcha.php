@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -11,7 +11,8 @@ require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/field.php';
 class RSFormProFieldCaptcha extends RSFormProField
 {
 	// backend preview
-	public function getPreviewInput() {
+	public function getPreviewInput()
+	{
 		$type 	 = $this->getProperty('IMAGETYPE', 'FREETYPE');
 		$caption = $this->getProperty('CAPTION', '');
 		
@@ -21,7 +22,6 @@ class RSFormProFieldCaptcha extends RSFormProField
 			$flow		 = $this->getProperty('FLOW', 'VERTICAL');
 			$componentId = $this->getProperty('componentId');
 			$refresh 	 = $this->getProperty('SHOWREFRESH', 'NO');
-			$attr		 = $this->getAttributes();
 			$type 		 = 'text';
 			
 			// Start building the image HTML
@@ -55,8 +55,7 @@ class RSFormProFieldCaptcha extends RSFormProField
 			$captchaOutput = $image.($flow == 'VERTICAL' ? '<br/>' :'').$input.$refreshBtn;
 		}
 		
-		$html = '<td>'.$caption.'</td><td>'.$captchaOutput.'</td>';
-		return $html;
+		return $captchaOutput;
 	}
 	
 	// functions used for rendering in front view
@@ -185,5 +184,49 @@ class RSFormProFieldCaptcha extends RSFormProField
 		);
 		
 		return implode(' ', $attr);
+	}
+
+	public function processValidation($validationType = 'form', $submissionId = 0)
+	{
+		$form 			= RSFormProHelper::getForm($this->formId);
+		$captchaCode 	= JFactory::getSession()->get('com_rsform.captcha.captchaId' . $this->componentId);
+		$value			= $this->getValue();
+
+		// Logged in users don't need to pass Captcha if this option is enabled on the form.
+		if (JFactory::getUser()->id && $form->RemoveCaptchaLogged)
+		{
+			return true;
+		}
+
+		if ($this->getProperty('IMAGETYPE') == 'INVISIBLE')
+		{
+			if (empty($captchaCode))
+			{
+				return false;
+			}
+
+			if (JFactory::getApplication()->input->post->get($captchaCode, '', 'raw'))
+			{
+				return false;
+			}
+
+			$words = $this->getWords();
+			foreach ($words as $word)
+			{
+				if (JFactory::getApplication()->input->post->get($word, '', 'raw'))
+				{
+					return false;
+				}
+			}
+		}
+		else
+		{
+			if (empty($value) || empty($captchaCode) || $value != $captchaCode)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

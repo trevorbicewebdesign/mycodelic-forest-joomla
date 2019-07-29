@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -24,11 +24,21 @@ $count = 0;
 				<div class="controls">
 					<?php echo $field->body; ?>
 					<?php if ($field->translatable) { ?>
-						<span class="help-inline"><?php echo RSFormProHelper::translateIcon(); ?></span>
+						<span class="help-inline"><?php echo $this->translateIcon; ?></span>
 					<?php } ?>
 				</div>
 			</div>
 		<?php } ?>
+		</div>
+	<?php } ?>
+	<?php if ($fieldType == 'general') { ?>
+		<div class="form-horizontal">
+			<div class="control-group">
+				<div class="control-label">
+					<label for="Published"><?php echo JText::_('JPUBLISHED'); ?></label>
+				</div>
+				<?php echo $this->published; ?>
+			</div>
 		</div>
 	<?php } ?>
 	<?php if ($fieldType != 'attributes') { ?>{rsfsep}<?php } ?>

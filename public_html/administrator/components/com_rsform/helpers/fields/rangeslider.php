@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -14,14 +14,9 @@ class RSFormProFieldRangeSlider extends RSFormProField
 	protected $customId;
 	
 	// backend preview
-	public function getPreviewInput() {
-		$type  	= $this->getProperty('SLIDERTYPE', 'SINGLE');
-		$caption 	= $this->getProperty('CAPTION','');
-		$codeIcon	= RSFormProHelper::getIcon('rangeSlider');
-		
-		$html = '<td>'.$caption.'</td><td>'.$codeIcon.' '.JText::_('RSFP_COMP_FVALUE_'.$type).'</td>';
-		
-		return $html;
+	public function getPreviewInput()
+	{
+		return RSFormProHelper::getIcon('rangeSlider') . ' ' . JText::_('RSFP_COMP_FVALUE_' . $this->getProperty('SLIDERTYPE', 'SINGLE'));
 	}
 	
 	// functions used for rendering in front view
@@ -113,5 +108,18 @@ class RSFormProFieldRangeSlider extends RSFormProField
 			}
 		}
 		return $position;
+	}
+
+	public function processValidation($validationType = 'form', $submissionId = 0)
+	{
+		$required 	= $this->getProperty('REQUIRED', false);
+		$value 		= trim($this->getValue());
+
+		if ($required && empty($value))
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

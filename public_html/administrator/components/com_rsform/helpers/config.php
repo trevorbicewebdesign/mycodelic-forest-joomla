@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -80,8 +80,8 @@ class RSFormProConfig
 			// prepare the query
 			$query = $this->db->getQuery(true);
 			$query->update('#__rsform_config')
-				  ->set($this->db->quoteName('SettingValue').'='.$this->db->quote($value))
-				  ->where($this->db->quoteName('SettingName').'='.$this->db->quote($key));
+				  ->set($this->db->qn('SettingValue').'='.$this->db->q($value))
+				  ->where($this->db->qn('SettingName').'='.$this->db->q($key));
 			$this->db->setQuery($query);
 			
 			// run the query

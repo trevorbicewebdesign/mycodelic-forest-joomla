@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -162,7 +162,12 @@ class RSFormProField
 			
 			if (!isset($focused[$this->formId]))
 			{
-				$return['autofocus'] = '';
+                $formOptions = RSFormProHelper::getForm($this->formId);
+                if (!$formOptions->ScrollToError)
+                {
+                    $return['autofocus'] = '';
+                }
+
 				$focused[$this->formId] = true;
 			}
         }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package RSForm! Pro
- * @copyright (C) 2007-2014 www.rsjoomla.com
+ * @copyright (C) 2007-2019 www.rsjoomla.com
  * @license GPL, http://www.gnu.org/copyleft/gpl.html
  */
 
@@ -9,29 +9,24 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsformController extends JControllerLegacy
 {
-	public function __construct()
+	public function __construct($config = array())
 	{
-		parent::__construct();
+		parent::__construct($config);
 
 		JHtml::_('behavior.framework');
-
-		$version 	= new RSFormProVersion();
-		$v 			= (string) $version;
-		$doc 		= JFactory::getDocument();
-
 		JHtml::_('jquery.framework');
-		$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/placeholders.js?v='.$v);
-		$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/script.js?v='.$v);
-		$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/jquery.tag-editor.js?v='.$v);
-		$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/jquery.caret.min.js?v='.$v);
-		$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/validation.js?v='.$v);
-		$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/tablednd.js?v='.$v);
-		$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/jquery.scrollto.js?v='.$v);
 
-		$doc->addStyleSheet(JUri::root(true).'/administrator/components/com_rsform/assets/css/style.css?v='.$v);
-		$doc->addStyleSheet(JUri::root(true).'/administrator/components/com_rsform/assets/css/jquery.tag-editor.css?v='.$v);
-		// load the font
-		$doc->addStyleSheet(JUri::root(true).'/administrator/components/com_rsform/assets/css/fonts/rsicons.css?v='.$v);
+        JHtml::script('com_rsform/admin/placeholders.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::script('com_rsform/admin/script.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::script('com_rsform/admin/jquery.tag-editor.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::script('com_rsform/admin/jquery.caret.min.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::script('com_rsform/admin/validation.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::script('com_rsform/admin/tablednd.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::script('com_rsform/admin/jquery.scrollto.js', array('relative' => true, 'version' => 'auto'));
+
+        JHtml::stylesheet('com_rsform/admin/style.css', array('relative' => true, 'version' => 'auto'));
+        JHtml::stylesheet('com_rsform/admin/jquery.tag-editor.css', array('relative' => true, 'version' => 'auto'));
+        JHtml::stylesheet('com_rsform/admin/rsicons.css', array('relative' => true, 'version' => 'auto'));
 	}
 
 	public function mappings()
@@ -80,11 +75,14 @@ class RsformController extends JControllerLegacy
 	public function layoutsSaveName()
 	{
 		$formId = JFactory::getApplication()->input->getInt('formId');
-		$name = JFactory::getApplication()->input->getCmd('formLayoutName');
+		$name 	= JFactory::getApplication()->input->getCmd('formLayoutName');
 
 		$db = JFactory::getDbo();
-		$db->setQuery("UPDATE #__rsform_forms SET FormLayoutName='".$db->escape($name)."' WHERE FormId='".$formId."'");
-		$db->execute();
+		$query = $db->getQuery(true)
+			->update($db->qn('#__rsform_forms'))
+			->set($db->qn('FormLayoutName') . ' = ' . $db->q($name))
+			->where($db->qn('FormId') . ' = ' . $db->q($formId));
+		$db->setQuery($query)->execute();
 
 		exit();
 	}
@@ -101,14 +99,6 @@ class RsformController extends JControllerLegacy
 	public function backupRestore()
 	{
 		JFactory::getApplication()->input->set('view', 'backuprestore');
-		JFactory::getApplication()->input->set('layout', 'default');
-
-		parent::display();
-	}
-
-	public function updatesManage()
-	{
-		JFactory::getApplication()->input->set('view', 'updates');
 		JFactory::getApplication()->input->set('layout', 'default');
 
 		parent::display();
