@@ -67,7 +67,8 @@ if($_POST['form']['item_name_4'] && $_POST['form']['item_amount_4']){
 $message .= "
 - {$_POST['form']['item_name_4']}$filler\${$_POST['form']['item_amount_4']}";
 }
-
+$message .= "
+";
 // Only include the note if its set
 $message .= $_POST['form']['note']?"*{$_POST['form']['note']}*":"";
 
