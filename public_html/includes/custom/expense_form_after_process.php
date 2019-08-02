@@ -8,7 +8,7 @@ $submitter_name = $_POST['form']['first_name']." ".$_POST['form']['last_name'];
 $total = $_POST['form']['item_total'];
 $message = "$submitter_name has submitted an expense form for $total";
 
-if($_POST['form']['donation']=='yes'){
+if($_POST['form']['donation']=='Yes'){
     $message = "
 *This is a donation*";
 }

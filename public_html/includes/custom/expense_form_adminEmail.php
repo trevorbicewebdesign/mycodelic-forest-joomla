@@ -1,6 +1,6 @@
 <?php
 
-if($_POST['form']['donation']=='yes'){
+if($_POST['form']['donation']=='Yes'){
     $adminEmail .= "This is a donation. No reimbursement is required.";
 }
 else {
