@@ -9,8 +9,8 @@ $total = $_POST['form']['item_total'];
 $message = "$submitter_name has submitted an expense form for $total";
 
 if($_POST['form']['donation']=='Yes'){
-    $message = "
-*This is a donation*";
+    $message .= "
+*This is a donation. Thank you!!*";
 }
 
 $totalstrlength = 50;
