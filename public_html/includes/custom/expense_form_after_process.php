@@ -8,9 +8,9 @@ $submitter_name = $_POST['form']['first_name']." ".$_POST['form']['last_name'];
 $total = $_POST['form']['item_total'];
 $message = "$submitter_name has submitted an expense form for $total";
 
-if($_POST['form']['donation']=='yes'){
-    $message = "
-*This is a donation*";
+if($_POST['form']['donation']=='Yes'){
+    $message .= "
+*This is a donation. Thank you!!*";
 }
 
 $totalstrlength = 50;
@@ -67,7 +67,8 @@ if($_POST['form']['item_name_4'] && $_POST['form']['item_amount_4']){
 $message .= "
 - {$_POST['form']['item_name_4']}$filler\${$_POST['form']['item_amount_4']}";
 }
-
+$message .= "
+";
 // Only include the note if its set
 $message .= $_POST['form']['note']?"*{$_POST['form']['note']}*":"";
 
