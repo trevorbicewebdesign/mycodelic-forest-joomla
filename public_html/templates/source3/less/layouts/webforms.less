@@ -132,12 +132,49 @@
 			font-color:		#333;
 			text-align:		left;
 			&:after {
-				content: 		"+";
-				display:		inline-block;
+				content: 	"+";
+				display:	inline-block;
 				float:		right;	
 				width:		4vw;
 				height:		4vw;
 			}
 		}
 	}
+    
+    .formResponsive .formHorizontal .formControls {
+        margin:0px;
+    }
+    #rsform_11_page_0 {  
+        .formControls {
+             margin:0px;
+        }
+        
+        .formControlLabel {
+            display:none;
+        }
+        p.formDescription {
+            display:none;
+        }
+        .rsform-input-box {
+            width:100%;
+        }
+        .rsform-block:before,
+        .rsform-block:after  {
+            display:none;
+        }
+        .rsform-block-donation .formControlLabel {
+            display:inline-block;
+            padding-left:0px;
+        }
+        select, textarea, input[type="text"], input[type="number"], input[type="email"],input[type="tel"],input[type="url"],input[type="password"] {
+            margin-bottom:0px;
+        }
+    }
+}
+.itemid-1027 {
+    #webforms {
+        .content-wrapper {
+            max-width:600px;
+        }
+    }
 }
