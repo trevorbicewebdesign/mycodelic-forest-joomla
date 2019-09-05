@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/licenses/gpl-2.0.html
 */
 
@@ -40,8 +40,7 @@ class RSFilterBar
 	
 	public function show() {
 		if ($this->sortFields || $this->orderDir) {
-			$doc = JFactory::getDocument();
-			$doc->addScript(JUri::root(true).'/administrator/components/com_rsform/assets/js/ordertable.js');
+            JHtml::script('com_rsform/admin/ordertable.js', array('relative' => true, 'version' => 'auto'));
 		}
 		?>
 		<div id="filter-bar" class="btn-toolbar">

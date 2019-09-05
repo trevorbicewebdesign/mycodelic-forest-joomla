@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -14,11 +14,9 @@ class RSFormProFieldGMaps extends RSFormProFieldTextbox
 	static $mapScript = false;
 
 	// backend preview
-	public function getPreviewInput() {
-		$caption 	= $this->getProperty('CAPTION','');
-		$codeIcon	= RSFormProHelper::getIcon('gmaps');
-		$html = '<td>'.$caption.'</td><td>'.$codeIcon.'</td>';
-		return $html;
+	public function getPreviewInput()
+	{
+		return RSFormProHelper::getIcon('gmaps');
 	}
 	
 	// functions used for rendering in front view

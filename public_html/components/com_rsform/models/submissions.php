@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -201,22 +201,41 @@ class RsformModelSubmissions extends JModelLegacy
 					if (in_array($result->FieldName, $this->uploadFields) && !empty($result->FieldValue))
 					{
 						$result->FilePath = $result->FieldValue;
-						$result->FieldValue = '<a href="'.JUri::root().'index.php?option=com_rsform&amp;task=submissions.view.file&amp;hash='.md5($result->SubmissionId.$secret.$result->FieldName).'">'.JFile::getName($result->FieldValue).'</a>';
+
+						$files = RSFormProHelper::explode($result->FieldValue);
+						$actualValues = array();
+						foreach ($files as $file)
+						{
+							$actualValues[] = '<a href="' . JRoute::_('index.php?option=com_rsform&task=submissions.view.file&hash=' . md5($result->SubmissionId.$secret.$result->FieldName) . '&file=' . md5($file)) . '">' . RSFormProHelper::htmlEscape(basename($file)) . '</a>';
+						}
+						$result->FieldValue = implode('<br />', $actualValues);
 					}
 					// Check if this is a multiple field
 					elseif (in_array($result->FieldName, $this->multipleFields))
-						$result->FieldValue = str_replace("\n", $form->MultipleSeparator, $result->FieldValue);
-					elseif ($form->TextareaNewLines && in_array($result->FieldName, $this->textareaFields))
-						$result->FieldValue = nl2br($result->FieldValue);
-						
-					$this->_data[$result->SubmissionId]['SubmissionValues'][$result->FieldName] = array('Value' => $result->FieldValue, 'Id' => $result->SubmissionValueId);
-					if (in_array($result->FieldName, $this->uploadFields) && !empty($result->FieldValue))
 					{
-						$filepath = $result->FilePath;
-						$filepath = str_replace(JPATH_SITE.DIRECTORY_SEPARATOR, JUri::root(), $filepath);
-						$filepath = str_replace(array('\\', '\\/', '//\\'), '/', $filepath);
+						$result->FieldValue = str_replace("\n", $form->MultipleSeparator, $result->FieldValue);
+					}
+					elseif ($form->TextareaNewLines && in_array($result->FieldName, $this->textareaFields))
+					{
+						$result->FieldValue = nl2br($result->FieldValue);
+					}
+
+					$this->_data[$result->SubmissionId]['SubmissionValues'][$result->FieldName] = array('Value' => $result->FieldValue, 'Id' => $result->SubmissionValueId);
+
+					if (!empty($result->FilePath))
+					{
+						$files = RSFormProHelper::explode($result->FilePath);
+
+						$actualValues = array();
+						foreach ($files as $filepath)
+						{
+							$filepath = str_replace(JPATH_SITE.DIRECTORY_SEPARATOR, JUri::root(), $filepath);
+							$filepath = str_replace(array('\\', '\\/', '//\\'), '/', $filepath);
+
+							$actualValues[] = $filepath;
+						}
 						
-						$this->_data[$result->SubmissionId]['SubmissionValues'][$result->FieldName]['Path'] = $filepath;
+						$this->_data[$result->SubmissionId]['SubmissionValues'][$result->FieldName]['Path'] = implode('<br />', $actualValues);
 					}
 				}
 			}
@@ -246,38 +265,13 @@ class RsformModelSubmissions extends JModelLegacy
 		return $this->replacements;
 	}
 	
-	public function getComponents() {
-		$this->_db->setQuery("SELECT c.ComponentTypeId, p.ComponentId, p.PropertyName, p.PropertyValue FROM #__rsform_components c LEFT JOIN #__rsform_properties p ON (c.ComponentId=p.ComponentId) WHERE c.FormId='".$this->formId."' AND c.Published='1' AND p.PropertyName IN ('NAME', 'WYSIWYG')");
-		$components = $this->_db->loadObjectList();
-		$this->uploadFields   = array();
-		$this->multipleFields = array();
-		$this->textareaFields = array();
-		
-		foreach ($components as $component)
-		{
-			// Upload fields
-			if ($component->ComponentTypeId == RSFORM_FIELD_FILEUPLOAD)
-			{
-				$this->uploadFields[] = $component->PropertyValue;
-			}
-			// Multiple fields
-			elseif (in_array($component->ComponentTypeId, array(RSFORM_FIELD_SELECTLIST, RSFORM_FIELD_CHECKBOXGROUP)))
-			{
-				$this->multipleFields[] = $component->PropertyValue;
-			}
-			// Textarea fields
-			elseif ($component->ComponentTypeId == RSFORM_FIELD_TEXTAREA)
-			{
-				if ($component->PropertyName == 'WYSIWYG' && $component->PropertyValue == 'NO')
-					$this->textareaFields[] = $component->ComponentId;
-			}
-		}
-		
-		if (!empty($this->textareaFields))
-		{
-			$this->_db->setQuery("SELECT p.PropertyValue FROM #__rsform_components c LEFT JOIN #__rsform_properties p ON (c.ComponentId=p.ComponentId) WHERE c.ComponentId IN (".implode(',', $this->textareaFields).")");
-			$this->textareaFields = $this->_db->loadColumn();
-		}
+	public function getComponents()
+	{
+		$results = RSFormProHelper::getDirectoryFormProperties($this->formId, true);
+
+		$this->uploadFields = $results['uploadFields'];
+		$this->multipleFields = $results['multipleFields'];
+		$this->textareaFields = $results['textareaFields'];
 	}
 	
 	public function getHeaders() {
@@ -294,6 +288,7 @@ class RsformModelSubmissions extends JModelLegacy
 	
 	public function getTemplate() {
 		$app 		= JFactory::getApplication();
+		$db 		= JFactory::getDbo();
 		$Itemid		= $this->getItemId();
 		$has_suffix = JFactory::getConfig()->get('sef') && JFactory::getConfig()->get('sef_suffix');
 		$layout 	= $app->input->getCmd('layout', 'default');
@@ -302,6 +297,13 @@ class RsformModelSubmissions extends JModelLegacy
 		$template_module      = $this->params->def('template_module', '');
 		$template_formdatarow = $this->params->def('template_formdatarow', '');
 		$template_formdetail  = $this->params->def('template_formdetail', '');
+
+        $query = $db->getQuery(true)
+            ->select('*')
+            ->from($db->qn('#__rsform_forms'))
+            ->where($db->qn('FormId') . ' = ' . $db->q($this->params->get('formId')));
+
+        $form = $db->setQuery($query)->loadObject();
 		
 		if ($layout == 'default') {
 			$formdata 		= '';
@@ -310,7 +312,8 @@ class RsformModelSubmissions extends JModelLegacy
 			$pagination 	= $this->getPagination();
 			
 			$i = 0;
-			foreach ($submissions as $SubmissionId => $submission) {
+			foreach ($submissions as $SubmissionId => $submission)
+			{
 				list($replace, $with) = $this->getReplacements($submission['UserId']);
 				
 				$pdf_link = JRoute::_('index.php?option=com_rsform&view=submissions&layout=view&cid='.$SubmissionId.'&format=pdf'.$Itemid);
@@ -335,13 +338,13 @@ class RsformModelSubmissions extends JModelLegacy
 					// PDF links
 					'{detailspdf}'			 => '<a href="'.$pdf_link.'">',
 					'{detailspdf_link}'		 => $pdf_link,
-					'{global:formid}'		 => $submission['FormId'],
-					// Payment Status
-					'{_STATUS:value}'		 => isset($submission['SubmissionValues']['_STATUS']) ? JText::_('RSFP_PAYPAL_STATUS_'.$submission['SubmissionValues']['_STATUS']['Value']) : ''
+					'{global:formid}'		 => $submission['FormId']
 				);
 				
 				$replace = array_merge($replace, array_keys($replacements));
 				$with 	 = array_merge($with, array_values($replacements));
+
+                $app->triggerEvent('rsfp_onAfterCreatePlaceholders', array(array('form' => &$form, 'placeholders' => &$replace, 'values' => &$with, 'submission' => $this->convertSubmissionObject($submission, $SubmissionId))));
 				
 				foreach ($headers as $header) {
 					if (!isset($submission['SubmissionValues'][$header]['Value']))
@@ -459,4 +462,28 @@ class RsformModelSubmissions extends JModelLegacy
 		
 		return !empty($itemid) ? '&Itemid='.$itemid : '';
 	}
+
+	private function convertSubmissionObject($submission, $SubmissionId)
+    {
+        $obj = new stdClass();
+        $obj->SubmissionId = $SubmissionId;
+        $obj->values = array();
+
+        foreach ($submission as $key => $value)
+        {
+            if ($key == 'SubmissionValues')
+            {
+                foreach ($value as $fieldName => $fieldProperties)
+                {
+                    $obj->values[$fieldName] = $fieldProperties['Value'];
+                }
+            }
+            else
+            {
+                $obj->{$key} = $value;
+            }
+        }
+
+        return $obj;
+    }
 }

@@ -10,6 +10,7 @@ if (typeof RSFormPro != 'object') {
 RSFormPro.Forms = {};
 RSFormPro.Editors = {};
 RSFormPro.scrollToError = false;
+RSFormPro.usePositioning = false;
 
 /* Handle HTML5 form fields validation for the forms without AjaxValidation enabled */
 RSFormPro.setHTML5Validation = function (formId, isDisabledSubmit, errorClasses, totalPages) {
@@ -481,7 +482,6 @@ RSFormPro.resetValues = function(items) {
 							case 'CHECKBOX':
 							case 'RADIO':
 								element.checked = element.defaultChecked;
-								
 								RSFormPro.triggerEvent(element, 'change');
 							break;
 							
@@ -525,7 +525,7 @@ RSFormPro.resetValues = function(items) {
 	catch (err) {}
 
 	RSFormPro.resettingValues = false;
-}
+};
 
 RSFormPro.triggerEvent = function(element, type) {
 	try {
@@ -546,7 +546,7 @@ RSFormPro.triggerEvent = function(element, type) {
 			element.fireEvent("on" + event.eventType, event);
 		}
 	} catch (e) {}
-}
+};
 
 RSFormPro.isChecked = function(formId, name, value) {
 	var isChecked 	= false;
@@ -566,6 +566,17 @@ RSFormPro.isChecked = function(formId, name, value) {
 						if (element.type)
 							switch (element.type.toUpperCase())
 							{
+								default:
+									if (!element.name || element.name != 'form[' + name + ']') continue;
+									if (!element.value) continue;
+
+									if (element.value == value)
+									{
+										isChecked = true;
+										break primary_loop;
+									}
+
+									break;
 								case 'RADIO':
 									if (!element.name || element.name != 'form[' + name + ']') continue;
 									if (element.checked == true && element.value == value)
@@ -695,7 +706,47 @@ RSFormPro.showCounter = function(element, id) {
 	}
 	
 	document.getElementById('rsfp-counter-' + id).innerText = result;
-}
+};
+
+RSFormPro.limitSelections = function(formId, field, max) {
+    RSFormProUtils.addEvent(window, 'load', function() {
+        var fields = RSFormPro.getFieldsByName(formId, field);
+        var objects = [];
+        var i;
+        var tagName;
+
+        if (!fields || !fields.length) {
+            return;
+        }
+
+        for (i = 0; i < fields.length; i++) {
+            tagName = fields[i].tagName || fields[i].nodeName;
+            tagName = tagName.toUpperCase();
+
+            if (tagName === 'INPUT' && fields[i].type && fields[i].type.toUpperCase() === 'CHECKBOX' && !fields[i].disabled) {
+                objects.push(fields[i]);
+            }
+        }
+
+        if (!objects.length) {
+            return;
+        }
+
+        function limitSelections() {
+            var values = RSFormProUtils.getChecked(objects);
+            RSFormProUtils.remAttr(objects, 'disabled');
+            if (values && values.length > 0 && values.length >= max) {
+                RSFormProUtils.setAttr(RSFormProUtils.getUnchecked(objects), 'disabled', true);
+            }
+		}
+
+        for (i = 0; i < objects.length; i++) {
+            RSFormProUtils.addEvent(objects[i], 'change', limitSelections);
+        }
+
+        limitSelections();
+    });
+};
 
 /*HTML5 simulators*/
 
@@ -858,6 +909,60 @@ RSFormPro.Conditions = {
 			}
 		}
 	},
+	run: function(condition) {
+		var formId = condition.form_id,
+            conditions = [],
+            items = [],
+			detail, isChecked, displayValue, match;
+
+		if (typeof condition.details === 'object')
+		{
+			for (var i = 0; i < condition.details.length; i++)
+			{
+				detail = condition.details[i];
+                isChecked = RSFormPro.isChecked(formId, detail.ComponentName, detail.value);
+                conditions.push(isChecked === (detail.operator === 'is'));
+			}
+
+			if (parseInt(condition.block) === 1)
+			{
+				items = RSFormPro.getBlock(formId, RSFormProUtils.getAlias(condition.ComponentName));
+			}
+			else
+			{
+				items = RSFormPro.getFieldsByName(formId, condition.ComponentName);
+			}
+
+			if (items.length > 0)
+			{
+				if (condition.condition === 'all')
+				{
+                    // && conditions need all elements of the Array to be true -> no false in Array
+                    match = conditions.indexOf(false) === -1;
+				}
+				else
+				{
+                    // || conditions need only one element to be true -> one true in array
+					match = conditions.indexOf(true) > -1;
+				}
+
+                if (match)
+                {
+                    displayValue = condition.action === 'show' ? '' : 'none';
+                }
+                else
+                {
+                    displayValue = condition.action === 'show' ? 'none' : '';
+                }
+
+				RSFormProUtils.setDisplay(items, displayValue);
+                if (displayValue === 'none')
+				{
+					RSFormPro.resetValues(RSFormPro.getFieldsByName(formId, condition.ComponentName));
+				}
+			}
+		}
+	},
 	runAll: function(formId) {
 		var func = window["rsfp_runAllConditions" + formId];
 		if (typeof func == "function") {
@@ -876,6 +981,12 @@ RSFormPro.Conditions = {
 					}, 1);
 				});
 			}
+		}
+	},
+	delayRun: function(formId) {
+		var func = window["rsfp_runAllConditions" + formId];
+		if (typeof func == "function") {
+			RSFormProUtils.addEvent(window, 'load', func);
 		}
 	}
 };
@@ -1151,7 +1262,7 @@ RSFormPro.Ajax = {
 		var submits = [],
 			errorFields = [],
 			success = false,
-			formId = 0,
+			formId = form.elements['form[formId]'].value,
 			ids,
 			totalJSDetectedPages = 0,
 			lastClickedElement,
@@ -1207,8 +1318,132 @@ RSFormPro.Ajax = {
 				continue;
 			}
 
-			if (form.elements[i].name == 'form[formId]') {
-				formId = form.elements[i].value;
+			if (form.elements[i].type == 'file')
+			{
+				if ('files' in form.elements[i])
+				{
+					try
+					{
+
+						if (RSFormPro.usePositioning)
+						{
+							if (form.elements[i].offsetParent !== document.getElementsByTagName('body')[0])
+							{
+								throw 'CONDITIONAL_HIDDEN';
+							}
+						}
+						else
+						{
+							if (form.elements[i].offsetParent === null)
+							{
+								throw 'CONDITIONAL_HIDDEN';
+							}
+						}
+
+						if (form.elements[i].files.length === 0 && form.elements[i].getAttribute('data-rsfp-required') === 'true')
+						{
+							throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'VALIDATIONMESSAGE'));
+						}
+
+						if (form.elements[i].getAttribute('data-rsfp-required') === 'true' || form.elements[i].files.length > 0)
+						{
+							if (form.elements[i].getAttribute('data-rsfp-minfiles'))
+							{
+								var minFiles = parseInt(form.elements[i].getAttribute('data-rsfp-minfiles'));
+
+								if (form.elements[i].files.length < minFiles)
+								{
+									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_MINFILES_REQUIRED'), minFiles));
+								}
+							}
+
+							if (form.elements[i].getAttribute('data-rsfp-maxfiles'))
+							{
+								var maxFiles = parseInt(form.elements[i].getAttribute('data-rsfp-maxfiles'));
+
+								if (form.elements[i].files.length > maxFiles)
+								{
+									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_MAXFILES_REQUIRED'), maxFiles));
+								}
+							}
+						}
+
+						for (var f = 0; f < form.elements[i].files.length; f++)
+						{
+							var file = form.elements[i].files[f];
+							var maxSize = parseInt(form.elements[i].getAttribute('data-rsfp-size'));
+							if ('size' in file && maxSize > 0)
+							{
+								if (file.size > maxSize)
+								{
+									throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_FILE_EXCEEDS_LIMIT'), file.name, maxSize / 1024));
+								}
+							}
+							if ('name' in file)
+							{
+								var exts = form.elements[i].getAttribute('data-rsfp-exts');
+								if (exts)
+								{
+									exts = JSON.parse(exts);
+
+									var ext = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2);
+									if (exts.indexOf(ext.toLowerCase()) === -1)
+									{
+										throw new RSFormPro.validationError('VALIDATION_ERROR', RSFormProUtils.sprintf(RSFormPro.Translations.translate(formId, form.elements[i].getAttribute('id'), 'COM_RSFORM_FILE_EXTENSION_NOT_ALLOWED'), file.name));
+									}
+								}
+							}
+						}
+					}
+					catch (error)
+					{
+						if (typeof error === 'object')
+						{
+							if (error.toString() === 'VALIDATION_ERROR')
+							{
+								var parents = RSFormProUtils.getParents(form.elements[i]);
+								var page_number;
+								if (parents.length > 0)
+								{
+									for (var p = 0; p < parents.length; p++)
+									{
+										var parent = parents[p];
+
+										if ('getAttribute' in parent)
+										{
+											var hasId = parents[p].getAttribute('id');
+											var pageId = 'rsform_' + formId + '_page_';
+											if (hasId && hasId.indexOf(pageId) === 0)
+											{
+												page_number = hasId.slice(pageId.length);
+												break;
+											}
+										}
+									}
+								}
+
+								var elementObj = {
+									field: form.elements[i],
+									page: page_number
+								};
+
+								// try to get the componentId
+								var componentId = RSFormPro.HTML5.getComponentId(formId, form.elements[i].getAttribute('id'));
+								if (componentId)
+								{
+									elementObj.componentId = componentId;
+
+									if (document.getElementById('component' + componentId) && error.message.length > 0)
+									{
+										document.getElementById('component' + componentId).innerText = error.message;
+									}
+								}
+
+								errorFields.push(elementObj);
+							}
+						}
+					}
+				}
 			}
 
 			if (typeof RSFormPro.Editors[form.elements[i].name] == 'function') {
@@ -1218,7 +1453,7 @@ RSFormPro.Ajax = {
 			}
 		}
 
-		errorFields = RSFormPro.HTML5.validation(formId);
+		errorFields = errorFields.concat(RSFormPro.HTML5.validation(formId));
 
 		if (page) {
 			RSFormPro.Ajax.Params.push('page=' + page);
@@ -1371,7 +1606,7 @@ RSFormPro.Ajax = {
 				}
 				return success;
 			}
-		}
+		};
 
 		return false;
 	},
@@ -1392,6 +1627,15 @@ RSFormPro.Ajax = {
 			}
 		}
 	}
+};
+
+RSFormPro.validationError = function(type, message) {
+	this.type = type;
+	this.message = message;
+};
+
+RSFormPro.validationError.prototype.toString = function() {
+	return this.type;
 };
 
 RSFormPro.callbacks = {
@@ -1430,6 +1674,30 @@ RSFormPro.callbacks = {
 	}
 };
 
+/* Translations */
+
+RSFormPro.Translations = {
+	translations: {},
+
+	add: function(formId, name, key, translation) {
+		if (typeof this.translations[formId + '-' + name] !== 'object')
+		{
+			this.translations[formId + '-' + name] = {};
+		}
+
+		this.translations[formId + '-' + name][key] = translation;
+	},
+
+	translate: function(formId, name, key) {
+		if (typeof this.translations[formId + '-' + name][key] == 'string')
+		{
+			return this.translations[formId + '-' + name][key];
+		}
+
+		return key;
+	}
+};
+
 /* Helper functions */
 
 var RSFormProUtils = {
@@ -1464,9 +1732,51 @@ var RSFormProUtils = {
 	},
 	setDisplay: function (items, value) {
 		for (var i = 0; i < items.length; i++) {
-			items[i].style.display = value;
+			if (!RSFormPro.usePositioning) {
+				items[i].style.display = value;
+			} else {
+				value === 'none' ? RSFormProUtils.addClass(items[i], 'formHidden') : RSFormProUtils.removeClass(items[i], 'formHidden');
+			}
 		}
 	},
+	setAttr: function (items, attr, value) {
+        for (var i = 0; i < items.length; i++) {
+            items[i].setAttribute(attr, value);
+        }
+	},
+    remAttr: function (items, attr) {
+        for (var i = 0; i < items.length; i++) {
+            items[i].removeAttribute(attr);
+        }
+    },
+	getChecked: function (items) {
+		var elements = [];
+		var element, tagName;
+        for (var i = 0; i < items.length; i++) {
+        	element = items[i];
+            tagName = element.tagName || element.nodeName;
+
+            if (tagName == 'INPUT' && element.type && element.type.toUpperCase() == 'CHECKBOX' && element.checked == true) {
+				elements.push(element);
+			}
+        }
+
+        return elements;
+	},
+    getUnchecked: function (items) {
+        var elements = [];
+        var element, tagName;
+        for (var i = 0; i < items.length; i++) {
+            element = items[i];
+            tagName = element.tagName || element.nodeName;
+
+            if (tagName == 'INPUT' && element.type && element.type.toUpperCase() == 'CHECKBOX' && !element.checked) {
+                elements.push(element);
+            }
+        }
+
+        return elements;
+    },
 	getAlias: function(str) {
 		str = str.replace(/\-/g, ' ');
 
@@ -1481,6 +1791,20 @@ var RSFormProUtils = {
 		str = str.replace(/^\-+|\-+$/g, '');
 
 		return str;
+	},
+	getParents: function(a) {
+		var els = [];
+		while (a) {
+			els.push(a);
+			a = a.parentNode;
+		}
+		// Remove our own element
+		if (els.length > 0)
+		{
+			els.shift()
+		}
+
+		return els;
 	},
 	getElementsByClassName: function (className, tag, elm) {
 		if (document.getElementsByClassName) {
@@ -1554,6 +1878,257 @@ var RSFormProUtils = {
 		}
 
 		return getElementsByClassName(className, tag, elm);
+	},
+
+	/*!
+	**  sprintf.js -- POSIX sprintf(3)-style String Formatting for JavaScript
+	**  Copyright (c) 2006-2019 Dr. Ralf S. Engelschall <rse@engelschall.com>
+	**  Partly based on Public Domain code by Jan Moesen <http://jan.moesen.nu/>
+	**
+	**  Permission is hereby granted, free of charge, to any person obtaining
+	**  a copy of this software and associated documentation files (the
+	**  "Software"), to deal in the Software without restriction, including
+	**  without limitation the rights to use, copy, modify, merge, publish,
+	**  distribute, sublicense, and/or sell copies of the Software, and to
+	**  permit persons to whom the Software is furnished to do so, subject to
+	**  the following conditions:
+	**
+	**  The above copyright notice and this permission notice shall be included
+	**  in all copies or substantial portions of the Software.
+	**
+	**  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+	**  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	**  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+	**  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	**  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+	**  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+	**  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+	*/
+	sprintf: function () {
+		/*  argument sanity checking  */
+		if (!arguments || arguments.length < 1)
+			throw new Error("sprintf: ERROR: not enough arguments");
+
+		/*  initialize processing queue  */
+		var argumentnum = 0;
+		var done = "", todo = arguments[argumentnum++];
+
+		/*  parse still to be done format string  */
+		var m;
+		while ((m = /^([^%]*)%(?:(\d+)\$|\((.*?)\))?([#0 +'-]+)?(\*|\d+)?(\.\*|\.\d+)?([%diouxXfFeEcs])((?:.|[\r\n])*)$/.exec(todo))) {
+			var pProlog    = m[1],
+				pAccessD   = m[2],
+				pAccessN   = m[3],
+				pFlags     = m[4],
+				pMinLength = m[5],
+				pPrecision = m[6],
+				pType      = m[7],
+				pEpilog    = m[8];
+
+			/*  determine substitution  */
+			var subst;
+			if (pType === "%")
+			/*  special case: escaped percent character  */
+				subst = "%";
+			else {
+				/*  parse padding and justify aspects of flags  */
+				var padWith = " ";
+				var justifyRight = true;
+				if (pFlags) {
+					if (pFlags.indexOf("0") >= 0)
+						padWith = "0";
+					if (pFlags.indexOf("-") >= 0) {
+						padWith = " ";
+						justifyRight = false;
+					}
+				}
+				else
+					pFlags = "";
+
+				/*  determine minimum length  */
+				var access;
+				var minLength = -1;
+				if (pMinLength) {
+					if (pMinLength === "*") {
+						access = argumentnum++;
+						if (access >= arguments.length)
+							throw new Error("sprintf: ERROR: not enough arguments");
+						minLength = arguments[access];
+					}
+					else
+						minLength = parseInt(pMinLength, 10);
+				}
+
+				/*  determine precision  */
+				var precision = -1;
+				if (pPrecision) {
+					if (pPrecision === ".*") {
+						access = argumentnum++;
+						if (access >= arguments.length)
+							throw new Error("sprintf: ERROR: not enough arguments");
+						precision = arguments[access];
+					}
+					else
+						precision = parseInt(pPrecision.substring(1), 10);
+				}
+
+				/*  determine how to fetch argument  */
+				access = argumentnum++;
+				if (pAccessD) {
+					access = parseInt(pAccessD, 10);
+					if (access >= arguments.length)
+						throw new Error("sprintf: ERROR: not enough arguments");
+					subst = arguments[access];
+				}
+				else if (pAccessN) {
+					if (typeof arguments[1] !== "object")
+						throw new Error("sprintf: ERROR: invalid non-object arguments for named argument");
+					subst = arguments[1][pAccessN];
+					if (typeof subst === "undefined")
+						throw new Error("sprintf: ERROR: invalid undefined value for named argument");
+				}
+				else {
+					if (access >= arguments.length)
+						throw new Error("sprintf: ERROR: not enough arguments");
+					subst = arguments[access];
+				}
+
+				/*  dispatch into expansions according to type  */
+				var prefix = "";
+				switch (pType) {
+					/*  decimal number  */
+					case "d":
+					case "i":
+						if (typeof subst !== "number")
+							subst = 0;
+						subst = subst.toString(10);
+						if (pFlags.indexOf("#") >= 0 && subst >= 0)
+							subst = "+" + subst;
+						if (pFlags.indexOf(" ") >= 0 && subst >= 0)
+							subst = " " + subst;
+						break;
+
+					/*  binary number  */
+					case "b":
+						if (typeof subst !== "number")
+							subst = 0;
+						subst = subst.toString(2);
+						break;
+
+					/*  octal number  */
+					case "o":
+						if (typeof subst !== "number")
+							subst = 0;
+						subst = subst.toString(8);
+						break;
+
+					/*  unsigned decimal number  */
+					case "u":
+						if (typeof subst !== "number")
+							subst = 0;
+						subst = Math.abs(subst);
+						subst = subst.toString(10);
+						break;
+
+					/*  (lower-case) hexadecimal number  */
+					case "x":
+						if (typeof subst !== "number")
+							subst = 0;
+						subst = subst.toString(16).toLowerCase();
+						if (pFlags.indexOf("#") >= 0)
+							prefix = "0x";
+						break;
+
+					/*  (upper-case) hexadecimal number  */
+					case "X":
+						if (typeof subst !== "number")
+							subst = 0;
+						subst = subst.toString(16).toUpperCase();
+						if (pFlags.indexOf("#") >= 0)
+							prefix = "0X";
+						break;
+
+					/*  (lower/upper-case) floating point number (fixed precision)  */
+					case "f":
+					case "F":
+						if (typeof subst !== "number")
+							subst = 0.0;
+						subst = 0.0 + subst;
+						if (precision > -1) {
+							if (subst.toFixed)
+								subst = subst.toFixed(precision);
+							else {
+								subst = (Math.round(subst * Math.pow(10, precision)) / Math.pow(10, precision));
+								subst += "0000000000";
+								subst = subst.substr(0, subst.indexOf(".") + precision + 1);
+							}
+						}
+						subst = "" + subst;
+						if (pFlags.indexOf("'") >= 0) {
+							var k = 0;
+							for (var i = (subst.length - 1) - 3; i >= 0; i -= 3) {
+								subst = subst.substring(0, i) + (k === 0 ? "." : ",") + subst.substring(i);
+								k = (k + 1) % 2;
+							}
+						}
+						break;
+
+					/*  (lower/upper-case) floating point number (exponential-based precision)  */
+					case "e":
+					case "E":
+						if (typeof subst !== "number")
+							subst = 0.0;
+						subst = 0.0 + subst;
+						if (precision > -1) {
+							if (subst.toExponential)
+								subst = subst.toExponential(precision);
+							else
+								throw new Error("sprintf: ERROR: toExponential() method not supported");
+						}
+						subst = "" + subst;
+						if (pType === "E")
+							subst = subst.replace(/e\+/, "E+");
+						break;
+
+					/*  single character  */
+					case "c":
+						if (typeof subst !== "number")
+							subst = 0;
+						subst = String.fromCharCode(subst);
+						break;
+
+					/*  string  */
+					case "s":
+						if (typeof subst !== "string")
+							subst = String(subst);
+						if (precision > -1)
+							subst = subst.substr(0, precision);
+						break;
+					default:
+						throw new Error("sprintf: ERROR: invalid conversion character \"" + pType + "\"");
+				}
+
+				/*  apply optional padding  */
+				var padding = minLength - subst.toString().length - prefix.toString().length;
+				if (padding > 0) {
+					var arrTmp = new Array(padding + 1);
+					if (justifyRight)
+						subst = arrTmp.join(padWith) + subst;
+					else
+						subst = subst + arrTmp.join(padWith);
+				}
+
+				/*  add optional prefix  */
+				subst = prefix + subst;
+			}
+
+			/*  update the processing queue  */
+			done = done + pProlog + subst;
+			todo = pEpilog;
+		}
+
+		/*  return finally formatted string  */
+		return (done + todo);
 	}
 };
 

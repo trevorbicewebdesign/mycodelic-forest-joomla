@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -34,7 +34,9 @@ class RsformController extends JControllerLegacy
     {
 		$db 	= JFactory::getDbo();
 		$secret = JFactory::getConfig()->get('secret');
-		$hash 	= JFactory::getApplication()->input->getCmd('hash');
+		$app	= JFactory::getApplication();
+		$hash 	= $app->input->getCmd('hash');
+		$file   = $app->input->getCmd('file');
 		
 		// Load language file
 		JFactory::getLanguage()->load('com_rsform', JPATH_ADMINISTRATOR);
@@ -51,6 +53,8 @@ class RsformController extends JControllerLegacy
 		$db->setQuery($query);
 		if ($result = $db->loadObject())
 		{
+			$allowedTypes = array(RSFORM_FIELD_FILEUPLOAD);
+
 			// Check if it's an upload field
             $query->clear()
                 ->select($db->qn('c.ComponentTypeId'))
@@ -61,17 +65,39 @@ class RsformController extends JControllerLegacy
                 ->where($db->qn('c.FormId') . '=' . $db->q($result->FormId));
 			$db->setQuery($query);
 			$type = $db->loadResult();
-			if ($type != RSFORM_FIELD_FILEUPLOAD)
+
+			$app->triggerEvent('rsfp_onSubmissionsViewFile', array(&$allowedTypes, &$result));
+
+			if (!in_array($type, $allowedTypes))
 			{
                 throw new Exception(JText::_('RSFP_VIEW_FILE_NOT_UPLOAD'));
 			}
+
+			$foundFile = false;
+			if ($file && strlen($file) == 32)
+			{
+				$values = RSFormProHelper::explode($result->FieldValue);
+
+				foreach ($values as $value)
+				{
+					if (md5($value) == $file)
+					{
+						$foundFile = $value;
+						break;
+					}
+				}
+			}
+			else
+			{
+				$foundFile = $result->FieldValue;
+			}
 			
-			if (!file_exists($result->FieldValue))
+			if (!$foundFile || !file_exists($foundFile))
 			{
                 throw new Exception(JText::_('RSFP_VIEW_FILE_NOT_FOUND'));
 			}
 
-            RSFormProHelper::readFile($result->FieldValue);
+            RSFormProHelper::readFile($foundFile);
 		}
 		else
         {
@@ -145,11 +171,10 @@ class RsformController extends JControllerLegacy
             }
 			
 			$invalidComponents = array_intersect($formComponents, $invalid);
-			
 			echo implode(',', $invalidComponents);
 		}
 		
-		if (isset($invalidComponents))
+		if (!empty($invalidComponents))
 		{
 			echo "\n";
 
@@ -192,11 +217,15 @@ class RsformController extends JControllerLegacy
 		{
 		    $query = $db->getQuery(true)
                 ->select($db->qn('SubmissionId'))
+                ->select($db->qn('FormId'))
                 ->from($db->qn('#__rsform_submissions'))
                 ->where('MD5(CONCAT('.$db->qn('SubmissionId').', '.$db->qn('FormId').', '.$db->qn('DateSubmitted').')) = ' . $db->q($hash));
 			$db->setQuery($query);
-			if ($SubmissionId = $db->loadResult())
+			if ($submission = $db->loadObject())
 			{
+				$SubmissionId 	= $submission->SubmissionId;
+				$formId			= $submission->FormId;
+
 			    $query->clear()
                     ->update($db->qn('#__rsform_submissions'))
                     ->set($db->qn('confirmed') . ' = ' . $db->q(1))
@@ -206,6 +235,15 @@ class RsformController extends JControllerLegacy
 				
 				$app->triggerEvent('rsfp_f_onSubmissionConfirmation', array(array('SubmissionId' => $SubmissionId, 'hash' => $hash)));
 				$app->enqueueMessage(JText::_('RSFP_SUBMISSION_CONFIRMED'), 'notice');
+
+				$form = RSFormProHelper::getForm($formId);
+				if (!empty($form->ConfirmSubmissionUrl))
+				{
+					list($replace, $with) = RSFormProHelper::getReplacements($SubmissionId);
+
+					$url = str_replace($replace, $with, $form->ConfirmSubmissionUrl);
+					$app->redirect(JRoute::_($url, false));
+				}
 			}
 		}
 		else
@@ -232,7 +270,7 @@ class RsformController extends JControllerLegacy
             {
                 require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
 
-                RSFormProSubmissionsHelper::deleteSubmissions($submission->SubmissionId);
+                RSFormProSubmissionsHelper::deleteSubmissions($submission->SubmissionId, true);
 
                 $app->triggerEvent('rsfp_f_onSubmissionDeletion', array(array('SubmissionId' => $submission->SubmissionId, 'hash' => $hash)));
                 $app->enqueueMessage(JText::_('COM_RSFORM_SUBMISSION_DELETED'));

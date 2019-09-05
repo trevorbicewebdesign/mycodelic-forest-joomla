@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -28,9 +28,9 @@ class RsformControllerFiles extends RsformController
 		$file 	= $model->getUploadFile();
 		
 		if ($result) {
-			$msg = sprintf('Successfully uploaded %s!', $file);
+			$msg = JText::sprintf('COM_RSFORM_SUCCESSFULLY_UPLOADED', $file);
 		} else {
-			$msg = sprintf('Failed to upload %s in %s', $file, $folder);
+            $msg = JText::sprintf('COM_RSFORM_FAILED_TO_UPLOAD_IN', $file, $folder);
 		}
 		
 		$this->setRedirect('index.php?option=com_rsform&controller=files&task=display&folder='.urlencode($folder).'&tmpl=component', $msg);

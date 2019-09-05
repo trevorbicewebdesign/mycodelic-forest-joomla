@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -51,8 +51,19 @@ class TableRSForm_Forms extends JTable
 	public $AdminEmailFromName = '';
 	public $AdminEmailSubject = '';
 	public $AdminEmailMode = 1;
+    public $DeletionEmailText = '';
+    public $DeletionEmailTo = '';
+    public $DeletionEmailCC = '';
+    public $DeletionEmailBCC = '';
+    public $DeletionEmailFrom = '{global:mailfrom}';
+    public $DeletionEmailReplyTo = '';
+    public $DeletionEmailFromName = '{global:fromname}';
+    public $DeletionEmailSubject = '';
+    public $DeletionEmailMode = 1;
 	public $ScriptProcess = '';
 	public $ScriptProcess2 = '';
+	public $ScriptBeforeDisplay = '';
+	public $ScriptBeforeValidation = '';
 	public $ScriptDisplay = '';
 	public $UserEmailScript = '';
 	public $AdminEmailScript = '';
@@ -72,6 +83,7 @@ class TableRSForm_Forms extends JTable
 	public $AjaxValidation = 0;
 	public $Backendmenu = '';
 	public $ConfirmSubmission = 0;
+	public $ConfirmSubmissionUrl = '';
 	public $Access = '';
 	
 	public $Published = 1;

@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -138,14 +138,6 @@ class RsformModelMappings extends JModelLegacy
 
 			$database = JDatabaseDriver::getInstance($config);
 			$database->connect();
-			
-			if (is_a($database,'JException') || is_a($database,'JError')) {
-				throw new Exception($database->getMessage());
-			}
-			
-			if ($database->getErrorNum()) {
-				throw new Exception($database->getErrorMsg());
-			}
 			
 			return $database;
 		} else {

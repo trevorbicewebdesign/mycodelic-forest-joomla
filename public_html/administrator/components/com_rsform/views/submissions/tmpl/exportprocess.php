@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2014 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -19,6 +19,6 @@ defined('_JEXEC') or die('Restricted access');
 
 <script type="text/javascript">
 jQuery(document).ready(function(){
-	exportProcess(0,<?php echo $this->limit; ?>,<?php echo $this->total;?>);
+	exportProcess(0, <?php echo $this->limit; ?>, <?php echo $this->total;?>);
 });
 </script>

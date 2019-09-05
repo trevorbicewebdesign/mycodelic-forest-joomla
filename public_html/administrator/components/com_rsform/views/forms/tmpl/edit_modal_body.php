@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2017 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -16,7 +16,7 @@ defined('_JEXEC') or die;
 		<?php echo JHtml::_('bootstrap.addTab', 'editModalTabs', 'rsfptab1', JText::_('RSFP_COMPONENTS_VALIDATIONS_TAB')); ?>
 		<?php echo JHtml::_('bootstrap.endTab'); ?>
 		
-		<?php echo JHtml::_('bootstrap.addTab', 'editModalTabs', 'rsfptab2', JText::_('RSFP_COMPONENTS_ATRIBUTES_TAB')); ?>
+		<?php echo JHtml::_('bootstrap.addTab', 'editModalTabs', 'rsfptab2', JText::_('RSFP_COMPONENTS_ATTRIBUTES_TAB')); ?>
 		<?php echo JHtml::_('bootstrap.endTab'); ?>
 		
 		<?php echo JHtml::_('bootstrap.endTabSet'); ?>

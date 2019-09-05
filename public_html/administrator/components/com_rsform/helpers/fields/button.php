@@ -1,7 +1,7 @@
 <?php
 /**
 * @package RSForm! Pro
-* @copyright (C) 2007-2015 www.rsjoomla.com
+* @copyright (C) 2007-2019 www.rsjoomla.com
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
@@ -14,14 +14,14 @@ class RSFormProFieldButton extends RSFormProField
 	protected $baseClass = 'rsform-button';
 	
 	// backend preview
-	public function getPreviewInput() {
-		$caption 	= $this->getProperty('CAPTION', '');
+	public function getPreviewInput()
+	{
 		$reset		= $this->getProperty('RESET', 'NO');
 		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
-		$resetLabel		= $this->getProperty('RESETLABEL', '');
+		$resetLabel	= $this->getProperty('RESETLABEL', '');
 		
-		$html = '<td>'.$caption.'</td><td>';
+		$html = '';
 		if ($buttonType == 'button') {
 			$html .= '<button type="button" class="btn">'.$this->escape($label).'</button>';
 		} else {
@@ -34,8 +34,6 @@ class RSFormProFieldButton extends RSFormProField
 				$html .= '&nbsp;&nbsp;<input type="reset" class="btn btn-danger" value="'.$this->escape($resetLabel).'"/>';
 			}
 		}
-		
-		$html .= '</td>';
 		
 		return $html;
 	}
