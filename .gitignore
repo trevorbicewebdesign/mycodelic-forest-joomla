@@ -22,3 +22,4 @@
 *-cache-plg_*
 export-database.sh 
 .DS_Store
+php_errorlog
