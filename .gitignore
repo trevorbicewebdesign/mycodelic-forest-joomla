@@ -21,3 +21,4 @@
 *-cache-com_*
 *-cache-plg_*
 export-database.sh 
+.DS_Store
