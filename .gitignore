@@ -26,3 +26,4 @@ php_errorlog
 public_html/tmp/
 public_html/administrator/logs/error.php
 public_html/administrator/logs/rsfirewall.log
+public_html/administrator/components/com_akeeba/backup/akeeba.log
