@@ -64,7 +64,7 @@ if(is_array($contacts) && count($contacts)>0):
             $name = "{$contact->nick_name} ({$contact->display_name})";
         }
     
-        $camp_dues_paid = count($contact->contributions)?'<i class="fa fa-heart" aria-hidden="true" style="color:green;"></i> ':"";
+        $camp_dues_paid = (is_array($contact->contributions) && count($contact->contributions))?'<i class="fa fa-heart" aria-hidden="true" style="color:green;"></i> ':"";
         ?>
         <div class='col-lg-3'><?php echo $camp_dues_paid; ?><?php echo $name; ?></div>
     <?php endforeach; ?>   
