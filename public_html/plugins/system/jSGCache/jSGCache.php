@@ -154,7 +154,7 @@ class plgSystemjSGCache extends JPlugin
 	{
 		return array(array(
 			'link'=>'?jSGCache=purge',
-			'image'=>'header/icon-48-purge.png',
+			'image'=>'refresh',
 			'text'=>JText::_('Purge jSGCache'),
 			'id'=>'jSGCache'
 		));
@@ -171,15 +171,10 @@ class plgSystemjSGCache extends JPlugin
 	{
     	$purgeRequest = $this->_applicationPath . '(.*)';
 
-		// Check if caching server is varnish or nginx.
-		$sgcache_ip = '/etc/sgcache_ip';
-		$hostname = $_SERVER['SERVER_NAME'];
+		// Construct the PURGE request
+		$hostname = str_replace( 'www.', '', $_SERVER['HTTP_HOST'] );
 		$purge_method = "PURGE";
-		if (file_exists($sgcache_ip)) {
-			$hostname = trim( file_get_contents( $sgcache_ip, true ) );
-			$purge_method = "BAN";
-		}
-
+		
 		$cacheServerSocket = fsockopen($hostname, 80, $errno, $errstr, 2);
 
 		if(!$cacheServerSocket)
