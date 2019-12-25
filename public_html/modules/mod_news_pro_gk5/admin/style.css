@@ -50,6 +50,10 @@ span.unit {
 	float: left;
 	opacity: 1;
 }
+
+.alert .close {
+	float: right;
+}
 input.input-pixels,
 input.input-minutes,
 input.input-ms {
@@ -1044,3 +1048,29 @@ span.readonly p.license { border-top: 1px solid #eee; font-size: 11px; margin: 3
 span.tooltip-content { display: none; }
 .tip-text span.readonly { display: none; }
 .tip-text span.tooltip-content { display: block; }
+
+
+/* Front-end Edit */
+#modules-form #simple_crop {
+	position: static;
+	max-width: 100%;
+}
+
+#modules-form #simple_crop_top_wrap .add-on,
+#modules-form #simple_crop_bottom_wrap .add-on,
+#modules-form #simple_crop_left_wrap .add-on,
+#modules-form #simple_crop_right_wrap .add-on,
+#modules-form #simple_crop_top_wrap input[type="text"],
+#modules-form #simple_crop_bottom_wrap input[type="text"],
+#modules-form #simple_crop_left_wrap input[type="text"],
+#modules-form #simple_crop_right_wrap input[type="text"] {
+	height: auto;
+	padding: 1px;
+	text-align: center;
+}
+
+#modules-form #jform_params_links_img_width,
+#modules-form #jform_params_links_img_height {
+	padding-left: 2px;
+	padding-right: 2px;
+}

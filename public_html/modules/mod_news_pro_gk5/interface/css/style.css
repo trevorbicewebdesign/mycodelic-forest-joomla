@@ -102,7 +102,11 @@
 	margin: 3px 0 0 6px;
 }
 .nspNext:hover,
-.nspPrev:hover {
+.nspNext:focus,
+.nspNext:active,
+.nspPrev:hover,
+.nspPrev:focus,
+.nspPrev:active {
 	border-color: #999;
 }
 .nspPrev:hover:before {
@@ -249,6 +253,9 @@
 .nspList > li .nspImage {
 	height: auto!important;
 	max-width: 100%;
+}
+.nspList > li .meta {
+	font-size: 90%;
 }
 .nspLinks ul {
 	list-style-type: none!important;
