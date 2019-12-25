@@ -460,6 +460,19 @@ input.invalid {
   min-height: 200px;
   font-size: 20px;
 }
+#rsform_8_page_0 .rsform-input-box {
+  padding: 0px 0px 0px 10px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 20px;
+  color: #333333;
+}
+#rsform_8_page_0 .rsform-input-box:placeholder {
+  color: #000;
+}
+#rsform_8_page_0 strong.formRequired {
+  display: none;
+}
 
 .caret {
   margin-left: 5px;

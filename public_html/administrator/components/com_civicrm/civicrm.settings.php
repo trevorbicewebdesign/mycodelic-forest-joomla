@@ -62,7 +62,11 @@ if (!defined('CIVICRM_UF')) {
     define('CIVICRM_UF', 'Joomla');
   }
 }
+
+
+// Bootstrap the CMS libraries.
 $config = JFactory::getConfig();
+
 /**
  * Content Management System (CMS) Datasource:
  *

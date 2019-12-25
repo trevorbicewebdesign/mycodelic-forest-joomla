@@ -20,7 +20,10 @@
 /public_html/t3-assets/
 *-cache-com_*
 *-cache-plg_*
-export-database.sh 
+export-database.sh
+php_errorlog
+/public_html/tmp/
+php.ini 
 .DS_Store
 php_errorlog
 public_html/tmp/

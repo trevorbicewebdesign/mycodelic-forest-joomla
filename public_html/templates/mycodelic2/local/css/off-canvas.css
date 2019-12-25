@@ -11,7 +11,7 @@ body {
   width: 100%;
 }
 .t3-wrapper {
-  background: #ffffff;
+  background: #000000;
   position: relative;
   left: 0;
   z-index: 99;
@@ -99,12 +99,12 @@ html[dir="ltr"] .off-canvas-right.t3-off-canvas {
   overflow-y: auto;
 }
 .t3-off-canvas {
-  background: #ffffff;
-  color: #333333;
+  background: #000000;
+  color: #ffffff;
 }
 .t3-off-canvas .t3-off-canvas-header {
   background: #eeeeee;
-  color: #333333;
+  color: #ffffff;
   padding: 6px 12px;
 }
 .t3-off-canvas .t3-off-canvas-header h2 {
@@ -652,12 +652,12 @@ html[dir="ltr"] .off-canvas-right.old-ie .t3-off-canvas {
   transform: rotate(-45deg);
 }
 .t3-off-canvas {
-  background: #ffffff;
-  color: #333333;
+  background: #000000;
+  color: #ffffff;
 }
 .t3-off-canvas .t3-off-canvas-header {
   background: #eeeeee;
-  color: #333333;
+  color: #ffffff;
   padding: 0 0 0 12px;
   height: 35px;
 }
