@@ -4,6 +4,7 @@ jQuery( document ).ready(function() {
         console.log(i);
         jQuery( "#item_amount_"+i ).keyup(function() {
             var total = addAmountFields();
+            console.log(total);
             jQuery("#item_total").val( total.toFixed(2) );
         });  
         i++;
