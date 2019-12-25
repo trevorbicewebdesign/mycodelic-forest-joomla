@@ -128,7 +128,7 @@ class WFApplication extends JObject
 
             if ($context) {
                 $component = $this->getComponent($context);
-                $option = isset($component->element) ? $component->element : $component->option;
+                $option = $component->element;
             }
         }
 
@@ -226,8 +226,10 @@ class WFApplication extends JObject
                 }
 
                 // check component
-                if ($options['option'] !== 'com_jce' && $item->components && in_array($options['option'], explode(',', $item->components)) === false) {
-                    continue;
+                if (!empty($item->components)) {
+                    if (in_array($options['option'], explode(',', $item->components)) === false) {
+                        continue;
+                    }
                 }
 
                 // set device default as 'desktop,tablet,mobile'
