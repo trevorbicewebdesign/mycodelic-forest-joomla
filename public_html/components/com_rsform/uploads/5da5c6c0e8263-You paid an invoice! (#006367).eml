@@ -1,0 +1,480 @@
+Delivered-To: sanmannor@gmail.com
+Received: by 2002:a8a:11c1:0:0:0:0:0 with SMTP id w1csp3505989oct;
+        Mon, 14 Oct 2019 11:22:01 -0700 (PDT)
+X-Google-Smtp-Source: APXvYqys7kFF/HKQ7cQvuuoZEzP1qPwBS7sOa4q+flNK2KGVxgbjqIZpBnYGiQNjfpw0gwIi5w01
+X-Received: by 2002:aa7:8249:: with SMTP id e9mr34200738pfn.19.1571077321894;
+        Mon, 14 Oct 2019 11:22:01 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1571077321; cv=none;
+        d=google.com; s=arc-20160816;
+        b=uWziWoCc6wQ0TZccwi9qp3yspdh2N5LYPdE4JiYcgoE4EEejxk8P6d2e/MvoaLZOOG
+         IL9LuBdoKUlqDi8AaryCwOsHXqu+YyWsJ0srmgVmEBSh2+ZWNjkrlPrDBQl9cQyU2DvQ
+         9CvX55qDuuJlnC+1FFhTWgsLZDRSDWLxKkAYsvh2PpCVWnvL1a6wMQ5w4hcIYC2WDx6d
+         lO1fCIHD1loup7s2N7Q3iCyI/fp9QeNukUTQs1KTRmag8Nuk+wLhmNGj5DyPkXVVECp0
+         qYgzWROF7QvBSJM4Mr8T7WN1H2l1+skX73jkBYR1OfAeZOSdW9WVqSodewosiJtTNwdD
+         jHiA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=feedback-id:mime-version:subject:message-id:to:reply-to:from:date
+         :dkim-signature:dkim-signature;
+        bh=YiZJcTlpPc+GnQYYo9BLDduDK/RqPm79xWI3NDy0hz0=;
+        b=HEyZCjrOPajWy9n6lEAQmsDfAYCmyNdgt0CnGggum+IXPgYxh9a/m5G4ggLkRW9Igx
+         8yzEPA3g0kOHaARPjpyuDeadTOjh+ezLjUePpsZpjUA84ls+DmUSwoK2pDTlhdnYuUSW
+         1vF/3VKVYFBVNtYtqI33cvCSbgZi+EvZIbjUys47cl/YXOc7TYhkiZtXjVtxjrl1ropa
+         YCx57kfg4cXU5a641g0D1xLPDlcflKYtYHmFpH4cdNNKPthvQcqvkOShSzUKdYtB3erM
+         lGXFAC9SbAaQ+wibNZWDvQRR077XZLYIVqtEJRt2Tv15+sBUqAykSw4RxFOm1EOJXTHw
+         YX7w==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@messaging.squareup.com header.s=zkmtl6gy2hsfdpedstduzebbkq3duxs4 header.b=M8vBeJJA;
+       dkim=pass header.i=@amazonses.com header.s=gdwg2y3kokkkj5a55z2ilkup5wp5hhxx header.b=gfRuAR1w;
+       spf=pass (google.com: domain of 0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000@amazonses.messaging.squareup.com designates 54.240.27.113 as permitted sender) smtp.mailfrom=0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000@amazonses.messaging.squareup.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=messaging.squareup.com
+Return-Path: <0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000@amazonses.messaging.squareup.com>
+Received: from a27-113.smtp-out.us-west-2.amazonses.com (a27-113.smtp-out.us-west-2.amazonses.com. [54.240.27.113])
+        by mx.google.com with ESMTPS id q6si17912691pll.186.2019.10.14.11.22.01
+        for <sanmannor@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Mon, 14 Oct 2019 11:22:01 -0700 (PDT)
+Received-SPF: pass (google.com: domain of 0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000@amazonses.messaging.squareup.com designates 54.240.27.113 as permitted sender) client-ip=54.240.27.113;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@messaging.squareup.com header.s=zkmtl6gy2hsfdpedstduzebbkq3duxs4 header.b=M8vBeJJA;
+       dkim=pass header.i=@amazonses.com header.s=gdwg2y3kokkkj5a55z2ilkup5wp5hhxx header.b=gfRuAR1w;
+       spf=pass (google.com: domain of 0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000@amazonses.messaging.squareup.com designates 54.240.27.113 as permitted sender) smtp.mailfrom=0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000@amazonses.messaging.squareup.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=messaging.squareup.com
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=zkmtl6gy2hsfdpedstduzebbkq3duxs4; d=messaging.squareup.com;
+	t=1571077321;
+	h=Date:From:Reply-To:To:Message-ID:Subject:MIME-Version:Content-Type;
+	bh=KTx1xRgu5KB6V/8fpxk4Q/xIKXry0EauFzTtt+IEHuY=;
+	b=M8vBeJJAeVizHYCiOqwjfTNG6A578IGsl26Ev7gQnxU37OPP50kcXuHeAuw/mT/8
+	8f06XRdVa9+R2bmEW5IpldtZj9oJxX81FOL55Zi6888aBO14KElZGUXNAjk6075L0fN
+	IpxC3EePzuomU7wJuQESQx1gOJaWh9rgT8v0NFic=
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=gdwg2y3kokkkj5a55z2ilkup5wp5hhxx; d=amazonses.com; t=1571077321;
+	h=Date:From:Reply-To:To:Message-ID:Subject:MIME-Version:Content-Type:Feedback-ID;
+	bh=KTx1xRgu5KB6V/8fpxk4Q/xIKXry0EauFzTtt+IEHuY=;
+	b=gfRuAR1w2cAnaeIXiINQYYRp0F6N0iVIFcmQ+tikLbVVlL5V1ODKX77odfWjk2kK
+	LQWjHq8YqeDc/zJi8lLOrvgHTDaNFW2RKJq0f3hmeyPxxnw83BPbM66I2iZB7pO621g
+	0BkV/xTFl0bAvYLxDo3Mgi2vLAqRJveDV8A9icZA=
+Date: Mon, 14 Oct 2019 18:22:01 +0000
+From: Black Rock City PETROL <invoicing@messaging.squareup.com>
+Reply-To: Black Rock City PETROL <petrol@burningman.org>
+To:  <sanmannor@gmail.com>
+Message-ID: <0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000@us-west-2.amazonses.com>
+Subject: You paid an invoice! (#006367)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_106157980_1988730624.1571077321379"
+X-EMS-Request-ID: d484ee10-5bc7-4d73-b8bf-84684de1bcd4
+X-ERS-Token: CDgQqZTRyKi/zo2DARixk9Tvg/O94q8B
+X-SES-Outgoing: 2019.10.14-54.240.27.113
+Feedback-ID: 1.us-west-2.Ys0TtaV3ThrL9KaebebAtwQ8vYTqz4B6QHfonsV/uOw=:AmazonSES
+
+------=_Part_106157980_1988730624.1571077321379
+Content-Type: multipart/related; 
+	boundary="----=_Part_106157981_1275954026.1571077321379"
+
+------=_Part_106157981_1275954026.1571077321379
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_106157982_1443059898.1571077321379"
+
+------=_Part_106157982_1443059898.1571077321379
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Hello Sandor Stockfleth,
+
+You have paid invoice #006367 from Black Rock City PETROL for $285.49.
+
+
+------=_Part_106157982_1443059898.1571077321379
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name=3D"viewport" content=3D"width=3Ddevice-width">
+<meta http-equiv=3D"Content-Type" content=3D"text/html;charset=3Dutf-8">
+<title>Square</title>
+<!--[if mso]>  <style type=3D"text/css" data-premailer=3D"ignore">
+    .codelink a { color: #343B42; text-decoration: none }
+    a { color: #343B42; text-decoration: none }
+    .button td { background-color: #343B42 }
+    .nomso { display: none; font-size: 0; line-height: 0 }
+    table { font-size: 1px; line-height:0; mso-margin-top-alt: 1px; }
+    table.MsoNormalTable { font-family: esqmarket, Helvetica, sans-serif }
+    .durv { line-height: 14px !important }
+  </style><![endif]--><!--[if !mso]><!--><style type=3D"text/css" data-prem=
+ailer=3D"ignore">@font-face { font-family: "esqmarket"; src: url("https://d=
+l6rt3mwcjzxg.cloudfront.net/assets/sqmarket/sqmarket-regular.woff") format(=
+"woff"); font-weight: 400; font-style: normal; }
+@font-face { font-family: "esqmarket-medium"; src: url("https://dl6rt3mwcjz=
+xg.cloudfront.net/assets/sqmarket/sqmarket-medium.woff") format("woff"); fo=
+nt-weight: 600; font-style: normal; }
+</style>
+<!--<![endif]--><style type=3D"text/css" data-premailer=3D"ignore">a[x-appl=
+e-data-detectors] { color: inherit !important; text-decoration: none !impor=
+tant; font-size: inherit !important; font-family: inherit !important; font-=
+weight: inherit !important; line-height: inherit !important; }
+
+#hero a { color: #ffffff; }
+
+body { width: 100% !important; margin: 0 auto !important; padding: 0; }
+
+table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rsp=
+ace: 0pt; }
+
+@media only screen and (min-width: 281px) { #container { position: relative=
+; top: 0; left: 0; right: 0; bottom: 0; } }
+div[style*=3D"margin: 16px 0"] { margin:0 !important; }
+@media screen and (min-width: 281px) and (max-width: 599px) and (-webkit-mi=
+n-device-pixel-ratio: 0) {#container .fullWidth a { display: block !importa=
+nt; }
+#container .column { width: inherit !important; }
+#container .column .embiggen { width: 420px !important; max-width: 420px !i=
+mportant; }
+#container .column .embiggen .list td:first-child { width: inherit !importa=
+nt; }
+#container .column .embiggen .list td:last-child { width: 500px !important;=
+ }
+#container .column .embiggen .button td { width: inherit !important; }
+#container .column .embiggen img { max-width: 100% !important; }
+}</style>
+<style type=3D"text/css">
+body {
+background: #F5F6F7; margin: 0;
+}
+</style>
+</head>
+<body style=3D"background-color: #F5F6F7;margin: 0" bgcolor=3D"#F5F6F7">
+<!--[if !mso]><!--><div id=3D"preheader" style=3D"font-size: 0;max-height: =
+0;overflow: hidden;display: none">Sandor Stockfleth paid invoice #006367 Fi=
+nal Payment for The Mycodelic Forest, 2019 from Black Rock City PETROL.</di=
+v>
+<!--<![endif]--><div id=3D"container" style=3D"-webkit-text-size-adjust: no=
+ne;-ms-text-size-adjust: none;-webkit-font-smoothing: antialiased"><table c=
+lass=3D"contained" style=3D"table-layout: fixed" width=3D"100%" cellpadding=
+=3D"0" cellspacing=3D"0"><tr><td align=3D"center"><table bgcolor=3D"#222222=
+"  cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"500" align=3D"cente=
+r" bgcolor=3D"#ffffff"><table  cellpadding=3D"0" cellspacing=3D"0"><tr><td>
+<table style=3D"background-color: #546476" width=3D"100%" class=3D"single i=
+nvert" bgcolor=3D"#546476" cellpadding=3D"0" cellspacing=3D"0"><tr><td alig=
+n=3D"center" style=3D"padding: 0 20px"><table  cellpadding=3D"0" cellspacin=
+g=3D"0"><tr><td width=3D"520" style=3D"padding: 32px 0 0px" class=3D"single=
+Cell"><table width=3D"100%" class=3D"center" style=3D"text-align: center" c=
+ellpadding=3D"0" cellspacing=3D"0">
+<tr><td align=3D"center" class=3D"icon"><table width=3D"inherit" style=3D"t=
+ext-align: center" cellpadding=3D"0" cellspacing=3D"0"><tr><td style=3D"pad=
+ding: 0px 0 8px"><img src=3D"https://images.squareup.com/69ZD6JH2mCs0tq3HA7=
+jMxgXLETE=3D/128x128/https://d1g145x70srn7h.cloudfront.net/files/6ac244105f=
+fcdf9b5789b98b2ad6804b7a309360/original.jpeg" width=3D"64" height=3D"64" al=
+t=3D"Image" style=3D"display: inline-block;-webkit-border-radius: 11px;-moz=
+-border-radius: 11px;border-radius: 11px;border: 3px solid #ffffff"></td></=
+tr></table></td></tr>
+<tr><td align=3D"center"><table width=3D"100%" style=3D"text-align: center"=
+ cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align=
+: center;color: #ffffff;font-family: esqmarket-medium, Helvetica, sans-seri=
+f;font-weight: 600;font-size: 16px;line-height: 24px;padding: 0px 0 13px" c=
+lass=3D"h2 center" align=3D"center">Black Rock City PETROL</td></tr></table=
+></td></tr>
+<tr><td align=3D"center"><div style=3D"width: 0;height: 0;border-left-width=
+: 11px;border-left-color: transparent;border-left-style: solid;border-right=
+-width: 11px;border-right-color: transparent;border-right-style: solid;bord=
+er-bottom-width: 11px;border-bottom-color: #ffffff;border-bottom-style: sol=
+id"></div></td></tr>
+</table></td></tr></table></td></tr></table>
+<table style=3D"background-color: #ffffff" width=3D"100%" class=3D"single "=
+ bgcolor=3D"#ffffff" cellpadding=3D"0" cellspacing=3D"0"><tr><td align=3D"c=
+enter" style=3D"padding: 0 20px"><table  cellpadding=3D"0" cellspacing=3D"0=
+"><tr><td width=3D"400" style=3D"padding: 32px 0" class=3D"singleCell"><tab=
+le width=3D"100%" class=3D"left" style=3D"text-align: left" cellpadding=3D"=
+0" cellspacing=3D"0">
+<tr><td align=3D"center"><table width=3D"100%" style=3D"text-align: left" c=
+ellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: =
+center;color: #343B42;font-family: esqmarket-medium, Helvetica, sans-serif;=
+font-weight: 600;font-size: 28px;line-height: 32px" class=3D"h1 center" ali=
+gn=3D"center">Paid Invoice</td></tr></table></td></tr><tr><td align=3D"cent=
+er"><table width=3D"100%" style=3D"text-align: left" cellpadding=3D"0" cell=
+spacing=3D"0"><tr><td width=3D"" style=3D"font-size: 16px;line-height: 24px=
+;text-align: center;color: #343B42;font-family: esqmarket, Helvetica, sans-=
+serif;font-weight: normal;padding: 8px 0 0px" class=3D"p center" align=3D"c=
+enter">Charged $285.49 to MASTERCARD 1982 on file on October 14, 2019</td><=
+/tr></table></td></tr><tr><td style=3D"padding: 24px 0 0"></td></tr><tr><td=
+ class=3D"separator" style=3D"border-top-width: 1px;border-top-color: #EBED=
+EF;border-top-style: solid"></td></tr>
+<tr><td style=3D"padding: 24px 0 0"></td></tr>
+<tr><td align=3D"left"><table width=3D"100%" style=3D"text-align: left" cel=
+lpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: le=
+ft;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket-=
+medium, Helvetica, sans-serif;font-weight: 600" class=3D"h3 left" align=3D"=
+left">Final Payment for The Mycodelic Forest, 2019</td></tr></table></td></=
+tr><tr><td align=3D"left"><table width=3D"100%" style=3D"text-align: left" =
+cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align:=
+ left;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmark=
+et, Helvetica, sans-serif;font-weight: normal" class=3D"p left" align=3D"le=
+ft">Invoice #006367</td></tr></table></td></tr><tr><td align=3D"left"><tabl=
+e width=3D"100%" style=3D"text-align: left" cellpadding=3D"0" cellspacing=
+=3D"0"><tr><td width=3D"" style=3D"text-align: left;font-size: 14px;line-he=
+ight: 22px;color: #343B42;font-family: esqmarket, Helvetica, sans-serif;fon=
+t-weight: normal" class=3D"p left" align=3D"left">October 14, 2019</td></tr=
+></table></td></tr><tr><td align=3D"left"><table width=3D"100%" style=3D"te=
+xt-align: left" cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" styl=
+e=3D"text-align: left;font-size: 14px;line-height: 22px;color: #343B42;font=
+-family: esqmarket-medium, Helvetica, sans-serif;font-weight: 600;padding: =
+24px 0 0px" class=3D"h3 left" align=3D"left">Bill To</td></tr></table></td>=
+</tr>
+<tr><td align=3D"left"><table width=3D"100%" style=3D"text-align: left" cel=
+lpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: le=
+ft;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket,=
+ Helvetica, sans-serif;font-weight: normal" class=3D"p left" align=3D"left"=
+>Sandor Stockfleth</td></tr></table></td></tr>
+<tr><td align=3D"left"><table width=3D"100%" style=3D"text-align: left" cel=
+lpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: le=
+ft;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket,=
+ Helvetica, sans-serif;font-weight: normal" class=3D"p left" align=3D"left"=
+>The Mycodelic Forest</td></tr></table></td></tr>
+<tr><td align=3D"left"><table width=3D"100%" style=3D"text-align: left" cel=
+lpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: le=
+ft;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket,=
+ Helvetica, sans-serif;font-weight: normal" class=3D"p left" align=3D"left"=
+><a href=3D"mailto:sanmannor@gmail.com" id=3D"p-2" style=3D"text-decoration=
+: none;color: #2996cc">sanmannor@gmail.com</a></td></tr></table></td></tr>
+<tr><td align=3D"left"><table width=3D"100%" style=3D"text-align: left" cel=
+lpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: le=
+ft;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket,=
+ Helvetica, sans-serif;font-weight: normal" class=3D"p left" align=3D"left"=
+>707-499-4179</td></tr></table></td></tr><tr><td style=3D"padding: 24px 0 0=
+"></td></tr><tr><td class=3D"separator" style=3D"border-top-width: 1px;bord=
+er-top-color: #EBEDEF;border-top-style: solid"></td></tr><tr><td align=3D"l=
+eft"><table width=3D"100%" style=3D"text-align: left" cellpadding=3D"0" cel=
+lspacing=3D"0"><tr><td width=3D"" style=3D"text-align: left;font-size: 14px=
+;line-height: 22px;color: #343B42;font-family: esqmarket, Helvetica, sans-s=
+erif;font-weight: normal;padding: 24px 0 0px" class=3D"p left" align=3D"lef=
+t">Hello,<br/><br/>Thank you for your participation in the Black Rock City =
+Fuel Safety program.  This will be your final charge for the 2019 season, a=
+nd your account will be marked in good standing.  A summary of all charges =
+will be sent in a separate email if you should need further information tha=
+n these email receipts for your records.<br/><br/>We look forward to seeing=
+ you in the dust next year!<br/><br/>BRC PETROL</td></tr></table></td></tr>
+<tr><td style=3D"padding: 24px 0 0"></td></tr>
+<tr><td class=3D"separator" style=3D"border-top-width: 1px;border-top-color=
+: #EBEDEF;border-top-style: solid"></td></tr><tr><td ><table class=3D"tabDa=
+t" style=3D"text-align: left" cellpadding=3D"0" cellspacing=3D"0"><tr style=
+=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 24px 0 0px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"><b style=3D"color: #343B42;font-family: esqmar=
+ket-medium, Helvetica, sans-serif;font-weight: 600">Closing Fuel Payment</b=
+></div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 24px 0 0px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top">$256.17</td>
+</tr><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 24px 0 0px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"><b style=3D"color: #343B42;font-family: esqmar=
+ket-medium, Helvetica, sans-serif;font-weight: 600">Drum Delivery Fee</b></=
+div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 24px 0 0px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top">$15.00</td>
+</tr><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 24px 0 0px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"><b style=3D"color: #343B42;font-family: esqmar=
+ket-medium, Helvetica, sans-serif;font-weight: 600">Drum Safety Kit</b></di=
+v></td>
+<td width=3D"70" style=3D"text-align: right;padding: 24px 0 0px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top">$6.00</td>
+</tr><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 24px 0 0px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"></div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 24px 0 0px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top"></td>
+</tr>
+<tr style=3D"vertical-align: top">
+<td class=3D"separator" style=3D"border-top-width: 1px;border-top-color: #E=
+BEDEF;border-top-style: solid;vertical-align: top" valign=3D"top"></td>
+<td class=3D"separator" style=3D"border-top-width: 1px;border-top-color: #E=
+BEDEF;border-top-style: solid;vertical-align: top" valign=3D"top"></td>
+</tr>
+<tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 0px 0 24px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"></div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 0px 0 24px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top"></td>
+</tr><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 0px 0" class=3D"key text p" valign=3D"top"><div style=
+=3D"padding-right: 20px">Subtotal</div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 0px 0;white-space: now=
+rap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket=
+, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=3D"v=
+alue text p" align=3D"right" valign=3D"top">$277.17</td>
+</tr><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 8px 0 0px" class=3D"key text p" valign=3D"top"><div st=
+yle=3D"padding-right: 20px"></div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 8px 0 0px;white-space:=
+ nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqma=
+rket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top"></td>
+</tr>
+<!-- TODO : spacing after sales tax is 30 instead of 24. Probably need a wh=
+en_additive_tax_or_tip or something...--><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 0px 0 8px" class=3D"key text p" valign=3D"top"><div st=
+yle=3D"padding-right: 20px">Square Service Fee</div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 0px 0 8px;white-space:=
+ nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqma=
+rket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top">$8.32</td>
+</tr><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 16px 0 0px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"></div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 16px 0 0px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top"></td>
+</tr>
+<tr style=3D"vertical-align: top">
+<td class=3D"separator" style=3D"border-top-width: 1px;border-top-color: #E=
+BEDEF;border-top-style: solid;vertical-align: top" valign=3D"top"></td>
+<td class=3D"separator" style=3D"border-top-width: 1px;border-top-color: #E=
+BEDEF;border-top-style: solid;vertical-align: top" valign=3D"top"></td>
+</tr>
+<tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 0px 0 24px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"></div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 0px 0 24px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top"></td>
+</tr><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"color: #343B42;font-family: esqmarket-medium, He=
+lvetica, sans-serif;font-weight: 600;font-size: 16px;line-height: 24px;vert=
+ical-align: top;padding: 0px 0 24px" class=3D"key text h2" valign=3D"top"><=
+div style=3D"padding-right: 20px">Total Paid</div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 0px 0 24px;white-space=
+: nowrap;color: #343B42;font-family: esqmarket-medium, Helvetica, sans-seri=
+f;font-weight: 600;font-size: 16px;line-height: 24px;vertical-align: top" c=
+lass=3D"value text h2" align=3D"right" valign=3D"top">$285.49</td>
+</tr></table></td></tr>
+<tr><td ><table class=3D"tabDat" style=3D"text-align: left" cellpadding=3D"=
+0" cellspacing=3D"0"><tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 0px 0" class=3D"key text p" valign=3D"top"><div style=
+=3D"padding-right: 20px">Charged to MASTERCARD 1982</div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 0px 0;white-space: now=
+rap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket=
+, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=3D"v=
+alue text p" align=3D"right" valign=3D"top">10/14/19, 11:21 AM</td>
+</tr>
+<tr style=3D"vertical-align: top">
+<td width=3D"450" style=3D"font-size: 14px;line-height: 22px;color: #343B42=
+;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal;vertical=
+-align: top;padding: 24px 0 0px" class=3D"key text p" valign=3D"top"><div s=
+tyle=3D"padding-right: 20px"></div></td>
+<td width=3D"70" style=3D"text-align: right;padding: 24px 0 0px;white-space=
+: nowrap;font-size: 14px;line-height: 22px;color: #343B42;font-family: esqm=
+arket, Helvetica, sans-serif;font-weight: normal;vertical-align: top" class=
+=3D"value text p" align=3D"right" valign=3D"top"></td>
+</tr></table></td></tr></table></td></tr></table></td></tr></table>
+<table style=3D"background-color: #F5F6F7" width=3D"100%" class=3D"single "=
+ bgcolor=3D"#F5F6F7" cellpadding=3D"0" cellspacing=3D"0"><tr><td align=3D"c=
+enter" style=3D"padding: 0 20px"><table  cellpadding=3D"0" cellspacing=3D"0=
+"><tr><td width=3D"400" style=3D"padding: 32px 0" class=3D"singleCell"><tab=
+le width=3D"100%" class=3D"center" style=3D"text-align: center" cellpadding=
+=3D"0" cellspacing=3D"0"><tr><td align=3D"center"><table width=3D"100%" sty=
+le=3D"text-align: center" cellpadding=3D"0" cellspacing=3D"0"><tr><td width=
+=3D"" style=3D"text-align: center;font-size: 14px;line-height: 22px;color: =
+#343B42;font-family: esqmarket-medium, Helvetica, sans-serif;font-weight: 6=
+00" class=3D"h3 center" align=3D"center">Black Rock City PETROL</td></tr></=
+table></td></tr><tr><td align=3D"center"><table width=3D"100%" style=3D"tex=
+t-align: center" cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" sty=
+le=3D"text-align: center;font-size: 14px;line-height: 22px;color: #343B42;f=
+ont-family: esqmarket, Helvetica, sans-serif;font-weight: normal" class=3D"=
+p center" align=3D"center">Hwy 447</td></tr></table></td></tr><tr><td align=
+=3D"center"><table width=3D"100%" style=3D"text-align: center" cellpadding=
+=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: center;fon=
+t-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket, Helve=
+tica, sans-serif;font-weight: normal" class=3D"p center" align=3D"center">B=
+lack Rock City, NV United States</td></tr></table></td></tr><tr><td align=
+=3D"center"><table width=3D"100%" style=3D"text-align: center" cellpadding=
+=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-align: center;fon=
+t-size: 14px;line-height: 22px;color: #343B42;font-family: esqmarket, Helve=
+tica, sans-serif;font-weight: normal" class=3D"p center" align=3D"center"><=
+a href=3D"mailto:petrol@burningman.org" id=3D"p-5" style=3D"text-decoration=
+: none;color: #2996cc">petrol@burningman.org</a></td></tr></table></td></tr=
+><tr><td align=3D"center"><table width=3D"100%" style=3D"text-align: center=
+" cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=3D"text-alig=
+n: center;font-size: 14px;line-height: 22px;color: #343B42;font-family: esq=
+market, Helvetica, sans-serif;font-weight: normal" class=3D"p center" align=
+=3D"center">415-865-3800</td></tr></table></td></tr><tr><td align=3D"center=
+"><table width=3D"100%" style=3D"text-align: center" cellpadding=3D"0" cell=
+spacing=3D"0"><tr><td width=3D"" style=3D"text-align: center;font-size: 14p=
+x;line-height: 22px;color: #343B42;font-family: esqmarket, Helvetica, sans-=
+serif;font-weight: normal" class=3D"p center" align=3D"center">To manage yo=
+ur payment method, visit <a href=3D'https://a.squareupmessaging.com/CL0/htt=
+ps:%2F%2Faccount.squareup.com%2Fmanage-cards-on-file%2F769ae2fbb608ad2388ef=
+247775d9c00ad9b40d75828c664dd343d069d835c6cb1a389582a36b3be5a043454b0482243=
+84bcb80d2b36dc08789f2532c70d9d028/1/0101016dcb8172b9-a5d86150-4c55-46eb-a54=
+f-946d035eb9a4-000000/a5d641TkVydFhtaOGpAwFSPt7TihMFVkr1q95l6bc2A=3D110' st=
+yle=3D'text-decoration:none;color:#50B1F1;font-weight:bold;'>your card dash=
+board</a> or contact Black Rock City PETROL using the information above.</t=
+d></tr></table></td></tr><tr><td align=3D"center"><table width=3D"100%" sty=
+le=3D"text-align: center" cellpadding=3D"0" cellspacing=3D"0"><tr><td width=
+=3D"" style=3D"text-align: center;font-size: 14px;line-height: 22px;color: =
+#343B42;font-family: esqmarket, Helvetica, sans-serif;font-weight: normal" =
+class=3D"p center" align=3D"center">=C2=A9 2019 Square, Inc.</td></tr></tab=
+le></td></tr><tr><td align=3D"center"><table width=3D"100%" style=3D"text-a=
+lign: center" cellpadding=3D"0" cellspacing=3D"0"><tr><td width=3D"" style=
+=3D"text-align: center;font-size: 14px;line-height: 22px;color: #343B42;fon=
+t-family: esqmarket, Helvetica, sans-serif;font-weight: normal;padding: 0px=
+ 0 8px" class=3D"p center" align=3D"center">
+<a href=3D"https://a.squareupmessaging.com/CL0/https:%2F%2Fsquareup.com%2Fu=
+s%2Fen%2Fprivacy/1/0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-00=
+0000/vvs8q4cDNSvKrGnMp4DVlt_nXWkGiC7klT6xBQaa-k4=3D110" style=3D"text-decor=
+ation: none;color: #2996cc">Square Privacy Policy</a> | <a href=3D"https://=
+a.squareupmessaging.com/CL0/https:%2F%2Fsquareup.com%2Fus%2Fen%2Fsecurity/1=
+/0101016dcb8172b9-a5d86150-4c55-46eb-a54f-946d035eb9a4-000000/FsNSqmq0Dvt3t=
+4kfSbZ2RuKyIMQcFImBVK39wYGGP0M=3D110" style=3D"text-decoration: none;color:=
+ #2996cc">Security</a>
+</td></tr></table></td></tr>
+<tr><td align=3D"center"><img src=3D"https://d1g145x70srn7h.cloudfront.net/=
+images/email/jewel-grey-22.png" width=3D"22" height=3D"22"></td></tr>
+</table></td></tr></table></td></tr></table>
+</td></tr></table></td></tr></table></td></tr></table></div>
+<img alt=3D"" src=3D"http://a.squareupmessaging.com/CI0/0101016dcb8172b9-a5=
+d86150-4c55-46eb-a54f-946d035eb9a4-000000/upnTshje_LX4oyP5Nrp0Zz_Ugxd2XDuLG=
+r34VXlYLNg=3D110" style=3D"display: none; width: 1px; height: 1px;">
+</body>
+</html>
+
+------=_Part_106157982_1443059898.1571077321379--
+
+------=_Part_106157981_1275954026.1571077321379--
+
+------=_Part_106157980_1988730624.1571077321379--
