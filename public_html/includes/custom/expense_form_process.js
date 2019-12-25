@@ -1,6 +1,7 @@
 jQuery( document ).ready(function() {
     var i = 0;
     while(jQuery( "#item_amount_"+i).length>0){
+        console.log(i);
         jQuery( "#item_amount_"+i ).keyup(function() {
             var total = addAmountFields();
             jQuery("#item_total").val( total.toFixed(2) );
