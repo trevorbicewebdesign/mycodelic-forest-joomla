@@ -15,58 +15,28 @@ if($_POST['form']['donation']=='Yes'){
 
 $totalstrlength = 50;
 
-$strlen = strlen($_POST['form']['item_name_1']);
-$diff = $totalstrlength - $strlen;
-$filler = "";
-$i = 0 ;
-while($diff>0){
-    $filler .= "-";
-    $diff--;
+function setItems($id){
+    $strlen = strlen($_POST['form']['item_name_'.$id]);
+    $diff = $totalstrlength - $strlen;
+    $filler = "";
+    $i = 0 ;
+    while($diff>0){
+        $filler .= "-";
+        $diff--;
+    }
+
+    if($_POST['form']['item_name_'.$id] && $_POST['form']['item_amount_'.$id]){
+    $message .= "
+    - {$_POST['form']['item_name_'.$id]}$filler\${$_POST['form']['item_amount_'.$id]}";
+    }
 }
 
-if($_POST['form']['item_name_1'] && $_POST['form']['item_amount_1']){
-$message .= "
-- {$_POST['form']['item_name_1']}$filler\${$_POST['form']['item_amount_1']}";
+$i = 1;
+while(isset($_POST['form']['item_name_'.$i])){
+    setItems($i);
 }
 
-$strlen = strlen($_POST['form']['item_name_2']);
-$diff = $totalstrlength - $strlen;
-$filler = "";
-while($diff>0){
-    $filler .= "-";
-    $diff--;
-}
-
-if($_POST['form']['item_name_2'] && $_POST['form']['item_amount_2']){
-$message .= "
-- {$_POST['form']['item_name_2']}$filler\${$_POST['form']['item_amount_2']}";
-}
-
-$strlen = strlen($_POST['form']['item_name_3']);
-$diff = $totalstrlength - $strlen;
-$filler = "";
-while($diff>0){
-    $filler .= "-";
-    $diff--;
-}
-
-if($_POST['form']['item_name_3'] && $_POST['form']['item_amount_3']){
-$message .= "
-- {$_POST['form']['item_name_3']}$filler\${$_POST['form']['item_amount_3']}";
-}
-
-$strlen = strlen($_POST['form']['item_name_4']);
-$diff = $totalstrlength - $strlen;
-$filler = "";
-while($diff>0){
-    $filler .= "-";
-    $diff--;
-}
-
-if($_POST['form']['item_name_4'] && $_POST['form']['item_amount_4']){
-$message .= "
-- {$_POST['form']['item_name_4']}$filler\${$_POST['form']['item_amount_4']}";
-}
+$
 $message .= "
 ";
 // Only include the note if its set
