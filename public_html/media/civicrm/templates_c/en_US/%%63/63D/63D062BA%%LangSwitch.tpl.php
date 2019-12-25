@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.31, created on 2019-12-25 11:21:13
+<?php /* Smarty version 2.6.31, created on 2019-12-25 11:42:00
          compiled from CRM/Block/LangSwitch.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/Block/LangSwitch.tpl', 1, false),array('modifier', 'count', 'CRM/Block/LangSwitch.tpl', 26, false),array('function', 'crmURL', 'CRM/Block/LangSwitch.tpl', 28, false),)), $this); ?>

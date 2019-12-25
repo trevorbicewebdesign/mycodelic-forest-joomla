@@ -1,4 +1,4 @@
-<?php /* Smarty version 2.6.31, created on 2019-12-25 11:21:16
+<?php /* Smarty version 2.6.31, created on 2019-12-25 11:42:00
          compiled from CRM/common/joomla.tpl */ ?>
 <?php require_once(SMARTY_CORE_DIR . 'core.load_plugins.php');
 smarty_core_load_plugins(array('plugins' => array(array('block', 'crmScope', 'CRM/common/joomla.tpl', 1, false),array('block', 'ts', 'CRM/common/joomla.tpl', 36, false),array('block', 'crmRegion', 'CRM/common/joomla.tpl', 66, false),array('modifier', 'truncate', 'CRM/common/joomla.tpl', 30, false),)), $this); ?>
