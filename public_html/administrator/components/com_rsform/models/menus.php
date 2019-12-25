@@ -41,7 +41,7 @@ class RsformModelMenus extends JModelLegacy
 		$query = $db->getQuery(true)
 			->select('*')
 			->from($db->qn('#__menu_types'))
-			->order($db->qn('menutype') . ' ' . $db->q('asc'));
+			->order($db->qn('menutype') . ' ' . $db->escape('asc'));
 		
 		return $query;
 	}

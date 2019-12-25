@@ -136,8 +136,8 @@ function orderMapping(mp, task)
 {
     if (task == 'orderdown' || task == 'orderup')
     {
-        var table = RSFormPro.$('#mappingTable');
-        currentRow = RSFormPro.$(document.getElementById(mp)).parent().parent();
+        var table = jQuery('#mappingTable');
+        currentRow = jQuery(document.getElementById(mp)).parent().parent();
         if (task == 'orderdown')
         {
             try { currentRow.insertAfter(currentRow.next()); }
@@ -371,6 +371,7 @@ function generateDirectoryLayout(formId, alert) {
 	}
 
 	var hideEmptyValues = document.getElementsByName('jform[HideEmptyValues]')[1].checked ? 1 : 0;
+	var showGoogleMap = document.getElementsByName('jform[ShowGoogleMap]')[1].checked ? 1 : 0;
 
 	stateLoading();
 	var xml = buildXmlHttp();
@@ -384,7 +385,7 @@ function generateDirectoryLayout(formId, alert) {
 			stateDone();
 		}
 	};
-	xml.open('GET', 'index.php?option=com_rsform&task=directory.generate&layoutName=' + layoutName + '&formId=' + formId + '&hideEmptyValues=' + hideEmptyValues + '&randomTime=' + Math.random(), true);
+	xml.open('GET', 'index.php?option=com_rsform&task=directory.generate&layoutName=' + layoutName + '&formId=' + formId + '&hideEmptyValues=' + hideEmptyValues + '&showGoogleMap=' + showGoogleMap + '&randomTime=' + Math.random(), true);
 	xml.send(null);
 }
 
@@ -482,9 +483,9 @@ function exportProcess(start, limit, total) {
 	xml.onreadystatechange = function () {
 		if (xml.readyState == 4) {
 			var post = xml.responseText;
-			if (post.indexOf('END') != -1) {
+			if (post.indexOf('END') > -1) {
 				document.getElementById('progressBar').style.width = document.getElementById('progressBar').innerHTML = '100%';
-				document.location = 'index.php?option=com_rsform&task=submissions.export.file&ExportFile=' + document.getElementById('ExportFile').value + '&ExportType=' + document.getElementById('exportType').value;
+				document.location = 'index.php?option=com_rsform&task=submissions.export.file&ExportFile=' + document.getElementById('ExportFile').value + '&ExportType=' + document.getElementById('exportType').value + '&formId=' + document.getElementsByName('formId')[0].value;
 			}
 			else {
 				document.getElementById('progressBar').style.width = Math.ceil(start * 100 / total) + '%';
@@ -1303,7 +1304,7 @@ function validateEmailFields() {
         // Grab value
         fieldValue 	= field.value;
 
-        RSFormPro.$(field).removeClass('rs_error_field');
+        jQuery(field).removeClass('rs_error_field');
 
         // Something's been typed in
         if (fieldValue.length > 0) {
@@ -1340,14 +1341,14 @@ function validateEmailFields() {
                 if (wrongPlaceholder || notAnEmail || wrongDelimiter) {
                     // Switch to the correct tab only on the first error
                     if (result == true) {
-                        RSFormPro.$('#properties').click();
+                        jQuery('#properties').click();
                         if (fieldName.indexOf('User') > -1) {
-                            RSFormPro.$('#useremails').click();
+                            jQuery('#useremails').click();
                         } else {
-                            RSFormPro.$('#adminemails').click();
+                            jQuery('#adminemails').click();
                         }
                     }
-                    RSFormPro.$(field).addClass('rs_error_field');
+                    jQuery(field).addClass('rs_error_field');
                     result = false;
                 }
             }

@@ -14,7 +14,7 @@ class RsformModelDirectory extends JModelLegacy
     protected $_app;
     public $params;
 
-    protected $validation = array();
+    protected $validation;
 
     /**
      *    Main constructor
@@ -911,8 +911,9 @@ class RsformModelDirectory extends JModelLegacy
 	public function getEditFields()
 	{
 		$db			= JFactory::getDbo();
+		$app		= JFactory::getApplication();
 		$return		= array();
-		$values		= JFactory::getApplication()->input->get('form',array(),'array');
+		$values		= $app->input->get('form',array(),'array');
 		$cid		= $this->_app->input->getInt('id');
 
 		jimport('joomla.filesystem.file');
@@ -937,7 +938,18 @@ class RsformModelDirectory extends JModelLegacy
 
 		$submission->DateSubmitted = JHtml::_('date', $submission->DateSubmitted, 'Y-m-d H:i:s');
 
-		$validation		= $this->validation;//!empty($values) ? RSFormProHelper::validateForm($submission->FormId, 'directory', $cid) : array();
+		if (is_array($this->validation))
+		{
+			$validation = $this->validation;
+		}
+		elseif (!empty($values))
+		{
+			$validation = RSFormProHelper::validateForm($submission->FormId, 'directory', $cid);
+		}
+		else
+		{
+			$validation = array();
+		}
 		$headers        = RSFormProHelper::getDirectoryStaticHeaders();
 		$formFields 	= RSFormProHelper::getDirectoryFields($submission->FormId);
 
@@ -969,7 +981,21 @@ class RsformModelDirectory extends JModelLegacy
 			$formField->name 	= $formField->FieldName;
 		}
 
-		$properties	= RSFormProHelper::getComponentProperties($componentIds);
+		$properties	= RSFormProHelper::getComponentProperties($componentIds, false);
+
+		// Apply translations based on the current submission's language
+		if ($translations = RSFormProHelper::getTranslations('properties', $submission->FormId, $submission->Lang))
+		{
+			foreach ($translations as $reference_id => $translation)
+			{
+				list ($componentId, $property) = explode('.', $reference_id, 2);
+
+				if (isset($properties[$componentId][$property]))
+				{
+					$properties[$componentId][$property] = $translation;
+				}
+			}
+		}
 
 		foreach ($formFields as $field)
 		{
@@ -984,6 +1010,14 @@ class RsformModelDirectory extends JModelLegacy
 			$new_field[2]	= isset($data['REQUIRED']) && $data['REQUIRED'] == 'YES' ? '<strong class="formRequired">(*)</strong>' : '';
 			$new_field[3]	= $field->name;
 			$name			= $field->name;
+
+			if ($invalid)
+			{
+				if (isset($data['VALIDATIONMESSAGE']))
+				{
+					$new_field[4] = '<div id="component' . $field->id . '" class="dirError">' . $data['VALIDATIONMESSAGE'] . '</span>';
+				}
+			}
 
 			if ($field->type != 'static') {
 				if (isset($values[$field->name]))

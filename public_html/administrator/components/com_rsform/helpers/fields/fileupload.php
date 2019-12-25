@@ -28,17 +28,69 @@ class RSFormProFieldFileUpload extends RSFormProField
 
 		return $name;
 	}
-	
+
 	// functions used for rendering in front view
-	public function getFormInput() {
+	public function getFormInput()
+	{
+		$multiple 		= $this->getProperty('MULTIPLE', false);
+		$multipleplus 	= $this->getProperty('MULTIPLEPLUS', false);
+
+		if ($multiple && $multipleplus)
+		{
+			$minFiles = (int) $this->getProperty('MINFILES', 1);
+
+			// If we require a minimum number of files to be uploaded, let's show a separate input for each upload in order to help the user
+			if ($minFiles > 1)
+			{
+				$html = str_repeat('<div class="rsfp-field-multiple-plus">' . $this->getFileInput() . '</div>', $minFiles);
+			}
+			else
+			{
+				$html = '<div class="rsfp-field-multiple-plus">' . $this->getFileInput() . '</div>';
+			}
+
+			return $html . $this->getButtonInput();
+		}
+		else
+		{
+			return $this->getFileInput();
+		}
+	}
+
+	public function getButtonInput()
+	{
+		$button = '<button type="button"';
+
+		if ($attr = $this->getButtonAttributes())
+		{
+			foreach ($attr as $key => $value)
+			{
+				$button .= $this->attributeToHtml($key, $value);
+			}
+		}
+
+		$maxFiles = (int) $this->getProperty('MAXFILES', 0);
+		if ($maxFiles > 0)
+		{
+			$button .= ' data-rsfp-maxfiles="' . $maxFiles . '"';
+		}
+
+		$button .= ' data-rsfp-formid="' . $this->formId . '"';
+
+		$button .= ' onclick="RSFormPro.addMoreFiles(this);">' . JText::_('COM_RSFORM_FILE_ADD_PLUS') . '</button>';
+
+		return $button;
+	}
+
+	public function getFileInput()
+	{
 		$name			= $this->getName();
 		$id				= $this->getId();
 		$attr			= $this->getAttributes();
 		$multiple		= $this->getProperty('MULTIPLE', false);
+		$multipleplus	= $this->getProperty('MULTIPLEPLUS', false);
 		$type 			= 'file';
 		$additional 	= '';
-		
-		// MAX_FILE_SIZE is no longer used, didn't provide anything useful
 		
 		// Start building the HTML input
 		$html = '<input';
@@ -61,8 +113,21 @@ class RSFormProFieldFileUpload extends RSFormProField
 				 ' id="'.$this->escape($id).'"';
 		if ($multiple)
 		{
-			$html .= ' multiple';
+			if ($multipleplus)
+			{
+				$html .= ' data-rsfp-skip-ajax="true"';
+			}
+			else
+			{
+				$html .= ' multiple';
+			}
 		}
+
+		if ($this->getProperty('ACCEPTEDFILESIMAGES') && $this->getProperty('SHOWIMAGEPREVIEW'))
+		{
+			$html .= ' onchange="RSFormPro.loadImage(this);"';
+		}
+
 		// Additional HTML
 		$html .= $additional;
 
@@ -72,6 +137,11 @@ class RSFormProFieldFileUpload extends RSFormProField
 		$html .= ' />';
 		
 		return $html;
+	}
+
+	protected function getButtonAttributes()
+	{
+		return array('class' => 'rsfp-field-multiple-plus-button');
 	}
 
 	protected function addDataAttributes()
@@ -182,7 +252,7 @@ class RSFormProFieldFileUpload extends RSFormProField
 			$prefix = uniqid('') . '-';
 			if (strlen(trim($prefixProperty)) > 0)
 			{
-				$prefix = RSFormProHelper::isCode($prefixProperty);
+				$prefix = $this->isCode($prefixProperty);
 			}
 
 			// Path
@@ -496,15 +566,8 @@ class RSFormProFieldFileUpload extends RSFormProField
 		}
 		catch (Exception $e)
 		{
-			if ($validationType == 'directory')
-			{
-				JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_RSFORM_DIRECTORY_FILES_VALIDATION', $this->name, $e->getMessage()), 'warning');
-			}
-			else
-			{
-				$properties =& RSFormProHelper::getComponentProperties($this->componentId);
-				$properties['VALIDATIONMESSAGE'] = $e->getMessage();
-			}
+			$properties =& RSFormProHelper::getComponentProperties($this->componentId);
+			$properties['VALIDATIONMESSAGE'] = $e->getMessage();
 
 			return false;
 		}

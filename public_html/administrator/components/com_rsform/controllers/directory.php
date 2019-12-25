@@ -238,6 +238,7 @@ class RsformControllerDirectory extends RsformController
 		$formId = $app->input->getInt('formId');
 		$layout = $app->input->getCmd('layoutName');
 		$hideEmptyValues = $app->input->getInt('hideEmptyValues');
+		$showGoogleMap = $app->input->getInt('showGoogleMap');
 
         $query = $db->getQuery(true)
             ->select($db->qn('formId'))
@@ -258,6 +259,7 @@ class RsformControllerDirectory extends RsformController
 		$model->getDirectory();
 		$model->_directory->ViewLayoutName = $layout;
 		$model->_directory->HideEmptyValues = $hideEmptyValues;
+		$model->_directory->ShowGoogleMap = $showGoogleMap;
 		$model->autoGenerateLayout();
 		
 		echo $model->_directory->ViewLayout;

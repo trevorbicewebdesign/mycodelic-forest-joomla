@@ -353,15 +353,25 @@ class RsformControllerSubmissions extends RsformController
                     {
                         $query = $db->getQuery(true)
                             ->select($db->qn('SubmissionId'))
+                            ->select($db->qn('FormId'))
                             ->from($db->qn('#__rsform_submissions'))
-                            ->where($db->qn('SubmissionId') . ' = ' . $db->q($submission->SubmissionId))
-                            ->where($db->qn('FormId') . ' = ' . $db->q($formId));
-                        $exists = $db->setQuery($query)->loadResult() !== null;
+                            ->where($db->qn('SubmissionId') . ' = ' . $db->q($submission->SubmissionId));
+                        $exists = $db->setQuery($query)->loadObject();
                     }
 
                     if ($exists)
                     {
-                        $db->updateObject('#__rsform_submissions', $submission, array('SubmissionId'));
+                    	// Same form, update
+                    	if ($exists->FormId == $formId)
+						{
+							$db->updateObject('#__rsform_submissions', $submission, array('SubmissionId'));
+						}
+						else
+						{
+							// Different form, submission ID can't be reused to avoid modifying the wrong submission, unset $submission->SubmissionId and insert new row
+							unset($submission->SubmissionId);
+							$db->insertObject('#__rsform_submissions', $submission, 'SubmissionId');
+						}
                     }
                     else
                     {
@@ -743,7 +753,6 @@ class RsformControllerSubmissions extends RsformController
 		$file = $config->get('tmp_path').'/'.$file;
 		
 		$type = JFactory::getApplication()->input->getCmd('ExportType');
-		$extension = 'csv';
 		
 		switch ($type) {
 			default:
@@ -764,8 +773,14 @@ class RsformControllerSubmissions extends RsformController
 				$extension = 'xlsx';
 			break;
 		}
+
+		$filename = str_replace(
+			array('{domain}', '{date}', '{formId}'),
+			array(JUri::getInstance()->getHost(), JHtml::_('date', 'now', 'Y-m-d_H-i'), JFactory::getApplication()->input->getCmd('formId')),
+			RSFormProHelper::getConfig('export.mask')
+		);
 		
-		RSFormProHelper::readFile($file, JFactory::getDate()->format('Y-m-d').'_rsform.'.$extension);
+		RSFormProHelper::readFile($file, $filename . '.' . $extension);
 	}
 	
 	public function viewFile()

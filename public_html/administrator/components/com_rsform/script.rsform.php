@@ -360,6 +360,22 @@ class com_rsformInstallerScript
 			$db->execute();
 		}
 
+		// #__rsform_translations updates
+		$columns = $db->getTableColumns('#__rsform_translations', false);
+		if ($columns['lang_code']->Key != 'MUL')
+		{
+			try
+			{
+				$db->setQuery("ALTER TABLE #__rsform_translations ADD KEY `lang_code` (`lang_code`)")->execute();
+				$db->setQuery("ALTER TABLE #__rsform_translations ADD KEY `reference` (`reference`)")->execute();
+				$db->setQuery("ALTER TABLE #__rsform_translations ADD KEY `lang_search` (`form_id`,`lang_code`,`reference`)")->execute();
+			}
+			catch (Exception $e)
+			{
+				// Do nothing
+			}
+		}
+
 		// add the VALIDATIONMULTIPLE to the textBox field
 		$db->setQuery("SELECT COUNT(`FieldName`) FROM #__rsform_component_type_fields  WHERE `ComponentTypeId` = 1 AND `FieldName` = 'VALIDATIONMULTIPLE'");
 		if (!$db->loadResult()) {
@@ -597,6 +613,10 @@ class com_rsformInstallerScript
 			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `filename` VARCHAR(255) NOT NULL DEFAULT 'export.pdf' AFTER `formId`");
 			$db->execute();
 		}
+		if (!isset($columns['csvfilename'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `csvfilename` VARCHAR(255) NOT NULL DEFAULT '{alias}.csv' AFTER `filename`");
+			$db->execute();
+		}
 		if (!isset($columns['EmailsCreatedScript'])) {
 			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `EmailsCreatedScript` TEXT NOT NULL AFTER `EmailsScript`");
 			$db->execute();
@@ -607,6 +627,10 @@ class com_rsformInstallerScript
         }
 		if (!isset($columns['HideEmptyValues'])) {
 			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `HideEmptyValues` tinyint(1) NOT NULL AFTER `enablecsv`");
+			$db->execute();
+		}
+		if (!isset($columns['ShowGoogleMap'])) {
+			$db->setQuery("ALTER TABLE `#__rsform_directory` ADD `ShowGoogleMap` tinyint(1) NOT NULL AFTER `HideEmptyValues`");
 			$db->execute();
 		}
 
@@ -635,6 +659,12 @@ class com_rsformInstallerScript
 			  ->where($db->qn('FieldValues').' = '.$db->q('%RSgetValidationRules%'));
 		$db->setQuery($query);
 		$db->execute();
+
+		$columns = $db->getTableColumns('#__rsform_calculations', false);
+		if (!$columns['formId']->Key)
+		{
+			$db->setQuery('ALTER TABLE `#__rsform_calculations` ADD INDEX(`formId`), ADD INDEX (`ordering`), ADD INDEX (`formId`, `ordering`)')->execute();
+		}
 
 		if (!empty($this->migrateResponsiveLayoutFramework)) {
 			$query = $db->getQuery(true);
@@ -709,9 +739,9 @@ class com_rsformInstallerScript
 		}
 		
 		// Running 3.x
-		if (!$jversion->isCompatible('3.7.0'))
+		if (!$jversion->isCompatible('3.8.0'))
 		{
-			$app->enqueueMessage('Please upgrade to at least Joomla! 3.7.0 before continuing!', 'error');
+			$app->enqueueMessage('Please upgrade to at least Joomla! 3.8.0 before continuing!', 'error');
 			return false;
 		}
 
@@ -938,30 +968,10 @@ class com_rsformInstallerScript
 				<p>It seems you are still using legacy layouts - they have been removed from RSForm! Pro since they are no longer usable today as they do not provide responsive features.<br>If you still want to keep using them, please install the <a href="https://www.rsjoomla.com/support/documentation/rsform-pro/plugins-and-modules/plugin-legacy-layouts.html" target="_blank">Legacy Layouts Plugin</a>.</p>
 			</div>
 		<?php } ?>
-		<h2>Changelog v2.2.4</h2>
+		<h2>Changelog v2.2.9</h2>
 		<ul class="version-history">
-			<li><span class="version-new">New</span> 'File Upload' can upload multiple files by using the 'Multiple' property.</li>
-			<li><span class="version-new">New</span> 'File Upload' has new properties: 'Separator', 'Min Files' and 'Max Files', when using the 'Multiple' property.</li>
-			<li><span class="version-new">New</span> Can now specify the 'Enclosure' and 'Delimiter' for the CSV export in the Directory menu item.</li>
-			<li><span class="version-new">New</span> Right clicking on a field will now allow you to set it as required or not.</li>
-			<li><span class="version-new">New</span> Right clicking on a Hidden Field will now allow you to publish or unpublish it.</li>
-			<li><span class="version-new">New</span> Right clicking on a Pagebreak Field will now allow you to publish or unpublish it.</li>
-			<li><span class="version-upgraded">Upg</span> 'File Upload' fields are now triggering the regeneration of thumbnails when being edited in the Directory area.</li>
-			<li><span class="version-upgraded">Upg</span> 'File Upload' fields can now be cleared individually if the 'Multiple' property is being used.</li>
-			<li><span class="version-upgraded">Upg</span> 'File Upload' fields have new placeholders - {File Upload:image} and {File Upload:localimage} which generates &lt;img&gt; tags.</li>
-			<li><span class="version-upgraded">Upg</span> Under Manage Forms, clicking on today's, this month's or all time submissions will now filter the submissions accordingly.</li>
-			<li><span class="version-upgraded">Upg</span> Set '0' in the Thumb Width property of a 'File Upload' field to skip creating a thumbnail.</li>
-			<li><span class="version-upgraded">Upg</span> Some code optimizations.</li>
-            <li><span class="version-fixed">Fix</span> In some cases, RSFormProHelper::getComponentProperties() would incorrectly overwrite translations.</li>
-            <li><span class="version-fixed">Fix</span> Legacy Layouts were no longer showing the New Form Wizard.</li>
-            <li><span class="version-fixed">Fix</span> {File Upload:value} placeholder was not HTML encoded.</li>
-            <li><span class="version-fixed">Fix</span> Field Preview will now try to correct wrong HTML to prevent disrupting the Grid Builder layout.</li>
-            <li><span class="version-fixed">Fix</span> Date Validation functions would throw an unhandled PHP Exception when encountering invalid values.</li>
-            <li><span class="version-fixed">Fix</span> Editing a non-existing submission in the Directory area would show a blank form instead of throwing an error.</li>
-            <li><span class="version-fixed">Fix</span> SEF links were missing for the delete submission URLs in the Directory area.</li>
-            <li><span class="version-fixed">Fix</span> Accessing an invalid submission will now show an error message and redirect back to the Directory page.</li>
-            <li><span class="version-fixed">Fix</span> Trying to edit, save or delete a submission which you don't have access to will now redirect back to the Directory page.</li>
-            <li><span class="version-fixed">Fix</span> 'File Upload' fields will now show a specific error (min &amp; max files, file size, invalid extension) when failing validation.</li>
+			<li><span class="version-upgraded">Upg</span> Bootstrap version upgraded to 3.4.1</li>
+			<li><span class="version-fixed">Fix</span> In some cases the 'Add More Files' button would show up next to a 'File Upload' field even if the 'Multiple' option was set to 'No'.</li>
 		</ul>
 		<a class="btn btn-large btn-primary" href="index.php?option=com_rsform">Start using RSForm! Pro</a>
 		<a class="btn" href="https://www.rsjoomla.com/support/documentation/rsform-pro.html" target="_blank">Read the RSForm! Pro User Guide</a>
