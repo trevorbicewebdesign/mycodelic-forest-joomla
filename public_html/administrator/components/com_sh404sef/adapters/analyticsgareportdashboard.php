@@ -3,12 +3,14 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
+
+use Joomla\Registry\Registry;
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
@@ -72,12 +74,9 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 	public function fetchData($config, $options, $endPoint)
 	{
 		// store parameters
-		$this->_config = $config;
-		$this->_options = $options;
+		$this->_config   = $config;
+		$this->_options  = $options;
 		$this->_endPoint = $endPoint;
-
-		// get a http client
-		$this->_client = Sh404sefHelperAnalytics::getHttpClient();
 
 		// response object
 		$this->_formatedResponse = new stdClass();
@@ -160,52 +159,49 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$sefConfig = Sh404sefFactory::getConfig();
 
 		// set headers required by Google Analytics
-		//$headers = array(
-		//    'GData-Version' => 2
-		//    , 'Authorization' => 'GoogleLogin auth=' . $this->_Auth
-		//);
-
 		$headers = array('GData-Version' => 2, 'Authorization' => 'Bearer ' . Sh404sefHelperAnalytics_auth::getAccessToken());
-
-		$this->_client->setHeaders($headers);
 		ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: preparing to fetch data with headers: ' . print_r($headers, true));
 
 		// 0 . Global data, needed in all queries to calculate %
 
 		// build uri as needed to retrieve required data
-		$query = array('dimensions' => ''
-		               , 'metrics' => 'ga:pageviews,ga:sessions,ga:users,ga:bounces,ga:entrances,ga:sessionDuration,ga:newUsers'
-		               , 'start-date' => $this->_options['startDate']
-		               , 'end-date' => $this->_options['endDate']
+		$query = array(
+			'dimensions'   => ''
+			, 'metrics'    => 'ga:pageviews,ga:sessions,ga:users,ga:bounces,ga:entrances,ga:sessionDuration,ga:newUsers'
+			, 'start-date' => $this->_options['startDate']
+			, 'end-date'   => $this->_options['endDate']
 		);
 
 		// use method to build the correct url
 		$uri = $this->_buildQueryUri($query);
 		ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: preparing to fetch data with query: ' . print_r($query, true));
 
-		// set target API url
-		$this->_client->setUri($uri);
-
 		// perform query
-		$this->_query('global');
+		$this->_query(
+			'global',
+			$uri,
+			$headers
+		);
 
 		// 0bis . Global social data, needed in all queries to calculate %
 
 		// build uri as needed to retrieve required data
-		$query = array('dimensions' => 'ga:eventCategory,ga:eventAction'
-		               , 'metrics' => 'ga:totalEvents,ga:sessions'
-		               , 'start-date' => $this->_options['startDate']
-		               , 'end-date' => $this->_options['endDate']
+		$query = array(
+			'dimensions'   => 'ga:eventCategory,ga:eventAction'
+			, 'metrics'    => 'ga:totalEvents,ga:sessions'
+			, 'start-date' => $this->_options['startDate']
+			, 'end-date'   => $this->_options['endDate']
 		);
 
 		// use method to build the correct url
 		$uri = $this->_buildQueryUri($query);
 
-		// set target API url
-		$this->_client->setUri($uri);
-
 		// perform query
-		$this->_query('globalSocial');
+		$this->_query(
+			'globalSocial',
+			$uri,
+			$headers
+		);
 
 		// specific queries for each subrequest
 		switch ($this->_options['subrequest'])
@@ -214,20 +210,22 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 
 				// 1 . query pageviews and visits
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => $this->_options['groupBy']
-				               , 'metrics' => $sefConfig->analyticsDashboardDataType
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'   => $this->_options['groupBy']
+					, 'metrics'    => $sefConfig->analyticsDashboardDataType
+					, 'start-date' => $this->_options['startDate']
+					, 'end-date'   => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('visits');
+				$this->_query(
+					'visits',
+					$uri,
+					$headers
+				);
 
 				break;
 
@@ -240,20 +238,22 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 					'ga:sessions' : $sefConfig->analyticsDashboardDataType;
 
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:medium'
-				               , 'metrics' => $metric
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'   => 'ga:medium'
+					, 'metrics'    => $metric
+					, 'start-date' => $this->_options['startDate']
+					, 'end-date'   => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('sources');
+				$this->_query(
+					'sources',
+					$uri,
+					$headers
+				);
 
 				break;
 
@@ -261,41 +261,45 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 
 				// 4 . Custom var : logged in users
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:customVarValue' . SH404SEF_ANALYTICS_USER_CUSTOM_VAR
-				               , 'metrics' => 'ga:pageviews'
-				               , 'sort' => '-ga:pageviews'
-				               , 'max-results' => '100'
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'    => 'ga:customVarValue' . SH404SEF_ANALYTICS_USER_CUSTOM_VAR
+					, 'metrics'     => 'ga:pageviews'
+					, 'sort'        => '-ga:pageviews'
+					, 'max-results' => '100'
+					, 'start-date'  => $this->_options['startDate']
+					, 'end-date'    => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('logged-in-users');
+				$this->_query(
+					'logged-in-users',
+					$uri,
+					$headers
+				);
 
 				// 5 . Custom var : page creation time
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:customVarValue' . SH404SEF_ANALYTICS_TIME_CUSTOM_VAR
-				               , 'metrics' => 'ga:pageviews'
-				               , 'sort' => '-ga:pageviews'
-				               , 'max-results' => '512'
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'    => 'ga:customVarValue' . SH404SEF_ANALYTICS_TIME_CUSTOM_VAR
+					, 'metrics'     => 'ga:pageviews'
+					, 'sort'        => '-ga:pageviews'
+					, 'max-results' => '512'
+					, 'start-date'  => $this->_options['startDate']
+					, 'end-date'    => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('page-creation-time');
+				$this->_query(
+					'page-creation-time',
+					$uri,
+					$headers
+				);
 
 				break;
 
@@ -303,22 +307,24 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 
 				// 6 . Top 5 urls
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:pagePath'
-				               , 'metrics' => 'ga:pageviews,ga:timeOnPage'
-				               , 'sort' => '-ga:pageviews'
-				               , 'max-results' => $this->_options['max-top-urls']
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'    => 'ga:pagePath'
+					, 'metrics'     => 'ga:pageviews,ga:timeOnPage'
+					, 'sort'        => '-ga:pageviews'
+					, 'max-results' => $this->_options['max-top-urls']
+					, 'start-date'  => $this->_options['startDate']
+					, 'end-date'    => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('top5urls');
+				$this->_query(
+					'top5urls',
+					$uri,
+					$headers
+				);
 
 				break;
 
@@ -331,22 +337,24 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 					'ga:sessions' : $sefConfig->analyticsDashboardDataType;
 
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:source,ga:referralPath'
-				               , 'metrics' => $metric . ',ga:sessionDuration,ga:bounces,ga:newUsers'
-				               , 'sort' => '-' . $metric
-				               , 'max-results' => $this->_options['max-top-referrers']
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'    => 'ga:source,ga:referralPath'
+					, 'metrics'     => $metric . ',ga:sessionDuration,ga:bounces,ga:newUsers'
+					, 'sort'        => '-' . $metric
+					, 'max-results' => $this->_options['max-top-referrers']
+					, 'start-date'  => $this->_options['startDate']
+					, 'end-date'    => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('top5referrers');
+				$this->_query(
+					'top5referrers',
+					$uri,
+					$headers
+				);
 
 				break;
 
@@ -355,23 +363,25 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 				// 8 . topSocial
 
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
-				               , 'metrics' => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
-				               , 'sort' => '-' . 'ga:totalEvents'
-				               , 'filters' => 'ga:eventCategory==sh404SEF_social_tracker_facebook'
-				               , 'max-results' => $this->_options['max-top-referrers']
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'    => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
+					, 'metrics'     => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
+					, 'sort'        => '-' . 'ga:totalEvents'
+					, 'filters'     => 'ga:eventCategory==sh404SEF_social_tracker_facebook'
+					, 'max-results' => $this->_options['max-top-referrers']
+					, 'start-date'  => $this->_options['startDate']
+					, 'end-date'    => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('topSocialFB');
+				$this->_query(
+					'topSocialFB',
+					$uri,
+					$headers
+				);
 
 				break;
 			case 'topsocialtweeter':
@@ -379,23 +389,25 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 				// 8 . topSocial
 
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
-				               , 'metrics' => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
-				               , 'sort' => '-' . 'ga:totalEvents'
-				               , 'filters' => 'ga:eventCategory==sh404SEF_social_tracker_tweeter'
-				               , 'max-results' => $this->_options['max-top-referrers']
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'    => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
+					, 'metrics'     => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
+					, 'sort'        => '-' . 'ga:totalEvents'
+					, 'filters'     => 'ga:eventCategory==sh404SEF_social_tracker_tweeter'
+					, 'max-results' => $this->_options['max-top-referrers']
+					, 'start-date'  => $this->_options['startDate']
+					, 'end-date'    => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('topSocialTweeter');
+				$this->_query(
+					'topSocialTweeter',
+					$uri,
+					$headers
+				);
 
 				break;
 
@@ -404,72 +416,25 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 				// 8 . topSocial
 
 				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
-				               , 'metrics' => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
-				               , 'sort' => '-' . 'ga:totalEvents'
-				               , 'filters' => 'ga:eventCategory==sh404SEF_social_tracker_pinterest'
-				               , 'max-results' => $this->_options['max-top-referrers']
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$query = array(
+					'dimensions'    => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
+					, 'metrics'     => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
+					, 'sort'        => '-' . 'ga:totalEvents'
+					, 'filters'     => 'ga:eventCategory==sh404SEF_social_tracker_pinterest'
+					, 'max-results' => $this->_options['max-top-referrers']
+					, 'start-date'  => $this->_options['startDate']
+					, 'end-date'    => $this->_options['endDate']
 				);
 
 				// use method to build the correct url
 				$uri = $this->_buildQueryUri($query);
 
-				// set target API url
-				$this->_client->setUri($uri);
-
 				// perform query
-				$this->_query('topSocialPinterest');
-
-				break;
-
-			case 'topsocialplusone':
-
-				// 8 . topSocial
-
-				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
-				               , 'metrics' => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
-				               , 'sort' => '-' . 'ga:totalEvents'
-				               , 'filters' => 'ga:eventCategory==sh404SEF_social_tracker_gplus'
-				               , 'max-results' => $this->_options['max-top-referrers']
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
+				$this->_query(
+					'topSocialPinterest',
+					$uri,
+					$headers
 				);
-
-				// use method to build the correct url
-				$uri = $this->_buildQueryUri($query);
-
-				// set target API url
-				$this->_client->setUri($uri);
-
-				// perform query
-				$this->_query('topSocialPlusOne');
-
-				break;
-			case 'topsocialplusonepage':
-
-				// 8 . topSocial
-
-				// build uri as needed to retrieve required data
-				$query = array('dimensions' => 'ga:eventCategory,ga:eventLabel,ga:eventAction'
-				               , 'metrics' => 'ga:totalEvents,ga:pageviews,ga:timeOnPage'
-				               , 'sort' => '-' . 'ga:totalEvents'
-				               , 'filters' => 'ga:eventCategory==sh404SEF_social_tracker_gplus_page'
-				               , 'max-results' => $this->_options['max-top-referrers']
-				               , 'start-date' => $this->_options['startDate']
-				               , 'end-date' => $this->_options['endDate']
-				);
-
-				// use method to build the correct url
-				$uri = $this->_buildQueryUri($query);
-
-				// set target API url
-				$this->_client->setUri($uri);
-
-				// perform query
-				$this->_query('topSocialPlusOnePage');
 
 				break;
 		}
@@ -479,36 +444,34 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 	{
 		if (!empty($this->_rawData['global'][0]))
 		{
-			$this->_formatedResponse->global = $this->_rawData['global'][0];
-			$this->_formatedResponse->global->bounceRate = empty($this->_formatedResponse->global->entrances) ? 0 : $this->_formatedResponse->global->bounces / $this->_formatedResponse->global->entrances;
-			$this->_formatedResponse->global->avgTimeOnSite = empty($this->_formatedResponse->global->sessions) ? 0 : $this->_formatedResponse->global->sessionDuration / $this->_formatedResponse->global->sessions;
+			$this->_formatedResponse->global                   = $this->_rawData['global'][0];
+			$this->_formatedResponse->global->bounceRate       = empty($this->_formatedResponse->global->entrances) ? 0 : $this->_formatedResponse->global->bounces / $this->_formatedResponse->global->entrances;
+			$this->_formatedResponse->global->avgTimeOnSite    = empty($this->_formatedResponse->global->sessions) ? 0 : $this->_formatedResponse->global->sessionDuration / $this->_formatedResponse->global->sessions;
 			$this->_formatedResponse->global->newVisitsPerCent = empty($this->_formatedResponse->global->sessions) ? 0 : $this->_formatedResponse->global->newUsers / $this->_formatedResponse->global->sessions;
-			$this->_formatedResponse->global->pagesPerVisit = empty($this->_formatedResponse->global->sessions) ? 0 : $this->_formatedResponse->global->pageviews / $this->_formatedResponse->global->sessions;
+			$this->_formatedResponse->global->pagesPerVisit    = empty($this->_formatedResponse->global->sessions) ? 0 : $this->_formatedResponse->global->pageviews / $this->_formatedResponse->global->sessions;
 		}
 		else
 		{
-			$this->_formatedResponse->global = new stdClass();
-			$this->_formatedResponse->global->sessions = 0;
-			$this->_formatedResponse->global->users = 0;
-			$this->_formatedResponse->global->pageviews = 0;
-			$this->_formatedResponse->global->bounceRate = 0;
-			$this->_formatedResponse->global->avgTimeOnSite = 0;
+			$this->_formatedResponse->global                   = new stdClass();
+			$this->_formatedResponse->global->sessions         = 0;
+			$this->_formatedResponse->global->users            = 0;
+			$this->_formatedResponse->global->pageviews        = 0;
+			$this->_formatedResponse->global->bounceRate       = 0;
+			$this->_formatedResponse->global->avgTimeOnSite    = 0;
 			$this->_formatedResponse->global->newVisitsPerCent = 0;
-			$this->_formatedResponse->global->pagesPerVisit = 0;
+			$this->_formatedResponse->global->pagesPerVisit    = 0;
 		}
 		// add social engagement global values
-		$this->_formatedResponse->global->totalSocialEvents = 0;
-		$this->_formatedResponse->global->sh404SEF_social_tracker_facebook = 0;
-		$this->_formatedResponse->global->sh404SEF_social_tracker_gplus = 0;
-		$this->_formatedResponse->global->sh404SEF_social_tracker_tweeter = 0;
+		$this->_formatedResponse->global->totalSocialEvents                 = 0;
+		$this->_formatedResponse->global->sh404SEF_social_tracker_facebook  = 0;
+		$this->_formatedResponse->global->sh404SEF_social_tracker_tweeter   = 0;
 		$this->_formatedResponse->global->sh404SEF_social_tracker_pinterest = 0;
-		$this->_formatedResponse->global->sh404SEF_social_tracker_gplus_page = 0;
-		$this->_formatedResponse->global->visitsWithSocialEngagement = 0;
+		$this->_formatedResponse->global->visitsWithSocialEngagement        = 0;
 		if (!empty($this->_rawData['globalSocial']))
 		{
 			foreach ($this->_rawData['globalSocial'] as $entry)
 			{
-				$cat = $entry->dimension['eventCategory'];
+				$cat    = $entry->dimension['eventCategory'];
 				$action = $entry->dimension['eventAction'];
 				switch ($entry->dimension['eventCategory'])
 				{
@@ -517,33 +480,19 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 						if ($action == 'like')
 						{
 							$this->_formatedResponse->global->totalSocialEvents += $entry->totalEvents;
-							$this->_formatedResponse->global->$cat += $entry->totalEvents;
+							$this->_formatedResponse->global->$cat              += $entry->totalEvents;
 						}
 						else
 						{
 							$this->_formatedResponse->global->totalSocialEvents -= $entry->totalEvents;
-							$this->_formatedResponse->global->$cat -= $entry->totalEvents;
-						}
-						break;
-					case 'sh404SEF_social_tracker_gplus':
-						$this->_formatedResponse->global->visitsWithSocialEngagement += $entry->sessions;
-						if ($action == 'on')
-						{
-							$this->_formatedResponse->global->totalSocialEvents += $entry->totalEvents;
-							$this->_formatedResponse->global->$cat += $entry->totalEvents;
-						}
-						else
-						{
-							$this->_formatedResponse->global->totalSocialEvents -= $entry->totalEvents;
-							$this->_formatedResponse->global->$cat -= $entry->totalEvents;
+							$this->_formatedResponse->global->$cat              -= $entry->totalEvents;
 						}
 						break;
 					case 'sh404SEF_social_tracker_tweeter':
 					case 'sh404SEF_social_tracker_pinterest':
-					case 'sh404SEF_social_tracker_gplus_page':
 						$this->_formatedResponse->global->visitsWithSocialEngagement += $entry->sessions;
-						$this->_formatedResponse->global->totalSocialEvents += $entry->totalEvents;
-						$this->_formatedResponse->global->$cat += $entry->totalEvents;
+						$this->_formatedResponse->global->totalSocialEvents          += $entry->totalEvents;
+						$this->_formatedResponse->global->$cat                       += $entry->totalEvents;
 						break;
 				}
 			}
@@ -557,8 +506,8 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->top5urls = array();
 		foreach ($this->_rawData['top5urls'] as $entry)
 		{
-			$entry->avgTimeOnPage = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
-			$entry->pageviewsPerCent = empty($this->_formatedResponse->global->pageviews) ? 0 : $entry->pageviews / $this->_formatedResponse->global->pageviews;
+			$entry->avgTimeOnPage                = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
+			$entry->pageviewsPerCent             = empty($this->_formatedResponse->global->pageviews) ? 0 : $entry->pageviews / $this->_formatedResponse->global->pageviews;
 			$this->_formatedResponse->top5urls[] = $entry;
 		}
 	}
@@ -568,8 +517,8 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->topSocialFB = array();
 		foreach ($this->_rawData['topSocialFB'] as $entry)
 		{
-			$entry->avgTimeOnPage = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
-			$entry->eventsPerCent = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
+			$entry->avgTimeOnPage                   = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
+			$entry->eventsPerCent                   = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
 			$this->_formatedResponse->topSocialFB[] = $entry;
 		}
 	}
@@ -579,8 +528,8 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->topSocialTweeter = array();
 		foreach ($this->_rawData['topSocialTweeter'] as $entry)
 		{
-			$entry->avgTimeOnPage = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
-			$entry->eventsPerCent = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
+			$entry->avgTimeOnPage                        = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
+			$entry->eventsPerCent                        = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
 			$this->_formatedResponse->topSocialTweeter[] = $entry;
 		}
 	}
@@ -590,8 +539,8 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->topSocialPinterest = array();
 		foreach ($this->_rawData['topSocialPinterest'] as $entry)
 		{
-			$entry->avgTimeOnPage = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
-			$entry->eventsPerCent = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
+			$entry->avgTimeOnPage                          = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
+			$entry->eventsPerCent                          = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
 			$this->_formatedResponse->topSocialPinterest[] = $entry;
 		}
 	}
@@ -601,8 +550,8 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->topSocialPlusOne = array();
 		foreach ($this->_rawData['topSocialPlusOne'] as $entry)
 		{
-			$entry->avgTimeOnPage = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
-			$entry->eventsPerCent = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
+			$entry->avgTimeOnPage                        = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
+			$entry->eventsPerCent                        = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
 			$this->_formatedResponse->topSocialPlusOne[] = $entry;
 		}
 	}
@@ -612,8 +561,8 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->topSocialPlusOnePage = array();
 		foreach ($this->_rawData['topSocialPlusOnePage'] as $entry)
 		{
-			$entry->avgTimeOnPage = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
-			$entry->eventsPerCent = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
+			$entry->avgTimeOnPage                            = empty($entry->pageviews) ? 0 : $entry->timeOnPage / $entry->pageviews;
+			$entry->eventsPerCent                            = empty($this->_formatedResponse->global->totalSocialEvents) ? 0 : $entry->totalEvents / $this->_formatedResponse->global->totalSocialEvents;
 			$this->_formatedResponse->topSocialPlusOnePage[] = $entry;
 		}
 	}
@@ -631,10 +580,10 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->top5referrers = array();
 		foreach ($this->_rawData['top5referrers'] as $entry)
 		{
-			$entry->views = $entry->$dataTypeString;
-			$entry->avgTimeOnSite = empty($entry->$dataTypeString) ? 0 : $entry->sessionDuration / $entry->$dataTypeString;
-			$entry->bounceRate = empty($entry->$dataTypeString) ? 0 : $entry->bounces / $entry->$dataTypeString;
-			$entry->viewsPerCent = empty($this->_formatedResponse->global->$dataTypeString) ? 0 : $entry->$dataTypeString / $this->_formatedResponse->global->$dataTypeString;
+			$entry->views                             = $entry->$dataTypeString;
+			$entry->avgTimeOnSite                     = empty($entry->$dataTypeString) ? 0 : $entry->sessionDuration / $entry->$dataTypeString;
+			$entry->bounceRate                        = empty($entry->$dataTypeString) ? 0 : $entry->bounces / $entry->$dataTypeString;
+			$entry->viewsPerCent                      = empty($this->_formatedResponse->global->$dataTypeString) ? 0 : $entry->$dataTypeString / $this->_formatedResponse->global->$dataTypeString;
 			$this->_formatedResponse->top5referrers[] = $entry;
 		}
 	}
@@ -644,9 +593,9 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$this->_formatedResponse->perf = new stdClass();
 
 		// prepare time and memory calculation
-		$field = 'customVarValue' . SH404SEF_ANALYTICS_TIME_CUSTOM_VAR;
-		$totalPages = 0;
-		$totalTime = 0;
+		$field       = 'customVarValue' . SH404SEF_ANALYTICS_TIME_CUSTOM_VAR;
+		$totalPages  = 0;
+		$totalTime   = 0;
 		$totalMemory = 0;
 
 		// now iterate over time and memory records
@@ -661,23 +610,23 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 			if (!empty($record))
 			{
 				// separate time and memory
-				$time = $record >> 4;  // bits 5 and up
+				$time   = $record >> 4;  // bits 5 and up
 				$memory = $record & 15; // bits 1 to 4
 
 				// aggregate
-				$totalPages += $entry->pageviews;
-				$totalTime += Sh404sefHelperAnalytics::declassifyTime($time) * $entry->pageviews;
+				$totalPages  += $entry->pageviews;
+				$totalTime   += Sh404sefHelperAnalytics::declassifyTime($time) * $entry->pageviews;
 				$totalMemory += Sh404sefHelperAnalytics::declassifyMemory($memory) * $entry->pageviews;
 			}
 		}
 
 		// calculate averages time and ram now
 		$this->_formatedResponse->perf->avgPageCreationTime = empty($totalPages) ? 0 : $totalTime / $totalPages;
-		$this->_formatedResponse->perf->avgMemoryUsed = empty($totalPages) ? 0 : $totalMemory / $totalPages;
+		$this->_formatedResponse->perf->avgMemoryUsed       = empty($totalPages) ? 0 : $totalMemory / $totalPages;
 
 		// logged in users handling
-		$field = 'customVarValue' . SH404SEF_ANALYTICS_USER_CUSTOM_VAR;
-		$groups = Sh404sefHelperGeneral::getUserGroups('title');
+		$field         = 'customVarValue' . SH404SEF_ANALYTICS_USER_CUSTOM_VAR;
+		$groups        = Sh404sefHelperGeneral::getUserGroups('title');
 		$loggedInPages = 0;
 		foreach ($this->_rawData['logged-in-users'] as $entry)
 		{
@@ -702,7 +651,7 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$dataSet = new pData();
 
 		// need config, to know which data user wants to display : visits, unique visitors, pageviews
-		$sefConfig = Sh404sefFactory::getConfig();
+		$sefConfig      = Sh404sefFactory::getConfig();
 		$dataTypeString = str_replace('ga:', '', $sefConfig->analyticsDashboardDataType);
 
 		// get data from response
@@ -728,13 +677,13 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$dataSet->SetSerieName($label, $dataTypeString);
 
 		// Initialise the graph
-		$w = $this->_options['cpWidth'];
-		$w = empty($w) ? 400 : intval($w - 40);
-		$h = 225;
-		$chart = new pChart($w, $h);
+		$w        = $this->_options['cpWidth'];
+		$w        = empty($w) ? 400 : intval($w - 40);
+		$h        = 225;
+		$chart    = new pChart($w, $h);
 		$fontSize = 8;
 		// calculate left margin based on max value to display
-		$leftMargin = 20 + $fontSize + 20 + $fontSize * strlen($maxY);
+		$leftMargin   = 20 + $fontSize + 20 + $fontSize * strlen($maxY);
 		$bottomMargin = 5 + $fontSize * 6;
 
 		switch ($this->_options['groupBy'])
@@ -806,7 +755,7 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$sefConfig = Sh404sefFactory::getConfig();
 
 		// Google does not allow combining dimension=ga:medium with metric = unique visitors
-		$dataType = $sefConfig->analyticsDashboardDataType == 'ga:users' ?
+		$dataType       = $sefConfig->analyticsDashboardDataType == 'ga:users' ?
 			'ga:sessions' : $sefConfig->analyticsDashboardDataType;
 		$dataTypeString = str_replace('ga:', '', $dataType);
 
@@ -820,8 +769,8 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		// then second smallest, ...
 		// which makes drawing labels much easier
 		$tmpArray = array();
-		$even = false;
-		$max = count($this->_rawData['sources']);
+		$even     = false;
+		$max      = count($this->_rawData['sources']);
 		for ($i = 0; $i < $max; $i++)
 		{
 			if ($even)
@@ -839,7 +788,7 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		};
 
 		// get data from response
-		$data = array();
+		$data  = array();
 		$types = array();
 		foreach ($tmpArray as $entry)
 		{
@@ -847,7 +796,7 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 			// do not add empty values, as pChart would choke on that and display a warning
 			if (!empty($value))
 			{
-				$data[] = $value;
+				$data[]  = $value;
 				$types[] = Sh404sefHelperAnalytics::getReferralLabel($entry->dimension['medium']);
 			}
 		}
@@ -860,14 +809,14 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		$dataSet->SetSerieName($label, "visits");
 
 		// Initialise the graph
-		$w = intval(0.45 * $this->_options['cpWidth']);
-		$w = empty($w) ? 160 : $w;
-		$radius = intval($w * 0.22);
-		$margin = 5;
-		$h = intval($w * 0.8);
-		$centreX = intval(0.50 * $w);
-		$centreY = intval(0.50 * $h);
-		$chart = new pChart($w, $h);
+		$w        = intval(0.45 * $this->_options['cpWidth']);
+		$w        = empty($w) ? 160 : $w;
+		$radius   = intval($w * 0.22);
+		$margin   = 5;
+		$h        = intval($w * 0.8);
+		$centreX  = intval(0.50 * $w);
+		$centreY  = intval(0.50 * $h);
+		$chart    = new pChart($w, $h);
 		$fontSize = 8;
 
 		// prepare graph
@@ -915,14 +864,14 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 	{
 		// default values
 		$defaultQuery = array(
-			'ids' => 'ga:' . $this->_options['accountId']
-			, 'dimensions' => array()
-			, 'metrics' => array()
-			, 'sort' => null
-			, 'filters' => null
-			, 'segment' => null
-			, 'start-date' => $this->_options['startDate']
-			, 'end-date' => $this->_options['endDate']
+			'ids'           => 'ga:' . $this->_options['accountId']
+			, 'dimensions'  => array()
+			, 'metrics'     => array()
+			, 'sort'        => null
+			, 'filters'     => null
+			, 'segment'     => null
+			, 'start-date'  => $this->_options['startDate']
+			, 'end-date'    => $this->_options['endDate']
 			, 'start-index' => null
 			, 'max-results' => $this->_options['max-results']
 		);
@@ -946,12 +895,24 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 		return $uri;
 	}
 
-	protected function _query($type)
+	protected function _query($type, $url, $headers, $timeout = 10)
 	{
+		$hClient = JHttpFactory::getHttp(
+			new Registry(
+				array(
+					'follow_location' => true
+				)
+			)
+		);
+
 		//perform request
-		$response = $this->_client->request();
+		$response = $hClient->get(
+			$url,
+			$headers,
+			$timeout
+		);
 		ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: raw query response for data: ' . print_r($response, true));
-		$body = $response->getBody();
+		$body = $response->body;
 		ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: raw query response for data: body = ' . print_r($body, true));
 
 		// check if authentified
@@ -959,7 +920,7 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 
 		// analyze response
 		$parser = new DOMDocument();
-		$parser->loadXML($response->getBody());
+		$parser->loadXML($response->body);
 		$this->_rawData[$type] = $parser->getElementsByTagName('entry');
 		$this->_decodeXml($type);
 	}
@@ -975,15 +936,15 @@ class Sh404sefAdapterAnalyticsgareportdashboard
 			$dimensions = $entry->getElementsByTagName('dimension');
 			foreach ($dimensions as $dimension)
 			{
-				$name = $dimension->getAttribute('name');
-				$name = str_replace('ga:', '', $name);
+				$name                = $dimension->getAttribute('name');
+				$name                = str_replace('ga:', '', $name);
 				$r->dimension[$name] = $dimension->getAttribute('value');
 			}
 			$metrics = $entry->getElementsByTagName('metric');
 			foreach ($metrics as $metric)
 			{
-				$name = $metric->getAttribute('name');
-				$name = str_replace('ga:', '', $name);
+				$name     = $metric->getAttribute('name');
+				$name     = str_replace('ga:', '', $name);
 				$r->$name = $metric->getAttribute('value');
 			}
 			$data[] = clone($r);

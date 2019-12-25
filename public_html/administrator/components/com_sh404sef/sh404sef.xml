@@ -3,12 +3,12 @@
 <extension type="component" version="1.6" method="upgrade">
 	<name>sh404SEF</name>
 	<author>Yannick Gaultier</author>
-	<creationDate>2018-08-22</creationDate>
-	<copyright>(c) Yannick Gaultier - Weeblr llc - 2018</copyright>
+	<creationDate>2019-09-30</creationDate>
+	<copyright>(c) Yannick Gaultier - Weeblr llc - 2019</copyright>
 	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<authorEmail>contact@weeblr.com</authorEmail>
 	<authorUrl>https://weeblr.com</authorUrl>
-	<version>4.15.1.3863</version>
+	<version>4.17.0.3932</version>
 	<description></description>
 
 	<scriptfile>installation.script.php</scriptfile>
@@ -57,6 +57,10 @@
 	</media>
     <languages folder="languages/site">
         <language tag="bg-BG">bg-BG.com_sh404sef.ini</language>
+        <language tag="zh-CN">zh-CN.com_sh404sef.ini</language>
+        <language tag="zh-CN">zh-CN.com_sh404sef.sys.ini</language>
+        <language tag="zh-TW">zh-TW.com_sh404sef.ini</language>
+        <language tag="zh-TW">zh-TW.com_sh404sef.sys.ini</language>
         <language tag="de-DE">de-DE.com_sh404sef.ini</language>
         <language tag="en-GB">en-GB.com_sh404sef.ini</language>
         <language tag="fr-FR">fr-FR.com_sh404sef.ini</language>
@@ -164,6 +168,10 @@
 		<languages folder="languages/admin">
 			<language tag="bg-BG">bg-BG.com_sh404sef.ini</language>
 			<language tag="bg-BG">bg-BG.com_sh404sef.sys.ini</language>
+            <language tag="zh-CN">zh-CN.com_sh404sef.ini</language>
+            <language tag="zh-CN">zh-CN.com_sh404sef.sys.ini</language>
+            <language tag="zh-TW">zh-TW.com_sh404sef.ini</language>
+            <language tag="zh-TW">zh-TW.com_sh404sef.sys.ini</language>
 			<language tag="de-DE">de-DE.com_sh404sef.ini</language>
 			<language tag="de-DE">de-DE.com_sh404sef.sys.ini</language>
 			<language tag="en-GB">en-GB.com_sh404sef.ini</language>
@@ -192,6 +200,10 @@
 
 			<language tag="bg-BG">bg-BG.plg_sh404sefcore_sh404sefsocial.ini</language>
 			<language tag="bg-BG">bg-BG.plg_sh404sefcore_sh404sefsocial.sys.ini</language>
+            <language tag="zh-CN">zh-CN.plg_sh404sefcore_sh404sefsocial.ini</language>
+            <language tag="zh-CN">zh-CN.plg_sh404sefcore_sh404sefsocial.sys.ini</language>
+            <language tag="zh-TW">zh-TW.plg_sh404sefcore_sh404sefsocial.ini</language>
+            <language tag="zh-TW">zh-TW.plg_sh404sefcore_sh404sefsocial.sys.ini</language>
 			<language tag="de-DE">de-DE.plg_sh404sefcore_sh404sefsocial.ini</language>
 			<language tag="de-DE">de-DE.plg_sh404sefcore_sh404sefsocial.sys.ini</language>
 			<language tag="en-GB">en-GB.plg_sh404sefcore_sh404sefsocial.ini</language>
@@ -215,6 +227,10 @@
 
             <language tag="bg-BG">bg-BG.plg_sh404sefcore_sh404sefsimilarurls.ini</language>
             <language tag="bg-BG">bg-BG.plg_sh404sefcore_sh404sefsimilarurls.sys.ini</language>
+            <language tag="zh-CN">zh-CN.plg_sh404sefcore_sh404sefsimilarurls.ini</language>
+            <language tag="zh-CN">zh-CN.plg_sh404sefcore_sh404sefsimilarurls.sys.ini</language>
+            <language tag="zh-TW">zh-TW.plg_sh404sefcore_sh404sefsimilarurls.ini</language>
+            <language tag="zh-TW">zh-TW.plg_sh404sefcore_sh404sefsimilarurls.sys.ini</language>
             <language tag="de-DE">de-DE.plg_sh404sefcore_sh404sefsimilarurls.ini</language>
             <language tag="de-DE">de-DE.plg_sh404sefcore_sh404sefsimilarurls.sys.ini</language>
             <language tag="en-GB">en-GB.plg_sh404sefcore_sh404sefsimilarurls.ini</language>

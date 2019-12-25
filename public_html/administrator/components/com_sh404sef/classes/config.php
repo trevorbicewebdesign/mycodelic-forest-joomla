@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date  2018-08-22
+ * @version      4.17.0.3932
+ * @date  2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -18,7 +18,6 @@ if (!defined('_JEXEC'))
 
 class Sh404sefClassConfig
 {
-
 	const CAT_ALL_NESTED_CAT = 0;
 	const CAT_FIRST = 1;
 	const CAT_LAST = 2;
@@ -35,9 +34,10 @@ class Sh404sefClassConfig
 
 	const COM_SH404SEF_KEYSTORE_TABLE_NAME = '#__sh404sef_keystore';
 	const COM_SH404SEF_KEYSTORE_KEY_404_ERROR_PAGE = 'com_sh404sef.errors.404';
+	const COM_SH404SEF_ROBOTS_META_DEFAULT = 'max-snippet:-1, max-image-preview:large, max-video-preview:-1';
 
 	/* string,  version number */
-	public $version = '4.15.1.3863';
+	public $version = '4.17.0.3932';
 	/* boolean, is 404 SEF enabled  */
 	public $Enabled = false;
 	/* char,  Character to use for url replacement */
@@ -633,6 +633,9 @@ class Sh404sefClassConfig
 
 	// 4.15
 	public $analyticsViewLevel = array(1);
+
+	// 4.16
+	public $metaRobotsDefault = self::COM_SH404SEF_ROBOTS_META_DEFAULT;
 
 	// End of parameters
 
@@ -2119,7 +2122,7 @@ class Sh404sefClassConfig
 			{ // only need to modify custom params in back-end
 				$this->defaultParamList = '<?php
 			    // custom.sef.php : custom.configuration file for sh404SEF
-			    // 4.15.1.3863 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
+			    // 4.17.0.3932 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
 
 			    // DO NOT REMOVE THIS LINE :
 			    if (!defined(\'_JEXEC\')) die(\'Direct Access to this location is not allowed.\');

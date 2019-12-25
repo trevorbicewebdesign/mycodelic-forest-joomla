@@ -6,7 +6,7 @@
  * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.678
+ * @version      0.4.0.685
  */
 
 /**

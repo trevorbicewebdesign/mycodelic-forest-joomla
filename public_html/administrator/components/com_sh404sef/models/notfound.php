@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date		2018-08-22
+ * @version     4.17.0.3932
+ * @date		2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -309,37 +309,37 @@ class Sh404sefModelNotfound extends Sh404sefClassBaselistmodel {
     $layout = $this->_getOption( 'layout', $options);
 
     // only display main url
-    $where[] = 'u1.rank = 0';
+    $where[] = 'u1.`rank` = 0';
 
     // don't include 404s in the proposed redirects
     // only display main url
-    $where[] = 'u1.newurl <> ""';
+    $where[] = 'u1.`newurl` <> ""';
 
     // add search all urls term if any
     if ( !empty($filters->search_all) ) {  // V 1.2.4.q added search URL feature
       jimport( 'joomla.utilities.string');
       $searchTerm = $this->_cleanForQuery( JString::strtolower($filters->search_all));
-      $where[] = "LOWER(u1.oldurl)  LIKE '%" . $searchTerm  . "%'";
+      $where[] = "LOWER(u1.`oldurl`)  LIKE '%" . $searchTerm  . "%'";
     }
 
     // components check
     if (!empty( $filters->filter_component)) {
-      $where[] = "LOWER(u1.newurl)  LIKE '%option=" . $this->_cleanForQuery( $filters->filter_component ) . "%'";
+      $where[] = "LOWER(u1.`newurl`)  LIKE '%option=" . $this->_cleanForQuery( $filters->filter_component ) . "%'";
     }
 
     // language check
     if (!empty( $filters->filter_language)) {
-      $where[] = "LOWER(u1.newurl)  LIKE '%lang=" . $this->_cleanForQuery( Sh404sefHelperLanguage::getUrlCodeFromTag($filters->filter_language) ) . "%'";
+      $where[] = "LOWER(u1.`newurl`)  LIKE '%lang=" . $this->_cleanForQuery( Sh404sefHelperLanguage::getUrlCodeFromTag($filters->filter_language) ) . "%'";
     }
 
     // custom or automatic ?
     if (!empty( $filters->filter_url_type)) {
       switch ($filters->filter_url_type) {
         case Sh404sefHelperGeneral::COM_SH404SEF_ONLY_CUSTOM:
-          $where[] = 'u1.dateadd <> ' . $this->_db->Quote( '0000-00-00');
+          $where[] = 'u1.`dateadd` <> ' . $this->_db->Quote( '0000-00-00');
           break;
         case Sh404sefHelperGeneral::COM_SH404SEF_ONLY_AUTO:
-          $where[] = 'u1.dateadd = ' . $this->_db->Quote( '0000-00-00');
+          $where[] = 'u1.`dateadd` = ' . $this->_db->Quote( '0000-00-00');
           break;
       }
     }

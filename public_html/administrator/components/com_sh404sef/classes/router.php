@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 // no direct access
@@ -277,6 +277,25 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	public function parseRule(&$jRouter, &$uri)
 	{
 		static $_vars = array();
+
+		/**
+		 * Filter the incoming URI just before the sh404SEF parsing starts.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\router
+		 * @var sh404sef_before_parse_rule
+		 * @since   4.15.3
+		 *
+		 * @param JRouter $jRouter    The Joomla router instance.
+		 * @param JUri    $uri        The incoming URI.
+		 *
+		 * @return array
+		 */
+		$uri = ShlHook::filter(
+			'sh404sef_before_parse_rule',
+			$uri,
+			$jRouter
+		);
 
 		$app = JFactory::getApplication();
 
@@ -993,7 +1012,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		if (sh404SEF_NON_SEF_IF_SUPERADMIN)
 		{
 			$user = JFactory::getUser();
-			if ($user->usertype == 'Super Administrator')
+			if ($user->get('isRoot'))
 			{
 				ShlSystem_Log::debug('sh404sef', 'Returning non-sef because superadmin said so.');
 

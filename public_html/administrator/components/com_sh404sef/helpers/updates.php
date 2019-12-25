@@ -3,27 +3,30 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date		2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
+
+use Joomla\Registry\Registry;
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
+{
 	die('Direct Access to this location is not allowed.');
+}
 
 class Sh404sefHelperUpdates
 {
-
-	private static $_endPoint = 'https://u1.weeblr.com/public/direct/sh404sef/legacy';
+	private static $_endPoint       = 'https://u1.weeblr.com/public/direct/sh404sef/legacy';
 	private static $_configEndPoint = 'https://u1.weeblr.com/public/direct/sh404sef/config';
 
-	private static $_product = 'sh404sef';
+	private static $_product    = 'sh404sef';
 	private static $_updateFile = 'sh404sef_updates_j3.xml';
-	private static $_config = 'sh404sef_config_j3.xml';
-	private static $_devConfig = 'sh404sef_config_dev_j3.xml';
+	private static $_config     = 'sh404sef_config_j3.xml';
+	private static $_devConfig  = 'sh404sef_config_dev_j3.xml';
 
 	// store whether doing a forced update. Reason to store it
 	// is to keep _doCheck() method w/o any parameters
@@ -70,7 +73,7 @@ class Sh404sefHelperUpdates
 	{
 		static $storedResponse = false;
 
-		if($storedResponse === false || $forced)
+		if ($storedResponse === false || $forced)
 		{
 			// store whether doing a forced check for updates
 			self::$_forced['rconfig'] = $forced;
@@ -102,17 +105,17 @@ class Sh404sefHelperUpdates
 		$sefConfig = Sh404sefFactory::getConfig();
 
 		// prepare a default response object
-		$response = new stdClass();
-		$response->status = true;
-		$response->statusMessage = JText::_('COM_SH404SEF_CLICK_TO_CHECK_UPDATES');
-		$response->current = 0;
-		$response->note = '';
-		$response->noteHtml = '';
-		$response->changelogLink = '';
+		$response                      = new stdClass();
+		$response->status              = true;
+		$response->statusMessage       = JText::_('COM_SH404SEF_CLICK_TO_CHECK_UPDATES');
+		$response->current             = 0;
+		$response->note                = '';
+		$response->noteHtml            = '';
+		$response->changelogLink       = '';
 		$response->minVersionToUpgrade = 0;
 		$response->maxVersionToUpgrade = 0;
-		$response->shouldUpdate = false;
-		$response->excludes = array();
+		$response->shouldUpdate        = false;
+		$response->excludes            = array();
 
 		// check if allowed to auto check, w/o user clicking on button
 		if (!$sefConfig->autoCheckNewVersion && empty(self::$_forced['updates']))
@@ -121,8 +124,13 @@ class Sh404sefHelperUpdates
 		}
 
 		// get an http client
-		$hClient = new Zendshl_Http_Client;
-		$hClient->setConfig(array('maxredirects' => 3, 'timeout' => 10));
+		$hClient = JHttpFactory::getHttp(
+			new Registry(
+				array(
+					'follow_location' => true
+				)
+			)
+		);
 
 		// find where to call ...
 		$remoteConfig = self::getRemoteConfig($forced = false);
@@ -136,10 +144,10 @@ class Sh404sefHelperUpdates
 		$serverList = array();
 		foreach ($servers as $server)
 		{
-			if(!empty($server['url']))
+			if (!empty($server['url']))
 			{
 				$serverList[] = JString::trim(($server['url']));
-			}	
+			}
 		}
 		$serverList = array_unique($serverList);
 		// now iterate over server list, until we find one that responds
@@ -147,57 +155,48 @@ class Sh404sefHelperUpdates
 		{
 			$response->status = true;
 
-			// actually place a call to find about available updates
+			// request file content
+			$rawResponse = null;
+
 			try
 			{
-				$hClient->setUri($server);
+				$rawResponse = $hClient->get(
+					$server,
+					array(),
+					10
+				);
+				break;
 			}
 			catch (Exception $e)
 			{
-				//  move to next update server in list
+				ShlSystem_Log::error('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Updates: fetching updates exception: ' . $e->getMessage());
 				$response->status = false;
-				continue;
-			}
-
-			// request file content
-			$adapters = array('Zendshl_Http_Client_Adapter_Curl', 'Zendshl_Http_Client_Adapter_Socket');
-			$rawResponse = null;
-
-			foreach ($adapters as $adapter)
-			{
-				try
-				{
-					$hClient->setAdapter($adapter);
-					$rawResponse = $hClient->request();
-					break;
-				}
-				catch (Exception $e)
-				{
-					// we failed, let's try another method
-				}
+				return $response;
 			}
 
 			// (un)set flag if we have a response
 			if (empty($rawResponse))
 			{
-				$response->status = false;
-				$msg = 'unknown code';
+				$response->status        = false;
+				$msg                     = 'unknown code';
 				$response->statusMessage = JText::sprintf('COM_SH404SEF_COULD_NOT_CHECK_FOR_NEW_VERSION', $msg);
 			}
-			else if (!is_object($rawResponse) || $rawResponse->isError())
+			else if (!is_object($rawResponse) || empty($rawResponse->code))
 			{
-				$response->status = false;
-				$msg = method_exists($rawResponse, 'getStatus') ? $rawResponse->getStatus() : 'unknown code';
+				$response->status        = false;
+				$msg                     = isset($rawResponse->code) ? $rawResponse->code : '-1';
 				$response->statusMessage = JText::sprintf('COM_SH404SEF_COULD_NOT_CHECK_FOR_NEW_VERSION', $msg);
 			}
 			else
 			{
 				// communication was fine, check the file type
-				$type = $rawResponse->getHeader('Content-type');
+				$type = wbArrayGet(
+					$rawResponse->headers, 'Content-type'
+				);
 				if (strtolower($type) != 'text/xml' && strtolower($type) != 'application/xml')
 				{
-					$response->status = false;
-					$response->statusMessage = JText::sprintf('COM_SH404SEF_COULD_NOT_CHECK_FOR_NEW_VERSION', $rawResponse->getStatus());
+					$response->status        = false;
+					$response->statusMessage = JText::sprintf('COM_SH404SEF_COULD_NOT_CHECK_FOR_NEW_VERSION', $rawResponse->code);
 				}
 			}
 
@@ -219,7 +218,7 @@ class Sh404sefHelperUpdates
 		try
 		{
 			// get an xml object and parse the response
-			$xml = new SimpleXMLElement($rawResponse->getBody());
+			$xml = new SimpleXMLElement($rawResponse->body);
 
 			// into our response object
 			// first version of version check used an xml file that could only hold one
@@ -263,15 +262,15 @@ class Sh404sefHelperUpdates
 	protected static function _readUpdateInformation($updateRecord, $response)
 	{
 
-		$response->current = (string) $updateRecord->current[0];
-		$response->note = (string) $updateRecord->note[0];
-		$response->noteHtml = (string) $updateRecord->noteHtml[0];
-		$response->changelogLink = (string) $updateRecord->changelogLink[0];
-		$response->downloadLink = (string) $updateRecord->downloadLink[0];
+		$response->current             = (string) $updateRecord->current[0];
+		$response->note                = (string) $updateRecord->note[0];
+		$response->noteHtml            = (string) $updateRecord->noteHtml[0];
+		$response->changelogLink       = (string) $updateRecord->changelogLink[0];
+		$response->downloadLink        = (string) $updateRecord->downloadLink[0];
 		$response->minVersionToUpgrade = (string) $updateRecord->minVersionToUpgrade[0];
 		$response->maxVersionToUpgrade = (string) $updateRecord->maxVersionToUpgrade[0];
-		$rawExcludes = $updateRecord->exclude;
-		$response->excludes = array();
+		$rawExcludes                   = $updateRecord->exclude;
+		$response->excludes            = array();
 		if (!empty($rawExcludes))
 		{
 			foreach ($rawExcludes as $exclude)
@@ -289,10 +288,10 @@ class Sh404sefHelperUpdates
 		// if not set to auto check and not forced to do so
 		// when user click on "check updates" button
 		// we don't actually try to get updates info
-		$sefConfig = &Sh404sefFactory::getConfig();
+		$sefConfig = Sh404sefFactory::getConfig();
 
 		// prepare a default response object
-		$response = new stdClass();
+		$response         = new stdClass();
 		$response->status = true;
 		$response->config = array();
 
@@ -303,28 +302,30 @@ class Sh404sefHelperUpdates
 		}
 
 		// get an http client
-		$hClient = new Zendshl_Http_Client;
+		$hClient = JHttpFactory::getHttp(
+			new Registry(
+				array(
+					'follow_location' => true
+				)
+			)
+		);
 
 		// request file content
-		$adapters = array('Zendshl_Http_Client_Adapter_Curl', 'Zendshl_Http_Client_Adapter_Socket');
 		$rawResponse = null;
 
-		foreach ($adapters as $adapter)
+		try
 		{
-			try
-			{
-				// set params
-				//$hClient->setUri( self::$_configEndPoint . '/' . self::$_devConfig);
-				$hClient->setUri(self::$_configEndPoint . '/' . self::$_config);
-				$hClient->setConfig(array('maxredirects' => 3, 'timeout' => 10));
-				$hClient->setAdapter($adapter);
-				$rawResponse = $hClient->request();
-				break;
-			}
-			catch (Exception $e)
-			{
-				// we failed, let's try another method
-			}
+			$rawResponse = $hClient->get(
+				self::$_configEndPoint . '/' . self::$_config,
+				array(),
+				5
+			);
+		}
+		catch (Exception $e)
+		{
+			ShlSystem_Log::error('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Remote config: fetching config exception: ' . $e->getMessage());
+			$response->status = false;
+			return $response;
 		}
 
 		// return if error
@@ -333,25 +334,28 @@ class Sh404sefHelperUpdates
 			$response->status = false;
 			return $response;
 		}
-		if (!is_object($rawResponse) || $rawResponse->isError())
+		if (!is_object($rawResponse) || empty($rawResponse->code))
 		{
 			$response->status = false;
 			return $response;
 		}
 
 		// check the file
-		$type = $rawResponse->getHeader('Content-type');
+		$type = wbArrayGet(
+			$rawResponse->headers, 'Content-type'
+		);
 		if (strtolower($type) != 'text/xml' && strtolower($type) != 'application/xml')
 		{
 			$response->status = false;
 			return $response;
-
 		}
 		// should be OK then
 		$response->status = true;
 
 		// get an xml object and parse the response
-		$rawConfig = simplexml_load_string($rawResponse->getBody());
+		$rawConfig = simplexml_load_string(
+			$rawResponse->body
+		);
 
 		// into our response object
 		$response->config = array();
@@ -371,9 +375,9 @@ class Sh404sefHelperUpdates
 						foreach ($values as $arrayName => $arrayValues)
 						{
 							$children = $arrayValues->children();
-							$attr = (string) $arrayValues->attributes();
-							$id = empty($attr) ? $counter : $attr;
-							$count = count($children);
+							$attr     = (string) $arrayValues->attributes();
+							$id       = empty($attr) ? $counter : $attr;
+							$count    = count($children);
 							if ($count > 0)
 							{
 								foreach ($arrayValues as $key => $value)
@@ -405,7 +409,7 @@ class Sh404sefHelperUpdates
 	private static function _updateRequired($response)
 	{
 		// get configuration
-		$sefConfig = &Sh404sefFactory::getConfig();
+		$sefConfig = Sh404sefFactory::getConfig();
 		// compare versions
 		$response->shouldUpdate = version_compare($sefConfig->version, $response->current, '<');
 		$response->shouldUpdate = $response->shouldUpdate && version_compare($sefConfig->version, $response->minVersionToUpgrade, 'ge');
@@ -418,7 +422,7 @@ class Sh404sefHelperUpdates
 		}
 
 		// build status message based on result of should update calculation
-		$newVersionText = version_compare(JVERSION, '3.0.0', 'ge') ? 'COM_SH404SEF_NEW_VERSION_AVAILABLE_NO_HTML' : 'COM_SH404SEF_NEW_VERSION_AVAILABLE';
+		$newVersionText          = version_compare(JVERSION, '3.0.0', 'ge') ? 'COM_SH404SEF_NEW_VERSION_AVAILABLE_NO_HTML' : 'COM_SH404SEF_NEW_VERSION_AVAILABLE';
 		$response->statusMessage = $response->shouldUpdate ? JText::sprintf($newVersionText)
 			: (JText::sprintf('COM_SH404SEF_YOU_ARE_UP_TO_DATE'));
 

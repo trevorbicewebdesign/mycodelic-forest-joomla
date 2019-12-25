@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -129,7 +129,7 @@ class Sh404sefHelperGeneral
 				), $exclude
 			);
 
-			$where = $db->quoteName('type') . ' = ? and ' . $db->quoteName('enabled') . ' = ? and ' . $db->quoteName('element') . ' <> ? ' . ' and '
+			$where     = $db->quoteName('type') . ' = ? and ' . $db->quoteName('enabled') . ' = ? and ' . $db->quoteName('element') . ' <> ? ' . ' and '
 				. $db->quoteName('element') . ' not in (' . ShlDbHelper::arrayToQuotedList($exclude) . ')';
 			$whereData = array('component', 1, '');
 			try
@@ -158,7 +158,7 @@ class Sh404sefHelperGeneral
 			try
 			{
 				$oldParams = ShlDbHelper::selectResult('#__extensions', 'params', array('element' => 'com_sh404sef', 'type' => 'component'));
-				$_params = new JRegistry();
+				$_params   = new JRegistry();
 				$_params->loadString($oldParams);
 			}
 			catch (Exception $e)
@@ -179,7 +179,7 @@ class Sh404sefHelperGeneral
 		{
 			try
 			{
-				$oldParams = ShlDbHelper::selectResult('#__extensions', 'params', $options);
+				$oldParams           = ShlDbHelper::selectResult('#__extensions', 'params', $options);
 				$_params[$extension] = new JRegistry();
 				$_params[$extension]->loadString($oldParams);
 			}
@@ -248,14 +248,14 @@ class Sh404sefHelperGeneral
 	{
 		// create a root node
 		$base = '<?xml version="1.0" encoding="UTF-8" ?><item id="shajax-response"></item>';
-		$xml = new SimpleXMLElement($base);
+		$xml  = new SimpleXMLElement($base);
 
-		$messagecode = '_';
+		$messagecode  = '_';
 		$taskexecuted = '_';
 
 		// set their respective values
 		$vErrors = $view->getErrors();
-		$view = new stdClass();
+		$view    = new stdClass();
 
 		if (empty($vErrors))
 		{
@@ -273,22 +273,22 @@ class Sh404sefHelperGeneral
 			if (empty($view->redirectTo))
 			{
 				// no error
-				$status = 'success';
-				$msg = empty($view->message) ? JText::_('COM_SH404SEF_OPERATION_COMPLETED') : $view->message;
-				$message = '<ul>' . $msg . '</ul>';
+				$status      = 'success';
+				$msg         = empty($view->message) ? JText::_('COM_SH404SEF_OPERATION_COMPLETED') : $view->message;
+				$message     = '<ul>' . $msg . '</ul>';
 				$messagecode = 200;
 			}
 			else
 			{
-				$status = 'redirect';
-				$glue = strpos($view->redirectTo, '?') === false ? '?' : '&';
+				$status  = 'redirect';
+				$glue    = strpos($view->redirectTo, '?') === false ? '?' : '&';
 				$message = $view->redirectTo . $glue . 'sh404sefMsg=' . $view->messagecode;
 			}
 			$taskexecuted = $view->taskexecuted;
 		}
 		else
 		{
-			$status = 'failure';
+			$status     = 'failure';
 			$messageTxt = '';
 			foreach ($vErrors as $error)
 			{
@@ -402,8 +402,8 @@ class Sh404sefHelperGeneral
 
 		if (is_null($_groups))
 		{
-			$groups_['all'] = array();
-			$groups_['id'] = array();
+			$groups_['all']   = array();
+			$groups_['id']    = array();
 			$groups_['title'] = array();
 
 			// read groups from DB
@@ -421,8 +421,8 @@ class Sh404sefHelperGeneral
 			foreach ($rawGroups as $group)
 			{
 				$_groups['all'][$group->id] = $group->title;
-				$_groups['id'][] = $group->id;
-				$_groups['title'][] = $group->title;
+				$_groups['id'][]            = $group->id;
+				$_groups['title'][]         = $group->title;
 			}
 		}
 
@@ -476,7 +476,7 @@ class Sh404sefHelperGeneral
 			return $pageInfo->getDefaultFrontLiveSite();
 		}
 
-		$newUri = new JURI($nonSefUrl);
+		$newUri      = new JURI($nonSefUrl);
 		$originalUri = clone $newUri;
 
 		$route = shSefRelToAbs($nonSefUrl, $shLanguageParam = '', $newUri, $originalUri);
@@ -556,7 +556,7 @@ class Sh404sefHelperGeneral
 			}
 		}
 		$comConfigModel = new ConfigModelComponent(array('ignore_request' => true));
-		$state = $comConfigModel->getState();
+		$state          = $comConfigModel->getState();
 		$state->set('component.option', $component);
 		if (!empty($path))
 		{
@@ -583,7 +583,7 @@ class Sh404sefHelperGeneral
 			ShlSystem_Log::error('sh404sef', __CLASS__ . '/' . __METHOD__ . '/' . __LINE__ . ': ' . $e->getMessage());
 		}
 
-		$link = '';
+		$link     = '';
 		$pluginId = (int) $pluginId;
 		if (!empty($pluginId))
 		{
@@ -642,12 +642,12 @@ class Sh404sefHelperGeneral
 			if (!$static)
 			{
 				// poor man's reflection, pre 5.3.0
-				$dump = print_r($instance, true);
-				$propertytag = '[' . $propertyName . ':protected]';
-				$bits = explode($propertytag, $dump);
-				$bit = $bits[1];
-				$bits = explode('[_', $bit);
-				$bit = str_replace('=>', '', $bits[0]);
+				$dump          = print_r($instance, true);
+				$propertytag   = '[' . $propertyName . ':protected]';
+				$bits          = explode($propertytag, $dump);
+				$bit           = $bits[1];
+				$bits          = explode('[_', $bit);
+				$bit           = str_replace('=>', '', $bits[0]);
 				$propertyValue = trim($bit);
 			}
 			else
@@ -674,26 +674,26 @@ class Sh404sefHelperGeneral
 	{
 		static $alreadyAdded = array();
 
-		if(!empty($alreadyAdded[$tagName]))
+		if (!empty($alreadyAdded[$tagName]))
 		{
 			return $content;
 		}
 
 		$tagName = strtolower($tagName);
-		$tag = "\n<!-- "
+		$tag     = "\n<!-- "
 			. $tagName
 			. ' '
-			. json_encode($tagContent)
+			. base64_encode($tagContent)
 			. ' /' . $tagName . " -->\n";
 
 		switch ($position)
 		{
 			case 'after':
-				$content .= $tag;
+				$content                .= $tag;
 				$alreadyAdded[$tagName] = true;
 				break;
 			case 'before':
-				$content = $tag . $content;
+				$content                = $tag . $content;
 				$alreadyAdded[$tagName] = true;
 				break;
 			default:
@@ -714,9 +714,9 @@ class Sh404sefHelperGeneral
 	public static function getCommentedTag($content, $tagName)
 	{
 		$tagName = strtolower($tagName);
-		$data = array();
+		$data    = array();
 		preg_match(
-			'~<!-- ' . $tagName . ' (.*) /' . $tagName . ' -->~su',
+			'~<!-- ' . $tagName . ' (.*) /' . $tagName . ' -->~suU',
 			$content,
 			$data
 		);
@@ -727,9 +727,9 @@ class Sh404sefHelperGeneral
 			array_shift($data);
 		}
 
-		foreach($data as $key => $value)
+		foreach ($data as $key => $value)
 		{
-			$data[$key] = json_decode($value);
+			$data[$key] = base64_decode($value);
 		}
 
 		return empty($data) ? array() : $data;
@@ -747,7 +747,7 @@ class Sh404sefHelperGeneral
 	{
 		$tagName = strtolower($tagName);
 		$content = ShlSystem_Strings::pr(
-			'~<!-- ' . $tagName . ' (.*) /' . $tagName . ' -->~',
+			'~<!-- ' . $tagName . ' (.*) /' . $tagName . ' -->~suU',
 			'',
 			$content
 		);

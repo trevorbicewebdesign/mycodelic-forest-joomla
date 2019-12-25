@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date		2018-08-22
+ * @version     4.17.0.3932
+ * @date		2019-09-30
  */
 
 /**
@@ -41,11 +41,6 @@ div.sh404sef-social-buttons {
 .sh404sef-social-buttons span.linkedin {
 /*     position: relative; */
 /*     top: 3px; */
-}
-/* vertical adjustment for Google+ page */
-.sh404sef-social-buttons span.googlepluspage {
-/*     position: relative; */
-/*      top: 2px; */
 }
 
 /* Facebook flyout cut-off fix */

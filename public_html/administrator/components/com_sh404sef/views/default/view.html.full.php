@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -208,7 +208,7 @@ class Sh404sefViewDefault extends ShlMvcView_Base
 			// URLS -------------------
 			$sql = 'SELECT count(*) FROM #__sh404sef_urls WHERE ';
 			$this->cpStats['URL'] = array();
-			$database->setQuery($sql . "`newurl` <> '' and`rank` = 0");
+			$database->setQuery($sql . "`newurl` <> '' and `rank` = 0");
 			$value = $database->loadResult();
 			$sefCount = $value;
 			$this->cpStats['URL'][JText::_('COM_SH404SEF_CP_TOTAL_URLS')] = array('value' => $value, 'flag' => '',
@@ -266,7 +266,7 @@ class Sh404sefViewDefault extends ShlMvcView_Base
 
 			// shURLs ----------------
 			$sql = 'SELECT count(*) FROM #__sh404sef_pageids as s join #__sh404sef_urls as u';
-			$sql .= ' on s.newurl = u.newurl where u.`newurl` <> \'\'';
+			$sql .= ' on s.`newurl` = u.`newurl` where u.`newurl` <> \'\'';
 			$this->cpStatsMore['shURLs'] = array();
 			$database->setQuery($sql);
 			$value = $database->loadResult();

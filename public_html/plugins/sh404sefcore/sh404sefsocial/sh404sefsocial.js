@@ -2,11 +2,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // get Google Analytics queue
@@ -22,7 +22,7 @@ _sh404sefSocialTrack.setup = function () {
     try {
         FB.init({
             appId: _sh404sefSocialTrack.options.FBAppId ? _sh404sefSocialTrack.options.FBAppId : "",
-            version: "v2.6",
+            version: "v3.1",
             status: true, // check login status
             cookie: true, // enable cookies to allow the server to access the session
             oauth: true, // enable OAuth 2.0
@@ -95,40 +95,6 @@ _sh404sefSocialTrackPinterestTracking = function (msg, url) {
             if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
                 ga('send', 'event', _sh404sefSocialTrack.trackerName + '_pinterest', msg, targetUrl, 1);
             }
-        }
-    } catch (e) {
-        console.log(e.message);
-    }
-};
-
-/*
- * G+ requires a callback function for each click
- */
-_sh404sefSocialTrackGPlusTracking = function (data) {
-    try {
-        if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.classic) {
-            if (data.state == "on" || data.state == "off") {
-                _gaq.push(['_trackEvent', _sh404sefSocialTrack.trackerName + '_gplus', data.state, data.href, 1, true]);
-            }
-        }
-        if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
-            if (data.state == "on" || data.state == "off") {
-                ga('send', 'event', _sh404sefSocialTrack.trackerName + '_gplus', data.state, data.href, 1);
-            }
-        }
-    } catch (e) {
-        console.log(e.message);
-    }
-};
-
-// Google page click tracking
-_sh404sefSocialTrack.GPageTracking = function (target, source) {
-    try {
-        if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.classic) {
-            _gaq.push(['_trackEvent', _sh404sefSocialTrack.trackerName + '_gplus_page', target, source, 1, true]);
-        }
-        if (sh404SEFAnalyticsType && sh404SEFAnalyticsType.universal) {
-            ga('send', 'event', _sh404sefSocialTrack.trackerName + '_gplus_page', target, source, 1);
         }
     } catch (e) {
         console.log(e.message);

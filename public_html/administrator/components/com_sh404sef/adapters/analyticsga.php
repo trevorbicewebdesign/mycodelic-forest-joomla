@@ -3,12 +3,14 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
+
+use Joomla\Registry\Registry;
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
@@ -66,19 +68,19 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 	{
 
 		// get config
-		$config = Sh404sefFactory::getConfig();
+		$config   = Sh404sefFactory::getConfig();
 		$pageInfo = Sh404sefFactory::getPageInfo();
 
 		// in case of 404, we use a custom page url so that 404s can also be tracked in GA
 		$customUrl = !empty($pageInfo->httpStatus) && $pageInfo->httpStatus == 404 ? '/__404__' : '';
 
-		$displayData = array();
-		$displayData['tracking_code'] = trim($config->analyticsUgaId);
-		$displayData['custom_domain'] = 'auto';
-		$displayData['options'] = array();
-		$displayData['custom_url'] = $customUrl;
-		$displayData['anonymize'] = !empty($config->analyticsEnableAnonymization);
-		$displayData['enable_display_features'] = !empty($config->analyticsEnableDisplayFeatures);
+		$displayData                              = array();
+		$displayData['tracking_code']             = trim($config->analyticsUgaId);
+		$displayData['custom_domain']             = 'auto';
+		$displayData['options']                   = array();
+		$displayData['custom_url']                = $customUrl;
+		$displayData['anonymize']                 = !empty($config->analyticsEnableAnonymization);
+		$displayData['enable_display_features']   = !empty($config->analyticsEnableDisplayFeatures);
 		$displayData['enable_enhanced_link_attr'] = !empty($config->analyticsEnableEnhancedLinkAttr);
 
 		/**
@@ -113,7 +115,7 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		// get config
 		$config = Sh404sefFactory::getConfig();
 
-		$displayData = array();
+		$displayData                  = array();
 		$displayData['tracking_code'] = trim($config->analyticsGtmId);
 
 		// finalize snippet : add user tracking code
@@ -127,9 +129,13 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 
 	protected function _fetchAccountsList()
 	{
-
-		$hClient = Sh404sefHelperAnalytics::getHttpClient();
-		$hClient->resetParameters($clearAll = true);
+		$hClient = JHttpFactory::getHttp(
+			new Registry(
+				array(
+					'follow_location' => true
+				)
+			)
+		);
 
 		// build the request
 		$config = Sh404sefFactory::getConfig();
@@ -164,53 +170,40 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		// set target API url
 		$uri = $this->_endPoint . 'management/accounts/' . $accoundId . '/webproperties/' . trim($config->analyticsUgaId) . '/profiles';
 		ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: fetching account list at: ' . $uri);
-		$hClient->setUri($uri);
-
-		// make sure we use GET
-		$hClient->setMethod(Zendshl_Http_Client::GET);
 
 		// set headers required by Google Analytics
 		$headers = array('GData-Version' => 2, 'Authorization' => 'Bearer ' . Sh404sefHelperAnalytics_auth::getAccessToken());
 		ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: fetching account list with headers: ' . print_r($headers, true));
 
-		$hClient->setHeaders($headers);
-
-		// establish connection with available methods
-		$adapters = array('Zendshl_Http_Client_Adapter_Curl', 'Zendshl_Http_Client_Adapter_Socket');
 		$rawResponse = null;
 
 		// perform connect request
-		foreach ($adapters as $adapter)
+		try
 		{
-			try
-			{
-				$hClient->setAdapter($adapter);
-				$response = $hClient->request();
-				$body = $response->getBody();
-				break;
-			}
-			catch (Exception $e)
-			{
-				// we failed, let's try another method
-				ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: fetching account list comm exception: ' . $e->getMessage());
-			}
+			$response = $hClient->get(
+				$uri,
+				$headers,
+				10
+			);
+		}
+		catch (Exception $e)
+		{
+			ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: fetching account list comm exception: ' . $e->getMessage());
+			throw new Sh404sefExceptionDefault(JTEXT::sprintf('COM_SH404SEF_ANALYTICS_RESPONSE_DUMP', print_r($e->getMessage(), true)));
 		}
 
 		ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: fetching account list response: ' . print_r($response, true));
-
-		// handle any error
-		Sh404sefHelperAnalytics::handleConnectResponseErrors($response);
 
 		// analyze response
 		// check if authentified
 		Sh404sefHelperAnalytics::verifyAuthResponse($response);
 		libxml_use_internal_errors(true);
-		$xml = simplexml_load_string($response->getBody());
+		$xml = simplexml_load_string($response->body);
 		if ($xml === false)
 		{
 			$error = libxml_get_last_error();
 			$error = is_object($error) && !empty($error->message) ? $error->message : 'Unknown XML error';
-			$msg = 'Analytics: fetching account list invalid XML response: ' . $error;
+			$msg   = 'Analytics: fetching account list invalid XML response: ' . $error;
 			ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, $msg);
 			throw new Sh404sefExceptionDefault($msg);
 		}
@@ -219,12 +212,12 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		{
 			foreach ($xml->entry as $entry)
 			{
-				$account = new StdClass();
-				$bits = explode('/', (string) $entry->id);
-				$account->id = array_pop($bits);
-				$account->title = str_replace('Google Analytics Profile ', '', (string) $entry->title);
-				$account->title = str_replace('Google Analytics View (Profile) ', '', $account->title);
-				$this->_accounts[] = clone ($account);
+				$account           = new StdClass();
+				$bits              = explode('/', (string) $entry->id);
+				$account->id       = array_pop($bits);
+				$account->title    = str_replace('Google Analytics Profile ', '', (string) $entry->title);
+				$account->title    = str_replace('Google Analytics View (Profile) ', '', $account->title);
+				$this->_accounts[] = clone($account);
 			}
 		}
 
@@ -249,38 +242,38 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 
 		if (version_compare(JVERSION, '3.0', 'ge'))
 		{
-			$select = '<div class="btn-group">';
-			$select .= Sh404sefHelperHtml::buildSelectList(
+			$select    = '<div class="btn-group">';
+			$select    .= Sh404sefHelperHtml::buildSelectList(
 				$this->_accounts, $this->_options['accountId'], 'accountId', $autoSubmit = false,
 				$addSelectAll = false, $selectAllTitle = '', $customSubmit
 			);
-			$select .= '</div>';
+			$select    .= '</div>';
 			$filters[] = $select;
 
 			// dashboard only has account selection, no room for anything else
 			// only shows main selection drop downs on analytics view
 			if ($allFilters)
 			{
-				$select = '<div class="btn-group">';
-				$select .= '<label for="startDate">' . JText::_('COM_SH404SEF_ANALYTICS_START_DATE') . '</label>';
-				$select .= JHTML::_('calendar', $this->_options['startDate'], 'startDate', 'startDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
-				$select .= '</div>';
+				$select    = '<div class="btn-group">';
+				$select    .= '<label for="startDate">' . JText::_('COM_SH404SEF_ANALYTICS_START_DATE') . '</label>';
+				$select    .= JHTML::_('calendar', $this->_options['startDate'], 'startDate', 'startDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
+				$select    .= '</div>';
 				$filters[] = $select;
 
-				$select = '<div class="btn-group">';
-				$select .= '<label for="endDate">' . JText::_('COM_SH404SEF_ANALYTICS_END_DATE') . '</label>';
-				$select .= JHTML::_('calendar', $this->_options['endDate'], 'endDate', 'endDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
-				$select .= '</div>';
+				$select    = '<div class="btn-group">';
+				$select    .= '<label for="endDate">' . JText::_('COM_SH404SEF_ANALYTICS_END_DATE') . '</label>';
+				$select    .= JHTML::_('calendar', $this->_options['endDate'], 'endDate', 'endDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
+				$select    .= '</div>';
 				$filters[] = $select;
 
 				// select groupBy (day, week, month)
-				$select = '<div class="btn-group">';
-				$select .= '<label for="groupBy">' . JText::_('COM_SH404SEF_ANALYTICS_GROUP_BY') . '</label>';
-				$select .= Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList(
+				$select    = '<div class="btn-group">';
+				$select    .= '<label for="groupBy">' . JText::_('COM_SH404SEF_ANALYTICS_GROUP_BY') . '</label>';
+				$select    .= Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList(
 					$this->_options['groupBy'], 'groupBy', $autoSubmit = false,
 					$addSelectAll = false, $selectAllTitle = '', $customSubmit
 				);
-				$select .= '</div>';
+				$select    .= '</div>';
 				$filters[] = $select;
 
 				// add a click to update link
@@ -298,7 +291,7 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 		}
 		else
 		{
-			$select = Sh404sefHelperHtml::buildSelectList(
+			$select    = Sh404sefHelperHtml::buildSelectList(
 				$this->_accounts, $this->_options['accountId'], 'accountId', $autoSubmit = false,
 				$addSelectAll = false, $selectAllTitle = '', $customSubmit
 			);
@@ -309,15 +302,15 @@ class Sh404sefAdapterAnalyticsga extends Sh404sefClassBaseanalytics
 			if ($allFilters)
 			{
 				// select start date
-				$select = JHTML::_('calendar', $this->_options['startDate'], 'startDate', 'startDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
+				$select    = JHTML::_('calendar', $this->_options['startDate'], 'startDate', 'startDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
 				$filters[] = '&nbsp;' . JText::_('COM_SH404SEF_ANALYTICS_START_DATE') . ':&nbsp;' . $select;
 
 				// select end date
-				$select = JHTML::_('calendar', $this->_options['endDate'], 'endDate', 'endDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
+				$select    = JHTML::_('calendar', $this->_options['endDate'], 'endDate', 'endDate', '%Y-%m-%d', array('class' => 'class="textinput"'));
 				$filters[] = '&nbsp;' . JText::_('COM_SH404SEF_ANALYTICS_END_DATE') . ':&nbsp;' . $select;
 
 				// select groupBy (day, week, month)
-				$select = Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList(
+				$select    = Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList(
 					$this->_options['groupBy'], 'groupBy', $autoSubmit = false,
 					$addSelectAll = false, $selectAllTitle = '', $customSubmit
 				);

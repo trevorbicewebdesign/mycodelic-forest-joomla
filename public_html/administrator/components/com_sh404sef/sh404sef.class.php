@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -125,14 +125,14 @@ function shGetFrontEndActiveLanguages()
 			}
 			foreach ($languages as $language)
 			{
-				$shLang = new StdClass();
+				$shLang      = new StdClass();
 				$shLang->iso = $language->sef;
 				if (empty($shLang->iso))
 				{
 					$shLang->iso = substr($language->lang_code, 0, 2);
 				}
 				$shLang->code = $language->lang_code;
-				$shLangs[] = $shLang;
+				$shLangs[]    = $shLang;
 			}
 		}
 	}
@@ -174,8 +174,8 @@ function sefencode($string)
 function titleToLocation($title)
 {
 	$sefConfig = Sh404sefFactory::getConfig();
-	$title = JString::trim($title);
-	$debug = 0;
+	$title     = JString::trim($title);
+	$debug     = 0;
 	if ($debug)
 	{
 		$t[] = $title;
@@ -255,7 +255,7 @@ function shCleanUpMosMsg($string)
 function shGetMosMsg($string)
 {
 	$matches = array();
-	$result = preg_match('/(&|\?)mosmsg=[^&]*/i', $string, $matches);
+	$result  = preg_match('/(&|\?)mosmsg=[^&]*/i', $string, $matches);
 	if (!empty($matches))
 	{
 		return JString::trim($matches[0], '&?');
@@ -313,7 +313,17 @@ function shGETGarbageCollect()
 		{
 			foreach ($value as $k => $v)
 			{
-				$ret .= '&' . $param . '[' . $k . ']=' . $v;
+				if (is_array($v))
+				{
+					foreach ($v as $k2 => $v2)
+					{
+						$ret .= '&' . $param . '[' . $k2 . ']=' . $v2;
+					}
+				}
+				else
+				{
+					$ret .= '&' . $param . '[' . $k . ']=' . $v;
+				}
 			}
 		}
 		else
@@ -435,10 +445,10 @@ function shAddToGETVarsList($paramName, $paramValue)
 
 function shComputeItemidString($nonSefUrl, &$title, $shLangName)
 {
-	$sefConfig = &shRouter::shGetConfig();
+	$sefConfig      = &shRouter::shGetConfig();
 	$shItemidString = '';
 	$shHomePageFlag = shIsHomepage($nonSefUrl);
-	$app = JFactory::getApplication();
+	$app            = JFactory::getApplication();
 
 	if (!$shHomePageFlag)
 	{
@@ -504,18 +514,18 @@ function shFinalizePlugin($string, $title, &$shAppendString, $shItemidString, $l
 function shInitializePlugin($lang, &$shLangName, &$shLangIso, $option)
 {
 
-	$conf = JFactory::getConfig();
+	$conf                  = JFactory::getConfig();
 	$configDefaultLanguage = $conf->get('language');
 
 	$shLangName = empty($lang) ? Sh404sefFactory::getPageInfo()->currentLanguageTag : Sh404sefHelperLanguage::getLangTagFromUrlCode($lang);
-	$shLangIso = (shTranslateUrl($option, $shLangName))
+	$shLangIso  = (shTranslateUrl($option, $shLangName))
 		? (isset($lang) ? $lang : Sh404sefHelperLanguage::getUrlCodeFromTag(Sh404sefFactory::getPageInfo()->currentLanguageTag))
 		: (isset($configDefaultLanguage) ? Sh404sefHelperLanguage::getUrlCodeFromTag($configDefaultLanguage)
 			: Sh404sefHelperLanguage::getUrlCodeFromTag(Sh404sefFactory::getPageInfo()->currentLanguageTag));
 	if (strpos($shLangIso, '_') !== false)
 	{
 		//11/08/2007 14:30:16 mambo compat
-		$shTemp = explode('_', $shLangIso);
+		$shTemp    = explode('_', $shLangIso);
 		$shLangIso = $shTemp[0];
 	}
 
@@ -526,8 +536,8 @@ function shInitializePlugin($lang, &$shLangName, &$shLangIso, $option)
 	// if component is not installed, or else plugin may try to read from comp DB tables. This will cause DB table names
 	// to be displayed
 	return !sh404SEF_CHECK_COMP_IS_INSTALLED
-	|| (sh404SEF_CHECK_COMP_IS_INSTALLED
-		&& shFileExists(sh404SEF_ABS_PATH . 'components/' . $option . '/' . str_replace('com_', '', $option) . '.php'));
+		|| (sh404SEF_CHECK_COMP_IS_INSTALLED
+			&& shFileExists(sh404SEF_ABS_PATH . 'components/' . $option . '/' . str_replace('com_', '', $option) . '.php'));
 }
 
 function shLoadPluginLanguage($pluginName, $language, $defaultString, $path = '')
@@ -585,7 +595,7 @@ function shTranslateUrl($compName, $shLang = null)
 		return false;
 	}
 	$compName = str_replace('com_', '', $compName);
-	$result = !in_array($compName, $sefConfig->notTranslateURLList);
+	$result   = !in_array($compName, $sefConfig->notTranslateURLList);
 	return $result;
 }
 
@@ -597,9 +607,9 @@ function shIsCurrentPageHome()
 	); // V 1.2.4.t
 	$currentPage = JString::ltrim(str_replace('index.php', '', $currentPage), '/');
 	$currentPage = JString::ltrim($currentPage, '?');
-	$shHomePage = ShlSystem_Strings::pr('/(&|\?)lang=[a-zA-Z]{2,3}/iu', '', Sh404sefFactory::getPageInfo()->homeLink);
-	$shHomePage = JString::ltrim(str_replace('index.php', '', $shHomePage), '/');
-	$shHomePage = JString::ltrim($shHomePage, '?');
+	$shHomePage  = ShlSystem_Strings::pr('/(&|\?)lang=[a-zA-Z]{2,3}/iu', '', Sh404sefFactory::getPageInfo()->homeLink);
+	$shHomePage  = JString::ltrim(str_replace('index.php', '', $shHomePage), '/');
+	$shHomePage  = JString::ltrim($shHomePage, '?');
 	return $currentPage == $shHomePage;
 }
 
@@ -609,7 +619,7 @@ function shUrlEncode($path)
 	if (!empty($path))
 	{
 		$bits = explode('/', $path);
-		$enc = array();
+		$enc  = array();
 		if (count($bits))
 		{
 			foreach ($bits as $key => $value)
@@ -628,7 +638,7 @@ function shUrlDecode($path)
 	if (!empty($path))
 	{
 		$bits = explode('/', $path);
-		$dec = array();
+		$dec  = array();
 		if (count($bits))
 		{
 			foreach ($bits as $key => $value)
@@ -655,6 +665,7 @@ function shGetDefaultDisplayNumFromURL($url, $includeBlogLinks = false)
  * stored in session
  *
  * @param $url
+ *
  * @return unknown_type
  */
 function shGetDefaultDisplayNumFromConfig($url, $includeBlogLinks = false)
@@ -687,7 +698,7 @@ function shGetDefaultDisplayNum($menuItemid, $url, $fromSession = false, $includ
 	{
 
 		// itemid, try read params from the menu item
-		$menu = $app->getMenu();
+		$menu     = $app->getMenu();
 		$menuItem = $menu->getItem($menuItemid); // load menu item from DB
 		if (empty($menuItem))
 		{
@@ -698,7 +709,7 @@ function shGetDefaultDisplayNum($menuItemid, $url, $fromSession = false, $includ
 
 		// Load the parameters. Merge Global and Menu Item params into new object
 		$currentOption = $app->input->getCmd('option');
-		$params = new JRegistry($menuItem->params); // get params from menu item
+		$params        = new JRegistry($menuItem->params); // get params from menu item
 		if (!empty($currentOption))
 		{
 			$appParams = $app->getParams();
@@ -709,7 +720,7 @@ function shGetDefaultDisplayNum($menuItemid, $url, $fromSession = false, $includ
 		if (($option == 'com_content' && $layout == 'blog') || ($option == 'com_content' && $view == 'featured'))
 		{
 			$num_leading_articles = $params->get('num_leading_articles');
-			$num_intro_articles = $params->get('num_intro_articles');
+			$num_intro_articles   = $params->get('num_intro_articles');
 			//adjust limit and listLimit for page calculation as blog views include
 			//# of links in the limit value, while it should not be included for
 			// page number calculation
@@ -721,7 +732,7 @@ function shGetDefaultDisplayNum($menuItemid, $url, $fromSession = false, $includ
 
 		// elements with a display_num parameter
 		$displayNum = intval($params->get('display_num'));
-		$ret = !empty($displayNum) ? $displayNum : $ret;
+		$ret        = !empty($displayNum) ? $displayNum : $ret;
 	}
 
 	if ($fromSession)
@@ -793,7 +804,7 @@ function shGetSefURLFromCacheOrDB($string, &$sefString)
 		return sh404SEF_URLTYPE_NONE;
 	}
 	$sefString = '';
-	$urlType = sh404SEF_URLTYPE_NONE;
+	$urlType   = sh404SEF_URLTYPE_NONE;
 	if ($sefConfig->shUseURLCache)
 	{
 		$urlType = Sh404sefHelperCache::getSefUrlFromCache($string, $sefString);
@@ -821,7 +832,7 @@ function shGetSefURLFromCacheOrDB($string, &$sefString)
 function shAddSefUrlToDBAndCache($nonSefUrl, $sefString, $rank, $urlType)
 {
 
-	$db = ShlDbHelper::getDb();
+	$db        = ShlDbHelper::getDb();
 	$sefString = JString::ltrim($sefString, '/'); // V 1.2.4.t just in case you forgot to remove leading slash
 	switch ($urlType)
 	{
@@ -905,13 +916,14 @@ function shAddSefUrlToDBAndCache($nonSefUrl, $sefString, $rank, $urlType)
  *
  * @param unknown_type $action
  * @param unknown_type $value
+ *
  * @return unknown
  */
 function shMustCreatePageId($action = 'get', $value = false)
 {
 
 	jimport('joomla.application.component.model');
-	$model = ShlMvcModel_Base::getInstance('pageids', 'Sh404sefModel');
+	$model      = ShlMvcModel_Base::getInstance('pageids', 'Sh404sefModel');
 	$mustCreate = $model->mustCreatePageId($action, $value);
 
 	return $mustCreate;
@@ -967,7 +979,9 @@ function shSaveFile($shFileName, $fileData)
  * utility function to obtain iso code from language name
  *
  * @deprecated Use Sh404sefHelperLanguage::getUrlCodeFromTag($langName) instead
+ *
  * @param string $langName
+ *
  * @return string
  */
 function shGetIsoCodeFromName($langName)
@@ -981,7 +995,9 @@ function shGetIsoCodeFromName($langName)
  * utility function to obtain language name from iso code
  *
  * @deprecated Use Sh404sefHelperLanguage::getLangTagFromUrlCode($langName) instead
+ *
  * @param string $langName
+ *
  * @return string
  */
 function shGetNameFromIsoCode($langCode)
@@ -1000,9 +1016,9 @@ function shGetComponentPrefix($option)
 		return '';
 	}
 	$sefConfig = Sh404sefFactory::getConfig();
-	$option = str_replace('com_', '', $option);
-	$prefix = '';
-	$prefix = empty($sefConfig->defaultComponentStringList[@$option]) ? '' : $sefConfig->defaultComponentStringList[@$option];
+	$option    = str_replace('com_', '', $option);
+	$prefix    = '';
+	$prefix    = empty($sefConfig->defaultComponentStringList[@$option]) ? '' : $sefConfig->defaultComponentStringList[@$option];
 	return $prefix;
 }
 
@@ -1016,7 +1032,7 @@ function shRedirect($url, $msg = '', $redirKind = '301', $msgType = 'message')
 	if (class_exists('InputFilter'))
 	{
 		$iFilter = new InputFilter();
-		$url = $iFilter->process($url);
+		$url     = $iFilter->process($url);
 		if (!empty($msg))
 		{
 			$msg = $iFilter->process($msg);
@@ -1122,8 +1138,8 @@ function shGetMenuItemSsl($id)
 		return 'ignore';
 	}
 	$secure = 0;
-	$app = JFactory::getApplication();
-	$menu = $app->getMenu();
+	$app    = JFactory::getApplication();
+	$menu   = $app->getMenu();
 	if (!empty($menu))
 	{
 		$params = $menu->getParams($id);
@@ -1152,8 +1168,8 @@ function shGetMenuItemLanguage($id)
 		return '';
 	}
 	$language = '';
-	$app = JFactory::getApplication();
-	$menu = $app->getMenu();
+	$app      = JFactory::getApplication();
+	$menu     = $app->getMenu();
 	if (!empty($menu))
 	{
 		$item = $menu->getItem($id);
@@ -1174,9 +1190,9 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 
 	$mainframe = JFactory::getApplication();
 
-	$pageInfo = Sh404sefFactory::getPageInfo();
+	$pageInfo  = Sh404sefFactory::getPageInfo();
 	$sefConfig = Sh404sefFactory::getConfig();
-	$app = JFactory::getApplication();
+	$app       = JFactory::getApplication();
 
 	// return unmodified anchors
 	if (JString::substr($string, 0, 1) == '#')
@@ -1185,7 +1201,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 		return $string;
 	}
 	// Quick fix for shared SSL server : if https, switch to non sef
-	$id = Sh404sefHelperUrl::getUrlVar($string, 'Itemid', $app->input->getInt('Itemid'));
+	$id     = Sh404sefHelperUrl::getUrlVar($string, 'Itemid', $app->input->getInt('Itemid'));
 	$secure = 'yes' == shGetMenuItemSsl($id);
 	if ($secure && $sefConfig->shForceNonSefIfHttps)
 	{
@@ -1196,8 +1212,8 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 	$database = ShlDbHelper::getDb();
 
 	$shOrigString = $string;
-	$shMosMsg = shGetMosMsg($string); // V x 01/09/2007 22:45:52
-	$string = shCleanUpMosMsg($string);// V x 01/09/2007 22:45:52
+	$shMosMsg     = shGetMosMsg($string); // V x 01/09/2007 22:45:52
+	$string       = shCleanUpMosMsg($string);// V x 01/09/2007 22:45:52
 
 	// V x : removed shJoomfish module. Now we set $mosConfi_lang here
 	$shOrigLang = $pageInfo->currentLanguageTag; // save current language
@@ -1232,7 +1248,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 		$string = str_replace('option=', 'option=com_', $string);
 	}
 	// V 1.2.4.j string to be appended to URL, but not saved to DB
-	$shAppendString = '';
+	$shAppendString  = '';
 	$shRebuildNonSef = array();
 	$shComponentType = ''; // V w initialize var to avoid notices
 
@@ -1241,10 +1257,10 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 		// now check URL against our homepage, so as to always return / if homepage
 		$v1 = JString::ltrim(str_replace($pageInfo->getDefaultFrontLiveSite(), '', $string), '/');
 		// V 1.2.4.m : remove anchor if any
-		$v2 = explode('#', $v1);
-		$v1 = $v2[0];
-		$shAnchor = isset($v2[1]) ? '#' . $v2[1] : '';
-		$shSepString = (JString::substr($v1, -9) == 'index.php' || strpos($v1, '?') === false) ? '?' : '&';
+		$v2           = explode('#', $v1);
+		$v1           = $v2[0];
+		$shAnchor     = isset($v2[1]) ? '#' . $v2[1] : '';
+		$shSepString  = (JString::substr($v1, -9) == 'index.php' || strpos($v1, '?') === false) ? '?' : '&';
 		$shLangString = 'lang=' . Sh404sefHelperLanguage::getUrlCodeFromTag($shLanguage);
 		if (!Sh404sefHelperUrl::getUrlVar($v1, 'lang'))
 		{
@@ -1271,7 +1287,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 			{
 				// V 1.2.4.t
 				$shTmp = $shTemp . $shAnchor;
-				$ret = shFinalizeURL($sefConfig->shForcedHomePage . (empty($shTmp) ? '' : '/' . $shTmp));
+				$ret   = shFinalizeURL($sefConfig->shForcedHomePage . (empty($shTmp) ? '' : '/' . $shTmp));
 				if (empty($uri)) // if no URI, append remaining vars directly to the string
 				{
 					$ret .= $shAppendString;
@@ -1287,7 +1303,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 			else
 			{
 				$shRewriteBit = shIsDefaultLang($shLanguage) && !Sh404sefHelperLanguage::getInsertLangCodeInDefaultLanguage() ? '/' : $sefConfig->shRewriteStrings[$sefConfig->shRewriteMode];
-				$ret = shFinalizeURL($pageInfo->getDefaultFrontLiveSite() . $shRewriteBit . $shTemp . $shAnchor);
+				$ret          = shFinalizeURL($pageInfo->getDefaultFrontLiveSite() . $shRewriteBit . $shTemp . $shAnchor);
 				if (empty($uri)) // if no URI, append remaining vars directly to the string
 				{
 					$ret .= $shAppendString;
@@ -1309,16 +1325,16 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 	if ($letsGo)
 	{
 		// Replace & character variations.
-		$string = str_replace(array('&amp;', '&#38;'), array('&', '&'), $newstring);
-		$newstring = $string; // V 1.2.4.q
+		$string       = str_replace(array('&amp;', '&#38;'), array('&', '&'), $newstring);
+		$newstring    = $string; // V 1.2.4.q
 		$shSaveString = $string;
 		// warning : must add &lang=xx (only if it does not exists already), so as to be able to recognize the SefURL in the db if it's there
 		if (!Sh404sefHelperUrl::getUrlVar($string, 'lang'))
 		{
 			$shSepString = JString::substr($string, -9) == 'index.php' ? '?' : '&';
 			$anchorTable = explode('#', $string); // V 1.2.4.m remove anchor before adding language
-			$string = $anchorTable[0];
-			$string .= $shSepString . 'lang=' . Sh404sefHelperLanguage::getUrlCodeFromTag($shLanguage)
+			$string      = $anchorTable[0];
+			$string      .= $shSepString . 'lang=' . Sh404sefHelperLanguage::getUrlCodeFromTag($shLanguage)
 				. (!empty($anchorTable[1]) ? '#' . $anchorTable[1] : ''); // V 1.2.4.m then stitch back anchor
 		}
 		$URI = new sh_Net_URL($string);
@@ -1327,7 +1343,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 		{
 			// Import new vars here.
 			$option = null;
-			$task = null;
+			$task   = null;
 			//$sid = null;  V 1.2.4.s
 			// sort GET parameters to avoid some issues when same URL is produced with options not
 			// in the same order, ie index.php?option=com_virtuemart&category_id=3&Itemid=2&lang=fr
@@ -1352,7 +1368,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 
 		// get component type
 		$shComponentType = $extPlugin->getComponentType();
-		$shOption = str_replace('com_', '', $option);
+		$shOption        = str_replace('com_', '', $option);
 
 		//list of extension we always skip
 		$alwaysSkip = Sh404sefFactory::getPConfig()->alwaysNonSefComponents;
@@ -1375,7 +1391,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 		)
 		{
 			$sefstring = '';
-			$urlType = shGetSefURLFromCacheOrDB($string, $sefstring);
+			$urlType   = shGetSefURLFromCacheOrDB($string, $sefstring);
 			// still use it so we need it both ways
 			if (($urlType == sh404SEF_URLTYPE_NONE || $urlType == sh404SEF_URLTYPE_404) && empty($showall)
 				&& (!empty($limit) || (!isset($limit) && !empty($limitstart)))
@@ -1396,8 +1412,8 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 					)
 					{
 						$listLimit = shGetDefaultDisplayNumFromURL($string, $includeBlogLinks = true);
-						$string = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
-						$string = Sh404sefHelperUrl::sortUrl($string);
+						$string    = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
+						$string    = Sh404sefHelperUrl::sortUrl($string);
 					}
 
 					// that's a new URL, so let's add it to DB and cache
@@ -1417,10 +1433,10 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 					)
 					{
 						$listLimit = shGetDefaultDisplayNumFromURL($string, $includeBlogLinks = true);
-						$string = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
-						$string = Sh404sefHelperUrl::sortUrl($string);
+						$string    = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
+						$string    = Sh404sefHelperUrl::sortUrl($string);
 					}
-					$urlVars = is_array($URI->querystring) ? array_map('urldecode', $URI->querystring) : $URI->querystring;
+					$urlVars   = is_array($URI->querystring) ? array_map('urldecode', $URI->querystring) : $URI->querystring;
 					$sefstring = $sef_ext->create($string, $urlVars, $shAppendString, $shLanguage, $shOrigString, $originalUri); // V 1.2.4.s added original string
 				}
 			}
@@ -1455,18 +1471,18 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 			switch ($shComponentType)
 			{
 				case Sh404sefClassBaseextplugin::TYPE_SKIP:
-				{
-					$sefstring = $shSaveString; // V 1.2.4.q : restore untouched URL, except anchor which will be added later
-					// J! 1.6 kill all query vars
-					$shGETVars = array();
-					$uri->setQuery(array());
-					break;
-				}
+					{
+						$sefstring = $shSaveString; // V 1.2.4.q : restore untouched URL, except anchor which will be added later
+						// J! 1.6 kill all query vars
+						$shGETVars = array();
+						$uri->setQuery(array());
+						break;
+					}
 
 				case Sh404sefClassBaseextplugin::TYPE_SIMPLE:
 					// check for custom urls
 					$sefstring = '';
-					$urlType = shGetSefURLFromCacheOrDB($string, $sefstring);
+					$urlType   = shGetSefURLFromCacheOrDB($string, $sefstring);
 					// if no custom found, then build default url
 					if ($urlType != sh404SEF_URLTYPE_CUSTOM)
 					{
@@ -1476,12 +1492,12 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 							unset($URI);
 						}
 						$sefstring = 'component/';
-						$URI = new sh_Net_URL(Sh404sefHelperUrl::sortUrl($shSaveString)); // can't remove yet, anchor is use later down
-						$jUri = new JUri(Sh404sefHelperUrl::sortUrl($shSaveString));
-						$uriVars = $jUri->getQuery($asArray = true);
+						$URI       = new sh_Net_URL(Sh404sefHelperUrl::sortUrl($shSaveString)); // can't remove yet, anchor is use later down
+						$jUri      = new JUri(Sh404sefHelperUrl::sortUrl($shSaveString));
+						$uriVars   = $jUri->getQuery($asArray = true);
 						// remove lang information, if set to
 						// based on remove_default_prefix params of languagefilter plugin
-						$languageTag = empty($uriVars['lang']) ? Sh404sefFactory::getPageInfo()->currentLanguageTag
+						$languageTag              = empty($uriVars['lang']) ? Sh404sefFactory::getPageInfo()->currentLanguageTag
 							: Sh404sefHelperLanguage::getLangTagFromUrlCode($uriVars['lang']);
 						$shouldInsertLanguageCode = shInsertIsoCodeInUrl($shOption, $languageTag);
 						if (isset($uriVars['lang']))
@@ -1515,233 +1531,233 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 					break;
 
 				default:
-				{
-					$sefstring = '';
-					// base case:
-					$urlType = shGetSefURLFromCacheOrDB($string, $sefstring);
-
-					// first special case. User may have customized paginated urls
-					// this will be picked up by the line above, except if we're talking about
-					// a category or section blog layout, where Joomla does not uses the correct
-					// value for limit
-					if (($urlType == sh404SEF_URLTYPE_NONE || $urlType == sh404SEF_URLTYPE_404) && empty($showall)
-						&& (!empty($limit) || (!isset($limit) && !empty($limitstart)))
-					)
 					{
-						if (($option == 'com_content' && isset($layout) && $layout == 'blog')
-							|| ($option == 'com_content' && isset($view) && $view == 'featured')
+						$sefstring = '';
+						// base case:
+						$urlType = shGetSefURLFromCacheOrDB($string, $sefstring);
+
+						// first special case. User may have customized paginated urls
+						// this will be picked up by the line above, except if we're talking about
+						// a category or section blog layout, where Joomla does not uses the correct
+						// value for limit
+						if (($urlType == sh404SEF_URLTYPE_NONE || $urlType == sh404SEF_URLTYPE_404) && empty($showall)
+							&& (!empty($limit) || (!isset($limit) && !empty($limitstart)))
 						)
 						{
-							$listLimit = shGetDefaultDisplayNumFromURL($string, $includeBlogLinks = true);
-							$tmpString = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
-							$tmpString = Sh404sefHelperUrl::sortUrl($tmpString);
-							$urlType = shGetSefURLFromCacheOrDB($tmpString, $sefstring);
-							if ($urlType != sh404SEF_URLTYPE_NONE && $urlType != sh404SEF_URLTYPE_404)
-							{
-								// we found a match with pagination info!
-								$string = $tmpString;
-							}
-						}
-					}
-
-					// now let's try again without any pagination at all
-					/*
-					 if (($urlType == sh404SEF_URLTYPE_NONE || $urlType == sh404SEF_URLTYPE_404) && empty( $showall) && (!empty($limit) || (!isset($limit) && !empty($limitstart)))) {
-					$urlType = shGetSefURLFromCacheOrDB(shCleanUpPag($string), $sefstring); // search without pagination info
-					if ($urlType != sh404SEF_URLTYPE_NONE && $urlType != sh404SEF_URLTYPE_404) {
-					$sefstring = shAddPaginationInfo( @$limit, @$limitstart, @showall, 1, $string, $sefstring, null);
-					// a special case : com_content  does not calculate pagination right
-					// for frontpage and blog, they include links shown at the bottom in the calculation of number of items
-					// For instance, with joomla sample data, the frontpage has only 5 articles
-					// but the view sets $limit to 9 !!!
-					if (($option == 'com_content' && isset($layout) && $layout == 'blog')
-						|| ($option == 'com_content' && isset( $view) && $view == 'featured' )) {
-					$listLimit = shGetDefaultDisplayNumFromURL($string, $includeBlogLinks = true);
-					$string = Sh404sefHelperUrl::setUrlVar( $string, 'limit', $listLimit);
-					$string = Sh404sefHelperUrl::sortUrl($string);
-					}
-
-					// that's a new URL, so let's add it to DB and cache
-					ShlSystem_Log::debug( 'sh404sef', 'Created url based on non paginated base url:' . $string);
-					shAddSefUrlToDBAndCache( $string, $sefstring, 0, $urlType);
-					}
-					}
-					 */
-					if ($urlType == sh404SEF_URLTYPE_NONE)
-					{
-						// If component has its own sef_ext plug-in included.
-						$shDoNotOverride = in_array($shOption, $sefConfig->shDoNotOverrideOwnSef);
-						if (shFileExists(sh404SEF_ABS_PATH . 'components/' . $option . '/sef_ext.php')
-							&& ($shDoNotOverride // and param said do not override
-								|| (!$shDoNotOverride // or param said override, but we don't have a plugin either in sh404SEF dir or component sef_ext dir
-									&& (!in_array($shOption, $sefConfig->useJoomlaRouterPhpWithItemid))
-									&& (!in_array($shOption, $sefConfig->useJoomlaRouter))
-									&& (!shFileExists(sh404SEF_ABS_PATH . 'components/com_sh404sef/sef_ext/' . $option . '.php')
-										&& !shFileExists(sh404SEF_ABS_PATH . 'components/' . $option . '/sef_ext/' . $option . '.php'))))
-						)
-						{
-							// Load the plug-in file. V 1.2.4.s changed require_once to include
-							include_once(sh404SEF_ABS_PATH . 'components/' . $option . '/sef_ext.php');
-							$_SEF_SPACE = $sefConfig->replacement;
-							$comp_name = str_replace('com_', '', $option);
-							$className = 'sef_' . $comp_name;
-							$sef_ext = new $className;
-							// V x : added default string in params
-							if (empty($sefConfig->defaultComponentStringList[$comp_name]))
-							{
-								$title[] = getMenuTitle($option, null, isset($Itemid) ? @$Itemid : null, null, $shLanguage);
-							}
-							// V 1.2.4.x
-							else
-							{
-								$title[] = $sefConfig->defaultComponentStringList[$comp_name];
-							}
-							// V 1.2.4.r : clean up URL BEFORE sending it to sef_ext files, to have control on what they do
-							// remove lang information, we'll put it back ourselves later
-							//$shString = preg_replace( '/(&|\?)lang=[a-zA-Z]{2,3}/iU' ,'', $string);
-							// V 1.2.4.t use original non-sef string. Some sef_ext files relies on order of params, which may
-							// have been changed by sh404SEF
-							$shString = preg_replace('/(&|\?)lang=[a-zA-Z]{2,3}/iu', '', $shSaveString);
-							$finalstrip = explode("|", $sefConfig->stripthese);
-							$shString = str_replace('&', '&amp;', $shString);
-							ShlSystem_Log::debug('sh404sef', 'Sending to own sef_ext.php plugin : ' . $shString);
-							$sefstring = $sef_ext->create($shString);
-							ShlSystem_Log::debug('sh404sef', 'Created by sef_ext.php plugin : ' . $sefstring);
-							$sefstring = str_replace("%10", "%2F", $sefstring);
-							$sefstring = str_replace("%11", $sefConfig->replacement, $sefstring);
-							$sefstring = rawurldecode($sefstring);
-							if ($sefstring == $string)
-							{
-								if (!empty($shMosMsg)) // V x 01/09/2007 22:48:01
-								{
-									$string .= '?' . $shMosMsg;
-								}
-								$ret = shFinalizeURL($string);
-								$pageInfo->currentLanguageTag = $shOrigLang;
-								ShlSystem_Log::debug('sh404sef', 'Returning shSefRelToAbs 5 with ' . $ret);
-								return $ret;
-							}
-							else
-							{
-								// V 1.2.4.p : sef_ext extensions for opensef/SefAdvance do not always replace '
-								$sefstring = str_replace('\'', $sefConfig->replacement, $sefstring);
-								// some ext. seem to html_special_chars URL ?
-								$sefstring = str_replace('&#039;', $sefConfig->replacement, $sefstring); // V w 27/08/2007 13:23:56
-								$sefstring = str_replace(' ', $_SEF_SPACE, $sefstring);
-								$sefstring = str_replace(
-									' ', '',
-									(shInsertIsoCodeInUrl($option, $shLanguage) ? // V 1.2.4.q
-										Sh404sefHelperLanguage::getUrlCodeFromTag($shLanguage) . '/' : '')
-									. titleToLocation($title[0])
-									. '/'
-									. JString::ltrim($sefstring, '/')
-									. (($sefstring != '') ? $sefConfig->suffix : '')
-								);
-								if (!empty($sefConfig->suffix))
-								{
-									$sefstring = str_replace('/' . $sefConfig->suffix, $sefConfig->suffix, $sefstring);
-								}
-
-								//$finalstrip = explode("|", $sefConfig->stripthese);
-								$sefstring = str_replace($finalstrip, $sefConfig->replacement, $sefstring);
-								$sefstring = str_replace(
-									$sefConfig->replacement . $sefConfig->replacement . $sefConfig->replacement,
-									$sefConfig->replacement, $sefstring
-								);
-								$sefstring = str_replace($sefConfig->replacement . $sefConfig->replacement, $sefConfig->replacement, $sefstring);
-								$suffixthere = 0;
-								if (!empty($sefConfig->suffix) && strpos($sefstring, $sefConfig->suffix) !== false) // V 1.2.4.s
-								{
-									$suffixthere = strlen($sefConfig->suffix);
-								}
-								$takethese = str_replace("|", "", $sefConfig->friendlytrim);
-								$sefstring = JString::trim(JString::substr($sefstring, 0, strlen($sefstring) - $suffixthere), $takethese);
-								$sefstring .= $suffixthere == 0 ? '' : $sefConfig->suffix; // version u 26/08/2007 17:27:16
-								// V 1.2.4.m store it in DB so as to be able to use sef_ext plugins really !
-								$string = str_replace('&amp;', '&', $string);
-								// V 1.2.4.r without mod_rewrite
-								$shSefString = shAdjustToRewriteMode($sefstring);
-								// V 1.2.4.p check for various URL for same content
-								$dburl = ''; // V 1.2.4.t prevent notice error
-								$urlType = sh404SEF_URLTYPE_NONE;
-								if ($sefConfig->shUseURLCache)
-								{
-									$urlType = Sh404sefHelperCache::getNonSefUrlFromCache($shSefString, $dburl);
-								}
-								$newMaxRank = 0; // V 1.2.4.s
-								$shDuplicate = false;
-								if ($sefConfig->shRecordDuplicates || $urlType == sh404SEF_URLTYPE_NONE)
-								{
-									try
-									{
-										$sql = "SELECT newurl, rank, dateadd FROM #__sh404sef_urls WHERE oldurl = "
-											. $database->Quote($shSefString) . " ORDER BY rank ASC";
-										$database->setQuery($sql);
-										$dbUrlList = $database->loadObjectList();
-									}
-									catch (Exception $e)
-									{
-										ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
-										$dbUrlList = array();
-									}
-									if (count($dbUrlList) > 0)
-									{
-										$dburl = $dbUrlList[0]->newurl;
-										$newMaxRank = $dbUrlList[count($dbUrlList) - 1]->rank + 1;
-										$urlType = $dbUrlList[0]->dateadd == '0000-00-00' ? sh404SEF_URLTYPE_AUTO : sh404SEF_URLTYPE_CUSTOM;
-									}
-								}
-								if ($urlType != sh404SEF_URLTYPE_NONE && ($dburl != $string))
-								{
-									$shDuplicate = true;
-								}
-								$urlType = $urlType == sh404SEF_URLTYPE_NONE ? sh404SEF_URLTYPE_AUTO : $urlType;
-								ShlSystem_Log::debug(
-									'sh404sef',
-									'Adding from sef_ext to DB : ' . $shSefString . ' | rank = ' . ($shDuplicate ? $newMaxRank : 0)
-								);
-								shAddSefUrlToDBAndCache($string, $shSefString, ($shDuplicate ? $newMaxRank : 0), $urlType);
-							}
-						}
-						// Component has no own sef extension.
-						else
-						{
-							$string = JString::trim($string, "&?");
-
-							// V 1.2.4.q a trial in better handling homepage articles
-							// disabled in J! 1.6. Becomes too complex with multi-language
-							// TODO: remove guessItemidOnHomepage setting
-							if (false && shIsCurrentPageHome() && ($option == 'com_content') // com_content component on homepage
-								&& (isset($task)) && ($task == 'view') && $sefConfig->guessItemidOnHomepage
-							)
-							{
-								$string = preg_replace('/(&|\?)Itemid=[^&]*/iu', '', $string); // we remove Itemid, as com_content plugin
-								$Itemid = null; // will hopefully do a better job at finding the right one
-								unset($URI->querystring['Itemid']);
-								unset($shGETVars['Itemid']);
-							}
-
-							require_once(sh404SEF_FRONT_ABS_PATH . 'sef_ext.php');
-							$sef_ext = new sef_404();
-							// Rewrite the URL now. // V 1.2.4.s added original string
-							// a special case : com_content  does not calculate pagination right
-							// for frontpage and blog, they include links shown at the bottom in the calculation of number of items
-							// For instance, with joomla sample data, the frontpage has only 5 articles
-							// but the view sets $limit to 9 !!!
 							if (($option == 'com_content' && isset($layout) && $layout == 'blog')
 								|| ($option == 'com_content' && isset($view) && $view == 'featured')
 							)
 							{
 								$listLimit = shGetDefaultDisplayNumFromURL($string, $includeBlogLinks = true);
-								$string = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
-								$string = Sh404sefHelperUrl::sortUrl($string);
-								//$URI->addQueryString( 'limit', $listLimit);
+								$tmpString = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
+								$tmpString = Sh404sefHelperUrl::sortUrl($tmpString);
+								$urlType   = shGetSefURLFromCacheOrDB($tmpString, $sefstring);
+								if ($urlType != sh404SEF_URLTYPE_NONE && $urlType != sh404SEF_URLTYPE_404)
+								{
+									// we found a match with pagination info!
+									$string = $tmpString;
+								}
 							}
-							$sefstring = $sef_ext->create($string, $URI->querystring, $shAppendString, $shLanguage, $shOrigString, $originalUri);
-							ShlSystem_Log::debug('sh404sef', 'Created sef url from default plugin: ' . $sefstring);
+						}
+
+						// now let's try again without any pagination at all
+						/*
+						 if (($urlType == sh404SEF_URLTYPE_NONE || $urlType == sh404SEF_URLTYPE_404) && empty( $showall) && (!empty($limit) || (!isset($limit) && !empty($limitstart)))) {
+						$urlType = shGetSefURLFromCacheOrDB(shCleanUpPag($string), $sefstring); // search without pagination info
+						if ($urlType != sh404SEF_URLTYPE_NONE && $urlType != sh404SEF_URLTYPE_404) {
+						$sefstring = shAddPaginationInfo( @$limit, @$limitstart, @showall, 1, $string, $sefstring, null);
+						// a special case : com_content  does not calculate pagination right
+						// for frontpage and blog, they include links shown at the bottom in the calculation of number of items
+						// For instance, with joomla sample data, the frontpage has only 5 articles
+						// but the view sets $limit to 9 !!!
+						if (($option == 'com_content' && isset($layout) && $layout == 'blog')
+							|| ($option == 'com_content' && isset( $view) && $view == 'featured' )) {
+						$listLimit = shGetDefaultDisplayNumFromURL($string, $includeBlogLinks = true);
+						$string = Sh404sefHelperUrl::setUrlVar( $string, 'limit', $listLimit);
+						$string = Sh404sefHelperUrl::sortUrl($string);
+						}
+
+						// that's a new URL, so let's add it to DB and cache
+						ShlSystem_Log::debug( 'sh404sef', 'Created url based on non paginated base url:' . $string);
+						shAddSefUrlToDBAndCache( $string, $sefstring, 0, $urlType);
+						}
+						}
+						 */
+						if ($urlType == sh404SEF_URLTYPE_NONE)
+						{
+							// If component has its own sef_ext plug-in included.
+							$shDoNotOverride = in_array($shOption, $sefConfig->shDoNotOverrideOwnSef);
+							if (shFileExists(sh404SEF_ABS_PATH . 'components/' . $option . '/sef_ext.php')
+								&& ($shDoNotOverride // and param said do not override
+									|| (!$shDoNotOverride // or param said override, but we don't have a plugin either in sh404SEF dir or component sef_ext dir
+										&& (!in_array($shOption, $sefConfig->useJoomlaRouterPhpWithItemid))
+										&& (!in_array($shOption, $sefConfig->useJoomlaRouter))
+										&& (!shFileExists(sh404SEF_ABS_PATH . 'components/com_sh404sef/sef_ext/' . $option . '.php')
+											&& !shFileExists(sh404SEF_ABS_PATH . 'components/' . $option . '/sef_ext/' . $option . '.php'))))
+							)
+							{
+								// Load the plug-in file. V 1.2.4.s changed require_once to include
+								include_once(sh404SEF_ABS_PATH . 'components/' . $option . '/sef_ext.php');
+								$_SEF_SPACE = $sefConfig->replacement;
+								$comp_name  = str_replace('com_', '', $option);
+								$className  = 'sef_' . $comp_name;
+								$sef_ext    = new $className;
+								// V x : added default string in params
+								if (empty($sefConfig->defaultComponentStringList[$comp_name]))
+								{
+									$title[] = getMenuTitle($option, null, isset($Itemid) ? @$Itemid : null, null, $shLanguage);
+								}
+								// V 1.2.4.x
+								else
+								{
+									$title[] = $sefConfig->defaultComponentStringList[$comp_name];
+								}
+								// V 1.2.4.r : clean up URL BEFORE sending it to sef_ext files, to have control on what they do
+								// remove lang information, we'll put it back ourselves later
+								//$shString = preg_replace( '/(&|\?)lang=[a-zA-Z]{2,3}/iU' ,'', $string);
+								// V 1.2.4.t use original non-sef string. Some sef_ext files relies on order of params, which may
+								// have been changed by sh404SEF
+								$shString   = preg_replace('/(&|\?)lang=[a-zA-Z]{2,3}/iu', '', $shSaveString);
+								$finalstrip = explode("|", $sefConfig->stripthese);
+								$shString   = str_replace('&', '&amp;', $shString);
+								ShlSystem_Log::debug('sh404sef', 'Sending to own sef_ext.php plugin : ' . $shString);
+								$sefstring = $sef_ext->create($shString);
+								ShlSystem_Log::debug('sh404sef', 'Created by sef_ext.php plugin : ' . $sefstring);
+								$sefstring = str_replace("%10", "%2F", $sefstring);
+								$sefstring = str_replace("%11", $sefConfig->replacement, $sefstring);
+								$sefstring = rawurldecode($sefstring);
+								if ($sefstring == $string)
+								{
+									if (!empty($shMosMsg)) // V x 01/09/2007 22:48:01
+									{
+										$string .= '?' . $shMosMsg;
+									}
+									$ret                          = shFinalizeURL($string);
+									$pageInfo->currentLanguageTag = $shOrigLang;
+									ShlSystem_Log::debug('sh404sef', 'Returning shSefRelToAbs 5 with ' . $ret);
+									return $ret;
+								}
+								else
+								{
+									// V 1.2.4.p : sef_ext extensions for opensef/SefAdvance do not always replace '
+									$sefstring = str_replace('\'', $sefConfig->replacement, $sefstring);
+									// some ext. seem to html_special_chars URL ?
+									$sefstring = str_replace('&#039;', $sefConfig->replacement, $sefstring); // V w 27/08/2007 13:23:56
+									$sefstring = str_replace(' ', $_SEF_SPACE, $sefstring);
+									$sefstring = str_replace(
+										' ', '',
+										(shInsertIsoCodeInUrl($option, $shLanguage) ? // V 1.2.4.q
+											Sh404sefHelperLanguage::getUrlCodeFromTag($shLanguage) . '/' : '')
+										. titleToLocation($title[0])
+										. '/'
+										. JString::ltrim($sefstring, '/')
+										. (($sefstring != '') ? $sefConfig->suffix : '')
+									);
+									if (!empty($sefConfig->suffix))
+									{
+										$sefstring = str_replace('/' . $sefConfig->suffix, $sefConfig->suffix, $sefstring);
+									}
+
+									//$finalstrip = explode("|", $sefConfig->stripthese);
+									$sefstring   = str_replace($finalstrip, $sefConfig->replacement, $sefstring);
+									$sefstring   = str_replace(
+										$sefConfig->replacement . $sefConfig->replacement . $sefConfig->replacement,
+										$sefConfig->replacement, $sefstring
+									);
+									$sefstring   = str_replace($sefConfig->replacement . $sefConfig->replacement, $sefConfig->replacement, $sefstring);
+									$suffixthere = 0;
+									if (!empty($sefConfig->suffix) && strpos($sefstring, $sefConfig->suffix) !== false) // V 1.2.4.s
+									{
+										$suffixthere = strlen($sefConfig->suffix);
+									}
+									$takethese = str_replace("|", "", $sefConfig->friendlytrim);
+									$sefstring = JString::trim(JString::substr($sefstring, 0, strlen($sefstring) - $suffixthere), $takethese);
+									$sefstring .= $suffixthere == 0 ? '' : $sefConfig->suffix; // version u 26/08/2007 17:27:16
+									// V 1.2.4.m store it in DB so as to be able to use sef_ext plugins really !
+									$string = str_replace('&amp;', '&', $string);
+									// V 1.2.4.r without mod_rewrite
+									$shSefString = shAdjustToRewriteMode($sefstring);
+									// V 1.2.4.p check for various URL for same content
+									$dburl   = ''; // V 1.2.4.t prevent notice error
+									$urlType = sh404SEF_URLTYPE_NONE;
+									if ($sefConfig->shUseURLCache)
+									{
+										$urlType = Sh404sefHelperCache::getNonSefUrlFromCache($shSefString, $dburl);
+									}
+									$newMaxRank  = 0; // V 1.2.4.s
+									$shDuplicate = false;
+									if ($sefConfig->shRecordDuplicates || $urlType == sh404SEF_URLTYPE_NONE)
+									{
+										try
+										{
+											$sql = "SELECT newurl, rank, dateadd FROM #__sh404sef_urls WHERE oldurl = "
+												. $database->Quote($shSefString) . " ORDER BY rank ASC";
+											$database->setQuery($sql);
+											$dbUrlList = $database->loadObjectList();
+										}
+										catch (Exception $e)
+										{
+											ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
+											$dbUrlList = array();
+										}
+										if (count($dbUrlList) > 0)
+										{
+											$dburl      = $dbUrlList[0]->newurl;
+											$newMaxRank = $dbUrlList[count($dbUrlList) - 1]->rank + 1;
+											$urlType    = $dbUrlList[0]->dateadd == '0000-00-00' ? sh404SEF_URLTYPE_AUTO : sh404SEF_URLTYPE_CUSTOM;
+										}
+									}
+									if ($urlType != sh404SEF_URLTYPE_NONE && ($dburl != $string))
+									{
+										$shDuplicate = true;
+									}
+									$urlType = $urlType == sh404SEF_URLTYPE_NONE ? sh404SEF_URLTYPE_AUTO : $urlType;
+									ShlSystem_Log::debug(
+										'sh404sef',
+										'Adding from sef_ext to DB : ' . $shSefString . ' | rank = ' . ($shDuplicate ? $newMaxRank : 0)
+									);
+									shAddSefUrlToDBAndCache($string, $shSefString, ($shDuplicate ? $newMaxRank : 0), $urlType);
+								}
+							}
+							// Component has no own sef extension.
+							else
+							{
+								$string = JString::trim($string, "&?");
+
+								// V 1.2.4.q a trial in better handling homepage articles
+								// disabled in J! 1.6. Becomes too complex with multi-language
+								// TODO: remove guessItemidOnHomepage setting
+								if (false && shIsCurrentPageHome() && ($option == 'com_content') // com_content component on homepage
+									&& (isset($task)) && ($task == 'view') && $sefConfig->guessItemidOnHomepage
+								)
+								{
+									$string = preg_replace('/(&|\?)Itemid=[^&]*/iu', '', $string); // we remove Itemid, as com_content plugin
+									$Itemid = null; // will hopefully do a better job at finding the right one
+									unset($URI->querystring['Itemid']);
+									unset($shGETVars['Itemid']);
+								}
+
+								require_once(sh404SEF_FRONT_ABS_PATH . 'sef_ext.php');
+								$sef_ext = new sef_404();
+								// Rewrite the URL now. // V 1.2.4.s added original string
+								// a special case : com_content  does not calculate pagination right
+								// for frontpage and blog, they include links shown at the bottom in the calculation of number of items
+								// For instance, with joomla sample data, the frontpage has only 5 articles
+								// but the view sets $limit to 9 !!!
+								if (($option == 'com_content' && isset($layout) && $layout == 'blog')
+									|| ($option == 'com_content' && isset($view) && $view == 'featured')
+								)
+								{
+									$listLimit = shGetDefaultDisplayNumFromURL($string, $includeBlogLinks = true);
+									$string    = Sh404sefHelperUrl::setUrlVar($string, 'limit', $listLimit);
+									$string    = Sh404sefHelperUrl::sortUrl($string);
+									//$URI->addQueryString( 'limit', $listLimit);
+								}
+								$sefstring = $sef_ext->create($string, $URI->querystring, $shAppendString, $shLanguage, $shOrigString, $originalUri);
+								ShlSystem_Log::debug('sh404sef', 'Created sef url from default plugin: ' . $sefstring);
+							}
 						}
 					}
-				}
 			} // end of cache check shumisha
 			if (isset($sef_ext))
 			{
@@ -1808,7 +1824,7 @@ function shSefRelToAbs($string, $shLanguageParam, &$uri, &$originalUri)
 function shAddPaginationInfo($limit, $limitstart, $showall, $iteration, $url, $location, $shSeparator = null, $defaultListLimitValue = null,
                              $suppressPagination = false)
 {
-	$pageInfo = Sh404sefFactory::getPageInfo(); // get page details gathered by system plugin
+	$pageInfo  = Sh404sefFactory::getPageInfo(); // get page details gathered by system plugin
 	$sefConfig = Sh404sefFactory::getConfig();
 
 	// clean suffix and index file before starting to add things to the url
@@ -1838,7 +1854,7 @@ function shAddPaginationInfo($limit, $limitstart, $showall, $iteration, $url, $l
 	}
 
 	// get a default limit value, for urls where it's missing
-	$listLimit = shGetDefaultDisplayNumFromURL($url, $includeBlogLinks = true);
+	$listLimit        = shGetDefaultDisplayNumFromURL($url, $includeBlogLinks = true);
 	$defaultListLimit = is_null($defaultListLimitValue) ? shGetDefaultDisplayNumFromConfig($url, $includeBlogLinks = false) : $defaultListLimitValue;
 
 	// do we have a trailing slash ?
@@ -1990,14 +2006,14 @@ function shAddPaginationInfo($limit, $limitstart, $showall, $iteration, $url, $l
 
 		{
 			// this is multipage article with showall
-			$tempTitle = JText::_('All Pages');
-			$location .= $shSeparator . titleToLocation($tempTitle);
+			$tempTitle               = JText::_('All Pages');
+			$location                .= $shSeparator . titleToLocation($tempTitle);
 			$shPageNumberWasReplaced = true; // always set the flag, otherwise we'll a Page-1 added
 		}
 
 		// make sure we remove bad characters
 		$takethese = str_replace('|', '', $sefConfig->friendlytrim);
-		$location = JString::trim($location, $takethese);
+		$location  = JString::trim($location, $takethese);
 
 		// add page number
 		if (!$shPageNumberWasReplaced
@@ -2008,7 +2024,7 @@ function shAddPaginationInfo($limit, $limitstart, $showall, $iteration, $url, $l
 		}
 	}
 	// add suffix
-	$format = Sh404sefHelperUrl::getUrlVar($url, 'format');
+	$format          = Sh404sefHelperUrl::getUrlVar($url, 'format');
 	$shouldAddSuffix = empty($format) || $format == 'html';
 	if ($shouldAddSuffix && !empty($shSuffix) && !empty($location) && $location != '/' && JString::substr($location, -1) != '/')
 	{
@@ -2059,7 +2075,7 @@ function shIsHomepage($string)
 			$home = Sh404sefHelperUrl::sortUrl(shCleanUpPag($pageInfo->homeLink));
 		}
 
-		$shTempString = JString::rtrim(str_replace($pageInfo->getDefaultFrontLiveSite(), '', $string), '/');
+		$shTempString   = JString::rtrim(str_replace($pageInfo->getDefaultFrontLiveSite(), '', $string), '/');
 		$pages[$string] = Sh404sefHelperUrl::sortUrl(shCleanUpPag($shTempString)) == $home; // version t added sorting
 	}
 	return $pages[$string];
@@ -2102,24 +2118,24 @@ function shIsAnyHomepage($string)
 function getMenuTitle($option, $task, $id = null, $string = null, $shLanguage = null)
 {
 
-	$pageInfo = &Sh404sefFactory::getPageInfo();
+	$pageInfo  = &Sh404sefFactory::getPageInfo();
 	$sefConfig = &Sh404sefFactory::getConfig();
 
 	$shLanguage = empty($shLanguage) ? $pageInfo->currentLanguageTag : $shLanguage;
-	$nameField = $sefConfig->useMenuAlias ? 'alias' : 'title';
+	$nameField  = $sefConfig->useMenuAlias ? 'alias' : 'title';
 
 	$menu = JFactory::getApplication()->getMenu();
 
-	$attr = array();
+	$attr   = array();
 	$values = array();
 	if (!empty($string))
 	{
-		$attr[] = 'link';
+		$attr[]   = 'link';
 		$values[] = $string;
 	}
 	else if (!empty($id))
 	{
-		$attr[] = 'id';
+		$attr[]   = 'id';
 		$values[] = $id;
 	}
 	else if (!empty($option))
@@ -2130,7 +2146,7 @@ function getMenuTitle($option, $task, $id = null, $string = null, $shLanguage = 
 		{
 			return ('/');
 		}
-		$attr[] = 'component_id';
+		$attr[]   = 'component_id';
 		$values[] = $component->id;
 	}
 	else
@@ -2173,9 +2189,9 @@ function getMenuTitle($option, $task, $id = null, $string = null, $shLanguage = 
 
 function shFindMenuItem($menuItems, $attributes, $values, $firstonly = false)
 {
-	$items = array();
+	$items      = array();
 	$attributes = (array) $attributes;
-	$values = (array) $values;
+	$values     = (array) $values;
 
 	foreach ($menuItems as $item)
 	{
@@ -2232,12 +2248,12 @@ function shIsSearchEngine()
 	else
 	{
 		$isSearchEngine = false;
-		$useragent = empty($_SERVER['HTTP_USER_AGENT']) ? '' : strtolower($_SERVER['HTTP_USER_AGENT']);
+		$useragent      = empty($_SERVER['HTTP_USER_AGENT']) ? '' : strtolower($_SERVER['HTTP_USER_AGENT']);
 		if (!empty($useragent))
 		{
 			$remoteConfig = Sh404sefHelperUpdates::getRemoteConfig($forced = false);
-			$remotes = empty($remoteConfig->config['searchenginesagents']) ? array() : $remoteConfig->config['searchenginesagents'];
-			$agents = array_unique(array_merge(Sh404sefFactory::getPConfig()->searchEnginesAgents, $remotes));
+			$remotes      = empty($remoteConfig->config['searchenginesagents']) ? array() : $remoteConfig->config['searchenginesagents'];
+			$agents       = array_unique(array_merge(Sh404sefFactory::getPConfig()->searchEnginesAgents, $remotes));
 			foreach ($agents as $agent)
 			{
 				if (strpos($useragent, strtolower($agent)) !== false)
@@ -2310,9 +2326,9 @@ function shNormalizeNonSefUri(&$uri, $menu = null, $removeSlugs = true)
 
 	// fix urls obtained through a single Itemid, in menus : url is option=com_xxx&Itemid=yy
 	$cleanedVars = $vars;
-	$urlLang = $uri->getVar('lang', '');
-	$limit = wbArrayGet($vars, 'limit', null);
-	$limitstart = wbArrayGet($vars, 'limitstart', null);
+	$urlLang     = $uri->getVar('lang', '');
+	$limit       = wbArrayGet($vars, 'limit', null);
+	$limitstart  = wbArrayGet($vars, 'limitstart', null);
 	unset($cleanedVars['limit']);
 	unset($cleanedVars['limitstart']);
 	if ((count($cleanedVars) == 2 && $uri->getVar('Itemid')) || (count($cleanedVars) == 3 && $uri->getVar('Itemid') && $uri->getVar('lang')))
@@ -2325,9 +2341,9 @@ function shNormalizeNonSefUri(&$uri, $menu = null, $removeSlugs = true)
 		if (!empty($shItem))
 		{
 			// we found the menu item
-			$url = $shItem->link . '&Itemid=' . $shItem->id;
+			$url    = $shItem->link . '&Itemid=' . $shItem->id;
 			$newUri = new JURI($url); // rebuild $uri based on this new url
-			$vars = $newUri->getQuery(true);
+			$vars   = $newUri->getQuery(true);
 			if (empty($urlLang))
 			{
 				$urlLang = $shItem->language;
@@ -2378,6 +2394,7 @@ function shUrlSafeDisplay($url)
  *
  * @param $key
  * @param $section
+ *
  * @return string
  */
 function shGetSobi2Config($key, $section)
@@ -2390,6 +2407,7 @@ function shGetSobi2Config($key, $section)
  * Insert an intro text into the content table
  *
  * @param strng $shIntroText
+ *
  * @return boolean, true if success
  */
 function shInsertContent($pageTitle, $shIntroText)
@@ -2404,9 +2422,11 @@ function shInsertContent($pageTitle, $shIntroText)
 			return;
 		}
 		$contentTable = JTable::getInstance('content');
-		$content = array('title' => $pageTitle, 'alias' => $pageTitle, 'title_alias' => $pageTitle, 'introtext' => $shIntroText, 'state' => 1,
-		                 'catid' => $catid,
-		                 'attribs' => '{"menu_image":"-1","show_title":"0","show_section":"0","show_category":"0","show_vote":"0","show_author":"0","show_create_date":"0","show_modify_date":"0","show_pdf_icon":"0","show_print_icon":"0","show_email_icon":"0","pageclass_sfx":""}');
+		$content      = array(
+			'title'   => $pageTitle, 'alias' => $pageTitle, 'title_alias' => $pageTitle, 'introtext' => $shIntroText, 'state' => 1,
+			'catid'   => $catid,
+			'attribs' => '{"menu_image":"-1","show_title":"0","show_section":"0","show_category":"0","show_vote":"0","show_author":"0","show_create_date":"0","show_modify_date":"0","show_pdf_icon":"0","show_print_icon":"0","show_email_icon":"0","pageclass_sfx":""}'
+		);
 
 		$status = $contentTable->save($content);
 	}
@@ -2421,6 +2441,7 @@ function shInsertContent($pageTitle, $shIntroText)
 /**
  * Returns a string with an article id, in accordance
  * with various settings
+ *
  * @param $id
  * @param $view
  * @param $option
@@ -2435,7 +2456,7 @@ function shGetArticleIdString($id, $view, $option, $shLangName)
 	if ($sefConfig->ContentTitleInsertArticleId && isset($sefConfig->shInsertContentArticleIdCatList) && !empty($id) && ($view == 'article'))
 	{
 		$slugsModel = Sh404sefModelSlugs::getInstance();
-		$article = $slugsModel->getArticle($id);
+		$article    = $slugsModel->getArticle($id);
 		if (empty($article[$shLangName]))
 		{
 			$shLangName = '*';
@@ -2513,7 +2534,7 @@ function shUrlDecodeFull($url)
 	while (true)
 	{
 		$last = $url;
-		$url = rawurldecode($url);
+		$url  = rawurldecode($url);
 
 		// Check whether the last decode is equal to the first.
 		if ($url == $last)

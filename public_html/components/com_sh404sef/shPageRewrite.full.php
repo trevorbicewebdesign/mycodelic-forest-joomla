@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -281,6 +281,8 @@ if (defined('SH404SEF_IS_RUNNING'))
 					$buffer                  = ShlSystem_Strings::pr('/\<\s*meta\s+name\s*=\s*"title.*\/\>/isuU', '', $buffer); // remove any title meta
 				}
 
+				// Priorities: 1/ custom meta in sh404SEF 2/ Meta entered in Joomla 3/ auto-generated
+				$metadata->pageDescription = empty($metadata->pageDescription) ? $document->getDescription() : $metadata->pageDescription;
 				$metadata->pageDescription = empty($metadata->pageDescription) ? Sh404sefHelperMetadata::getAutoDescription($buffer) : $metadata->pageDescription;
 				if (!empty($metadata->pageDescription) && $document->getDescription() != $metadata->pageDescription)
 				{
@@ -386,10 +388,21 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 			// always add a canonical on home page
 			// especially useful on multilingual sites where language code is used
-			// also on default language
+			// also on default language EXCEPT if language code is preserved on default language
 			if (empty($metadata->canonical) && Sh404sefHelperUrl::isNonSefHomepage())
 			{
-				$metadata->canonical = Sh404sefHelperUrl::canonicalRoutedToAbs('/');
+				$languageFilterParams = Sh404sefHelperGeneral::getExtensionParams(
+					'plg_language_filter', array(
+						                     'type'    => 'plugin',
+						                     'element' => 'languagefilter',
+						                     'folder'  => 'system',
+						                     'enabled' => 1
+					                     )
+				);
+				if (0 !== $languageFilterParams->get('remove_default_prefix'))
+				{
+					$metadata->canonical = Sh404sefHelperUrl::canonicalRoutedToAbs('/');
+				}
 			}
 
 			// make sure canonical is absolute, to avoid users complaining despite links being totally fine see #342
@@ -600,117 +613,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 		}
 	}
 
-	function shInsertGoogleAuthorshipData(&$buffer)
-	{
-		// quick check, do we have a createdBy field on the page?
-		if (strpos($buffer, '<dd class="createdby">') === false)
-		{
-			return;
-		}
-
-		// get sh404sef config
-		$sefConfig = Sh404sefFactory::getConfig();
-		$pageInfo  = Sh404sefFactory::getPageInfo();
-
-		if (empty($sefConfig->shMetaManagementActivated) || !isset($sefConfig) || empty($pageInfo->currentNonSefUrl)
-			|| (!empty($pageInfo->httpStatus) && $pageInfo->httpStatus == 404)
-		)
-		{
-			return;
-		}
-
-		$customData = Sh404sefHelperMetadata::getCustomMetaDataFromDb();
-
-		// user can disable per url
-		if (isset($customData->google_authorship_enable) && $customData->google_authorship_enable == SH404SEF_OPTION_VALUE_NO
-			|| (empty($sefConfig->enableGoogleAuthorship)
-				&& (!isset($customData->google_authorship_enable) || $customData->google_authorship_enable == SH404SEF_OPTION_VALUE_USE_DEFAULT))
-		)
-		{
-			return;
-		}
-		// figure out if we should insert authorship info: only on article page
-		if (!Sh404sefHelperMetadata::shouldInsertMeta($input = null, $sefConfig->googleAuthorshipCategories))
-		{
-			return;
-		}
-
-		// site
-		$authorUrl  = empty($customData->google_authorship_author_profile) ? $sefConfig->googleAuthorshipAuthorProfile
-			: $customData->google_authorship_author_profile;
-		$authorUrl  = JString::trim($authorUrl, '/');
-		$authorName = empty($customData->google_authorship_author_name) ? $sefConfig->googleAuthorshipAuthorName
-			: $customData->google_authorship_author_name;
-
-		if (empty($authorUrl) || empty($authorName))
-		{
-			return;
-		}
-		$authorUrl  = 'https://plus.google.com/' . htmlspecialchars($authorUrl, ENT_COMPAT, 'UTF-8') . '?rel=author';
-		$authorName = htmlspecialchars($authorName, ENT_COMPAT, 'UTF-8');
-
-		$googleAuthorshipData = JText::sprintf('COM_CONTENT_WRITTEN_BY', JHtml::_('link', $authorUrl, $authorName));
-
-		// actually insert the tags
-		if (!empty($googleAuthorshipData))
-		{
-			$buffer = ShlSystem_Strings::pr(
-				'#\<dd\s*class="createdby"\s*\>.*\<\/dd\>#iUsu',
-				'<dd class="createdby">' . $googleAuthorshipData . '</dd>', $buffer
-			);
-		}
-	}
-
-	function shInsertGooglePublisherData(&$buffer)
-	{
-		// don't insert head link to publisher page if there's
-		// already a visible badge (see sh404sef core social plugin
-		if (strpos($buffer, 'rel=\'publisher\'') !== false)
-		{
-			return;
-		}
-
-		// get sh404sef config
-		$sefConfig = Sh404sefFactory::getConfig();
-		$pageInfo  = Sh404sefFactory::getPageInfo();
-
-		if (empty($sefConfig->shMetaManagementActivated) || !isset($sefConfig) || empty($pageInfo->currentNonSefUrl)
-			|| (!empty($pageInfo->httpStatus) && $pageInfo->httpStatus == 404)
-		)
-		{
-			return;
-		}
-
-		$customData = Sh404sefHelperMetadata::getCustomMetaDataFromDb();
-
-		// user can disable per url
-		if (isset($customData->google_publisher_enable) && $customData->google_publisher_enable == SH404SEF_OPTION_VALUE_NO
-			|| (empty($sefConfig->enableGooglePublisher)
-				&& (!isset($customData->google_publisher_enable) || $customData->google_publisher_enable == SH404SEF_OPTION_VALUE_USE_DEFAULT))
-		)
-		{
-			return;
-		}
-
-		// site
-		$publisherUrl = empty($customData->google_publisher_url) ? $sefConfig->googlePublisherUrl
-			: $customData->google_publisher_url;
-		$publisherUrl = JString::trim($publisherUrl, '/');
-
-		if (empty($publisherUrl))
-		{
-			return;
-		}
-		$publisherUrl = 'https://plus.google.com/' . htmlspecialchars($publisherUrl, ENT_COMPAT, 'UTF-8');
-		$publisherTag = sprintf('  <link href="%s" rel="publisher" />', $publisherUrl);
-
-		// actually insert the tags
-		if (!empty($publisherTag))
-		{
-			$buffer = shInsertCustomTagInBuffer($buffer, '</head>', 'before', "\n" . $publisherTag . "\n", 'first');
-		}
-	}
-
 	function insertStructuredData(& $buffer)
 	{
 		$markup = Sh404sefHelperStructureddata::buildStructuredData();
@@ -828,7 +730,9 @@ if (defined('SH404SEF_IS_RUNNING'))
 	{
 		$tags = array(
 			'sh404sef_tag_description',
-			'sh404sef_tag_ogp_image'
+			'sh404sef_tag_ogp_image',
+			'sh404sef_tag_social_need_fb_sdk',
+			'sh404sef_tag_social_need_tracking'
 		);
 		foreach ($tags as $tag)
 		{
@@ -844,7 +748,11 @@ if (defined('SH404SEF_IS_RUNNING'))
 	// check we are outputting document for real
 	$document = JFactory::getDocument();
 	$pageInfo = Sh404sefFactory::getPageInfo();
-	if ($document->getType() == 'html')
+	if (
+		$document->getType() == 'html'
+		&&
+		JFactory::getApplication()->input->getCmd('format') != 'raw'
+	)
 	{
 		$shPage = JResponse::getBody();
 
@@ -863,10 +771,6 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 		// insert short urls stuff
 		shDoShURL($shPage);
-
-		// Google autorship
-		shInsertGoogleAuthorshipData($shPage);
-		shInsertGooglePublisherData($shPage);
 
 		// Google structured data
 		if (empty($pageInfo->httpStatus) || $pageInfo->httpStatus == 200)
