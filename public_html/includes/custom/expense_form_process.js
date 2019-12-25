@@ -1,5 +1,5 @@
 jQuery( document ).ready(function() {
-    var i = 0;
+    var i = 1;
     while(jQuery( "#item_amount_"+i).length>0){
         console.log(i);
         jQuery( "#item_amount_"+i ).keyup(function() {
