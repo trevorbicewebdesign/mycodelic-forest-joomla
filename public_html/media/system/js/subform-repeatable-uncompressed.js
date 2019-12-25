@@ -68,14 +68,14 @@
 			// Find the template element and get its HTML content, this is our template.
 			var $tmplElement = this.$container.find(this.options.rowTemplateSelector).last();
 
-			// Move the template out of the form scope, for IE compatibility.
-			// But only a root template (!!!)
-			if (!$tmplElement.parents(this.options.rowTemplateSelector).length) {
-				$(document.body).append($tmplElement);
-			}
-
 			this.template = $.trim($tmplElement.html()) || '';
-			this.$tmplElement = $tmplElement;
+
+			// This is IE fix for <template>
+			$tmplElement.css('display', 'none'); // Make sure it not visible
+			var map = {'SUBFORMLT': '<', 'SUBFORMGT': '>'};
+			this.template = this.template.replace(/(SUBFORMLT)|(SUBFORMGT)/g, function(match){
+				return map[match];
+			});
 		}
 		// create from existing rows
 		else {
@@ -171,7 +171,7 @@
 				name    = $el.attr('name'),
 				id      = name.replace(/(\[\]$)/g, '').replace(/(\]\[)/g, '__').replace(/\[/g, '_').replace(/\]/g, ''), // id from name
 				nameNew = name.replace('[' + group + '][', '['+ groupnew +']['), // New name
-				idNew   = id.replace(group, groupnew), // Count new id
+				idNew   = id.replace(group, groupnew).replace(/\W/g, '_'), // Count new id
 				countMulti = 0, // count for multiple radio/checkboxes
 				forOldAttr = id; // Fix "for" in the labels
 
