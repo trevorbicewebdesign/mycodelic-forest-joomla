@@ -27,7 +27,11 @@ foreach($result['values'] as $index=>$val){
     $contacts[$civiUser->id] = $civiUser;	
 }
 
-$contributions = civicrm_api3('Contribution', 'get', array());
+$contributions = civicrm_api3('Contribution', 'get', array(
+    'options'         => array(
+        'limit'           => 100
+    )
+));
 foreach($contributions['values'] as $index=>$contribution){
     $contact_id = $contribution['contact_id'];
     preg_match("#[0-9][0-9][0-9][0-9]#", $groups['values'][$group_id]['title'], $tmp);
