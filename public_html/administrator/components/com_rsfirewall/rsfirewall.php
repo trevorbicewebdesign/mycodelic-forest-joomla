@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -21,6 +21,10 @@ require_once JPATH_COMPONENT.'/helpers/adapter.php';
 require_once JPATH_COMPONENT.'/helpers/version.php';
 require_once JPATH_COMPONENT.'/helpers/config.php';
 require_once JPATH_COMPONENT.'/controller.php';
+
+require_once JPATH_COMPONENT.'/helpers/html.php';
+
+RSFirewallHtml::registerFunctions();
 	
 $controller	= JControllerLegacy::getInstance('RSFirewall');
 

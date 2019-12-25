@@ -1,18 +1,19 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
 defined('_JEXEC') or die('Restricted access');
-$document = JFactory::getDocument();
-$document->addStyleSheet(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/vmaps/jqvmap.css');
-$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/vmaps/jquery.vmap.min.js');
-$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/vmaps/jquery.vmap.world.js');
 
-$document->addScriptDeclaration(
+JHtml::_('rsfirewall_script', 'com_rsfirewall/jquery.vmap.min.js', array('relative' => true, 'version' => 'auto'));
+JHtml::_('rsfirewall_script', 'com_rsfirewall/jquery.vmap.world.js', array('relative' => true, 'version' => 'auto'));
+
+JHtml::_('rsfirewall_stylesheet', 'com_rsfirewall/jqvmap.css', array('relative' => true, 'version' => 'auto'));
+
+JFactory::getDocument()->addScriptDeclaration(
 	'jQuery(document).ready(function(){
 		RSFirewall.vmap.init("#com-rsfirewall-virtual-map");
 	});');

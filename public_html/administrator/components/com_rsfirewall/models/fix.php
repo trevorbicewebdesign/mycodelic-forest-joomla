@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,12 +10,6 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsfirewallModelFix extends JModelLegacy
 {
-	const DS = DIRECTORY_SEPARATOR;
-	
-	public function __construct() {
-		parent::__construct();		
-	}
-	
 	public function renameAdminUser($id) {
 		$input 		= RSInput::create();
 		$user  		= JFactory::getUser($id);
@@ -182,7 +176,7 @@ class RsfirewallModelFix extends JModelLegacy
 			$paths = (array) $paths;
 		
 		foreach ($paths as $path) {
-			$success[] = (int) @chmod(JPATH_SITE.self::DS.$path, octdec($perms));
+			$success[] = (int) @chmod(JPATH_SITE.DIRECTORY_SEPARATOR.$path, octdec($perms));
 		}
 		
 		// the result will be an array with the same length as the input array

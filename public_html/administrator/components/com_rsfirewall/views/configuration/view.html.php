@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -18,7 +18,7 @@ class RsfirewallViewConfiguration extends JViewLegacy
 	protected $config;
 	protected $sidebar;
 	
-	function display($tpl = null) {
+	public function display($tpl = null) {
 		$user = JFactory::getUser();
 		if (!$user->authorise('core.admin', 'com_rsfirewall')) {
 			$app = JFactory::getApplication();
@@ -44,8 +44,6 @@ class RsfirewallViewConfiguration extends JViewLegacy
 		
 		$this->sidebar	= $this->get('SideBar');
 		
-		$this->isJ30	= $this->get('isJ30');
-		
 		parent::display($tpl);
 	}
 	
@@ -60,8 +58,6 @@ class RsfirewallViewConfiguration extends JViewLegacy
 		JToolbarHelper::save('configuration.save');
 		JToolbarHelper::cancel('configuration.cancel');
 		
-		$class = $this->get('isJ30') ? 'download' : 'export';
-		
-		JToolbarHelper::custom('configuration.export', $class, $class, JText::_('COM_RSFIREWALL_EXPORT_CONFIGURATION'), false, false);
+		JToolbarHelper::custom('configuration.export', 'download', 'download', JText::_('COM_RSFIREWALL_EXPORT_CONFIGURATION'), false, false);
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,35 +10,22 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsfirewallController extends JControllerLegacy
 {
-	public function __construct() {
-		parent::__construct();
-		
-		require_once JPATH_COMPONENT.'/helpers/version.php';
-		$version 	= (string) new RSFirewallVersion;
-		$jversion 	= new JVersion;
-		$document 	= JFactory::getDocument();
+    public function __construct($config = array())
+    {
+		parent::__construct($config);
 		
 		// Load the framework
 		JHtml::_('behavior.framework');
 		
 		// Load stylesheet
-		$document->addStyleSheet(JUri::root(true).'/administrator/components/com_rsfirewall/assets/css/com_rsfirewall.css?v='.$version);
-		
-		if ($jversion->isCompatible('3.0')) {
-			// Load jQuery from Joomla! 3
-			JHtml::_('jquery.framework');
-		} else {
-			// Load our own copy of jQuery
-			$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/jquery.js');
-			$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/jquery-noconflict.js');
-			
-			// Load our 2.5 stylesheet
-			$document->addStyleSheet(JUri::root(true).'/administrator/components/com_rsfirewall/assets/css/style25.css?v='.$version);
-		}
+        JHtml::_('rsfirewall_stylesheet', 'com_rsfirewall/style.css', array('relative' => true, 'version' => 'auto'));
+
+        // Load jQuery from Joomla! 3
+        JHtml::_('jquery.framework');
 		
 		// Load our scripts
-		$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/jquery.knob.js');
-		$document->addScript(JUri::root(true).'/administrator/components/com_rsfirewall/assets/js/rsfirewall.js?v='.$version);
+        JHtml::_('rsfirewall_script', 'com_rsfirewall/jquery.knob.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::_('rsfirewall_script', 'com_rsfirewall/rsfirewall.js', array('relative' => true, 'version' => 'auto'));
 		
 		// load language, english first
 		$lang = JFactory::getLanguage();

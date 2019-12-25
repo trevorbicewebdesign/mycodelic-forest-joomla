@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,22 +10,17 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsfirewallModelFolders extends JModelLegacy
 {
-	const DS = DIRECTORY_SEPARATOR;
 	protected $path;
 	protected $input;
 
-	public function __construct() {
+	public function __construct($config = array()) {
 		$this->path  = JPATH_SITE;
 		$this->input = RSInput::create();
 		if (is_dir($this->input->get('folder', '', 'none'))) {
 			$this->path = $this->input->get('folder', '', 'none');
 		}
 		
-		parent::__construct();
-	}
-	
-	public function getDS() {
-		return self::DS;
+		parent::__construct($config);
 	}
 	
 	public function getPath() {
@@ -34,10 +29,10 @@ class RsfirewallModelFolders extends JModelLegacy
 	
 	public function getPrevious() {
 		$path = $this->getPath();
-		$path = explode(self::DS, $path);
+		$path = explode(DIRECTORY_SEPARATOR, $path);
 		array_pop($path);
 		
-		return implode(self::DS, $path);
+		return implode(DIRECTORY_SEPARATOR, $path);
 	}
 	
 	public function getName() {
@@ -106,7 +101,7 @@ class RsfirewallModelFolders extends JModelLegacy
 	
 	public function getElements() {
 		$path 		= $this->getPath();
-		$elements 	= explode(self::DS, $path);
+		$elements 	= explode(DIRECTORY_SEPARATOR, $path);
 		$navigation_path = '';
 		foreach ($elements as $i => $element) {
 			$navigation_path .= $element;
@@ -117,7 +112,7 @@ class RsfirewallModelFolders extends JModelLegacy
 				'name' => $element,
 				'fullpath' => $navigation_path
 			);
-			$navigation_path .= self::DS;
+			$navigation_path .= DIRECTORY_SEPARATOR;
 		}
 		
 		return $elements;

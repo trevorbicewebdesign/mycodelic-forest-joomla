@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -184,13 +184,33 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixSessionHandler', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::_('COM_RSFIREWALL_FIX_SESSION_HANDLER'); ?></button></p></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
-							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_GOOGLE_SAFE_BROWSER'); ?></span></td>
+							<td><span><?php echo JText::_('COM_RSFIREWALL_ADDITIONAL_BACKEND_PASSWORD_ENABLED'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
 							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3"></td>
 						</tr>
+						<?php if (in_array('safebrowsing', $this->config->get('google_apis'))) { ?>
+							<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+								<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_GOOGLE_SAFE_BROWSER'); ?></span></td>
+								<td class="com-rsfirewall-count"><span></span></td>
+								<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							</tr>
+							<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+								<td colspan="3"></td>
+							</tr>
+						<?php } ?>
+						<?php if (in_array('webrisk', $this->config->get('google_apis'))) { ?>
+							<tr class="com-rsfirewall-table-row <?php if (count($this->config->get('google_apis')) == 2) { echo 'alt-row'; } ?> com-rsfirewall-hidden">
+								<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_GOOGLE_WEB_RISK'); ?></span></td>
+								<td class="com-rsfirewall-count"><span></span></td>
+								<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							</tr>
+							<tr class="com-rsfirewall-table-row <?php if (count($this->config->get('google_apis')) == 2) { echo 'alt-row'; } ?> com-rsfirewall-hidden">
+								<td colspan="3"></td>
+							</tr>
+						<?php } ?>
 					</tbody>
 				</table>
 			</div>
@@ -364,8 +384,15 @@ function RSFirewallStartCheck() {
 		'checkTemporaryFiles',
 		'checkHtaccess',
 		'checkSessionHandler',
-		'checkGoogleSafeBrowsing'
+		'checkBackendPassword'
 	];
+	<?php if (in_array('safebrowsing', $this->config->get('google_apis'))) { ?>
+		RSFirewall.System.Check.steps.push('checkGoogleSafeBrowsing');
+	<?php } ?>
+	<?php if (in_array('webrisk', $this->config->get('google_apis'))) { ?>
+		RSFirewall.System.Check.steps.push('checkGoogleWebRisk');
+	<?php } ?>
+
 	RSFirewall.System.Check.stopCheck = function() {
 		RSFirewall.$('#com-rsfirewall-joomla-configuration-progress').fadeOut('fast', function(){RSFirewall.$(this).remove()});
 		RSFirewallServerCheck();
