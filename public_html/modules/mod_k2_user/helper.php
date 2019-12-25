@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.9.x
+ * @version    2.10.x
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2018 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2006 - 2019 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 // no direct access
 defined('_JEXEC') or die;
@@ -17,8 +17,8 @@ class modK2UserHelper
     public static function getReturnURL($params, $type)
     {
         if ($itemid = $params->get($type)) {
-            $application = JFactory::getApplication();
-            $menu = $application->getMenu();
+            $app = JFactory::getApplication();
+            $menu = $app->getMenu();
             $item = $menu->getItem($itemid);
             if (K2_JVERSION != '15') {
                 $url = 'index.php?Itemid=' . $item->id;
@@ -57,7 +57,7 @@ class modK2UserHelper
                 K2HelperPermissions::setPermissions();
             }
             if (K2HelperPermissions::canAddItem()) {
-                $profile->addLink = JRoute::_('index.php?option=com_k2&view=item&task=add&tmpl=component&context=modalselector');
+                $profile->addLink = JRoute::_('index.php?option=com_k2&view=item&task=add&tmpl=component&template=system&context=modalselector');
             }
             return $profile;
         }
@@ -77,7 +77,8 @@ class modK2UserHelper
         $items = array();
         $children = array();
         if ($params->get('menu')) {
-            $menu = JSite::getMenu();
+            $app = JFactory::getApplication();
+            $menu = $app->getMenu();
             $items = $menu->getItems('menutype', $params->get('menu'));
         }
         foreach ($items as $item) {
@@ -101,7 +102,7 @@ class modK2UserHelper
                 $item->level = $item->sublevel;
                 switch ($item->type) {
                     case 'separator':
-                        continue;
+                        continue 2;
                         break;
                     case 'url':
                         if ((strpos($item->link, 'index.php?') === 0) && (strpos($item->link, 'Itemid=') === false)) {
@@ -129,7 +130,7 @@ class modK2UserHelper
                 $item->flink = $item->link;
                 switch ($item->type) {
                     case 'separator':
-                        continue;
+                        continue 2;
                     case 'url':
                         if ((strpos($item->link, 'index.php?') === 0) && (strpos($item->link, 'Itemid=') === false)) {
                             $item->flink = $item->link.'&Itemid='.$item->id;

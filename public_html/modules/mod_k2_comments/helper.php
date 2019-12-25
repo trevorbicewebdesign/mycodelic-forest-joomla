@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.9.x
+ * @version    2.10.x
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2018 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2006 - 2019 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -83,10 +83,10 @@ class modK2CommentsHelper
         }
 
         if ($languageFilter) {
-            $query .= " AND i.language IN ({$languageFilter}) AND c.language IN ({$languageFilter})";
+            $query .= " AND i.language IN ({$languageFilter}) AND category.language IN ({$languageFilter})";
         }
 
-        $query .= " GROUP BY i.id ORDER BY c.commentDate DESC";
+        $query .= " ORDER BY c.id DESC";
 
         $db->setQuery($query, 0, $limit);
         $rows = $db->loadObjectList();
@@ -170,8 +170,12 @@ class modK2CommentsHelper
 
         $limit = $params->get('commenters_limit', '5');
 
-        $query = "SELECT COUNT(id) as counter, userName, userID, commentEmail FROM #__k2_comments WHERE userID > 0 AND published = 1 GROUP BY userID ORDER BY counter DESC";
-
+        $query = "SELECT COUNT(id) as counter, userName, userID, commentEmail
+        	FROM #__k2_comments
+        	WHERE userID > 0
+        		AND published = 1
+        	GROUP BY userID
+        	ORDER BY counter DESC";
         $db->setQuery($query, 0, $limit);
         $rows = $db->loadObjectList();
 

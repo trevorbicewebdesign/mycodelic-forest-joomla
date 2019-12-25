@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.9.x
+ * @version    2.10.x
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2018 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2006 - 2019 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -45,26 +45,28 @@ class modK2ToolsHelper
                 $languageTag = JFactory::getLanguage()->getTag();
                 $languageCheck = "AND language IN (".$db->Quote($languageTag).", ".$db->Quote('*').")";
             }
-            $query = "SELECT created_by FROM #__k2_items
-            WHERE {$where} published=1
-            AND ( publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now)." )
-            AND ( publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now)." )
-            AND trash=0
-            AND access IN(".implode(',', $user->getAuthorisedViewLevels()).")
-            AND created_by_alias=''
-            {$languageCheck}
-            AND EXISTS (SELECT * FROM #__k2_categories WHERE id= #__k2_items.catid AND published=1 AND trash=0 AND access IN(".implode(',', $user->getAuthorisedViewLevels()).") {$languageCheck})
-            GROUP BY created_by";
+            $query = "SELECT created_by
+	            FROM #__k2_items
+	            WHERE {$where} published=1
+		            AND ( publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now)." )
+		            AND ( publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now)." )
+		            AND trash=0
+		            AND access IN(".implode(',', $user->getAuthorisedViewLevels()).")
+		            AND created_by_alias=''
+		            {$languageCheck}
+		            AND EXISTS (SELECT * FROM #__k2_categories WHERE id= #__k2_items.catid AND published=1 AND trash=0 AND access IN(".implode(',', $user->getAuthorisedViewLevels()).") {$languageCheck})
+	            GROUP BY created_by";
         } else {
-            $query = "SELECT created_by FROM #__k2_items
-            WHERE {$where} published=1
-            AND ( publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now)." )
-            AND ( publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now)." )
-            AND trash=0
-            AND access<={$aid}
-            AND created_by_alias=''
-            AND EXISTS (SELECT * FROM #__k2_categories WHERE id= #__k2_items.catid AND published=1 AND trash=0 AND access<={$aid})
-            GROUP BY created_by";
+            $query = "SELECT created_by
+	            FROM #__k2_items
+	            WHERE {$where} published=1
+		            AND ( publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now)." )
+		            AND ( publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now)." )
+		            AND trash=0
+		            AND access<={$aid}
+		            AND created_by_alias=''
+		            AND EXISTS (SELECT * FROM #__k2_categories WHERE id= #__k2_items.catid AND published=1 AND trash=0 AND access<={$aid})
+	            GROUP BY created_by";
         }
 
         $db->setQuery($query);
@@ -280,9 +282,10 @@ class modK2ToolsHelper
             FROM #__k2_tags as tag
             LEFT JOIN #__k2_tags_xref AS xref ON xref.tagID = tag.id
             WHERE xref.itemID IN (".implode(',', $IDs).")
-            AND tag.published = 1";
+            	AND tag.published = 1";
         $db->setQuery($query);
         $rows = $db->loadObjectList();
+
         $cloud = array();
         if (count($rows)) {
             foreach ($rows as $tag) {
