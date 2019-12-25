@@ -34,9 +34,9 @@ function setItems($id){
 $i = 1;
 while(isset($_POST['form']['item_name_'.$i])){
     setItems($i);
+    $i++;
 }
 
-$
 $message .= "
 ";
 // Only include the note if its set
