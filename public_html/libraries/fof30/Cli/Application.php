@@ -1,18 +1,32 @@
 <?php
 /**
- * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU General Public License version 3, or later
+ * @package     FOF
+ * @copyright   Copyright (c)2010-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license     GNU GPL version 2 or later
  */
 
-defined('_JEXEC') or die;
+// Do not put the JEXEC or die check on this file (it's called from a CLI entry point, defining _JEXEC)
 
 /**
- * You need to set the following variables:
+ * Joomla! CLI application helper. Include this file and extend your application class from FOFCliApplication.
+ * Override the execute() method in your concrete class. At the end of your PHP file run the application with:
  *
- * $minphp = '5.6.0'; // Minimum PHP version required for your script
+ * FOFCliApplication::getInstance('YourClassName')->execute();
+ *
+ * You can set the following variables right before including this file:
+ *
+ * $minphp = '5.4.0'; // Minimum PHP version required for your script
  * $curdir = __DIR__; // Path to your script file
  */
+
+// Abort immediately when this file is executed from a web SAPI
+if (array_key_exists('REQUEST_METHOD', $_SERVER))
+{
+	die;
+}
+
+// Define ourselves as a parent Joomla! entry point file
+define('_JEXEC', 1);
 
 // Work around some misconfigured servers which print out notices
 if (function_exists('error_reporting'))
@@ -23,16 +37,17 @@ if (function_exists('error_reporting'))
 // Minimum PHP version check
 if (!isset($minphp))
 {
-	$minphp = '5.6.0';
+	$minphp = '5.4.0';
 }
 
 if (version_compare(PHP_VERSION, $minphp, 'lt'))
 {
-	$curversion = PHP_VERSION;
-	$bindir = PHP_BINDIR;
+	$currentPHPVersion   = PHP_VERSION;
+	$phpExecutableFolder = PHP_BINDIR;
+
 	echo <<< ENDWARNING
 ================================================================================
-WARNING! Incompatible PHP version $curversion (required: $minphp or later)
+WARNING! Incompatible PHP version $currentPHPVersion (required: $minphp or later)
 ================================================================================
 
 This script must be run using PHP version $minphp or later. Your server is
@@ -44,8 +59,8 @@ gave you.
 
 For your information, the current PHP version information is as follows.
 
-PATH:    $bindir
-VERSION: $curversion
+PATH:    $phpExecutableFolder
+VERSION: $currentPHPVersion
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 IMPORTANT!
@@ -90,22 +105,15 @@ ENDWARNING;
 // Required by the CMS
 define('DS', DIRECTORY_SEPARATOR);
 
-// Mark this as a CLI script. Used by the Platform class.
-define('AKEEBACLI', 1);
-
 /**
  * Timezone fix
  *
  * This piece of code was originally put here because some PHP 5.3 servers forgot to declare a default timezone.
- * Unfortunately it's still required because some hosts STILL do that crap, or use invalid timezones...
+ * Unfortunately it's still required because some hosts STILL forget to provide a timezone in their php.ini files or,
+ * worse, use invalid timezone names.
  */
 if (function_exists('date_default_timezone_get') && function_exists('date_default_timezone_set'))
 {
-	if (function_exists('error_reporting'))
-	{
-		$oldLevel = error_reporting(0);
-	}
-
 	$serverTimezone = @date_default_timezone_get();
 
 	// Do I have no timezone set?
@@ -126,18 +134,13 @@ if (function_exists('date_default_timezone_get') && function_exists('date_defaul
 
 	// Set the default timezone to a correct thing
 	@date_default_timezone_set($serverTimezone);
-
-	if (function_exists('error_reporting'))
-	{
-		error_reporting($oldLevel);
-	}
 }
 
-// Load system defines
+// Load Joomla! system defines
 if (!isset($curdir))
 {
-	// I assume I'm located in administrator/components/com_akeeba/Master/Cli
-	$curdir = __DIR__ . '/../../../../../cli';
+	// I assume I'm located in libraries/fof30/Cli
+	$curdir   = __DIR__ . '/../../../cli';
 	$realPath = @realpath($curdir);
 
 	if ($realPath !== false)
@@ -152,11 +155,13 @@ if (function_exists('error_reporting'))
 	error_reporting($oldLevel);
 }
 
+// Include the Joomla constant override file for the CLI directory (if present)
 if (file_exists($curdir . '/defines.php'))
 {
 	include_once $curdir . '/defines.php';
 }
 
+// If no CLI overrides are present, try to load the regular constants from includes/defines.php
 if (!defined('_JDEFINES'))
 {
 	if (!isset($altBasePath))
@@ -170,18 +175,21 @@ if (!defined('_JDEFINES'))
 	require_once JPATH_BASE . '/includes/defines.php';
 }
 
-// Load the framework include files
-require_once JPATH_LIBRARIES . '/import.legacy.php';
+// Load the legacy Joomla! include files (this should go away in Joomla! 4?)
+if (@file_exists(JPATH_LIBRARIES . '/import.legacy.php'))
+{
+	require_once JPATH_LIBRARIES . '/import.legacy.php';
+}
 
 // Load the CMS import file (newer Joomla! 3 versions)
 $cmsImportPath = JPATH_LIBRARIES . '/cms.php';
 
-if (file_exists($cmsImportPath))
+if (@file_exists($cmsImportPath))
 {
 	@include_once $cmsImportPath;
 }
 
-// Load requirements for various versions of Joomla!
+// Load requirements for various versions of Joomla!. This should NOT be required since circa Joomla! 3.7.
 JLoader::import('joomla.base.object');
 JLoader::import('joomla.application.application');
 JLoader::import('joomla.application.applicationexception');
@@ -191,25 +199,18 @@ JLoader::import('joomla.filter.input');
 JLoader::import('joomla.filter.filterinput');
 JLoader::import('joomla.factory');
 
-// Load the configuration file to grab database information
-$config = JFactory::getConfig(JPATH_CONFIGURATION . '/configuration.php');
-
-if (!defined('JDEBUG'))
-{
-	define('JDEBUG', $config->get('debug', 0) ? 1 : 0);
-}
-
-unset($config);
+// Load the Joomla! configuration file to grab database information
+JFactory::getConfig(JPATH_CONFIGURATION . '/configuration.php');
 
 if (!defined('FOF30_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof30/include.php'))
 {
-	throw new RuntimeException('FOF 3.0 is not installed', 500);
+	throw new RuntimeException('Cannot load FOF', 500);
 }
 
 /**
  * Base class for a Joomla! command line application. Adapted from JCli / JApplicationCli
  */
-class AkeebaCliBase
+abstract class FOFCliApplication
 {
 	/**
 	 * The application input object.
@@ -228,7 +229,7 @@ class AkeebaCliBase
 	/**
 	 * The application instance.
 	 *
-	 * @var    AkeebaCliBase
+	 * @var    FOFCliApplication
 	 */
 	protected static $instance;
 
@@ -253,41 +254,10 @@ class AkeebaCliBase
 	 */
 	protected function __construct()
 	{
-		// Close the application if we are not executed from the command line, Akeeba style (allow for PHP CGI)
-		if (array_key_exists('REQUEST_METHOD', $_SERVER))
-		{
-			die('You are not supposed to access this script from the web. You have to run it from the command line. If you don\'t understand what this means, you must not try to use this file before reading the documentation. Thank you.');
-		}
+		// Some servers only provide a CGI executable. While not ideal for running CLI applications we can make do.
+		$this->detectAndWorkAroundCGIMode();
 
-		$cgiMode = false;
-
-		if (!defined('STDOUT') || !defined('STDIN') || !isset($_SERVER['argv']))
-		{
-			$cgiMode = true;
-		}
-
-		// Create a JInput object
-		if ($cgiMode)
-		{
-			$query = "";
-			if (!empty($_GET))
-			{
-				foreach ($_GET as $k => $v)
-				{
-					$query .= " $k";
-					if ($v != "")
-					{
-						$query .= "=$v";
-					}
-				}
-			}
-			$query	 = ltrim($query);
-			$argv	 = explode(' ', $query);
-			$argc	 = count($argv);
-
-			$_SERVER['argv'] = $argv;
-		}
-
+		// Create the input object, used for retrieving options
 		$this->input = new JInputCLI();
 
 		// Create the registry with a default namespace of config
@@ -304,38 +274,32 @@ class AkeebaCliBase
 		$this->config->set('cwd', getcwd());
 
 		// Create a new JFilterInput
-		if (class_exists('JFilterInput'))
-		{
-			$this->filter = JFilterInput::getInstance();
-		}
+		$this->filter = JFilterInput::getInstance();
 
 		// Parse the POSIX options
 		$this->parseOptions();
 	}
 
 	/**
-	 * Returns a reference to the global AkeebaCliBase object, only creating it if it
-	 * doesn't already exist.
+	 * Returns a reference to the global application object, only creating it if it doesn't already exist.
 	 *
-	 * This method must be invoked as: $cli = AkeebaCliBase::getInstance();
+	 * This method must be invoked the first time as $cli = FOFCliApplication::getInstance('YourClassName');
 	 *
-	 * @param   string $name The name of the AkeebaCliBase class to instantiate.
+	 * @param   string $name The name of the FOFCliApplication class to instantiate.
 	 *
-	 * @return  AkeebaCliBase  A AkeebaCliBase object
+	 * @return  FOFCliApplication  A FOFCliApplication object
 	 */
 	public static function &getInstance($name = null)
 	{
 		// Only create the object if it doesn't exist.
 		if (empty(self::$instance))
 		{
-			if (class_exists($name) && (is_subclass_of($name, 'AkeebaCliBase')))
+			if (!class_exists($name) || (!is_subclass_of($name, 'FOFCliApplication')))
 			{
-				self::$instance = new $name;
+				throw new InvalidArgumentException("Unknown FOF CLI application '$name'");
 			}
-			else
-			{
-				self::$instance = new AkeebaCliBase;
-			}
+
+			self::$instance = new $name;
 		}
 
 		return self::$instance;
@@ -346,10 +310,7 @@ class AkeebaCliBase
 	 *
 	 * @return  void
 	 */
-	public function execute()
-	{
-		$this->close();
-	}
+	abstract public function execute();
 
 	/**
 	 * Exit the application.
@@ -376,10 +337,15 @@ class AkeebaCliBase
 		if (is_array($data))
 		{
 			$this->config->loadArray($data);
+
+			return;
 		}
-		elseif (is_object($data))
+
+		if (is_object($data))
 		{
 			$this->config->loadObject($data);
+
+			return;
 		}
 	}
 
@@ -423,6 +389,7 @@ class AkeebaCliBase
 		{
 			return false;
 		}
+
 		include_once $file;
 
 		// Instantiate the configuration object.
@@ -430,6 +397,7 @@ class AkeebaCliBase
 		{
 			return false;
 		}
+
 		$config = new JConfig;
 
 		return $config;
@@ -438,14 +406,14 @@ class AkeebaCliBase
 	/**
 	 * Returns a fancy formatted time lapse code
 	 *
-	 * @param   int     $referencedate  Timestamp of the reference date/time
-	 * @param   int     $timepointer    Timestamp of the current date/time
-	 * @param   string  $measureby	    Time unit. One of s, m, h, d, or y.
-	 * @param   bool    $autotext       Add "ago" / "from now" suffix?
+	 * @param   int    $referencedate Timestamp of the reference date/time
+	 * @param   int    $timepointer   Timestamp of the current date/time
+	 * @param   string $measureby     Time unit. One of s, m, h, d, or y.
+	 * @param   bool   $autotext      Add "ago" / "from now" suffix?
 	 *
 	 * @return  string
 	 */
-	protected function timeago($referencedate = 0, $timepointer = '', $measureby = '', $autotext = true)
+	protected function timeAgo($referencedate = 0, $timepointer = '', $measureby = '', $autotext = true)
 	{
 		if ($timepointer == '')
 		{
@@ -453,23 +421,23 @@ class AkeebaCliBase
 		}
 
 		// Raw time difference
-		$Raw	 = $timepointer - $referencedate;
-		$Clean	 = abs($Raw);
+		$Raw   = $timepointer - $referencedate;
+		$Clean = abs($Raw);
 
 		$calcNum = array(
-				array('s', 60),
-				array('m', 60 * 60),
-				array('h', 60 * 60 * 60),
-				array('d', 60 * 60 * 60 * 24),
-				array('y', 60 * 60 * 60 * 24 * 365)
+			array('s', 60),
+			array('m', 60 * 60),
+			array('h', 60 * 60 * 60),
+			array('d', 60 * 60 * 60 * 24),
+			array('y', 60 * 60 * 60 * 24 * 365),
 		);
 
 		$calc = array(
-				's'	 => array(1, 'second'),
-				'm'	 => array(60, 'minute'),
-				'h'	 => array(60 * 60, 'hour'),
-				'd'	 => array(60 * 60 * 24, 'day'),
-				'y'	 => array(60 * 60 * 24 * 365, 'year')
+			's' => array(1, 'second'),
+			'm' => array(60, 'minute'),
+			'h' => array(60 * 60, 'hour'),
+			'd' => array(60 * 60 * 24, 'day'),
+			'y' => array(60 * 60 * 24 * 365, 'year'),
 		);
 
 		if ($measureby == '')
@@ -480,8 +448,8 @@ class AkeebaCliBase
 			{
 				if ($Clean <= $calcNum[$i][1])
 				{
-					$usemeasure	 = $calcNum[$i][0];
-					$i			 = count($calcNum);
+					$usemeasure = $calcNum[$i][0];
+					$i          = count($calcNum);
 				}
 			}
 		}
@@ -528,14 +496,15 @@ class AkeebaCliBase
 	/**
 	 * Formats a number of bytes in human readable format
 	 *
-	 * @param   int  $size  The size in bytes to format, e.g. 8254862
+	 * @param   int $size The size in bytes to format, e.g. 8254862
 	 *
 	 * @return  string  The human-readable representation of the byte size, e.g. "7.87 Mb"
 	 */
 	protected function formatByteSize($size)
 	{
-		$unit	 = array('b', 'KB', 'MB', 'GB', 'TB', 'PB');
-		return @round($size / pow(1024, ($i	= floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
+		$unit = array('b', 'KB', 'MB', 'GB', 'TB', 'PB');
+
+		return @round($size / pow(1024, ($i = floor(log($size, 1024)))), 2) . ' ' . $unit[$i];
 	}
 
 	/**
@@ -547,7 +516,8 @@ class AkeebaCliBase
 	{
 		if (function_exists('memory_get_usage'))
 		{
-			$size	 = memory_get_usage();
+			$size = memory_get_usage();
+
 			return $this->formatByteSize($size);
 		}
 		else
@@ -565,7 +535,8 @@ class AkeebaCliBase
 	{
 		if (function_exists('memory_get_peak_usage'))
 		{
-			$size	 = memory_get_peak_usage();
+			$size = memory_get_peak_usage();
+
 			return $this->formatByteSize($size);
 		}
 		else
@@ -614,7 +585,7 @@ class AkeebaCliBase
 
 		for ($i = 1; $i < $argc; $i++)
 		{
-			$argument = $argv[ $i ];
+			$argument = $argv[$i];
 
 			$value = $argument;
 
@@ -632,9 +603,9 @@ class AkeebaCliBase
 
 				$currentName = $name;
 
-				if (!isset($options[ $currentName ]) || ($options[ $currentName ] == null))
+				if (!isset($options[$currentName]) || ($options[$currentName] == null))
 				{
-					$options[ $currentName ] = array();
+					$options[$currentName] = array();
 				}
 			}
 
@@ -649,7 +620,7 @@ class AkeebaCliBase
 					$value = $parts[1];
 				}
 
-				$values = $options[ $currentName ];
+				$values = $options[$currentName];
 
 				if (is_null($values))
 				{
@@ -662,10 +633,10 @@ class AkeebaCliBase
 				}
 				else
 				{
-					$values[ $key ] = $value;
+					$values[$key] = $value;
 				}
 
-				$options[ $currentName ] = $values;
+				$options[$currentName] = $values;
 			}
 		}
 
@@ -673,11 +644,11 @@ class AkeebaCliBase
 	}
 
 	/**
-	 * Returns the value of a command line option
+	 * Returns the value of a command line option. This does NOT use JInputCLI. You MUST run parseOptions before.
 	 *
-	 * @param   string  $key      The full name of the option, e.g. "foobar"
-	 * @param   mixed   $default  The default value to return
-	 * @param   string  $type     Joomla! filter type, e.g. cmd, int, bool and so on.
+	 * @param   string $key     The full name of the option, e.g. "foobar"
+	 * @param   mixed  $default The default value to return
+	 * @param   string $type    Joomla! filter type, e.g. cmd, int, bool and so on.
 	 *
 	 * @return  mixed  The value of the option
 	 */
@@ -706,26 +677,67 @@ class AkeebaCliBase
 		return $this->filterVariable($value, $type);
 	}
 
+	/**
+	 * Filter a variable using JInputFilter
+	 *
+	 * @param   mixed  $var  The variable to filter
+	 * @param   string $type The filter type, default 'cmd'
+	 *
+	 * @return  mixed  The filtered value
+	 */
 	protected function filterVariable($var, $type = 'cmd')
 	{
-		// If JFilterInput exists we shall use it
-		if (is_object($this->filter))
+		return $this->filter->clean($var, $type);
+	}
+
+	/**
+	 * Detect if we are running under CGI mode. In this case it populates the global $argv and $argc parameters off the
+	 * CGI input ($_GET superglobal).
+	 */
+	private function detectAndWorkAroundCGIMode()
+	{
+		$cgiMode = false;
+
+		if (!defined('STDOUT') || !defined('STDIN') || !isset($_SERVER['argv']))
 		{
-			return $this->filter->clean($var, $type);
+			$cgiMode = true;
 		}
 
-		// Otherwise we'll have to do it THE REALLY HARD WAY, using reflection to call JRequest::_cleanVar.
-		$reflector = new ReflectionClass('JRequest');
-		$refMethod = $reflector->getMethod('_cleanVar');
-		$refMethod->setAccessible(true);
-		return $refMethod->invoke(null, $var, 0, $type);
+		// Create a JInput object
+		if ($cgiMode)
+		{
+			$query = "";
+
+			if (!empty($_GET))
+			{
+				foreach ($_GET as $k => $v)
+				{
+					$query .= " $k";
+					if ($v != "")
+					{
+						$query .= "=$v";
+					}
+				}
+			}
+
+			$query = ltrim($query);
+
+			global $argv, $argc;
+			$argv = explode(' ', $query);
+			$argc = count($argv);
+
+			$_SERVER['argv'] = $argv;
+		}
 	}
 }
 
 /**
- * @param   Throwable  $ex  The Exception / Error being handled
+ * A default exception handler. Catches all unhandled exceptions, displays debug information about them and sets the
+ * error level to 254.
+ *
+ * @param   Throwable $ex The Exception / Error being handled
  */
-function akeeba_exception_handler($ex)
+function FOFCliExceptionHandler($ex)
 {
 	echo "\n\n";
 	echo "********** ERROR! **********\n\n";
@@ -735,18 +747,19 @@ function akeeba_exception_handler($ex)
 	echo "File: " . $ex->getFile() . "\n";
 	echo "Line: " . $ex->getLine() . "\n";
 	echo "\nStack Trace:\n\n" . $ex->getTraceAsString();
-	die("\n\n");
+	echo "\n\n";
+	exit(254);
 }
 
 /**
  * Timeout handler
  *
  * This function is registered as a shutdown script. If a catchable timeout occurs it will detect it and print a helpful
- * error message instead of just dying cold.
+ * error message instead of just dying cold. The error level is set to 253 in this case.
  *
  * @return  void
  */
-function akeeba_timeout_handler()
+function FOFCliTimeoutHandler()
 {
 	$connection_status = connection_status();
 
@@ -786,37 +799,42 @@ the max_execution_time in the php.ini file or, even better, set it to 0.
 END;
 
 
-	if (!function_exists('php_ini_loaded_file'))
-	{
-		echo "\n\n";
+		if (!function_exists('php_ini_loaded_file'))
+		{
+			echo "\n\n";
 
-		return;
-	}
+			return;
+		}
 
-	$ini_location = php_ini_loaded_file();
+		$ini_location = php_ini_loaded_file();
 
-	echo <<<END
+		echo <<<END
 The php.ini file your host will need to modify is located at:
 $ini_location
 Info for the host: the location above is reported by PHP's php_ini_loaded_file() method.
 
 END;
 
-	die("\n\n");}
+		echo "\n\n";
+		exit(253);
+	}
 }
 
 /**
  * Error handler. It tries to catch fatal errors and report them in a meaningful way. Obviously it only works for
- * cachable fatal errors...
+ * catchable fatal errors. It sets the error level to 252.
  *
- * @param   int     $errno    Error number
- * @param   string  $errstr   Error string, tells us what went wrong
- * @param   string  $errfile  Full path to file where the error occurred
- * @param   int     $errline  Line number where the error occurred
+ * IMPORTANT! Under PHP 7 the default exception handler will be called instead, including when there is a non-catchable
+ *            fatal error.
+ *
+ * @param   int    $errno   Error number
+ * @param   string $errstr  Error string, tells us what went wrong
+ * @param   string $errfile Full path to file where the error occurred
+ * @param   int    $errline Line number where the error occurred
  *
  * @return  void
  */
-function akeeba_error_handler($errno, $errstr, $errfile, $errline)
+function FOFCliErrorHandler($errno, $errstr, $errfile, $errline)
 {
 	switch ($errno)
 	{
@@ -829,7 +847,9 @@ function akeeba_error_handler($errno, $errstr, $errfile, $errline)
 			echo "File: " . $errfile . "\n";
 			echo "Line: " . $errline . "\n";
 			echo "\nStack Trace:\n\n" . debug_backtrace();
-			die("\n\n");
+			echo "\n\n";
+
+			exit(252);
 			break;
 
 		default:
@@ -837,6 +857,6 @@ function akeeba_error_handler($errno, $errstr, $errfile, $errline)
 	}
 }
 
-set_exception_handler('akeeba_exception_handler');
-set_error_handler('akeeba_error_handler', E_ERROR | E_USER_ERROR);
-register_shutdown_function('akeeba_timeout_handler');
+set_exception_handler('FOFCliExceptionHandler');
+set_error_handler('FOFCliErrorHandler', E_ERROR | E_USER_ERROR);
+register_shutdown_function('FOFCliTimeoutHandler');
