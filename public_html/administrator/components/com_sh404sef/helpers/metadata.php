@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -20,13 +20,13 @@ class Sh404sefHelperMetadata
 
 	public static function shouldInsertMeta($input = null, $categories = array())
 	{
-		$input = empty($input) ? JFactory::getApplication()->input : $input;
+		$input            = empty($input) ? JFactory::getApplication()->input : $input;
 		$shouldInsertMeta = false;
 
 		// get request details
 		$component = $input->getCmd('option');
-		$view = $input->getCmd('view');
-		$printing = $input->getInt('print');
+		$view      = $input->getCmd('view');
+		$printing  = $input->getInt('print');
 
 		// we are set to only display on canonical page for an item
 		// this can only be true if context and current request matches
@@ -87,8 +87,8 @@ class Sh404sefHelperMetadata
 		$nonSef = empty($nonSef) ? Sh404sefHelperUrl::getCurrentNonSef() : $nonSef;
 		if (!isset($_tags[$nonSef]))
 		{
-			$_model = is_null($_model) ? new Sh404sefModelMetas() : $_model;
-			$isHome = Sh404sefHelperUrl::isNonSefHomepage($nonSef);
+			$_model         = is_null($_model) ? new Sh404sefModelMetas() : $_model;
+			$isHome         = Sh404sefHelperUrl::isNonSefHomepage($nonSef);
 			$_tags[$nonSef] = $_model->getCustomMetaData($isHome ? sh404SEF_HOMEPAGE_CODE : $nonSef);
 		}
 
@@ -124,9 +124,9 @@ class Sh404sefHelperMetadata
 			$highlight = Sh404sefHelperUrl::getUrlVar($nonSef, 'highlight', null);
 			if (!empty($highlight) && empty($shCanonicalTag))
 			{
-				$searchCanoNonSef = str_replace('?highlight=' . $highlight, '', $nonSef);
-				$searchCanoNonSef = str_replace('&highlight=' . $highlight, '', $searchCanoNonSef);
-				$shCanonicalTag = JRoute::_($searchCanoNonSef);
+				$searchCanoNonSef           = str_replace('?highlight=' . $highlight, '', $nonSef);
+				$searchCanoNonSef           = str_replace('&highlight=' . $highlight, '', $searchCanoNonSef);
+				$shCanonicalTag             = JRoute::_($searchCanoNonSef);
 				$pageInfo->pageCanonicalUrl = Sh404sefHelperUrl::canonicalRoutedToAbs($shCanonicalTag);
 			}
 
@@ -134,17 +134,43 @@ class Sh404sefHelperMetadata
 			$splash = Sh404sefHelperUrl::getUrlVar($nonSef, 'sh404sef_splash', null);
 			if (!empty($splash) && empty($shCanonicalTag))
 			{
-				$shCanonicalTag = Sh404sefFactory::getConfig()->shForcedHomePage;
+				$shCanonicalTag             = Sh404sefFactory::getConfig()->shForcedHomePage;
 				$pageInfo->pageCanonicalUrl = Sh404sefHelperUrl::canonicalRoutedToAbs($shCanonicalTag);
 			}
 
 			// @deprecated Some globals can be set by extensions. Will be really deprecated when a replacement is in place
 			$_tags[$nonSef]->metatitle = empty($_tags[$nonSef]->metatitle) ? $shCustomTitleTag : $_tags[$nonSef]->metatitle;
-			$_tags[$nonSef]->metadesc = empty($_tags[$nonSef]->metadesc) ? $shCustomDescriptionTag : $_tags[$nonSef]->metadesc;
-			$_tags[$nonSef]->metakey = empty($_tags[$nonSef]->metakey) ? $shCustomKeywordsTag : $_tags[$nonSef]->metakey;
-			$_tags[$nonSef]->metarobots = empty($_tags[$nonSef]->metarobots) ? $shCustomRobotsTag : $_tags[$nonSef]->metarobots;
-			$_tags[$nonSef]->metalang = empty($_tags[$nonSef]->metalang) ? $shCustomLangTag : $_tags[$nonSef]->metalang;
+			$_tags[$nonSef]->metadesc  = empty($_tags[$nonSef]->metadesc) ? $shCustomDescriptionTag : $_tags[$nonSef]->metadesc;
+			$_tags[$nonSef]->metakey   = empty($_tags[$nonSef]->metakey) ? $shCustomKeywordsTag : $_tags[$nonSef]->metakey;
+			$_tags[$nonSef]->metalang  = empty($_tags[$nonSef]->metalang) ? $shCustomLangTag : $_tags[$nonSef]->metalang;
 			$_tags[$nonSef]->canonical = empty($_tags[$nonSef]->canonical) ? $shCanonicalTag : $_tags[$nonSef]->canonical;
+
+			// compute default robots tag
+			$robotsMetaDefault = JFactory::getDocument()->getMetaData('robots');
+			if (!wbContains($robotsMetaDefault, 'noindex'))
+			{
+				$separator         = empty($robotsMetaDefault) ? '' : ', ';
+				$robotsMetaDefault .= $separator . Sh404sefClassConfig::COM_SH404SEF_ROBOTS_META_DEFAULT;
+			}
+			/**
+			 * Filter default value for the robots meta tag.
+			 *
+			 * @api
+			 * @package sh404SEF\filter\metadata
+			 * @var sh404sef_robots_meta_default
+			 * @since   4.17.0
+			 *
+			 * @param string $nonSef Current non-sef URL
+			 *
+			 * @return string
+			 */
+			$robotsMetaDefault          = ShlHook::filter(
+				'sh404sef_robots_meta_default',
+				$robotsMetaDefault,
+				$nonSef
+			);
+			$robotsMetaDefault          = empty($shCustomRobotsTag) ? $robotsMetaDefault : $shCustomRobotsTag;
+			$_tags[$nonSef]->metarobots = empty($_tags[$nonSef]->metarobots) ? $robotsMetaDefault : $_tags[$nonSef]->metarobots;
 		}
 
 		return $_tags[$nonSef];
@@ -167,28 +193,28 @@ class Sh404sefHelperMetadata
 			return;
 		}
 
-		$config = Sh404sefFactory::getConfig();
-		$isHome = is_null($isHome) ? Sh404sefHelperUrl::isNonSefHomepage() : $isHome;
+		$config   = Sh404sefFactory::getConfig();
+		$isHome   = is_null($isHome) ? Sh404sefHelperUrl::isNonSefHomepage() : $isHome;
 		$metaData = clone($rawMetaData);
 
 		// page title
 		if (!empty($rawMetaData->metatitle))
 		{
-			$prepend = $isHome ? '' : $config->prependToPageTitle;
-			$append = $isHome ? '' : $config->appendToPageTitle;
+			$prepend             = $isHome ? '' : $config->prependToPageTitle;
+			$append              = $isHome ? '' : $config->appendToPageTitle;
 			$metaData->pageTitle = self::cleanUpTitle($prepend . $rawMetaData->metatitle . $append);
 		}
 
 		// meta description
 		if (!empty($rawMetaData->metadesc))
 		{
-			$t = self::cleanUpDesc($rawMetaData->metadesc);
+			$t                         = self::cleanUpDesc($rawMetaData->metadesc);
 			$metaData->pageDescription = ShlSystem_Strings::pr('#\$([0-9]*)#u', '\\\$${1}', $t);
 		}
 
 		if (!empty($rawMetaData->metakey))
 		{
-			$t = self::cleanUpDesc($rawMetaData->metakey);
+			$t                      = self::cleanUpDesc($rawMetaData->metakey);
 			$metaData->pageKeywords = ShlSystem_Strings::pr('#\$([0-9]*)#u', '\\\$${1}', $t);
 		}
 
@@ -246,7 +272,8 @@ class Sh404sefHelperMetadata
 			$content = Sh404sefHelperGeneral::addCommentedTag(
 				$content,
 				'sh404sef_tag_description',
-				self::$filteredAutoDesc
+				self::$filteredAutoDesc,
+				'before'
 			);
 		}
 
@@ -263,6 +290,7 @@ class Sh404sefHelperMetadata
 	private static function buildDescription($content)
 	{
 		$expressions = array(
+			'/<style\s[^>]*>.*<\/style>/uUis',
 			'/<script\s[^>]*>.*<\/script>/uUis',
 			'#{\s*jumi[^}]+}#uUi',
 			'#{\s*wbamp[^}]+}#uUi',
@@ -277,7 +305,9 @@ class Sh404sefHelperMetadata
 			'#{\s*phocagallery[^}]*}#iuUs',
 			'#{(.*?)}(.*?){/(.*?)}#us',
 			'#\[(.*?)\](.*?)\[/(.*?)\]#us',
-			'#\[widgetkit[^\]]+\]#us'
+			'#\[widgetkit[^\]]+\]#us',
+			'#\[quix[^\]]+\]#us',
+			'#{\s*unitegallery[^}]+}#uUi'
 		);
 
 		/**
@@ -335,7 +365,7 @@ class Sh404sefHelperMetadata
 		{
 			if (strpos($fromContent, 'sh404sef_tag_description') != false)
 			{
-				$cachedDescription = Sh404sefHelperGeneral::getCommentedTag(
+				$cachedDescription      = Sh404sefHelperGeneral::getCommentedTag(
 					$fromContent,
 					'sh404sef_tag_description'
 				);
@@ -358,7 +388,7 @@ class Sh404sefHelperMetadata
 	{
 		$metaData = empty($metaData) ? self::getFinalizedCustomMetaData() : $metaData;
 		$pageInfo = Sh404sefFactory::getPageInfo();
-		$config = Sh404sefFactory::getConfig();
+		$config   = Sh404sefFactory::getConfig();
 		$document = JFactory::getDocument();
 
 		// page title
@@ -374,7 +404,7 @@ class Sh404sefHelperMetadata
 		}
 		if (!empty($metaData->pageTitle))
 		{
-			$pageInfo->pageTitle = $metaData->pageTitle;
+			$pageInfo->pageTitle   = $metaData->pageTitle;
 			$pageInfo->pageTitlePr = self::protectPageTitle($pageInfo->pageTitle);
 			$document->setTitle($pageInfo->pageTitle);
 		}
@@ -483,7 +513,7 @@ class Sh404sefHelperMetadata
 	public static function getMenuItemTitle($Itemid = 0)
 	{
 		// get the current menu item, or possibly the one asked for
-		$menus = JFactory::getApplication()->getMenu();
+		$menus    = JFactory::getApplication()->getMenu();
 		$menuItem = empty($Itemid) ? $menus->getActive() : $menus->getItem($Itemid);
 
 		// get value, if any set

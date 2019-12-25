@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -347,12 +347,12 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 				switch ($layout)
 				{
 					case 'view404':
-						$where[] = 'u1.newurl = ""';
+						$where[] = 'u1.`newurl` = ""';
 						break;
 					default:
-						$where[] = 'u1.newurl <> ""';
+						$where[] = 'u1.`newurl` <> ""';
 						// required to count correctly duplicates if any
-						$where[] = 'd.oldurl=u1.oldurl';
+						$where[] = 'd.`oldurl`=u1.`oldurl`';
 						break;
 				}
 
@@ -363,7 +363,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 					case 'view404':
 						break;
 					default:
-						$where[] = 'u1.rank = 0';
+						$where[] = 'u1.`rank` = 0';
 						break;
 				}
 			}
@@ -460,14 +460,14 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 			switch ($filters->filter_hide_urls)
 			{
 				case Sh404sefHelperGeneral::COM_SH404SEF_HIDE_404:
-					$where[] = 'u1.newurl <> ""';
+					$where[] = 'u1.`newurl` <> ""';
 					break;
 				case Sh404sefHelperGeneral::COM_SH404SEF_HIDE_DUPLICATES:
-					$where[] = 'u1.rank = 0';
+					$where[] = 'u1.`rank` = 0';
 					break;
 				case Sh404sefHelperGeneral::COM_SH404SEF_HIDE_DUPLICATES_AND_404:
-					$where[] = 'u1.newurl <> ""';
-					$where[] = 'u1.rank = 0';
+					$where[] = 'u1.`newurl` <> ""';
+					$where[] = 'u1.`rank` = 0';
 					break;
 			}
 		}
@@ -718,7 +718,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 		// also remove possible rank limitations. This means that
 		// dplicates will also go away with their parent.
 		// Need a big warning!
-		$where = str_replace(' AND u1.rank = 0', '', $where);
+		$where = str_replace(' AND u1.`rank` = 0', '', $where);
 
 		// finally remove any u1. left
 		$where = str_replace('u1.', '', $where);

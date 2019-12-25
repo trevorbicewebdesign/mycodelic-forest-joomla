@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -208,19 +208,6 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 		$this->twCardsData['twittercards_enable'] = Sh404sefHelperHtml::buildBooleanAndDefaultSelectList($enabled, 'twittercards_enable');
 		$this->twCardsData['twittercards_site_account'] = $this->meta->twittercards_site_account;
 		$this->twCardsData['twittercards_creator_account'] = $this->meta->twittercards_creator_account;
-
-		// google authorship
-		$this->googleAuthorshipData = array();
-		$enabled = isset($this->meta->google_authorship_enable) ? $this->meta->google_authorship_enable : SH404SEF_OPTION_VALUE_USE_DEFAULT;
-		$this->googleAuthorshipData['google_authorship_enable'] = Sh404sefHelperHtml::buildBooleanAndDefaultSelectList($enabled, 'google_authorship_enable');
-		$this->googleAuthorshipData['google_authorship_author_profile'] = $this->meta->google_authorship_author_profile;
-		$this->googleAuthorshipData['google_authorship_author_name'] = $this->meta->google_authorship_author_name;
-
-		// google authorship
-		$this->googlePublisherData = array();
-		$enabled = isset($this->meta->google_publisher_enable) ? $this->meta->google_publisher_enable : SH404SEF_OPTION_VALUE_USE_DEFAULT;
-		$this->googlePublisherData['google_publisher_enable'] = Sh404sefHelperHtml::buildBooleanAndDefaultSelectList($enabled, 'google_publisher_enable');
-		$this->googlePublisherData['google_publisher_url'] = $this->meta->google_publisher_url;
 	}
 
 	/**

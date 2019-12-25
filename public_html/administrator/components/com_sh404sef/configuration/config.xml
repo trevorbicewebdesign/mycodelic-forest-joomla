@@ -848,6 +848,9 @@
             <option value="1">COM_SH404SEF_YES</option>
         </field>
 
+        <field menu="hide" type="text" name="metaRobotsDefault" default="max-snippet:-1, max-image-preview:large, max-video-preview:-1" label="COM_SH404SEF_META_ROBOTS_DEFAULT"
+               description="COM_SH404SEF_TT_META_ROBOTS_DEFAULT" size="50" maxlength="255"/>
+
         <field menu="hide" name="removeOtherCanonicals" type="radio" class="btn-group" default="1"
                label="COM_SH404SEF_REMOVE_OTHER_CANONICALS" description="COM_SH404SEF_TT_REMOVE_OTHER_CANONICALS">
             <option value="0">COM_SH404SEF_NO</option>
@@ -1141,39 +1144,6 @@
         </field>
     </fieldset>
     <!--end twitter cards tags fieldset-->
-    <!--start Google Authorship tags fieldset-->
-    <fieldset name="googleAuthorship" label="COM_SH404SEF_GOOGLE_AUTHORSHIP_TITLE"
-              description="" groupname="COM_SH404SEF_CONFIG_SOCIAL_SEO">
-
-        <field name="enableGoogleAuthorship" type="radio" class="btn-group" default="0"
-               label="COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_AUTHORSHIP"
-               description="COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_AUTHORSHIP_DESC">
-            <option value="0">COM_SH404SEF_NO</option>
-            <option value="1">COM_SH404SEF_YES</option>
-        </field>
-        <field name="googleAuthorshipAuthorProfile" type="text" default=""
-               size="20" label="COM_SH404SEF_GOOGLE_AUTHORSHIP_PROFILE"
-               description="COM_SH404SEF_GOOGLE_AUTHORSHIP_PROFILE_DESC"/>
-        <field name="googleAuthorshipAuthorName" type="text" default=""
-               label="COM_SH404SEF_GOOGLE_AUTHORSHIP_AUTHOR_NAME"
-               description="COM_SH404SEF_GOOGLE_AUTHORSHIP_AUTHOR_NAME_DESC" size="40" maxlength="80"/>
-        <field name="googleAuthorshipCategories" multiple="multiple" type="category" size="10" extension="com_content"
-               default="show_on_all"
-               label="COM_SH404SEF_GOOGLE_AUTHORSHIP_CATEGORIES"
-               description="COM_SH404SEF_GOOGLE_AUTHORSHIP_CATEGORIES_DESC">
-            <option value="show_on_all">COM_SH404SEF_GOOGLE_AUTHORSHIP_CATEGORIES_SHOW_ON_ALL</option>
-        </field>
-        <field name="enableGooglePublisher" type="radio" class="btn-group" default="0"
-               label="COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_PUBLISHER"
-               description="COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_PUBLISHER_DESC">
-            <option value="0">COM_SH404SEF_NO</option>
-            <option value="1">COM_SH404SEF_YES</option>
-        </field>
-        <field name="googlePublisherUrl" type="text" default=""
-               label="COM_SH404SEF_GOOGLE_PUBLISHER_URL"
-               description="COM_SH404SEF_GOOGLE_PUBLISHER_URL_DESC" size="40" maxlength="255"/>
-    </fieldset>
-    <!--end Google Authorship tags fieldset-->
     <!--END_TAB4-->
     <!--TAB5-->
     <!--start analitycs fieldset-->

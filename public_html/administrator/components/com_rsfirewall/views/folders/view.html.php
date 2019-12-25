@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -32,7 +32,6 @@ class RsfirewallViewFolders extends JViewLegacy
 		$this->folders 	= $this->get('Folders');
 		$this->files	= $this->get('Files');
 		$this->path		= $this->get('Path');
-		$this->DS		= $this->get('DS');
 		
 		$this->allowFolders = $this->get('allowFolders');
 		$this->allowFiles 	= $this->get('allowFiles');

@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -46,7 +46,7 @@ class Sh404sefHelperAnalytics
 		// main option: are we forcing update, or only using the cached data ?
 		$options['forced'] = empty($options['forced']) ? 0 : $options['forced'];
 
-		$sefConfig = Sh404sefFactory::getConfig();
+		$sefConfig      = Sh404sefFactory::getConfig();
 		$dataTypeString = str_replace('ga:', '', $sefConfig->analyticsDashboardDataType);
 
 		// store options
@@ -89,16 +89,16 @@ class Sh404sefHelperAnalytics
 		if (!$sefConfig->autoCheckNewAnalytics && !self::$_options['forced'])
 		{
 			// prepare a default response object
-			$response = new stdClass();
-			$response->status = true;
+			$response                = new stdClass();
+			$response->status        = true;
 			$response->statusMessage = JText::_('COM_SH404SEF_CLICK_TO_CHECK_ANALYTICS');
-			$response->note = '';
+			$response->note          = '';
 			return $response;
 		}
 
 		// calculate adapted class name
 		$className = 'Sh404sefAdapterAnalytics' . strtolower($sefConfig->analyticsType);
-		$handler = new $className();
+		$handler   = new $className();
 
 		// ask specialized class to fetch analytics data
 		$response = $handler->fetchAnalytics($sefConfig, self::$_options);
@@ -121,7 +121,8 @@ class Sh404sefHelperAnalytics
 			$tmp->setConfig(
 				array(
 					'maxredirects' => 5,
-					'timeout' => 10)
+					'timeout'      => 10
+				)
 			);
 
 			if ($new)
@@ -137,10 +138,18 @@ class Sh404sefHelperAnalytics
 		return $_instance;
 	}
 
+	/**
+	 * Not used from 4.16.2.
+	 *
+	 * @param $hClient
+	 *
+	 * @return null
+	 * @throws Sh404sefExceptionDefault
+	 */
 	public static function request($hClient)
 	{
 		// establish connection with available methods
-		$adapters = array('Zendshl_Http_Client_Adapter_Curl', 'Zendshl_Http_Client_Adapter_Socket');
+		$adapters    = array('Zendshl_Http_Client_Adapter_Curl', 'Zendshl_Http_Client_Adapter_Socket');
 		$rawResponse = null;
 
 		// perform connect request
@@ -163,6 +172,13 @@ class Sh404sefHelperAnalytics
 		return $rawResponse;
 	}
 
+	/**
+	 * Not used from 4.16.2.
+	 *
+	 * @param $response
+	 *
+	 * @throws Sh404sefExceptionDefault
+	 */
 	public static function handleConnectResponseErrors($response)
 	{
 		if (empty($response))
@@ -171,7 +187,7 @@ class Sh404sefHelperAnalytics
 			ShlSystem_Log::debug('sh404sef', $msg);
 			throw new Sh404sefExceptionDefault($msg);
 		}
-		if (!is_object($response) || $response->isError())
+		if (!is_object($response) || empty($response->code))
 		{
 			ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'HTTP client: raw response from server: ' . print_r($response, true));
 			throw new Sh404sefExceptionDefault(JTEXT::sprintf('COM_SH404SEF_ANALYTICS_RESPONSE_DUMP', print_r($response, true)));
@@ -181,7 +197,7 @@ class Sh404sefHelperAnalytics
 	public static function verifyAuthResponse($response)
 	{
 		// check if valid response http code
-		$status = $response->getStatus();
+		$status = $response->code;
 		if ($status != 200)
 		{
 			ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: fetching account list error: error status response ' . $status);
@@ -201,12 +217,12 @@ class Sh404sefHelperAnalytics
 		$context = empty($context) ? 'sh404sef_analytics_' : $context;
 		$context .= '_' . ($options['showFilters'] == 'yes' ? 'manager' : 'dashboard');
 
-		$options['forced'] = JFactory::getApplication()->input->getInt('forced', 0);
-		$options['startDate'] = JFactory::getApplication()->input->getString('startDate', '');
-		$options['endDate'] = JFactory::getApplication()->input->getString('endDate', '');
-		$options['groupBy'] = JFactory::getApplication()->input->getString('groupBy', '');
-		$options['cpWidth'] = JFactory::getApplication()->input->getInt('cpWidth');
-		$options['report'] = JFactory::getApplication()->input->getCmd('report', 'dashboard');
+		$options['forced']     = JFactory::getApplication()->input->getInt('forced', 0);
+		$options['startDate']  = JFactory::getApplication()->input->getString('startDate', '');
+		$options['endDate']    = JFactory::getApplication()->input->getString('endDate', '');
+		$options['groupBy']    = JFactory::getApplication()->input->getString('groupBy', '');
+		$options['cpWidth']    = JFactory::getApplication()->input->getInt('cpWidth');
+		$options['report']     = JFactory::getApplication()->input->getCmd('report', 'dashboard');
 		$options['subrequest'] = JFactory::getApplication()->input->getCmd('subrequest', '');
 
 		// default max number of results
@@ -231,27 +247,27 @@ class Sh404sefHelperAnalytics
 		{
 			// user selected dates, read user input
 			$options['startDate'] = $app->getUserstateFromRequest($context . 'startDate', 'startDate', '', 'string');
-			$options['endDate'] = $app->getUserstateFromRequest($context . 'endDate', 'endDate', '', 'string');
-			$options['groupBy'] = $app->getUserstateFromRequest($context . 'groupBy', 'groupBy', '', 'string');
+			$options['endDate']   = $app->getUserstateFromRequest($context . 'endDate', 'endDate', '', 'string');
+			$options['groupBy']   = $app->getUserstateFromRequest($context . 'groupBy', 'groupBy', '', 'string');
 			if (empty($options['groupBy']))
 			{
 				// default to grouping by day
 				$options['groupBy'] = self::_getDefaultGroupBy();
 			}
 			$options['max-top-referrers'] = 15;
-			$options['max-top-urls'] = 15;
+			$options['max-top-urls']      = 15;
 		}
 		else
 		{
 			$options['max-top-referrers'] = 5;
-			$options['max-top-urls'] = 5;
+			$options['max-top-urls']      = 5;
 		}
 
 		if (empty($options['startDate']) || empty($options['endDate']) || $options['showFilters'] != 'yes')
 		{
 			// dashboard: calculate dates based on backend settings
 			// end date is always yesterday
-			$date = new DateTime('yesterday');
+			$date               = new DateTime('yesterday');
 			$options['endDate'] = $date->format('Y-m-d');
 
 			// use config to find what date range we should display : week, month or year
@@ -329,7 +345,7 @@ class Sh404sefHelperAnalytics
 		// Get the scheme
 		if (!isset($site))
 		{
-			$uri = JURI::getInstance(JURI::base());
+			$uri  = JURI::getInstance(JURI::base());
 			$site = $uri->toString(array('host'));
 		}
 
@@ -340,7 +356,7 @@ class Sh404sefHelperAnalytics
 	 * Format an array of date strings for display as abscise
 	 * of a graphic
 	 *
-	 * @param       array of object $entries
+	 * @param array of object $entries
 	 * @param array $options
 	 */
 	public static function formatAbciseDates($entries, $options)
@@ -489,8 +505,8 @@ class Sh404sefHelperAnalytics
 	{
 
 		// need config, to know which data user wants to display : visits, unique visitors, pageviews
-		$sefConfig = Sh404sefFactory::getConfig();
-		$dataType = $sefConfig->analyticsDashboardDataType;
+		$sefConfig      = Sh404sefFactory::getConfig();
+		$dataType       = $sefConfig->analyticsDashboardDataType;
 		$dataTypeString = str_replace('ga:', '', $dataType);
 
 		$label = self::getDataTypeTitleLabel($dataTypeString);
@@ -585,8 +601,8 @@ class Sh404sefHelperAnalytics
 
 		// make sure we also have on in the base cache directory
 		// compute filename, using current time, up to 1/100 of a sec
-		$timestamp = floor(microtime(true) * 100);
-		$timestamp = str_replace('.', '', $timestamp);
+		$timestamp     = floor(microtime(true) * 100);
+		$timestamp     = str_replace('.', '', $timestamp);
 		$imageFileName = str_replace(DIRECTORY_SEPARATOR, '/', $basePath) . $timestamp . '.' . strtolower($report) . '.png';
 
 		return $imageFileName;
@@ -623,7 +639,7 @@ class Sh404sefHelperAnalytics
 
 				// file name format : timestamp.type.png, ie: "123456789.visits.datatype.png"
 				$bits = explode('.', $file);
-				$ts = $bits[0];
+				$ts   = $bits[0];
 				if ($ts < $oldestAllowed)
 				{
 					// remove that file

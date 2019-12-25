@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -450,7 +450,9 @@ abstract class RSFirewallReplacer
 
 		if (self::$emails)
 		{
-			$text = str_replace('</body>', '<script type="text/javascript" src="'.JUri::root(true).'/components/com_rsfirewall/assets/js/rsfirewall.js"></script></body>', $text);
+		    $script = JHtml::_('rsfirewall_script', 'com_rsfirewall/mail.js', array('relative' => true, 'version' => 'auto', 'pathOnly' => true));
+
+			$text = str_replace('</body>', '<script type="text/javascript" src="' . $script . '"></script></body>', $text);
 		}
 
 		return self::$emails;

@@ -13,7 +13,6 @@ class RsformController extends JControllerLegacy
 	{
 		parent::__construct($config);
 
-		JHtml::_('behavior.framework');
 		JHtml::_('jquery.framework');
 
         JHtml::script('com_rsform/admin/placeholders.js', array('relative' => true, 'version' => 'auto'));
@@ -46,7 +45,7 @@ class RsformController extends JControllerLegacy
 		$tab 		 = $tabposition ? '&tab='.$tab : '';
 		JFactory::getSession()->set('com_rsform.form.formId'.$formId.'.lang', JFactory::getApplication()->input->getString('Language'));
 
-		$this->setRedirect('index.php?option=com_rsform&task=forms.edit&formId='.$formId.'&tabposition='.$tabposition.$tab);
+		$this->setRedirect('index.php?option=com_rsform&view=forms&layout=edit&formId='.$formId.'&tabposition='.$tabposition.$tab);
 	}
 
 	public function changeEmailLanguage()
@@ -63,6 +62,8 @@ class RsformController extends JControllerLegacy
 
 	public function layoutsGenerate()
 	{
+		/* @var $model RsformModelForms */
+
 		$model = $this->getModel('forms');
 		$model->getForm();
 		$model->_form->FormLayoutName = JFactory::getApplication()->input->getCmd('layoutName');
@@ -107,20 +108,5 @@ class RsformController extends JControllerLegacy
 	public function plugin()
 	{
 		JFactory::getApplication()->triggerEvent('rsfp_bk_onSwitchTasks');
-	}
-
-	public function captcha()
-	{
-		require_once JPATH_SITE.'/components/com_rsform/helpers/captcha.php';
-
-		$componentId = JFactory::getApplication()->input->getInt('componentId');
-		$captcha = new RSFormProCaptcha($componentId);
-
-		JFactory::getSession()->set('com_rsform.captcha.captchaId'.$componentId, $captcha->getCaptcha());
-		
-		if (JFactory::getDocument()->getType() != 'image')
-		{
-			JFactory::getApplication()->close();
-		}
 	}
 }

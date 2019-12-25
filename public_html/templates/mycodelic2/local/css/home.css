@@ -16,8 +16,8 @@
 }
 .home .t3-sl-1 {
   padding: 0;
-  background: #ffffff;
-  color: #333333;
+  background: #000000;
+  color: #ffffff;
   border-bottom: 1px solid #eeeeee;
 }
 .home .t3-sl-1 .jumbotron {
@@ -80,8 +80,8 @@
   }
 }
 .home .t3-sl-5 {
-  background: #ffffff;
-  color: #333333;
+  background: #000000;
+  color: #ffffff;
   border-top: 1px solid #eeeeee;
   padding: 0;
 }

@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date		2018-08-22
+ * @version     4.17.0.3932
+ * @date		2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -119,51 +119,6 @@ $data->name = 'twittercards_creator_account';
 $data->label = JText::_('COM_SH404SEF_SOCIAL_TWITTER_CARDS_CREATOR_ACCOUNT');
 $data->input = '<input type="text" name="twittercards_creator_account" id="twittercards_creator_account" size="50" value="' . $this->twCardsData['twittercards_creator_account'] . '" />';
 $data->tip = JText::_('COM_SH404SEF_SOCIAL_TWITTER_CARDS_CREATOR_ACCOUNT_DESC');
-echo $this->layoutRenderer['custom']->render($data);
-
-//  Google Authorship
-$data = new stdClass();
-$data->label = '<legend>' . JText::_('COM_SH404SEF_GOOGLE_AUTHORSHIP_TITLE') . '</legend>';
-echo $this->layoutRenderer['shlegend']->render($data);
-
-// Enable
-$data = new stdClass();
-$data->name = 'google_authorship_enable';
-$data->label = JText::_('COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_AUTHORSHIP');
-$data->input = $this->googleAuthorshipData['google_authorship_enable'];
-$data->tip = JText::_('COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_AUTHORSHIP_DESC');
-echo $this->layoutRenderer['custom']->render($data);
-
-// authorship url
-$data = new stdClass();
-$data->name = 'google_authorship_author_profile';
-$data->label = JText::_('COM_SH404SEF_GOOGLE_AUTHORSHIP_PROFILE');
-$data->input = '<input type="text" name="google_authorship_author_profile" id="google_authorship_author_profile" size="50" value="' . $this->googleAuthorshipData['google_authorship_author_profile'] . '" />';
-$data->tip = JText::_('COM_SH404SEF_GOOGLE_AUTHORSHIP_PROFILE_DESC');
-echo $this->layoutRenderer['custom']->render($data);
-
-// authorship name
-$data = new stdClass();
-$data->name = 'google_authorship_author_name';
-$data->label = JText::_('COM_SH404SEF_GOOGLE_AUTHORSHIP_AUTHOR_NAME');
-$data->input = '<input type="text" name="google_authorship_author_name" id="google_authorship_author_name" size="50" value="' . $this->googleAuthorshipData['google_authorship_author_name'] . '" />';
-$data->tip = JText::_('COM_SH404SEF_GOOGLE_AUTHORSHIP_AUTHOR_NAME_DESC');
-echo $this->layoutRenderer['custom']->render($data);
-
-// publisher enable
-$data = new stdClass();
-$data->name = 'google_publisher_enable';
-$data->label = JText::_('COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_PUBLISHER');
-$data->input = $this->googlePublisherData['google_publisher_enable'];
-$data->tip = JText::_('COM_SH404SEF_SOCIAL_ENABLE_GOOGLE_PUBLISHER_DESC');
-echo $this->layoutRenderer['custom']->render($data);
-
-// authorship url
-$data = new stdClass();
-$data->name = 'google_publisher_url';
-$data->label = JText::_('COM_SH404SEF_GOOGLE_PUBLISHER_URL');
-$data->input = '<input type="text" name="google_publisher_url" id="google_publisher_url" size="40" value="' . $this->googlePublisherData['google_publisher_url'] . '" />';
-$data->tip = JText::_('COM_SH404SEF_GOOGLE_PUBLISHER_URL_DESC');
 echo $this->layoutRenderer['custom']->render($data);
 
 ?>

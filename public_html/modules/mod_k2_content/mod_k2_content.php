@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.9.x
+ * @version    2.10.x
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2018 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2006 - 2019 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -26,7 +26,7 @@ $itemCustomLinkTitle = $params->get('itemCustomLinkTitle', '');
 $itemCustomLinkURL = trim($params->get('itemCustomLinkURL'));
 $itemCustomLinkMenuItem = $params->get('itemCustomLinkMenuItem');
 
-if ($itemCustomLinkURL && ($itemCustomLinkURL!='http://' || $itemCustomLinkURL!='https://')) {
+if ($itemCustomLinkURL && $itemCustomLinkURL!='http://' && $itemCustomLinkURL!='https://') {
     if ($itemCustomLinkTitle=='') {
         if (strpos($itemCustomLinkURL, '://')!==false) {
             $linkParts = explode('://', $itemCustomLinkURL);
@@ -59,6 +59,6 @@ if ($itemAuthorAvatarWidthSelect == 'inherit') {
 
 $items = modK2ContentHelper::getItems($params);
 
-if (count($items)) {
+if (is_array($items) && count($items)) {
     require(JModuleHelper::getLayoutPath('mod_k2_content', $getTemplate.'/default'));
 }

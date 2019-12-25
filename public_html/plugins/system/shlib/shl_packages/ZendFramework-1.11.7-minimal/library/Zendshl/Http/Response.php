@@ -178,7 +178,8 @@ class Zendshl_Http_Response
         $this->body = $body;
 
         // Set the HTTP version
-        if (! preg_match('|^\d\.\d$|', $version)) {
+        //if (! preg_match('|^\d\.\d$|', $version)) {
+	    if (! preg_match('|^\d(\.\d)?$|', $version)) {
             require_once SHLIB_PATH_TO_ZEND . 'Zendshl/Http/Exception.php';
             throw new Zendshl_Http_Exception("Invalid HTTP response version: $version");
         }
@@ -657,6 +658,9 @@ class Zendshl_Http_Response
      */
     public static function fromString($response_str)
     {
+	    // weeblr
+	    ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, "HTTP Client raw response  \n" . print_r($response_str, true));
+	    // weeblr
         $code    = self::extractCode($response_str);
         $headers = self::extractHeaders($response_str);
         $body    = self::extractBody($response_str);

@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -119,7 +119,24 @@ abstract class Sh404sefFactory
 		if (empty($_config) || $reset)
 		{ // config not read yet
 			$_config = new shSEFConfig($reset);
+			/**
+			 * Allow dynamic configuration overrides
+			 *
+			 * @api
+			 * @package sh404SEF\filter\config
+			 * @var sh404sef_importer_slice_size
+			 * @since   1.0.0
+			 *
+			 * @param shSEFConfig   config Current config object
+			 *
+			 * @return int
+			 */
+			$_config = ShlHook::filter(
+				'sh404sef_configuration_user',
+				$_config
+			);
 		}
+
 		return $_config;
 	}
 
@@ -164,7 +181,7 @@ abstract class Sh404sefFactory
 				$mainVersion = '2';
 			}
 			$className = 'ShcompatHelperJ' . $mainVersion;
-			$_helper = new $className();
+			$_helper   = new $className();
 		}
 
 		return $_helper;

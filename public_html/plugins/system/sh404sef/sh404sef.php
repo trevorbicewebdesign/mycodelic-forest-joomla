@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 // no direct access
@@ -164,7 +164,7 @@ class plgSystemSh404sef extends JPlugin
 			}
 
 			// attach parse and build rules to Joomla router
-			$joomlaRouter = $app->getRouter();
+			$joomlaRouter     = $app->getRouter();
 			$pageInfo->router = new Sh404sefClassRouter();
 			if (version_compare(JVERSION, '3.4', 'ge'))
 			{
@@ -218,15 +218,21 @@ class plgSystemSh404sef extends JPlugin
 				}
 
 				// insert (some) meta data
-				if (JFactory::getDocument()->getType() == 'html' && Sh404sefFactory::getConfig()->shMetaManagementActivated)
+				if (
+					JFactory::getDocument()->getType() == 'html'
+					&&
+					$app->input->getCmd('format') != 'raw'
+					&&
+					Sh404sefFactory::getConfig()->shMetaManagementActivated
+				)
 				{
 					Sh404sefHelperMetadata::includeMetaPlugin();
 					$pageInfo = Sh404sefFactory::getPageInfo();
 					if (!preg_match('/(&|\?)lang=[a-zA-Z]{2,3}/iuU', $pageInfo->currentNonSefUrl))
 					{
 						// no lang string, let's add default
-						$shTemp = explode('-', $pageInfo->currentLanguageTag);
-						$shLangTemp = $shTemp[0] ? $shTemp[0] : 'en';
+						$shTemp                     = explode('-', $pageInfo->currentLanguageTag);
+						$shLangTemp                 = $shTemp[0] ? $shTemp[0] : 'en';
 						$pageInfo->currentNonSefUrl .= '&lang=' . $shLangTemp;
 					}
 					Sh404sefHelperMetadata::insertMetaData();
@@ -238,10 +244,10 @@ class plgSystemSh404sef extends JPlugin
 	/**
 	 * Optionally operate searches of adjustment on page content
 	 *
-	 * @param   string  $context The context of the content being passed to the plugin.
-	 * @param   mixed   &$row An object with a "text" property or the string to be processed.
-	 * @param   mixed   &$params Additional parameters.
-	 * @param   integer $page Optional page number. Unused. Defaults to zero.
+	 * @param string   $context The context of the content being passed to the plugin.
+	 * @param mixed   &$row An object with a "text" property or the string to be processed.
+	 * @param mixed   &$params Additional parameters.
+	 * @param integer  $page Optional page number. Unused. Defaults to zero.
 	 *
 	 * @return  boolean    True on success.
 	 */
@@ -258,6 +264,11 @@ class plgSystemSh404sef extends JPlugin
 		}
 
 		if (!defined('SH404SEF_IS_RUNNING'))
+		{
+			return true;
+		}
+
+		if (JFactory::getApplication()->input->getCmd('format') == 'raw')
 		{
 			return true;
 		}
@@ -288,7 +299,7 @@ class plgSystemSh404sef extends JPlugin
 	{
 		if (defined('SH404SEF_IS_RUNNING'))
 		{
-			$config = Sh404sefFactory::getConfig();
+			$config   = Sh404sefFactory::getConfig();
 			$document = JFactory::getDocument();
 
 			if (JFactory::getApplication()->isAdmin())
@@ -296,9 +307,9 @@ class plgSystemSh404sef extends JPlugin
 				if (version_compare(JVERSION, '3.0', 'ge'))
 				{
 					// are we on an edit page?
-					$app = JFactory::getApplication();
+					$app    = JFactory::getApplication();
 					$option = $app->input->getCmd('option');
-					$view = $app->input->getCmd('view');
+					$view   = $app->input->getCmd('view');
 					$layout = $app->input->getCmd('layout');
 					if ($layout == 'edit'
 						&& (($option == 'com_content' && $view == 'article') || ($option == 'com_categories' && $view == 'category')
@@ -320,7 +331,7 @@ class plgSystemSh404sef extends JPlugin
 						{
 							$page = JResponse::getBody();
 							// insert css and js
-							$link = '';
+							$link    = '';
 							$cssLink = ShlHtml_Manager::getInstance()->getMediaLink('bs', 'css');
 							if (strpos($page, $cssLink) === false)
 							{
@@ -345,7 +356,7 @@ class plgSystemSh404sef extends JPlugin
 								'jform_metadesc',
 								Sh404sefFactory::getPConfig()->metaDataSpecs['metadesc-joomla-be']
 							);
-							$page = str_replace('</body>', $script . '</body>', $page);
+							$page   = str_replace('</body>', $script . '</body>', $page);
 							JResponse::setBody($page);
 						}
 					}
@@ -389,8 +400,50 @@ class plgSystemSh404sef extends JPlugin
 		}
 	}
 
+	/**
+	 * Search for an OGP image in some content.
+	 *
+	 * @param string      $content Content to search.
+	 * @param SEFConfig   $config sh404SEF config.
+	 * @param string      $context Context passed by Joomla, if any.
+	 * @param null|Object $contentObject Optional original data object.
+	 *
+	 * @return mixed|string
+	 */
 	private function searchOGPImage($content, $config, $context = '', $contentObject = null)
 	{
+		/**
+		 * Filter contexts where we should not look for OGP images.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\metadata
+		 * @var sh404sef_ogp_image_excluded_search_contexts
+		 * @since   4.16.2
+		 *
+		 * @param array       $allowedContexts List of contexts which we are allowed to search for ogp images.
+		 * @param string      $content Content to search.
+		 * @param SEFConfig   $config sh404SEF config.
+		 * @param string      $context Context passed by Joomla, if any.
+		 * @param null|Object $contentObject Optional original data object.
+		 *
+		 * @return array
+		 */
+		$excludedContexts = ShlHook::filter(
+			'sh404sef_ogp_image_excluded_search_contexts',
+			array(),
+			$content,
+			$config,
+			$context,
+			$contentObject
+		);
+		if (in_array(
+			$context,
+			$excludedContexts
+		))
+		{
+			return $content;
+		}
+
 		// 1 - custom meta data
 		$customData = Sh404sefHelperMetadata::getCustomMetaDataFromDb();
 		if ($customData->og_enable == SH404SEF_OPTION_VALUE_NO
@@ -452,7 +505,8 @@ class plgSystemSh404sef extends JPlugin
 			$content = Sh404sefHelperGeneral::addCommentedTag(
 				$content,
 				'sh404sef_tag_ogp_image',
-				$customData->og_image
+				$customData->og_image,
+				'before'
 			);
 			return $content;
 		}
@@ -473,7 +527,8 @@ class plgSystemSh404sef extends JPlugin
 			$content = Sh404sefHelperGeneral::addCommentedTag(
 				$content,
 				'sh404sef_tag_ogp_image',
-				$bestImage
+				$bestImage,
+				'before'
 			);
 		}
 
@@ -520,9 +575,9 @@ class plgSystemSh404sef extends JPlugin
 		}
 
 		// now does request start with a valid language code
-		$pageInfo = Sh404sefFactory::getPageInfo();
-		$base = JUri::getInstance()->base();
-		$request = wbLTrim($pageInfo->currentSefUrl, $base);
+		$pageInfo        = Sh404sefFactory::getPageInfo();
+		$base            = JUri::getInstance()->base();
+		$request         = wbLTrim($pageInfo->currentSefUrl, $base);
 		$urlLanguageCode = explode('/', $request);
 		$urlLanguageCode = $urlLanguageCode[0];
 		if (Sh404sefHelperLanguage::validateSefLanguageCode($urlLanguageCode))
@@ -549,8 +604,8 @@ class plgSystemSh404sef extends JPlugin
 		}
 
 		$pageInfo = Sh404sefFactory::getPageInfo();
-		$base = JUri::getInstance()->base();
-		$request = wbLTrim($pageInfo->currentSefUrl, $base);
+		$base     = JUri::getInstance()->base();
+		$request  = wbLTrim($pageInfo->currentSefUrl, $base);
 
 		// easy, just home page
 		if ($request == '')
@@ -645,7 +700,7 @@ class plgSystemSh404sef extends JPlugin
 
 	protected function _setAlternateTemplate()
 	{
-		$app = JFactory::getApplication();
+		$app       = JFactory::getApplication();
 		$sefConfig = Sh404sefFactory::getConfig();
 
 		if (!defined('SHMOBILE_MOBILE_TEMPLATE_SWITCHED') && !empty($sefConfig->alternateTemplate))
@@ -658,7 +713,7 @@ class plgSystemSh404sef extends JPlugin
 
 	protected function _resetAlternateTemplate()
 	{
-		$app = JFactory::getApplication();
+		$app       = JFactory::getApplication();
 		$sefConfig = Sh404sefFactory::getConfig();
 
 		if (!defined('SHMOBILE_MOBILE_TEMPLATE_SWITCHED') && !empty($sefConfig->alternateTemplate))
@@ -674,7 +729,7 @@ class plgSystemSh404sef extends JPlugin
 
 	private function getLangCookieTime()
 	{
-		$cookieTime = 0;
+		$cookieTime           = 0;
 		$languageFilterPlugin = JPluginHelper::getPlugin('system', 'languagefilter');
 		if (!empty($languageFilterPlugin))
 		{

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link           https://www.rsjoomla.com
  * @license        GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,116 +12,36 @@ class RSFirewallGeoIP
 	protected $handle;
 	protected $codes = array();
 	protected $flags = array();
-	protected $ip = array();
-	protected $errors = false;
 
-	public function __construct($ip = '')
+	public function __construct()
 	{
-		$this->buildIp($ip);
+		if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+			
+			require_once JPATH_ADMINISTRATOR . '/components/com_rsfirewall/helpers/geolite2/geolite2.php';
+
+			$this->handle = RSFirewallGeolite2::getInstance();
+		}
 	}
 
-	public static function getInstance($ip = '')
+	public static function getInstance()
 	{
 		static $inst;
 		if (!$inst)
 		{
-			$inst = new RSFirewallGeoIP($ip);
+			$inst = new RSFirewallGeoIP();
 		}
 
 		return $inst;
-	}
-
-	protected function buildIp($ip)
-	{
-		if (!class_exists('RSFirewallIP')) {
-			require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/ip/ip.php';
-		}
-		
-		if (empty($ip))
-		{
-			$ip = RSFirewallIP::get();
-		}
-		try
-		{
-			$ipClass = new RSFirewallIP($ip);
-		}
-		catch (Exception $e)
-		{
-			return;
-		}
-
-		$ipArray = array(
-			'ip'   => $ip,
-			'type' => 'ipv' . $ipClass->version,
-		);
-
-		$this->ip = $ipArray;
-		
-		// detect if there's a built-in function
-		if (!function_exists('geoip_database_info'))
-		{
-			require_once JPATH_ADMINISTRATOR . '/components/com_rsfirewall/helpers/geoip/database.php';
-
-			switch ($this->ip['type'])
-			{
-				case 'ipv4':
-					$file = JPATH_ADMINISTRATOR . '/components/com_rsfirewall/assets/geoip/GeoIP.dat';
-					if (file_exists($file))
-					{
-						$this->handle = rsfirewall_geoip_open($file, RSF_GEOIP_STANDARD);
-					}
-					break;
-				case 'ipv6':
-					$file = JPATH_ADMINISTRATOR . '/components/com_rsfirewall/assets/geoip/GeoIPv6.dat';
-					if (file_exists($file))
-					{
-						$this->handle = rsfirewall_geoip_open($file, RSF_GEOIP_STANDARD);
-					}
-					break;
-				default:
-					$file = JPATH_ADMINISTRATOR . '/components/com_rsfirewall/assets/geoip/GeoIP.dat';
-					if (file_exists($file))
-					{
-						$this->handle = rsfirewall_geoip_open($file, RSF_GEOIP_STANDARD);
-					}
-					break;
-			}
-		}
 	}
 
 	public function getCountryCode($ip)
 	{
 		if (!isset($this->codes[$ip]))
 		{
-			$this->buildIp($ip);
 			$this->codes[$ip] = '';
 			if ($this->handle)
 			{
-				try
-				{
-					if (RSFirewallIPv4::test($ip))
-					{
-						$this->codes[$ip] = rsfirewall_geoip_country_code_by_addr($this->handle, $ip);
-					}
-					elseif (RSFirewallIPv6::test($ip))
-					{
-						$this->codes[$ip] = rsfirewall_geoip_country_code_by_addr_v6($this->handle, $ip);
-					}
-				}
-				catch (Exception $e)
-				{
-					if (!$this->errors)
-					{
-						$app = JFactory::getApplication();
-						$app->enqueueMessage($e->getMessage(), 'error');
-						$this->errors = true;
-					}
-				}
-			}
-			elseif (function_exists('geoip_country_code_by_name'))
-			{
-				// use the built in functions if available
-				$this->codes[$ip] = @geoip_country_code_by_name($ip);
+                $this->codes[$ip] = $this->handle->getCountryCode($ip);
 			}
 		}
 
@@ -134,7 +54,9 @@ class RSFirewallGeoIP
 
 		if (!isset($this->flags[$code]))
 		{
-			if (file_exists(JPATH_ADMINISTRATOR . '/components/com_rsfirewall/assets/images/flags/' . strtolower($code) . '.png'))
+            $path = JPATH_SITE . '/media/com_rsfirewall/images/flags/' . strtolower($code) . '.png';
+
+			if (file_exists($path))
 			{
 				$this->flags[$code] = strtolower($code) . '.png';
 			}

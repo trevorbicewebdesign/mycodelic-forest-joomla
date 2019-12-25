@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -229,13 +229,20 @@ class Sh404sefModelRedirector
 			}
 
 			// do the redirect, after checking a few conditions
+
 			if (!empty($aliasRecord))
 			{
 				// if match occured on full requested URL, or this is a non-sef or this is a canonilca, not a redirect: no need to re-append the query string
 				// to the target URL.
-				$queryString = $aliasRecord->target_type == self::TARGET_TYPE_CANONICAL || $isNonSefRequest || $aliasRecord->newurl == $requestPath ? '' : $queryString;
 
-				//$this->doAliasRedirect($requestPath, $aliasRecord, array(), $queryString);
+				$queryString =
+					$aliasRecord->target_type == self::TARGET_TYPE_CANONICAL
+					||
+					$isNonSefRequest
+					||
+					($aliasRecord->target_type == self::TARGET_TYPE_REDIRECT && $aliasRecord->alias == $requestPath)
+						? '' : $queryString;
+
 				$this->matchedRules['hardcoded'][] = array(
 					'rule'         => $aliasRecord,
 					'request_path' => $requestPath,
@@ -358,8 +365,7 @@ class Sh404sefModelRedirector
 			$destUrl = $this->buildAliasTarget(
 				$aliasRecord,
 				$this->getCurrentRequestUrl(),
-				wbArrayGet($matchedRule, 'matches'),
-				wbArrayGet($matchedRule, 'query_string')
+				$matchedRule
 			);
 
 			/**
@@ -370,7 +376,7 @@ class Sh404sefModelRedirector
 			 * @var sh404sef_redirect_alias
 			 * @since   4.12.0
 			 *
-			 * @param string   $destUrl     The computed target URL.
+			 * @param string   $destUrl The computed target URL.
 			 * @param string   $requestPath The path requested.
 			 * @param string   $queryString The query string requested.
 			 * @param stdClass $aliasRecord The alias definition that triggered the redirect/canonical
@@ -456,19 +462,20 @@ class Sh404sefModelRedirector
 	 *
 	 * @param stdClass $aliasRecord
 	 * @param string   $incomingUrl
-	 * @param array    $matches
-	 * @param string   $queryString
+	 * @param array    $matchedRule
 	 *
 	 * @return bool|string
 	 */
-	private function buildAliasTarget($aliasRecord, $incomingUrl, $matches, $queryString)
+	private function buildAliasTarget($aliasRecord, $incomingUrl, $matchedRule)
 	{
 		if ('POST' == JFactory::getApplication()->input->getMethod())
 		{
 			return false;
 		}
 
-		$redirectTarget = $this->getExpandedAliasTarget($aliasRecord, $matches);
+		$matches        = wbArrayGet($matchedRule, 'matches');
+		$queryString    = wbArrayGet($matchedRule, 'query_string');
+		$redirectTarget = $this->getExpandedAliasTarget($aliasRecord, $matches, $matchedRule);
 
 		if (empty($redirectTarget) || ($redirectTarget == $incomingUrl && $aliasRecord->target_type != self::TARGET_TYPE_CANONICAL))
 		{
@@ -528,10 +535,11 @@ class Sh404sefModelRedirector
 	 *
 	 * @param stdClass $aliasRecord
 	 * @param array    $matches
+	 * @param string   $matchedRule
 	 *
 	 * @return string
 	 */
-	private function getExpandedAliasTarget($aliasRecord, $matches)
+	private function getExpandedAliasTarget($aliasRecord, $matches, $matchedRule)
 	{
 		// for most aliases, redirect target is directly the stored one
 		$redirectTarget = $aliasRecord->newurl;
@@ -545,7 +553,7 @@ class Sh404sefModelRedirector
 		 * @since   4.12.0
 		 *
 		 * @param string   $replacementDirection The direction to use when doing wildcard replacement.
-		 * @param stdClass $aliasRecord          The alias definition that triggered the redirect/canonical
+		 * @param stdClass $aliasRecord The alias definition that triggered the redirect/canonical
 		 *
 		 * @return array
 		 */
@@ -558,6 +566,29 @@ class Sh404sefModelRedirector
 		switch ($aliasRecord->type)
 		{
 			case Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_CUSTOM:
+
+				// targets are {$1}, {$2}
+				if (
+					wbStartsWith($aliasRecord->alias, '~')
+					&&
+					preg_match('~\{\$[0-9]+\}~', $redirectTarget)
+				)
+				{
+					array_shift($matches);
+					if (!empty($matches))
+					{
+						foreach ($matches as $index => $match)
+						{
+							$redirectTarget = str_replace(
+								'{$' . ($index + 1) . '}',
+								$match,
+								$redirectTarget
+							);
+						}
+					}
+
+					return $redirectTarget;
+				}
 
 				// if there are wildcards, and the incoming request URL have some matches
 				// we can inject them in the redirect target

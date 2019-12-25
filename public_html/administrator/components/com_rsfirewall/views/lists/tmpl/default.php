@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -37,7 +37,7 @@ $listDirn = $this->escape($this->state->get('list.direction'));
 			<td width="1%" nowrap="nowrap"><?php echo JHtml::_('date', $item->date); ?></td>
 			<td class="has-context">
 				<div class="pull-left">
-					<a href="<?php echo JRoute::_('index.php?option=com_rsfirewall&task=list.edit&id='.(int) $item->id); ?>"><img src="components/com_rsfirewall/assets/images/flags/<?php echo $this->geoip->getCountryFlag($item->ip); ?>" /> <?php echo $this->geoip->show($item->ip); ?></a>
+					<a href="<?php echo JRoute::_('index.php?option=com_rsfirewall&task=list.edit&id='.(int) $item->id); ?>"><?php echo JHtml::_('image', 'com_rsfirewall/flags/' . $this->geoip->getCountryFlag($item->ip), $this->geoip->getCountryCode($item->ip), '', true); ?> <?php echo $this->geoip->show($item->ip); ?></a>
 				</div>
 				<div class="pull-left">
 					<?php echo $this->dropdown->show($i, $item); ?>
@@ -59,10 +59,6 @@ $listDirn = $this->escape($this->state->get('list.direction'));
 		<?php echo JHtml::_( 'form.token' ); ?>
 		<input type="hidden" name="boxchecked" value="0" />
 		<input type="hidden" name="task" value="" />
-		<?php if (!$this->isJ30) { ?>
-		<input type="hidden" name="filter_order" value="<?php echo $listOrder; ?>" />
-		<input type="hidden" name="filter_order_Dir" value="<?php echo $listDirn; ?>" />
-		<?php } ?>
 	</div>
 	</div>
 </form>

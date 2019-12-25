@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -99,7 +99,11 @@ class RSFirewallLogger {
 	}
 	
 	protected function sendAlert() {
-		$subject = JText::sprintf('COM_RSFIREWALL_LOG_EMAIL_SUBJECT', JText::_('COM_RSFIREWALL_LEVEL_'.$this->table->level), $this->escape($this->root));
+		$subject = JText::sprintf('COM_RSFIREWALL_LOG_EMAIL_SUBJECT',
+			JText::_('COM_RSFIREWALL_LEVEL_'.$this->table->level),
+			$this->escape($this->root),
+			$this->escape($this->table->ip)
+		);
 		
 		$body =  '<html>'."\n"
 				.'<body>'."\n"

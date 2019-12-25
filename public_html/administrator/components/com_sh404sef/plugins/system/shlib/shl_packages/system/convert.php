@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.678
- * @date                2018-08-02
+ * @version      0.4.0.685
+ * @date                2019-04-25
  */
 
 // no direct access
@@ -20,7 +20,7 @@ class ShlSystem_Convert
 	{
 		if ($prettyPrint)
 		{
-			return json_encode($data, defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE : false);
+			return json_encode($data, defined('JSON_PRETTY_PRINT') ? JSON_PRETTY_PRINT  | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE : false);
 		}
 		else
 		{

@@ -1,7 +1,103 @@
                                sh404sef changelog                               
 
-                        (2018-08-22 20:02 - build #3863)                        
+                        (2019-09-30 18:11 - build #3932)                        
 
+
+
+--------------------------------------------------------------------------------
+ [ 2019-09-30 ] Version 4.17.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Now adding a robots meta tag for all pages to comply with new
+             Google/EU opt-in requirements to fully appear in search results
+
+    [chg]    Prevent authentication errors on some Google Analytics servers by
+             using Joomla HTTP client to make requests
+    [chg]    Added a filter, sh404sef_ogp_image_excluded_search_contexts, to
+             let integrators exclude some content types from automatic OGP
+             image search
+    [chg]    Change encoding of description and meta data when using full page
+             cache, can cause styling issue with some components (K2)
+
+
+--------------------------------------------------------------------------------
+ [ 2019-06-04 ] Version 4.16.1
+--------------------------------------------------------------------------------
+
+
+    [new]    Added full sh404SEF translation for Chinese, zh-CN and zh-TW -
+             Thanks to Deng ChangBin
+
+    [bug]    Under rare circumstances alias may not automatically created when
+             customizing a URL
+    [bug]    Cannot customize a URL in backend when running MYSQL 8.0+
+    [bug]    When Joomla caching is enabled, some before content or after
+             content sharing buttons may not be displayed
+    [bug]    When forcing menu item id in URLs, the string
+             com_sh404sef_always_insert_itemid_prefix can sometimes be
+             inserted instead of the expected translated string 'menu id'
+    [bug]    Analytics reports authorization procedure may fail depending on
+             which protocol Google uses in its response
+
+
+--------------------------------------------------------------------------------
+ [ 2019-04-02 ] Version 4.16.0
+--------------------------------------------------------------------------------
+
+
+    [new]    Removed support for Google+
+
+    [chg]    Prevent warnings on some invalid, query strings only URLs
+    [chg]    Added a filter just before URL parsing starts in sh404SEF
+    [chg]    Pinterest pin button may not be displayed when using sh404SEF
+             button tags inside content.
+    [chg]    Added a filter on the global configuration object.
+
+    [bug]    Automatic meta description is not generated when using Joomla
+             cache on articles with multiple pages
+    [bug]    Under some circumstances article meta decription entered in
+             Joomla may not be taken into account and instead automatically
+             generated description may be used.
+    [bug]    Using Joomla cache can sometimes lead to page corruption when OGP
+             data image tag is enabled.
+    [bug]    Message saying that Google Analytics is not properly configured
+             is displayed when using Google tag manager.
+    [bug]    Font file for drawing Analytics graphics was damaged during
+             packaging.
+
+
+--------------------------------------------------------------------------------
+ [ 2018-12-20 ] Version 4.15.2
+--------------------------------------------------------------------------------
+
+
+    [chg]    Updated Spanish translation
+    [chg]    Regular expressions based redirects should use new syntax for
+             redirect targets ({$1}, {$2} instead of previous {*}). Old format
+             redirects will still work normally.
+    [chg]    Protect against extensions using onContentPrepare on raw
+             documents, can break some site features when automatic
+             description generation is enabled
+    [chg]    Remove style tags when automatically building meta-description.
+             Thanks Peter
+    [chg]    Now using base64 encode instead of json for embedding
+             auto-generated descriptions and image tags, more reliable when
+             shortcodes are used in content
+    [chg]    Added support for automatic description with UniteGallery
+    [chg]    Updated Facebook API version to 3.1
+    [chg]    Updated Facebook API version to 3.0
+    [chg]    Added Quix short code to list of shortcode to be removed when
+             auto-generating meta description
+    [chg]    On redirects, do not append again query string if the redirect is
+             an exact match
+
+    [bug]    Structured data phone numbers may loose their required leading +
+             sign
+    [bug]    On multilingual sites, if language code is inserted in default
+             language URLs, the home page canonical is not correct
+    [bug]    Facebook share buttons options are not correctly labelled in
+             social plugin settings, still show Like
 
 
 --------------------------------------------------------------------------------

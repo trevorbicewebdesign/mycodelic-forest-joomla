@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date        2018-08-22
+ * @version     4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -27,10 +27,11 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 	 *
 	 * @param string $aliasList data from an html textarea field
 	 * @param string $nonSefUrl the non sef url to which aliases are attached
+	 * @parma string $sefURl Optional sefUrl version of the non-sef to which aliases are attachd to.
 	 *
 	 * @return boolean true on success
 	 */
-	public function saveFromInput($aliasList, $nonSefUrl, $targetType = Sh404sefModelRedirector::TARGET_TYPE_REDIRECT)
+	public function saveFromInput($aliasList, $nonSefUrl, $sefUrl = '', $targetType = Sh404sefModelRedirector::TARGET_TYPE_REDIRECT)
 	{
 		// split aliases from raw input data into an array
 		$aliasList = ShlSystem_Strings::stringToCleanedArray($aliasList, "\n");
@@ -53,70 +54,76 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 				$badChars = array("\r\n", "\n", "\r", ' ');
 				foreach ($aliasList as $alias)
 				{
-					// remove end of line chars
-					$alias = str_replace($badChars, '', $alias);
-					// if something left, try insert it into DB
-					if (!empty($alias))
+					// sefURl must not be on aliases list, this is a logic error
+					// but can happen if a URL was customized several times
+					// going back to its initial form.
+					if(!empty($alias) && $alias != $sefUrl)
 					{
-						// first check value is not invalid
-						// either the alias already exists
-						// or same SEF url already exists
-						try
+						// remove end of line chars
+						$alias = str_replace($badChars, '', $alias);
+						// if something left, try insert it into DB
+						if (!empty($alias))
 						{
-							$count = 0;
-							// do we have the same SEF URL? not allowed for redirects, but ok for canonicals.
-							if (Sh404sefModelRedirector::TARGET_TYPE_CANONICAL != $targetType)
+							// first check value is not invalid
+							// either the alias already exists
+							// or same SEF url already exists
+							try
 							{
-								$count = ShlDbHelper::count('#__sh404sef_urls', 'id', 'oldurl = ? and newurl <> ?', array($alias, ''));
-							}
-
-							if (empty($count))
-							{
-								$count = ShlDbHelper::count('#__sh404sef_aliases', '*', array('alias' => $alias));
-							}
-						}
-						catch (Exception $e)
-						{
-							$count = 0;
-						}
-
-						// we might rename a URL to an existing one (ie creating a duplicate). In such case,
-						// the alias should not be attached to the current non-sef, but instead to the "main" URL,
-						// the one that has rank 0
-						if (empty($count))
-						{
-							// 1 - what's the SEF for the current non-sef alias target?
-							$sef = ShlDbHelper::selectObject('#__sh404sef_urls', '*', 'newurl = ? and oldurl <> ""', array($nonSefUrl));
-
-							// 2 - we now have the rigth SEF record to direct the alias to
-							if (!empty($sef))
-							{
-								$mainNonSefUrl = ShlDbHelper::selectObject('#__sh404sef_urls', '*', 'oldurl = ? and newurl <> "" and rank = 0', array($sef->oldurl));
-								if (!empty($mainNonSefUrl))
+								$count = 0;
+								// do we have the same SEF URL? not allowed for redirects, but ok for canonicals.
+								if (Sh404sefModelRedirector::TARGET_TYPE_CANONICAL != $targetType)
 								{
-									// attach the alias to this "main" URL instead of provided one
-									$nonSefUrl = $mainNonSefUrl->newurl;
+									$count = ShlDbHelper::count('#__sh404sef_urls', 'id', 'oldurl = ? and newurl <> ?', array($alias, ''));
+								}
+
+								if (empty($count))
+								{
+									$count = ShlDbHelper::count('#__sh404sef_aliases', '*', array('alias' => $alias));
 								}
 							}
-						}
+							catch (Exception $e)
+							{
+								$count = 0;
+							}
 
-						// if ok, insert into db
-						if (empty($count))
-						{
-							$aliasObject = JTable::getInstance($this->_defaultTable, 'Sh404sefTable');
-							$aliasObject->bind(
-								array(
-									'newurl'      => $nonSefUrl,
-									'alias'       => $alias,
-									'target_type' => $targetType
-								)
-							);
-							$aliasObject->store();
-						}
-						else
-						{
-							// alias already exists either as an alias or a SEF url
-							$this->setError(JText::sprintf('COM_SH404SEF_ALIAS_ALREADY_EXISTS', $alias));
+							// we might rename a URL to an existing one (ie creating a duplicate). In such case,
+							// the alias should not be attached to the current non-sef, but instead to the "main" URL,
+							// the one that has rank 0
+							if (empty($count))
+							{
+								// 1 - what's the SEF for the current non-sef alias target?
+								$sef = ShlDbHelper::selectObject('#__sh404sef_urls', '*', '`newurl` = ? and `oldurl` <> ""', array($nonSefUrl));
+
+								// 2 - we now have the rigth SEF record to direct the alias to
+								if (!empty($sef))
+								{
+									$mainNonSefUrl = ShlDbHelper::selectObject('#__sh404sef_urls', '*', '`oldurl` = ? and `newurl` <> "" and `rank` = 0', array($sef->oldurl));
+									if (!empty($mainNonSefUrl))
+									{
+										// attach the alias to this "main" URL instead of provided one
+										$nonSefUrl = $mainNonSefUrl->newurl;
+									}
+								}
+							}
+
+							// if ok, insert into db
+							if (empty($count))
+							{
+								$aliasObject = JTable::getInstance($this->_defaultTable, 'Sh404sefTable');
+								$aliasObject->bind(
+									array(
+										'newurl'      => $nonSefUrl,
+										'alias'       => $alias,
+										'target_type' => $targetType
+									)
+								);
+								$aliasObject->store();
+							}
+							else
+							{
+								// alias already exists either as an alias or a SEF url
+								$this->setError(JText::sprintf('COM_SH404SEF_ALIAS_ALREADY_EXISTS', $alias));
+							}
 						}
 					}
 				}
@@ -174,6 +181,7 @@ class Sh404sefModelAliases extends Sh404sefClassBaselistModel
 		$this->saveFromInput(
 			$sourceUrl,
 			$canonicalTarget,
+			'',
 			Sh404sefModelRedirector::TARGET_TYPE_CANONICAL
 		);
 		$error = $this->getError();

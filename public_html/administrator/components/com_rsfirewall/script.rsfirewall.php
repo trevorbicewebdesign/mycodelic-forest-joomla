@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -67,9 +67,60 @@ class com_rsfirewallInstallerScript
 		$app = JFactory::getApplication();
 		
 		$jversion = new JVersion();
-		if (!$jversion->isCompatible('2.5.7')) {
-			$app->enqueueMessage('Please upgrade to at least Joomla! 2.5.7 before continuing!', 'error');
+		$minj = '3.0.0';
+		if (!$jversion->isCompatible($minj)) {
+			$app->enqueueMessage('Please upgrade to at least Joomla! ' . $minj . ' before continuing!', 'error');
 			return false;
+		}
+
+        if (version_compare(PHP_VERSION, '5.4.0', '<')) {
+            $app->enqueueMessage('You have a very old PHP version; the Country Blocking feature will not work since it requires a newer version. Please ask your hosting provider to upgrade to a newer version of PHP.', 'warning');
+        }
+
+		if ($type == 'update') {
+			require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/version.php';
+			$rsf_version = new RSFirewallVersion();
+			$geoip_path = JPATH_ADMINISTRATOR.'/components/com_rsfirewall/assets/geoip/';
+			
+			if (version_compare($rsf_version->version, '2.11.24', '<') && (file_exists($geoip_path.'GeoIP.dat') || file_exists($geoip_path.'GeoIPv6.dat'))) {
+				$filename 	= 'GeoLite2-Country.mmdb';
+				$url 		= 'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz';
+
+				try {
+					$tmp_path = $geoip_path;
+					$tmp_name = $filename.'.gz';
+					
+					// Make sure tmp folder is writable
+					if (!is_writable($tmp_path)) {
+						throw new Exception(JText::sprintf('The folder <strong>%s</strong> is not writable!', $tmp_path));
+					}
+					
+					// Connect to server
+					$http 		= JHttpFactory::getHttp();
+					$response 	= $http->get($url, array(), 10);
+					
+					// Check if request is successful
+					if ($response->code != 200) {
+						throw new Exception(JText::sprintf('Error when connecting, response code returned is %d.', $response->code));
+					}
+					
+					// Write to a temporary file
+					if (!file_put_contents($tmp_path.'/'.$tmp_name, $response->body)) {
+						throw new Exception(JText::sprintf('Could not write to %s!', $tmp_path.'/'.$tmp_name));
+					}
+					
+					$this->decompress($tmp_path.'/'.$tmp_name);
+					
+					// Remove the tmp file
+					if (file_exists($tmp_path.'/'.$tmp_name)) {
+						JFile::delete($tmp_path.'/'.$tmp_name);
+					}
+					
+				} catch (Exception $e) {
+				    $app->enqueueMessage($e->getMessage(), 'error');
+					$app->enqueueMessage('<strong>The new GeoLite2 library could not be downloaded!</strong> Please try to download it manually from Firewall Configuration - Country Blocking', 'error');
+				}
+			}
 		}
 		
 		return true;
@@ -626,6 +677,12 @@ class com_rsfirewallInstallerScript
 		}
 		
 		$this->removeSignatures();
+		
+		// Remove GeoLite2 CABundle.php file
+		$caBundle = JPATH_ADMINISTRATOR. '/components/com_rsfirewall/helpers/geolite2/vendor/composer/ca-bundle/src/CaBundle.php';
+        if (file_exists($caBundle)) {
+            JFile::delete($caBundle);
+        }
 	}
 	
 	protected function removeSignatures()
@@ -697,6 +754,72 @@ class com_rsfirewallInstallerScript
 		return implode(',', $array);
 	}
 	
+	protected function decompress($tgzFilePath) {
+        // Open .tgz file for reading
+        $gzHandle = @gzopen($tgzFilePath, 'rb');
+        if (!$gzHandle)
+        {
+            throw new Exception(JText::sprintf('Could not open %s for reading!', $tgzFilePath));
+        }
+
+        $path = dirname($tgzFilePath);
+
+        jimport('joomla.filesystem.file');
+
+        while (!gzeof($gzHandle)) {
+            if ($block = gzread($gzHandle, 512)) {
+                $meta['filename']  	= trim(substr($block, 0, 99));
+                $meta['filesize']  	= octdec(substr($block, 124, 12));
+                if ($bytes = ($meta['filesize'] % 512)) {
+                    $meta['nullbytes'] = 512 - $bytes;
+                } else {
+                    $meta['nullbytes'] = 0;
+                }
+
+                if ($meta['filesize']) {
+                    // Let's see if somebody edited the archive manually and archived a folder...
+                    $meta['filename'] = str_replace('\\', '/', $meta['filename']);
+                    if (strpos($meta['filename'], '/') !== false)
+                    {
+                        $parts = explode('/', $meta['filename']);
+                        $meta['filename'] = end($parts);
+                    }
+
+                    // Make sure file does not contain invalid characters
+                    if (preg_match('/[^a-z_\-\.0-9]/i', JFile::stripExt($meta['filename']))) {
+                        throw new Exception('Attempted to extract a file with invalid characters in its name.');
+                    }
+
+                    $chunk	 = 1024*1024;
+                    $left	 = $meta['filesize'];
+                    $fHandle = @fopen($path.'/'.$meta['filename'], 'wb');
+
+                    if (!$fHandle) {
+                        throw new Exception(sprintf('Could not write data to file %s!', htmlentities($meta['filename'], ENT_COMPAT, 'utf-8')));
+                    }
+
+                    do {
+                        $left = $left - $chunk;
+                        if ($left < 0) {
+                            $chunk = $left + $chunk;
+                        }
+                        $data = gzread($gzHandle, $chunk);
+
+                        fwrite($fHandle, $data);
+
+                    } while ($left > 0);
+
+                    fclose($fHandle);
+                }
+
+                if ($meta['nullbytes'] > 0) {
+                    gzread($gzHandle, $meta['nullbytes']);
+                }
+            }
+        }
+        gzclose($gzHandle);
+    }
+	
 	protected function showInstallMessage($messages=array()) {
 ?>
 <style type="text/css">
@@ -755,7 +878,8 @@ class com_rsfirewallInstallerScript
 </style>
 	<div class="row-fluid">
 		<div class="span2">
-			<img src="components/com_rsfirewall/assets/images/rsfirewall-box.png" alt="RSFirewall! Box" />
+			<!-- until Watchful fix their code this part has to be written like this; they're emulating the backend in a frontend request and template overrides don't work because 'isis' doesn't exist in the frontend, so any calls that use the /media folder will throw an error -->
+			<img src="<?php echo JUri::root(true) . '/media/com_rsfirewall/images/rsfirewall-box.png'; ?>" alt="RSFirewall!" />
 		</div>
 		<div class="span10">
 			<p>System Plugin ...
@@ -779,11 +903,9 @@ class com_rsfirewallInstallerScript
 				<b class="install-not-ok">Error installing!</b>
 				<?php } ?>
 			</p>
-			<h2>Changelog v2.11.20</h2>
+			<h2>Changelog v2.12.1</h2>
 			<ul class="version-history">
-				<li><span class="version-upgraded">Upg</span> Email addresses converted to images now have a transparent background.</li>
-				<li><span class="version-upgraded">Upg</span> Email image text color can now be set in Firewall Configuration - Active Scanner.</li>
-			</ul>
+				<li><span class="version-upgraded">Upg</span> Choose which Google APIs to use during the System Check.</li>
 			<p>
 			<a class="btn btn-primary btn-large" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>
 			<a class="btn" href="https://www.rsjoomla.com/support/documentation/rsfirewall-user-guide.html" target="_blank">Read the RSFirewall! User Guide</a>

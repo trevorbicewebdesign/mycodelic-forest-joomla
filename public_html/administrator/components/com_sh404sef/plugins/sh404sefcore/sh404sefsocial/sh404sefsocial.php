@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 defined('_JEXEC') or die('Direct Access to this location is not allowed.');
@@ -18,7 +18,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 {
 
 	private $_params                 = null;
-	private $_enabledButtons         = array('facebooklike', 'facebooksend', 'facebookshare', 'twitter', 'googleplusone', 'googlepluspage', 'pinterestpinit', 'linkedin');
+	private $_enabledButtons         = array('facebooklike', 'facebooksend', 'facebookshare', 'twitter', 'pinterestpinit', 'linkedin');
 	private $_underscoredLanguageTag = '';
 	private $_needFBSdk              = false;
 	private $_needTracking           = false;
@@ -27,14 +27,14 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 	{
 		parent::__construct($subject);
 		// get plugin params
-		$plugin = JPluginHelper::getPlugin('sh404sefcore', 'sh404sefsocial');
+		$plugin        = JPluginHelper::getPlugin('sh404sefcore', 'sh404sefsocial');
 		$this->_params = new JRegistry;
 		$this->_params->loadString($plugin->params);
 		// some networks use underscore in language tags
 		$this->_underscoredLanguageTag = str_replace('-', '_', JFactory::getLanguage()->getTag());
-		$this->_shortLanguageCode = explode('_', $this->_underscoredLanguageTag);
-		$this->_shortLanguageCode = empty($this->_shortLanguageCode) ? 'en' : $this->_shortLanguageCode[0];
-		$this->_linkedinScriptLoaded = false;
+		$this->_shortLanguageCode      = explode('_', $this->_underscoredLanguageTag);
+		$this->_shortLanguageCode      = empty($this->_shortLanguageCode) ? 'en' : $this->_shortLanguageCode[0];
+		$this->_linkedinScriptLoaded   = false;
 	}
 
 	/**
@@ -66,8 +66,8 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 			// process matches
 			foreach ($matches as $id => $match)
 			{
-				$url = '';
-				$imageSrc = '';
+				$url       = '';
+				$imageSrc  = '';
 				$imageDesc = '';
 				// extract target URL
 				if (!empty($match[1]))
@@ -77,12 +77,12 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 					// now try to get attributes from both syntax
 					jimport('joomla.utilities.utility');
 					$attributes = JUtility::parseAttributes($match[1]);
-					$url = empty($attributes['url']) ? '' : $attributes['url'];
-					$imageSrc = empty($attributes['img']) ? '' : $attributes['img'];
-					$imageDesc = empty($attributes['desc']) ? '' : $attributes['desc'];
+					$url        = empty($attributes['url']) ? '' : $attributes['url'];
+					$imageSrc   = empty($attributes['img']) ? '' : $attributes['img'];
+					$imageDesc  = empty($attributes['desc']) ? '' : $attributes['desc'];
 
 					// now process usual tags
-					$raw = explode(' ', $match[1]);
+					$raw            = explode(' ', $match[1]);
 					$enabledButtons = array();
 					foreach ($raw as $attribute)
 					{
@@ -139,7 +139,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 					}
 				}
 				// get buttons html
-				$buttons = $this->_sh404sefGetSocialButtons($sefConfig, $url, $context = '', $content = null, $imageSrc, $imageDesc, $isTag = true);
+				$buttons = $this->_sh404sefGetSocialButtons($sefConfig, $url, $context = '', $content = $page, $imageSrc, $imageDesc, $isTag = true);
 				$buttons = str_replace('\'', '\\\'', $buttons);
 
 				// replace in document
@@ -160,36 +160,17 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 		}
 
 		// JLayout renderers data array
-		$displayData = array();
+		$displayData            = array();
 		$displayData['buttons'] = array();
 
 		// Tweet
 		if ($this->_params->get('enableTweet', true) && in_array('twitter', $this->_enabledButtons))
 		{
-			$displayData['buttons']['twitter'] = array('viaAccount' => $this->_params->get('viaAccount', ''),
-			                                           'url' => $url, 'languageTag' => $this->_shortLanguageCode);
-			$this->_needTracking = true;
-		}
-
-		// plus One
-		if ($this->_params->get('enablePlusOne', true) && in_array('googleplusone', $this->_enabledButtons))
-		{
-			$displayData['buttons']['googleplusone'] = array('plusOneAnnotation' => $this->_params->get('plusOneAnnotation', 'none'),
-			                                                 'plusOneSize' => $this->_params->get('plusOneSize', ''), 'url' => $url);
-			$this->_needTracking = true;
-		}
-
-		// Google plus page badge
-		$page = JString::trim($this->_params->get('googlePlusPage', ''), '/');
-		if ($this->_params->get('enableGooglePlusPage', true) && in_array('googlepluspage', $this->_enabledButtons) && !empty($page))
-		{
-			$displayData['buttons']['googlepluspage'] = array();
-			$displayData['buttons']['googlepluspage']['page'] = $page;
-			$displayData['buttons']['googlepluspage']['url'] = $url;
-			$displayData['buttons']['googlepluspage']['googlePlusPageSize'] = $this->_params->get('googlePlusPageSize', 'medium');
-			$displayData['buttons']['googlepluspage']['googlePlusCustomText'] = $this->_params->get('googlePlusCustomText', '');
-			$displayData['buttons']['googlepluspage']['googlePlusCustomText2'] = $this->_params->get('googlePlusCustomText2', '');
-			$this->_needTracking = true;
+			$displayData['buttons']['twitter'] = array(
+				'viaAccount' => $this->_params->get('viaAccount', ''),
+				'url'        => $url, 'languageTag' => $this->_shortLanguageCode
+			);
+			$this->_needTracking               = true;
 		}
 
 		// Pinterest
@@ -200,8 +181,15 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 			{
 				// we're using the first image in the content
 				$regExp = '#<img([^>]*)/>#ius';
-				$text = empty($content->fulltext) ? (empty($content->introtext) ? '' : $content->introtext) : $content->introtext
-					. $content->fulltext;
+				if (!is_object($content))
+				{
+					$text = $content;
+				}
+				else
+				{
+					$text = empty($content->fulltext) ? (empty($content->introtext) ? '' : $content->introtext) : $content->introtext
+						. $content->fulltext;
+				}
 				$img = preg_match($regExp, $text, $match);
 				if (empty($img) || empty($match[1]))
 				{
@@ -219,7 +207,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 						$fulltextImage = $registry->get('image_fulltext');
 						if (!empty($fulltextImage))
 						{
-							$imageSrc = $fulltextImage;
+							$imageSrc  = $fulltextImage;
 							$imageDesc = $registry->get('image_fulltext_alt', '');
 						}
 					}
@@ -228,7 +216,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 						// handle K2 images feature
 						if (!empty($content->imageMedium))
 						{
-							$imageSrc = JURI::root() . str_replace(JURI::base(true) . '/', '', $content->imageMedium);
+							$imageSrc  = JURI::root() . str_replace(JURI::base(true) . '/', '', $content->imageMedium);
 							$imageDesc = $content->image_caption;
 						}
 					}
@@ -238,8 +226,8 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 					// extract image details
 					jimport('joomla.utilities.utility');
 					$attributes = JUtility::parseAttributes($match[1]);
-					$imageSrc = empty($attributes['src']) ? '' : $attributes['src'];
-					$imageDesc = empty($attributes['alt']) ? '' : $attributes['alt'];
+					$imageSrc   = empty($attributes['src']) ? '' : $attributes['src'];
+					$imageDesc  = empty($attributes['alt']) ? '' : $attributes['alt'];
 				}
 			}
 			if (!empty($imageSrc))
@@ -249,26 +237,26 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 					// relative url, prepend root url
 					$imageSrc = JURI::base() . JString::ltrim($imageSrc, '/');
 				}
-				$displayData['buttons']['pinterest'] = array();
-				$displayData['buttons']['pinterest']['url'] = $url;
-				$displayData['buttons']['pinterest']['imageSrc'] = $imageSrc;
-				$displayData['buttons']['pinterest']['imageDesc'] = $imageDesc;
+				$displayData['buttons']['pinterest']                     = array();
+				$displayData['buttons']['pinterest']['url']              = $url;
+				$displayData['buttons']['pinterest']['imageSrc']         = $imageSrc;
+				$displayData['buttons']['pinterest']['imageDesc']        = $imageDesc;
 				$displayData['buttons']['pinterest']['pinItCountLayout'] = $this->_params->get('pinItCountLayout', 'none');
-				$displayData['buttons']['pinterest']['pinItButtonText'] = $this->_params->get('pinItButtonText', 'Pin it');
-				$this->_needTracking = true;
+				$displayData['buttons']['pinterest']['pinItButtonText']  = $this->_params->get('pinItButtonText', 'Pin it');
+				$this->_needTracking                                     = true;
 			}
 		}
 
 		// FB Like
 		if ($this->_params->get('enableFbLike', 1) && in_array('facebooklike', $this->_enabledButtons))
 		{
-			$layout = $this->_params->get('fbLayout', '') == 'none' ? '' : $this->_params->get('fbLayout', '');
-			$fbData = array();
-			$fbData['fbLayout'] = $layout;
-			$fbData['url'] = $url;
-			$fbData['fbAction'] = $this->_params->get('fbAction', '');
-			$fbData['fbWidth'] = $this->_params->get('fbWidth', '');
-			$fbData['fbShowFaces'] = $this->_params->get('fbShowFaces', 'true');
+			$layout                  = $this->_params->get('fbLayout', '') == 'none' ? '' : $this->_params->get('fbLayout', '');
+			$fbData                  = array();
+			$fbData['fbLayout']      = $layout;
+			$fbData['url']           = $url;
+			$fbData['fbAction']      = $this->_params->get('fbAction', '');
+			$fbData['fbWidth']       = $this->_params->get('fbWidth', '');
+			$fbData['fbShowFaces']   = $this->_params->get('fbShowFaces', 'true');
 			$fbData['fbColorscheme'] = $this->_params->get('fbColorscheme', 'light');
 			if ($this->_params->get('fbUseHtml5', true))
 			{
@@ -279,15 +267,15 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 				$displayData['buttons']['fb-like'] = $fbData;
 			}
 
-			$this->_needFBSdk = true;
+			$this->_needFBSdk    = true;
 			$this->_needTracking = true;
 		}
 
 		// FB Send
 		if ($this->_params->get('enableFbSend', 1) && in_array('facebooksend', $this->_enabledButtons))
 		{
-			$fbData = array();
-			$fbData['url'] = $url;
+			$fbData                  = array();
+			$fbData['url']           = $url;
 			$fbData['fbColorscheme'] = $this->_params->get('fbColorscheme', 'light');
 
 			if ($this->_params->get('fbUseHtml5', true))
@@ -298,15 +286,15 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 			{
 				$displayData['buttons']['fb-send'] = $fbData;
 			}
-			$this->_needFBSdk = true;
+			$this->_needFBSdk    = true;
 			$this->_needTracking = true;
 		}
 
 		// FB Share
 		if ($this->_params->get('enableFbShare', 1) && in_array('facebookshare', $this->_enabledButtons))
 		{
-			$fbData = array();
-			$fbData['url'] = $url;
+			$fbData             = array();
+			$fbData['url']      = $url;
 			$fbData['fbLayout'] = $this->_params->get('fbShareLayout', 'button_count');
 
 			if ($this->_params->get('fbUseHtml5', true))
@@ -317,22 +305,40 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 			{
 				$displayData['buttons']['fb-share'] = $fbData;
 			}
-			$this->_needFBSdk = true;
+			$this->_needFBSdk    = true;
 			$this->_needTracking = true;
 		}
 
 		if ($this->_params->get('enableLinkedIn', 1) && in_array('linkedin', $this->_enabledButtons))
 		{
-			$displayData['buttons']['linkedin'] = array('loadScript' => !$this->_linkedinScriptLoaded, 'url' => $url,
-			                                            'languageTag' => $this->_underscoredLanguageTag, 'layout' => $this->_params->get('linkedinlayout', 'none'));
-			$this->_linkedinScriptLoaded = true;
-			$this->_needTracking = true;
+			$displayData['buttons']['linkedin'] = array(
+				'loadScript'  => !$this->_linkedinScriptLoaded, 'url' => $url,
+				'languageTag' => $this->_underscoredLanguageTag, 'layout' => $this->_params->get('linkedinlayout', 'none')
+			);
+			$this->_linkedinScriptLoaded        = true;
+			$this->_needTracking                = true;
 		}
 
 		// perform replace
 		if (!empty($displayData['buttons']))
 		{
 			$buttonsHtml = ShlMvcLayout_Helper::render('com_sh404sef.social.wrapper', $displayData);
+			if($this->_needFBSdk) {
+				$buttonsHtml = Sh404sefHelperGeneral::addCommentedTag(
+					$buttonsHtml,
+					'sh404sef_tag_social_need_fb_sdk',
+					'required',
+					'before'
+				);
+			}
+			if($this->_needTracking) {
+				$buttonsHtml = Sh404sefHelperGeneral::addCommentedTag(
+					$buttonsHtml,
+					'sh404sef_tag_social_need_tracking',
+					'required',
+					'before'
+				);
+			}
 		}
 		else
 		{
@@ -375,7 +381,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 		}
 
 		$shouldDisplay = true;
-		$updatedUrl = '';
+		$updatedUrl    = '';
 
 		// user can disable this attempt to identify possible failure
 		// to select the correct url
@@ -384,7 +390,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 			return $shouldDisplay;
 		}
 
-		$app = JFactory::getApplication();
+		$app      = JFactory::getApplication();
 		$printing = $app->input->getInt('print');
 		if (!empty($printing))
 		{
@@ -395,7 +401,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 		if (empty($context))
 		{
 			$component = '';
-			$view = '';
+			$view      = '';
 		}
 		else
 		{
@@ -403,7 +409,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 			if (!empty($bits))
 			{
 				$component = $bits[0];
-				$view = empty($bits[1]) ? $app->input->getCmd('view', '') : $bits[1];
+				$view      = empty($bits[1]) ? $app->input->getCmd('view', '') : $bits[1];
 			}
 		}
 
@@ -431,7 +437,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 				// check category
 				if ($shouldDisplay)
 				{
-					$cats = $this->_params->get('enabledCategories', array());
+					$cats  = $this->_params->get('enabledCategories', array());
 					$catid = null;
 					if (!empty($cats) && ($cats[0] != 'show_on_all'))
 					{
@@ -482,21 +488,31 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 	 */
 	private function _insertSocialLinks(&$page, $sefConfig)
 	{
-		$headLinks = '';
+		$headLinks   = '';
 		$bottomLinks = '';
 
 		// what do we must link to
-		$showFb = strpos($page, '<div class="fb-"') !== false || strpos($page, '<fb:') !== false;
-		$showTwitter = strpos($page, '<a href="https://twitter.com/share"') !== false;
-		$showPlusOne = strpos($page, '<g:plusone callback="_sh404sefSocialTrackGPlusTracking"') !== false;
-		$gPlusPage = $this->_params->get('googlePlusPage', '');
-		$gPlusPage = JString::trim($gPlusPage, '/');
-		$showGPlusPage = strpos($page, 'onclick="_sh404sefSocialTrack.GPageTracking') !== false && !empty($gPlusPage);
+		$showFb        = strpos($page, '<div class="fb-"') !== false || strpos($page, '<fb:') !== false;
+		$showTwitter   = strpos($page, '<a href="https://twitter.com/share"') !== false;
 		$showPinterest = strpos($page, 'class="pin-it-button"') !== false;
-		$showLinkedin = strpos($page, '//platform.linkedin.com/in.js') !== false;
+		$showLinkedin  = strpos($page, '//platform.linkedin.com/in.js') !== false;
+
+		// handle caching
+		if(!$this->_needTracking) {
+			// is there a stored marker that tells us to insert the FB SDK?
+			$needTracking = Sh404sefHelperGeneral::getCommentedTag(
+				$page,
+				'sh404sef_tag_social_need_tracking'
+			);
+			$needTracking = wbArrayGet($needTracking, 0, '');
+			if ('required' == $needTracking)
+			{
+				$this->_needTracking = true;
+			}
+		}
 
 		// insert social tracking javascript
-		if ($this->_needTracking && ($showFb || $showTwitter | $showPlusOne || $showGPlusPage || $showPinterest))
+		if ($this->_needTracking && ($showFb || $showTwitter || $showPinterest))
 		{
 			// G! use underscore in language tags
 			$headLinks .= "\n<script src='" . JURI::base(true) . '/plugins/sh404sefcore/sh404sefsocial/sh404sefsocial.js'
@@ -510,27 +526,10 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
       </script>";
 		}
 
-		if ($showFb)
-		{
-			//$page = str_replace('<html ', '<html xmlns:fb="http://ogp.me/ns/fb#" ', $page);
-		}
-
 		// twitter share
 		if ($showTwitter)
 		{
 			$bottomLinks .= ShlMvcLayout_Helper::render('com_sh404sef.social.twitter_script');
-		}
-
-		// plus one
-		if ($showPlusOne)
-		{
-			$bottomLinks .= ShlMvcLayout_Helper::render('com_sh404sef.social.googleplusone_script');
-		}
-
-		// google plus page badge
-		if ($showGPlusPage)
-		{
-			$headLinks .= "\n<link href='https://plus.google.com/" . $gPlusPage . "/' rel='publisher' />";
 		}
 
 		// pinterest
@@ -539,7 +538,7 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 			$headLinks .= ShlMvcLayout_Helper::render('com_sh404sef.social.pinterest_script');
 		}
 
-		if ($this->_needTracking && ($showFb || $showTwitter | $showPlusOne || $showGPlusPage || $showPinterest || $showLinkedin))
+		if ($this->_needTracking && ($showFb || $showTwitter || $showPinterest || $showLinkedin))
 		{
 			// add our wrapping css
 			$headLinks .= ShlMvcLayout_Helper::render('com_sh404sef.social.css');
@@ -608,24 +607,42 @@ class plgSh404sefcoresh404sefSocial extends JPlugin
 	{
 		static $_inserted = false;
 
-		if ($this->_needFBSdk && $sefConfig->shMetaManagementActivated && !$_inserted
+		if ($sefConfig->shMetaManagementActivated && !$_inserted
 			&& ($this->_params->get('enableFbLike', true) || $this->_params->get('enableFbSend', true) || $this->_params->get('enableFbShare', true))
 		)
 		{
-			$_inserted = true;
+			// handle caching
+			if (!$this->_needFBSdk)
+			{
+				// is there a stored marker that tells us to insert the FB SDK?
+				$needDBSdk = Sh404sefHelperGeneral::getCommentedTag(
+					$page,
+					'sh404sef_tag_social_need_fb_sdk'
+				);
+				$needDBSdk = wbArrayGet($needDBSdk, 0, '');
+				if ('required' == $needDBSdk)
+				{
+					$this->_needFBSdk = true;
+				}
+			}
 
-			// append Facebook SDK
-			$socialSnippet = ShlMvcLayout_Helper::render(
-				'com_sh404sef.social.fb_sdk',
-				array(
-					'languageTag' => $this->_underscoredLanguageTag,
-					'appId' => empty($sefConfig->fbAppId) ? Sh404sefFactory::getPConfig()->facebookDefaultAppId : $sefConfig->fbAppId
-				)
+			if ($this->_needFBSdk)
+			{
+				$_inserted = true;
 
-			);
+				// append Facebook SDK
+				$socialSnippet = ShlMvcLayout_Helper::render(
+					'com_sh404sef.social.fb_sdk',
+					array(
+						'languageTag' => $this->_underscoredLanguageTag,
+						'appId'       => empty($sefConfig->fbAppId) ? Sh404sefFactory::getPConfig()->facebookDefaultAppId : $sefConfig->fbAppId
+					)
 
-			// use page rewrite utility function to insert as needed
-			$page = shPregInsertCustomTagInBuffer($page, '<\s*body[^>]*>', 'after', $socialSnippet, $firstOnly = 'first');
+				);
+
+				// use page rewrite utility function to insert as needed
+				$page = shPregInsertCustomTagInBuffer($page, '<\s*body[^>]*>', 'after', $socialSnippet, $firstOnly = 'first');
+			}
 		}
 	}
 

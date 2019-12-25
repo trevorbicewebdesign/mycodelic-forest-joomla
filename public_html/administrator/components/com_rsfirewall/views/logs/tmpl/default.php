@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -63,7 +63,7 @@ Joomla.submitbutton = function(pressbutton) {
 			?></td>
 			<td width="1%" nowrap="nowrap" class="hidden-phone com-rsfirewall-level-<?php echo $item->level; ?>"><?php echo JText::_('COM_RSFIREWALL_LEVEL_'.$item->level); ?></td>
 			<td width="1%" nowrap="nowrap" class="hidden-phone"><?php echo $this->showDate($item->date); ?></td>
-			<td width="1%" nowrap="nowrap"><img src="components/com_rsfirewall/assets/images/flags/<?php echo $this->geoip->getCountryFlag($item->ip); ?>" /> <?php echo $this->geoip->show($item->ip); ?></td>
+			<td width="1%" nowrap="nowrap"><?php echo JHtml::_('image', 'com_rsfirewall/flags/' . $this->geoip->getCountryFlag($item->ip), $this->geoip->getCountryCode($item->ip), '', true); ?> <?php echo $this->geoip->show($item->ip); ?></td>
 			<td width="1%" nowrap="nowrap" class="hidden-phone"><?php echo (int) $item->user_id; ?></td>
 			<td width="1%" nowrap="nowrap" class="hidden-phone"><?php echo $this->escape($item->username); ?></td>
 			<td class="com-rsfirewall-break-word"><?php echo $this->escape($item->page); ?></td>
@@ -91,10 +91,6 @@ Joomla.submitbutton = function(pressbutton) {
 		<?php echo JHtml::_( 'form.token' ); ?>
 		<input type="hidden" name="boxchecked" value="0" />
 		<input type="hidden" name="task" value="" />
-		<?php if (!$this->isJ30) { ?>
-		<input type="hidden" name="filter_order" value="<?php echo $listOrder; ?>" />
-		<input type="hidden" name="filter_order_Dir" value="<?php echo $listDirn; ?>" />
-		<?php } ?>
 	</div>
 	</div>
 </form>

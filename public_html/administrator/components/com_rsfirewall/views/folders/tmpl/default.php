@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -45,7 +45,7 @@ function addFile() {
 	<div id="com-rsfirewall-explorer-header">
 		<strong><?php echo JText::_('COM_RSFIREWALL_CURRENT_LOCATION'); ?></strong>
 		<?php foreach ($this->elements as $element) { ?>
-			<a href="<?php echo JRoute::_('index.php?option=com_rsfirewall&view=folders&tmpl=component'.$name.$allowfolders.$allowfiles.'&folder='.urlencode($element->fullpath)); ?>"><?php echo $this->escape($element->name); ?></a> <?php echo $this->DS; ?>
+			<a href="<?php echo JRoute::_('index.php?option=com_rsfirewall&view=folders&tmpl=component'.$name.$allowfolders.$allowfiles.'&folder='.urlencode($element->fullpath)); ?>"><?php echo $this->escape($element->name); ?></a> <?php echo DIRECTORY_SEPARATOR; ?>
 		<?php } ?>
 	</div>
 	<br/>
@@ -72,7 +72,7 @@ function addFile() {
 		</tr>
 		<?php } ?>
 		<?php foreach ($this->folders as $folder => $data) { ?>
-			<?php $fullpath = $this->path.$this->DS.$folder; ?>
+			<?php $fullpath = $this->path.DIRECTORY_SEPARATOR.$folder; ?>
 			<tr>
 				<?php if ($this->allowFolders) { ?>
 					<Td><input type="checkbox" name="cid[]" value="<?php echo $this->escape($fullpath); ?>" /></td>
@@ -89,7 +89,7 @@ function addFile() {
 		<?php
 		$i = 0;
 		foreach ($this->files as $file => $data) { ?>
-			<?php $fullpath = $this->path.$this->DS.$file; ?>
+			<?php $fullpath = $this->path.DIRECTORY_SEPARATOR.$file; ?>
 			<tr>
 				<?php if ($this->allowFiles) { ?>
 					<Td><input type="checkbox" id="file<?php echo $i; ?>" name="cid[]" value="<?php echo $this->escape($fullpath); ?>" /></td>

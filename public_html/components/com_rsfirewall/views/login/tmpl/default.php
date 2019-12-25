@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,14 +12,9 @@ defined('_JEXEC') or die('Restricted access');
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<?php if ($this->jversion->isCompatible('3.0')) { ?>
-	<link rel="stylesheet" href="<?php echo JHtml::_('stylesheet', 'jui/bootstrap.min.css', array(), true, true); ?>" type="text/css" />
-	<link rel="stylesheet" href="<?php echo JHtml::_('stylesheet', 'jui/bootstrap-responsive.min.css', array(), true, true); ?>" type="text/css" />
-	<link rel="stylesheet" href="<?php echo JHtml::_('stylesheet', 'jui/bootstrap-extended.css', array(), true, true); ?>" type="text/css" />
-	<?php } else { ?>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" type="text/css" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.min.css" type="text/css" />
-	<?php } ?>
+	<link rel="stylesheet" href="<?php echo JHtml::_('rsfirewall_stylesheet', 'jui/bootstrap.min.css', array('relative' => true, 'pathOnly' => true)); ?>" type="text/css" />
+	<link rel="stylesheet" href="<?php echo JHtml::_('rsfirewall_stylesheet', 'jui/bootstrap-responsive.min.css', array('relative' => true, 'pathOnly' => true)); ?>" type="text/css" />
+	<link rel="stylesheet" href="<?php echo JHtml::_('rsfirewall_stylesheet', 'jui/bootstrap-extended.css', array('relative' => true, 'pathOnly' => true)); ?>" type="text/css" />
 	<title><?php echo JText::_('COM_RSFIREWALL_PROTECTED_AREA'); ?></title>
 	<style type="text/css">
       body {
@@ -64,8 +59,6 @@ defined('_JEXEC') or die('Restricted access');
 	}
 	addEvent(window, 'load', function() {
 		var element = document.getElementsByName('rsf_backend_password')[0];
-		addEvent(element, 'focus', function() { this.className = 'focus'; });
-		addEvent(element, 'blur', function() { this.className = ''; });
 		element.focus();
 	});
 	</script>
@@ -79,7 +72,7 @@ defined('_JEXEC') or die('Restricted access');
 			</div>
 		<?php } ?>
 		<form method="post" action="index.php" class="form-signin text-center">
-			<p><img src="components/com_rsfirewall/assets/images/icon-48-rsfirewall.png" /></p>
+			<p><?php echo JHtml::_('image', 'com_rsfirewall/icon-48-rsfirewall.png', 'RSFirewall!', 'align="middle"', true); ?></p>
 			<h3><?php echo JText::_('COM_RSFIREWALL_PLEASE_LOGIN_TO_CONTINUE'); ?></h3>
 			<input type="password" class="input-block-level" name="rsf_backend_password" placeholder="<?php echo $this->escape(JText::_('COM_RSFIREWALL_PASSWORD')); ?>" />
 			<button class="btn btn-large btn-primary" type="submit"><?php echo JText::_('COM_RSFIREWALL_LOGIN'); ?></button>

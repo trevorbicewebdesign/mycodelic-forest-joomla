@@ -6,8 +6,8 @@
  * @copyright    (c) Yannick Gaultier 2018
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.678
- * @date        2018-08-02
+ * @version      0.4.0.685
+ * @date        2019-04-25
  *
  * build 370
  */
@@ -43,7 +43,7 @@ class  plgSystemShlib extends \JPlugin
 		// initialize path lib
 		$this->_initLibrary();
 
-		defined('SHLIB_VERSION') or define('SHLIB_VERSION', '0.4.0.678');
+		defined('SHLIB_VERSION') or define('SHLIB_VERSION', '0.4.0.685');
 	}
 
 	public function onAfterInitialise()

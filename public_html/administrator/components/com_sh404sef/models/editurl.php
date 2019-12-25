@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.15.1.3863
- * @date        2018-08-22
+ * @version      4.17.0.3932
+ * @date        2019-09-30
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -80,7 +80,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 		try
 		{
 			$whereIds = ShlDbHelper::arrayToIntValList($ids);
-			$urls = ShlDbHelper::selectObjectList($this->_getTableName(), '*', $this->_db->quoteName('id') . ' in (' . $whereIds . ')');
+			$urls     = ShlDbHelper::selectObjectList($this->_getTableName(), '*', $this->_db->quoteName('id') . ' in (' . $whereIds . ')');
 		}
 		catch (Exception $e)
 		{
@@ -99,7 +99,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 	{
 		// use parent save method to save the url itself, from default values
 		$this->_data = $url;
-		$savedId = $this->_saveUrl();
+		$savedId     = $this->_saveUrl();
 
 		// return savedId of the url, will have
 		// been set to 0 if something wrong happened
@@ -331,7 +331,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			$row->newurl = Sh404sefHelperUrl::sortUrl($row->newurl);
 
 			// retrieve previous values of sef and non sef urls
-			$previousSefUrl = $app->input->post->getString('previousSefUrl', null);
+			$previousSefUrl    = $app->input->post->getString('previousSefUrl', null);
 			$previousNonSefUrl = $app->input->post->getStrig('previousNonSefUrl', null);
 
 			// if both were set, and nothing has changed, then nothing to do
@@ -346,9 +346,11 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			}
 
 			// search DB for urls pairs with same SEF url
-			$query = 'SELECT * FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($row->oldurl) . ' ORDER BY rank ASC';
+			$query = 'SELECT * FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($row->oldurl) . ' ORDER BY ' . $this->_db->qn('rank') . ' ASC';
 			$this->_db->setQuery($query);
 			$dbUrlList = $this->_db->loadObjectList();
+
+			$aliasList = ShlSystem_Strings::stringToCleanedArray($this->_data['shAliasList'], "\n");
 
 			// do we have urls in the db with same SEF ?
 			if (count($dbUrlList) > 0)
@@ -399,7 +401,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 						//   - this sef url does not already exists in the DB; which will happen if the url
 						//     being saved was customized and also had duplicates
 						// TODO this code is duplicated just a few line below, need refactoring
-						if (!empty($previousSefUrl) && strpos($this->_data['shAliasList'], $previousSefUrl) === false)
+						if (!empty($previousSefUrl) && !in_array($previousSefUrl, $this->_data['shAliasList']))
 						{
 							// check if not already a valid SEF url in the DB
 							$query = 'SELECT count(id) FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($previousSefUrl);
@@ -433,14 +435,14 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 					if (!empty($previousSefUrl) && $previousSefUrl != $row->newurl)
 					{
 						// search for the old #2 record in duplicate list
-						$query = 'SELECT id FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($previousSefUrl) . ' ORDER BY rank ASC';
+						$query = 'SELECT `id` FROM `#__sh404sef_urls` WHERE binary `oldurl` = ' . $this->_db->Quote($previousSefUrl) . ' ORDER BY '. $this->_db->qn('rank') . ' ASC';
 						$this->_db->setQuery($query);
 						$previousRanked2 = $this->_db->loadObject();
 
 						// there was more than one duplicate in the same series, promote #2 to top spot
 						if (!empty($previousRanked2))
 						{
-							$query = 'UPDATE #__sh404sef_urls SET rank="0" WHERE id = ' . $this->_db->Quote($previousRanked2->id);
+							$query = 'UPDATE `#__sh404sef_urls` SET `rank`="0" WHERE `id` = ' . $this->_db->Quote($previousRanked2->id);
 							$this->_db->setQuery($query);
 							$this->_db->execute();
 						}
@@ -476,7 +478,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 				//   - this sef url does not already exists in the DB; which will happen if the url
 				//     begin saved was customized and also had duplicates
 				// note : when importing, we don't enter this test as previousSefUrl is empty
-				if (!empty($previousSefUrl) && strpos($this->_data['shAliasList'], $previousSefUrl) === false)
+				if (!empty($previousSefUrl) && !in_array($previousSefUrl, $this->_data['shAliasList']))
 				{
 					// check if not already a valid SEF url in the DB
 					$query = 'SELECT count(id) FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($previousSefUrl);
@@ -495,7 +497,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 				if (!empty($previousSefUrl) && $previousSefUrl != $row->newurl)
 				{
 					// search for the old #2 record in duplicate list
-					$query = 'SELECT id FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($previousSefUrl) . ' ORDER BY rank ASC';
+					$query = 'SELECT `id` FROM `#__sh404sef_urls` WHERE binary `oldurl` = ' . $this->_db->Quote($previousSefUrl) . ' ORDER BY `rank` ASC';
 					$this->_db->setQuery($query);
 					$previousRanked2 = $this->_db->loadObject();
 
@@ -543,7 +545,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 		$canonical = $this->_data['canonical']; // v 4.12, do not store canonical in meta any longer
 		unset($this->_data['canonical']);
 		$this->_data['newurl'] = is_object($this->_url) ? $this->_url->newurl : $this->_data['newurl'];
-		$this->_data['id'] = $this->_data['meta_id'];
+		$this->_data['id']     = $this->_data['meta_id'];
 
 		// ask model to save the data
 		$status = $model->save($this->_data);
@@ -576,14 +578,15 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 
 		// ask it to save the data
 		$newUrl = is_object($this->_url) ? $this->_url->newurl : '';
-		$status = $model->saveFromInput($this->_data['shAliasList'], $newUrl);
+		$oldUrl = is_object($this->_url) ? $this->_url->oldurl : '';
+		$status = $model->saveFromInput($this->_data['shAliasList'], $newUrl, $oldUrl);
 		if (!$status)
 		{
 			$this->setError($model->getError());
 		}
 
 		// save the canonical: if new/modified, add it. If empty, remove it
-		$sourceUrl = $this->_url->newurl == sh404SEF_HOMEPAGE_CODE ? '/' : $this->_url->newurl;
+		$sourceUrl       = $this->_url->newurl == sh404SEF_HOMEPAGE_CODE ? '/' : $this->_url->newurl;
 		$Canonicalstatus = $model->saveCanonical($this->_data['canonical'], $sourceUrl);
 		if (!$Canonicalstatus)
 		{

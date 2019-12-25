@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.9.x
+ * @version    2.10.x
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2018 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2006 - 2019 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
  */
 
 // no direct access
@@ -230,7 +230,7 @@ class modK2UsersHelper
                         $query .= " AND i.language IN ({$languageFilter}) AND c.language IN ({$languageFilter})";
                     }
 
-                    $query .= " GROUP BY i.id ORDER BY i.created DESC";
+                    $query .= " ORDER BY i.created DESC";
 
                     $db->setQuery($query, 0, $params->get('userItemCount'));
                     $userObject->items = $db->loadObjectList();

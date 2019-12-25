@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2018
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.15.1.3863
- * @date		2018-08-22
+ * @version     4.17.0.3932
+ * @date		2019-09-30
  */
 
 defined('_JEXEC') or die('Direct Access to this location is not allowed.');
@@ -214,22 +214,22 @@ function shSearchSimilarUrls($bits, $originalBits, $searchedPath, $params)
 	$db = ShlDbHelper::getDb();
 
 	// search the redirection table for similar urls
-	$sql = 'SELECT oldurl, newurl, id, rank, dateadd, soundex(oldurl) AS soundex_value FROM  #__sh404sef_urls where newurl <> "" and rank = 0 ';
+	$sql = 'SELECT `oldurl`, `newurl`, `id`, `rank`, `dateadd`, soundex(`oldurl`) AS soundex_value FROM  `#__sh404sef_urls` where `newurl` <> "" and `rank` = 0 ';
 
 	// virtuemart hack
-	$sql .= ' AND oldurl not like ' . $db->Quote('%vmchk%');
+	$sql .= ' AND `oldurl` not like ' . $db->Quote('%vmchk%');
 
 	// additional conditions : never include feed results
-	$sql .= ' AND newurl not like ' . $db->Quote('%format=feed%');
+	$sql .= ' AND `newurl` not like ' . $db->Quote('%format=feed%');
 
 	// additional user-set conditions
 	if (!$includePdf)
 	{
-		$sql .= ' AND newurl not like ' . $db->Quote('%format=pdf%');
+		$sql .= ' AND `newurl` not like ' . $db->Quote('%format=pdf%');
 	}
 	if (!$includePrint)
 	{
-		$sql .= ' AND newurl not like ' . $db->Quote('%print=1%');
+		$sql .= ' AND `newurl` not like ' . $db->Quote('%print=1%');
 	}
 
 	// apply exclusion list
@@ -242,7 +242,7 @@ function shSearchSimilarUrls($bits, $originalBits, $searchedPath, $params)
 			$word = trim($word);
 			if (!empty($word))
 			{
-				$sql .= ' AND oldurl not like ' . shEscapeLike('%' . $word . '%', $db);
+				$sql .= ' AND `oldurl` not like ' . shEscapeLike('%' . $word . '%', $db);
 			}
 		}
 	}
@@ -256,7 +256,7 @@ function shSearchSimilarUrls($bits, $originalBits, $searchedPath, $params)
 			$word = trim($word);
 			if (!empty($word))
 			{
-				$sql .= ' AND newurl not like ' . shEscapeLike('%' . $word . '%', $db);
+				$sql .= ' AND `newurl` not like ' . shEscapeLike('%' . $word . '%', $db);
 			}
 		}
 	}
@@ -269,14 +269,14 @@ function shSearchSimilarUrls($bits, $originalBits, $searchedPath, $params)
 	$subSql = array();
 	foreach ($bits as $bit)
 	{
-		$subSql[] = ' oldurl like ' . shEscapeLike('%' . $bit . '%', $db);
+		$subSql[] = ' `oldurl` like ' . shEscapeLike('%' . $bit . '%', $db);
 	}
 	$sql .= ' OR ';
 	$sql .= implode(' OR ', $subSql);
 	$sql .= ')';
 
 	// group and limit result set
-	$sql .= ' GROUP BY oldurl';
+	$sql .= ' GROUP BY `oldurl`';
 	$sql .= ' limit 500';
 
 	// perform query

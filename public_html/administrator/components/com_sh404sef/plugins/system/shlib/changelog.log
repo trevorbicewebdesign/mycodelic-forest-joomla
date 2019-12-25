@@ -1,6 +1,6 @@
                                 shLib change log                                
 
-                        (2018-08-02 18:01 - build #678)                         
+                        (2019-04-25 14:47 - build #685)                         
 
 
     [new]    Added rule-based URL blocking, comes with default common
@@ -33,6 +33,8 @@
              pluralized or not
     [new]    Added MVC compatibility layer, handling J! 2 & J! 3
 
+    [chg]    Added protection against invalid characters in file_exists see
+             ticket 5655
     [chg]    Analytics IP exclusion now operates on servers behind proxies
     [chg]    stringToCleanedArray would strip a string that contains the
              character
@@ -108,6 +110,10 @@
     [chg]    Now clearing output buffer before aborting HTTP request
     [chg]    Changed error handling for Joomla! 2/3 compatiblity
 
+    [bug]    Analytics reports authorization procedure may fail depending on
+             which protocol Google uses in its response
+    [bug]    Structured data phone numbers may loose their required leading +
+             sign
     [bug]    Page title with double-quotes may break OGP and Twitter cards
              data
     [bug]    Using date_default_timezone instead of currently logged in user

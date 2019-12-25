@@ -7,7 +7,7 @@
 
 defined('_JEXEC') or die;
 
-class plgInstallerRSFirewall extends JPlugin
+class plgInstallerRsfirewall extends JPlugin
 {
 	public function onInstallerBeforePackageDownload(&$url, &$headers)
 	{

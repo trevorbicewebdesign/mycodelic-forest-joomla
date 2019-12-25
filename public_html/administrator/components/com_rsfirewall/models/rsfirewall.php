@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,73 +10,12 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsfirewallModelRsfirewall extends JModelLegacy
 {
-	const DS = DIRECTORY_SEPARATOR;
 	protected $config;
-	protected $isJ30 = null;
 	
-	public function __construct() {
-		parent::__construct();
-		
-		$jversion 	  = new JVersion();
-		
+	public function __construct($config = array()) {
+		parent::__construct($config);
+
 		$this->config = RSFirewallConfig::getInstance();
-		$this->isJ30  = $jversion->isCompatible('3.0');
-	}
-	public function getButtons() {
-		JFactory::getLanguage()->load('com_rsfirewall.sys', JPATH_ADMINISTRATOR);
-		
-		$buttons = array(
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=check'),
-				'image' => $this->isJ30 ? 'checkmark' : 'com_rsfirewall/icon-48-check.png',
-				'text' => JText::_('COM_RSFIREWALL_SYSTEM_CHECK'),
-				'access' => array('check.run', 'com_rsfirewall')
-			),
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=dbcheck'),
-				'image' => $this->isJ30 ? 'database' : 'com_rsfirewall/icon-48-dbcheck.png',
-				'text' => JText::_('COM_RSFIREWALL_DATABASE_CHECK'),
-				'access' => array('dbcheck.run', 'com_rsfirewall')
-			),
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=logs'),
-				'image' => $this->isJ30 ? 'bars' : 'com_rsfirewall/icon-48-logs.png',
-				'text' => JText::_('COM_RSFIREWALL_SYSTEM_LOGS'),
-				'access' => array('logs.view', 'com_rsfirewall')
-			),
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=configuration'),
-				'image' => $this->isJ30 ? 'cog' : 'com_rsfirewall/icon-48-configuration.png',
-				'text' => JText::_('COM_RSFIREWALL_FIREWALL_CONFIGURATION'),
-				'access' => array('core.admin', 'com_rsfirewall')
-			),
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=lists'),
-				'image' => $this->isJ30 ? 'drawer' : 'com_rsfirewall/icon-48-lists.png',
-				'text' => JText::_('COM_RSFIREWALL_LISTS'),
-				'access' => array('lists.manage', 'com_rsfirewall')
-			),
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=exceptions'),
-				'image' => $this->isJ30 ? 'checkbox' : 'com_rsfirewall/icon-48-exceptions.png',
-				'text' => JText::_('COM_RSFIREWALL_EXCEPTIONS'),
-				'access' => array('exceptions.manage', 'com_rsfirewall')
-			),
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=feeds'),
-				'image' => $this->isJ30 ? 'feed' : 'com_rsfirewall/icon-48-feeds.png',
-				'text' => JText::_('COM_RSFIREWALL_RSS_FEEDS_CONFIGURATION'),
-				'access' => array('feeds.manage', 'com_rsfirewall')
-			),
-			array(
-				'link' => JRoute::_('index.php?option=com_rsfirewall&view=updates'),
-				'image' => $this->isJ30 ? 'download' : 'com_rsfirewall/icon-48-updates.png',
-				'text' => JText::_('COM_RSFIREWALL_UPDATES'),
-				'access' => array('updates.view', 'com_rsfirewall')
-			)
-		);
-		
-		return $buttons;
 	}
 	
 	public function getLastMonthLogs() {       
@@ -182,66 +121,36 @@ class RsfirewallModelRsfirewall extends JModelLegacy
 	protected function getParsedFeed($item) {
 		$parsedFeed = new stdClass;
 		$url	 	= $item->url;
-		
-		if ($this->isJ30) {
-			// 3.x
-			$parser = new JFeedFactory;
-			try {
-				$feed = $parser->getFeed($url);
-			} catch (Exception $e) {
-				JError::raiseError($e->getCode(), $e->getMessage());
-				return false;
-			}
-			
-			$parsedFeed->title = $feed->title;
-			$parsedFeed->items = array();
-			
-			if (!empty($feed[0])) {
-				for ($i = 0; $i < $item->limit; $i++) {
-					if (!empty($feed[$i])) {
-						$uri = !empty($feed[$i]->guid) || !is_null($feed[$i]->guid) ? $feed[$i]->guid : $feed[$i]->uri;
-						$uri = substr($uri, 0, 4) != 'http' ? '' : $uri;
-						
-						$parsedFeed->items[] = (object) array(
-							'title' => $feed[$i]->title,
-							'date' 	=> $feed[$i]->updatedDate,
-							'link'	=> $uri
-						);
-					}
-				}				
-				
-			}
-			
-			return $parsedFeed;
-		} else {
-			// 2.5
-			
-			// SimplePie throws Strict Standards, so a workaround is in place.
-			$errorReporting = error_reporting(0);
-			
-			$parser = JFactory::getFeedParser($url);
-			
-			$parsedFeed->title = $parser->get_title();
-			$parsedFeed->items = array();
-			
-			foreach ($parser->get_items() as $count => $feed) {
-				if ($count >= $item->limit) {
-					break;
-				}
-				$parsedFeed->items[] = (object) array(
-					'title' => $feed->get_title(),
-					'date' 	=> $feed->get_date(),
-					'link' 	=> $feed->get_link()
-				);
-			}
-			
-			// Revert error reporting
-			error_reporting($errorReporting);
-			
-			return $parsedFeed;
+
+		// 3.x
+		$parser = new JFeedFactory;
+		try {
+			$feed = $parser->getFeed($url);
+		} catch (Exception $e) {
+			JError::raiseError($e->getCode(), $e->getMessage());
+			return false;
 		}
-		
-		return false;
+
+		$parsedFeed->title = $feed->title;
+		$parsedFeed->items = array();
+
+		if (!empty($feed[0])) {
+			for ($i = 0; $i < $item->limit; $i++) {
+				if (!empty($feed[$i])) {
+					$uri = !empty($feed[$i]->guid) || !is_null($feed[$i]->guid) ? $feed[$i]->guid : $feed[$i]->uri;
+					$uri = substr($uri, 0, 4) != 'http' ? '' : $uri;
+
+					$parsedFeed->items[] = (object) array(
+						'title' => $feed[$i]->title,
+						'date' 	=> $feed[$i]->updatedDate,
+						'link'	=> $uri
+					);
+				}
+			}
+
+		}
+
+		return $parsedFeed;
 	}
 	
 	public function getModifiedFiles() {
@@ -257,7 +166,7 @@ class RsfirewallModelRsfirewall extends JModelLegacy
 		$files = $db->loadObjectList();
 		foreach ($files as $i => $file) {
 			$file->error = false;
-			$file->path  = $file->type == 'protect' ? $file->file : JPATH_SITE.self::DS.$file->file;
+			$file->path  = $file->type == 'protect' ? $file->file : JPATH_SITE.DIRECTORY_SEPARATOR.$file->file;
 			
 			if (!is_file($file->path)) {
 				$file->modified_hash = JText::_('COM_RSFIREWALL_FILE_IS_MISSING');
@@ -322,11 +231,6 @@ class RsfirewallModelRsfirewall extends JModelLegacy
 
 	public function isPluginEnabled() {
 		return JPluginHelper::isEnabled('system', 'rsfirewall');
-	}
-	
-	public function getIsJ30() {
-		$jversion = new JVersion();
-		return $jversion->isCompatible('3.0');
 	}
 	
 	public function getSideBar() {

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link           https://www.rsjoomla.com
  * @license        GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,15 +12,14 @@ class RsfirewallModelConfiguration extends JModelAdmin
 {
 	protected $geoip;
 
-	public function __construct()
+	public function __construct($config = array())
 	{
 		$this->geoip = (object) array(
 			'path'       => JPATH_COMPONENT . '/assets/geoip/',
-			'filename'   => 'GeoIP.dat',
-			'filenamev6' => 'GeoIPv6.dat'
+			'filename'   => 'GeoLite2-Country.mmdb'
 		);
 
-		parent::__construct();
+		parent::__construct($config);
 	}
 
 	public function getForm($data = array(), $loadData = true)
@@ -50,65 +49,37 @@ class RsfirewallModelConfiguration extends JModelAdmin
 	/* GeoIP functions */
 	public function getGeoIPInfo()
 	{
+	    // Defaults
 		$result = array(
-			// Default to true
-			'works'		=> true,
-			'native' 	=> $this->isGeoIPNative(),
-			'dbv4'		=> false,
-			'dbv6'		=> false
+			'works'		            => true,
+			'mmdb'		            => false,
+            'php_version_compat'    => true
 		);
 		
 		$now = JFactory::getDate('now')->toUnix();
 		
-		// Check native GeoIP
-		if ($this->isGeoIPNative()) {
-			$result['dbv4'] = $this->hasGeoIPNativeDatabase('GEOIP_COUNTRY_EDITION');
-			$result['dbv6'] = $this->hasGeoIPNativeDatabase('GEOIP_COUNTRY_EDITION_V6');
-		}
-		
 		// Check for GeoIP server files
-		if (!$result['dbv4']) {
-			$result['dbv4'] = file_exists($this->getGeoIPPath().$this->getGeoIPFileName('v4'));
+		if (!$result['mmdb']) {
+			$result['mmdb'] = file_exists($this->getGeoIPPath().$this->getGeoIPFileName());
 			
 			// Check file timestamp
-			if ($result['dbv4']) {
-				$mtime					 = filemtime($this->getGeoIPPath().$this->getGeoIPFileName('v4'));
-				$result['dbv4_old'] 	 = $now - $mtime > 86400 * 30;
-				$result['dbv4_modified'] = JHtml::_('date.relative', JFactory::getDate($mtime)->toSql());
-			}
-		}
-		
-		if (!$result['dbv6']) {
-			$result['dbv6'] = file_exists($this->getGeoIPPath().$this->getGeoIPFileName('v6'));
-			
-			// Check file timestamp
-			if ($result['dbv6']) {
-				$mtime					 = filemtime($this->getGeoIPPath().$this->getGeoIPFileName('v6'));
-				$result['dbv6_old'] 	 = $now - $mtime > 86400 * 30;
-				$result['dbv6_modified'] = JHtml::_('date.relative', JFactory::getDate($mtime)->toSql());
+			if ($result['mmdb']) {
+				$mtime					 = filemtime($this->getGeoIPPath().$this->getGeoIPFileName());
+				$result['mmdb_old'] 	 = $now - $mtime > 86400 * 30;
+				$result['mmdb_modified'] = JHtml::_('date.relative', JFactory::getDate($mtime)->toSql());
 			}
 		}
 		
 		// See if GeoIP is setup correctly and works - IPv4 is the requirement
-		if (!$result['dbv4']) {
+		if (!$result['mmdb']) {
 			$result['works'] = false;
 		}
+
+        if (version_compare(PHP_VERSION, '5.4.0', '<')) {
+            $result['php_version_compat'] = false;
+        }
 		
 		return (object) $result;
-	}
-	
-	public function getIsGeoIPUploaded()
-	{
-		$path       = $this->getGeoIPPath();
-		$filename   = $this->getGeoIPFileName();
-		$filenamev6 = $this->getGeoIPFileName('v6');
-
-		$return = array(
-			'ipv4' => file_exists($path . $filename),
-			'ipv6' => file_exists($path . $filenamev6),
-		);
-
-		return $return;
 	}
 
 	public function getGeoIPPath()
@@ -116,56 +87,20 @@ class RsfirewallModelConfiguration extends JModelAdmin
 		return $this->geoip->path;
 	}
 
-	public function getGeoIPFileName($version = 'v4')
+	public function getGeoIPFileName()
 	{
-		switch ($version)
-		{
-			default:
-			case 'v4':
-				return $this->geoip->filename;
-			break;
-			
-			case 'v6':
-				return $this->geoip->filenamev6;
-			break;
-		}
+        return $this->geoip->filename;
 	}
 
-	public function isGeoIPNative()
-	{
-		return function_exists('geoip_database_info');
-	}
-
-	public function hasGeoIPNativeDatabase($const = 'GEOIP_COUNTRY_EDITION')
-	{
-		if (function_exists('geoip_db_avail') && defined($const))
-		{
-			return geoip_db_avail(constant($const));
-		}
-
-		return false;
-	}
-
-	public function downloadGeoIPDatabase($version = 'v4')
+	public function downloadGeoIPDatabase()
 	{
 		$result = array(
 			'success' => true,
 			'message' => JText::_('COM_RSFIREWALL_GEOIP_SETUP_CORRECTLY')
 		);
-		
-		switch ($version)
-		{
-			default:
-			case 'v4':
-				$filename 	= $this->getGeoIPFileName('v4');
-				$url 		= 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz';
-			break;
-			
-			case 'v6':
-				$filename 	= $this->getGeoIPFileName('v6');
-				$url 		= 'http://geolite.maxmind.com/download/geoip/database/GeoIPv6.dat.gz';
-			break;
-		}
+
+        $filename 	= $this->getGeoIPFileName();
+        $url 		= 'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz';
 		
 		try {
 			$tmp_path = $this->getGeoIPPath();
@@ -201,6 +136,7 @@ class RsfirewallModelConfiguration extends JModelAdmin
 			
 		} catch (Exception $e) {
 			$result['success'] = false;
+			$result['url']     = $url;
 			$result['message'] = $e->getMessage();
 		}
 		
@@ -218,12 +154,12 @@ class RsfirewallModelConfiguration extends JModelAdmin
 		$ext = JFile::getExt($filename);
 
 		// Not a valid extension
-		if (!in_array($ext, array('dat', 'gz')))
+		if (!in_array($ext, array('mmdb', 'gz')))
 		{
 			throw new Exception(JText::_('COM_RSFIREWALL_GEOIP_DB_INCORRECT_FORMAT'));
 		}
 		
-		// Remove the extension for further checking, we only need to check for .dat files from now on.
+		// Remove the extension for further checking
 		$filename = str_replace('.gz', '', $filename);
 		
 		// Directory must be writable
@@ -238,27 +174,84 @@ class RsfirewallModelConfiguration extends JModelAdmin
 			throw new Exception(JText::sprintf('COM_RSFIREWALL_GEOIP_DB_EXISTS_NOT_WRITABLE', $path));
 		}
 		
-		// Need to unpack this
+		if (is_uploaded_file($tmp_file) && $ext != 'gz')
+		{
+			JFile::upload($tmp_file, $path . '/' . $filename, false, true);
+		}
+		
 		if ($ext == 'gz')
 		{
-			$gzHandle = @gzopen($tmp_file, 'rb');
-			if (!$gzHandle)
-			{
-				throw new Exception(JText::sprintf('COM_RSFIREWALL_GEOIP_DB_UNABLE_TO_READ', $tmp_file));
-			}
-			
-			// Overwrite original file with 0 bytes
-			file_put_contents($path . $filename, '');
-
-			while (!gzeof($gzHandle))
-			{
-				$data = gzread($gzHandle, 1024 * 1024);
-				file_put_contents($path . $filename, $data, FILE_APPEND);
-			}
-			
-			gzclose($gzHandle);
+		    $this->decompress($tmp_file);
 		}
 	}
+
+    protected function decompress($tgzFilePath)
+    {
+        // Open .tgz file for reading
+        $gzHandle = @gzopen($tgzFilePath, 'rb');
+        if (!$gzHandle)
+        {
+            throw new Exception(JText::sprintf('COM_RSFIREWALL_GEOIP_DB_UNABLE_TO_READ', $tgzFilePath));
+        }
+
+        // Get base path
+		$path = $this->getGeoIPPath();
+
+        jimport('joomla.filesystem.file');
+
+        while (!gzeof($gzHandle)) {
+            if ($block = gzread($gzHandle, 512)) {
+                $meta['filename']  	= trim(substr($block, 0, 99));
+                $meta['filesize']  	= octdec(substr($block, 124, 12));
+                if ($bytes = ($meta['filesize'] % 512)) {
+                    $meta['nullbytes'] = 512 - $bytes;
+                } else {
+                    $meta['nullbytes'] = 0;
+                }
+
+                if ($meta['filesize']) {
+                    // Let's see if somebody edited the archive manually and archived a folder...
+                    $meta['filename'] = str_replace('\\', '/', $meta['filename']);
+                    if (strpos($meta['filename'], '/') !== false)
+                    {
+                        $parts = explode('/', $meta['filename']);
+                        $meta['filename'] = end($parts);
+                    }
+
+                    // Make sure file does not contain invalid characters
+                    if (preg_match('/[^a-z_\-\.0-9]/i', JFile::stripExt($meta['filename']))) {
+                        throw new Exception('Attempted to extract a file with invalid characters in its name.');
+                    }
+
+                    $chunk	 = 1024*1024;
+                    $left	 = $meta['filesize'];
+                    $fHandle = @fopen($path.'/'.$meta['filename'], 'wb');
+
+                    if (!$fHandle) {
+                        throw new Exception(sprintf('Could not write data to file %s!', htmlentities($meta['filename'], ENT_COMPAT, 'utf-8')));
+                    }
+
+                    do {
+                        $left = $left - $chunk;
+                        if ($left < 0) {
+                            $chunk = $left + $chunk;
+                        }
+                        $data = gzread($gzHandle, $chunk);
+
+                        fwrite($fHandle, $data);
+
+                    } while ($left > 0);
+
+                    fclose($fHandle);
+                }
+
+                if ($meta['nullbytes'] > 0) {
+                    gzread($gzHandle, $meta['nullbytes']);
+                }
+            }
+        }
+        gzclose($gzHandle);
+    }
 
 	public function uploadGeoIP()
 	{
@@ -268,16 +261,6 @@ class RsfirewallModelConfiguration extends JModelAdmin
 		
 		if (!empty($files['geoip_upload'])) {
 			foreach ($files['geoip_upload'] as $file) {
-				if (!in_array($file['name'], array(
-					$this->getGeoIPFileName('v4'),
-					$this->getGeoIPFileName('v6'),
-					$this->getGeoIPFileName('v4').'.gz',
-					$this->getGeoIPFileName('v6').'.gz',
-				))) {
-					$this->setError(JText::_('COM_RSFIREWALL_GEOIP_DB_INCORRECT_FORMAT'));
-					return false;
-				}
-				
 				if ($file['error']) {
 					if ($file['error'] == UPLOAD_ERR_INI_SIZE)
 					{
@@ -306,11 +289,8 @@ class RsfirewallModelConfiguration extends JModelAdmin
 					
 					return false;
 				} else {
-					$path 		= $this->getGeoIPPath();
-					$filename 	= $file['name'];
-					
 					try {
-						$this->processGeoIPDatabase($filename, $file['tmp_name']);
+						$this->processGeoIPDatabase($file['name'], $file['tmp_name']);
 					} catch (Exception $e) {
 						$this->setError($e->getMessage());
 						
@@ -436,7 +416,7 @@ class RsfirewallModelConfiguration extends JModelAdmin
 	public function save($data)
 	{
 		// Upload GeoIP only if it's not built-in
-		if (!$this->isGeoIPNative() && !$this->uploadGeoIP())
+		if (!$this->uploadGeoIP())
 		{
 			return false;
 		}
@@ -677,12 +657,5 @@ class RsfirewallModelConfiguration extends JModelAdmin
 		$tabs = new RSTabs('com-rsfirewall-configuration');
 
 		return $tabs;
-	}
-
-	public function getIsJ30()
-	{
-		$jversion = new JVersion();
-
-		return $jversion->isCompatible('3.0');
 	}
 }

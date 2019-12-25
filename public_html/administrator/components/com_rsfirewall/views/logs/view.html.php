@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2017 RSJoomla!
+ * @copyright  (c) 2009 - 2019 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -16,7 +16,6 @@ class RsfirewallViewLogs extends JViewLegacy
 	protected $levels;
 	protected $filterbar;
 	protected $sidebar;
-	protected $isJ30;
 	
 	function display( $tpl = null ) {
 		$user = JFactory::getUser();
@@ -27,8 +26,7 @@ class RsfirewallViewLogs extends JViewLegacy
 		}
 		
 		$this->addToolBar();
-		
-		$this->isJ30		= $this->get('isJ30');
+
 		$this->items 		= $this->get('Items');
 		$this->pagination 	= $this->get('Pagination');
 		$this->state 		= $this->get('State');
@@ -57,9 +55,7 @@ class RsfirewallViewLogs extends JViewLegacy
 		JToolbarHelper::divider();
 		JToolbarHelper::custom('logs.truncate', 'delete', 'delete', JText::_('COM_RSFIREWALL_EMPTY_LOG'), false, false);
 		
-		$class = $this->get('isJ30') ? 'download' : 'export';
-		
-		JToolbarHelper::custom('logs.download', $class, $class, JText::_('COM_RSFIREWALL_DOWNLOAD_LOG'), false, false);
+		JToolbarHelper::custom('logs.download', 'download', 'download', JText::_('COM_RSFIREWALL_DOWNLOAD_LOG'), false, false);
 	}
 	
 	protected function showDate($date) {
