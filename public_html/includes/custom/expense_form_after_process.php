@@ -15,7 +15,7 @@ if($_POST['form']['donation']=='Yes'){
 
 $totalstrlength = 50;
 
-function setItems($id){
+function setItems($id, $message){
     $strlen = strlen($_POST['form']['item_name_'.$id]);
     $diff = $totalstrlength - $strlen;
     $filler = "";
@@ -29,11 +29,12 @@ function setItems($id){
     $message .= "
     - {$_POST['form']['item_name_'.$id]}$filler\${$_POST['form']['item_amount_'.$id]}";
     }
+    return $message;
 }
 
 $i = 1;
 while(isset($_POST['form']['item_name_'.$i])){
-    setItems($i);
+    $message = setItems($i, $message);
     $i++;
 }
 
