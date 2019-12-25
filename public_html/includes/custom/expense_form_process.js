@@ -8,6 +8,10 @@ jQuery( document ).ready(function() {
         });  
         i++;
     }
+    jQuery( "#tax" ).keyup(function() {
+        var total = addAmountFields();
+        jQuery("#item_total").val( total.toFixed(2) );
+    }); 
     
 });
 function addAmountFields(){
