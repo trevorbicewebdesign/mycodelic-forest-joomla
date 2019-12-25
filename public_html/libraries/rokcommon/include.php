@@ -29,7 +29,7 @@ if (!defined('ROKCOMMON')) {
 			return;
 		}
 	}
-	define('ROKCOMMON', '3.2.7');
+	define('ROKCOMMON', '3.2.8');
 	define('ROKCOMMON_CORE_DEBUG', true);
 
 	// Bootstrap the base classloader and overrides
