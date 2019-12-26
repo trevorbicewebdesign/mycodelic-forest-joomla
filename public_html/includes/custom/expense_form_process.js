@@ -19,8 +19,8 @@ function addAmountFields(){
     var sum = 0;
 
     var i = 1;
-    while( amount = parseFloat(jQuery( "#item_amount_"+i).val() ) ) {
-        sum += amount?parseFloat(jQuery( "#item_amount_"+i).val()):0;
+    while( jQuery( "#item_amount_"+i).length>0 ) {
+        sum += parseFloat(jQuery( "#item_amount_"+i)?parseFloat(jQuery( "#item_amount_"+i).val()):0;
         i++;
     }
 
