@@ -20,7 +20,7 @@ function addAmountFields(){
 
     var i = 1;
     while( jQuery( "#item_amount_"+i).length>0 ) {
-        sum += parseFloat(jQuery( "#item_amount_"+i)?parseFloat(jQuery( "#item_amount_"+i).val()):0;
+        sum += parseFloat(jQuery( "#item_amount_"+i).val())?parseFloat(jQuery( "#item_amount_"+i).val()):0;
         i++;
     }
 
