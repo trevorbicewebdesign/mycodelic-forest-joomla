@@ -222,7 +222,7 @@ if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
  *
  */
 if (!defined('CIVICRM_UF_BASEURL')) {
-  define( 'CIVICRM_UF_BASEURL'      , 'https://mycodelicforest.org/administrator/');
+  define( 'CIVICRM_UF_BASEURL'      , 'https://mycodelicforest.org/');
 }
 
 /**
