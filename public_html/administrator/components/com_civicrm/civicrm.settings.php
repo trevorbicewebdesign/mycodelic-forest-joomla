@@ -223,7 +223,7 @@ if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
  */
 $baseurl = (($_SERVER['HTTPS']=='on')?'https':'http').'://'.$_SERVER['HTTP_HOST'].'/';
 if (!defined('CIVICRM_UF_BASEURL')) {
-  define( 'CIVICRM_UF_BASEURL'      , $baseurl);
+  define( 'CIVICRM_UF_BASEURL'      , $baseurl."administrator/");
 }
 
 /**
