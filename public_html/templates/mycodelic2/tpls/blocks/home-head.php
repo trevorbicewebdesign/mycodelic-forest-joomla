@@ -67,6 +67,6 @@ if (is_file(T3_TEMPLATE_PATH . '/css/custom.css')) {
 <script type="text/javascript" src="<?php echo T3_URL ?>/js/respond.min.js"></script>
 <![endif]-->
 <?php
-$this->addScript(		T3_TEMPLATE_URL . '/js/custom-functions.js');
+//$this->addScript(		T3_TEMPLATE_URL . '/js/custom-functions.js');
 $this->addStyleSheet(	T3_TEMPLATE_URL . '/css/typography.css'); 
 ?>
