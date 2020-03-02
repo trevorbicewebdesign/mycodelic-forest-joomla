@@ -184,7 +184,7 @@ if (!defined('CIVICRM_LOGGING_DSN')) {
 
 global $civicrm_root;
 
-$civicrm_root = $basepath.'/components/com_civicrm/civicrm';
+$civicrm_root = $basepath.'/administrator/components/com_civicrm/civicrm';
 if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
   define( 'CIVICRM_TEMPLATE_COMPILEDIR', $basepath.'/media/civicrm/templates_c');
 }
