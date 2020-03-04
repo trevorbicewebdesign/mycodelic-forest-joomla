@@ -40,7 +40,9 @@
         </div>
     {/foreach}
     <div class="action-link">
-        <button class="button" href="/profile/edit/">Update Profile</button>
+        <span class="crm-button crm-button-type-next crm-button_qf_Edit_next crm-i-button">
+            <a href="/profile/edit">Edit Profile</a>
+        </span>
     </div>
 {/if}
 {literal}
