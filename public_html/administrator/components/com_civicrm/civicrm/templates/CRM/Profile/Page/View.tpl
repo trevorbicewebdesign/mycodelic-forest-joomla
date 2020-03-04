@@ -39,6 +39,9 @@
            {$group.content}
         </div>
     {/foreach}
+    <div class="action-link">
+        <button class="button" href="/profile/edit/">Update Profile</button>
+    </div>
 {/if}
 {literal}
      <script type='text/javascript'>
