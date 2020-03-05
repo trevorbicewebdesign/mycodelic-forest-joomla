@@ -19,7 +19,7 @@ $api = new civicrm_api3(array(
   'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
 ));  
 */
-
+/*
 $countriesList = array (
   '' => '- select -',
   1228 => 'United States',
@@ -274,9 +274,41 @@ $countriesList = array (
   1239 => 'Zambia',
   1240 => 'Zimbabwe',
 );
-
+*/
 
 ?>
+<script type="text/javascript">
+var gettingStateList = false;
+var loadedStateList = false;
+function setStatesList(){
+    var countryCode = jQuery("#jform_com_fields_country_drop_down").val()?jQuery("#jform_com_fields_country_drop_down").val():null;
+    console.log(countryCode);
+    if(countryCode){
+        gettingStateList = true;
+        jQuery.ajax({
+            url: "/index.php?option=com_civicrm&task=civicrm/ajax/jqState&_value="+countryCode,
+            context: document.body
+        }).done(function(msg) {
+            console.log(msg);
+            var selectOption = "<option value='' selected>( Select A State)</option>";
+            msg.forEach(function(item){
+                console.log(item);
+                
+                selectOption += "<option value='"+item.key+"'>"+item.value+"</option>"; 
+                
+            });
+            jQuery("#jform_com_fields_state").html(selectOption);
+            loadedStateList = true;
+        });
+    }
+}
+jQuery( document ).ready(function() {
+    setStatesList();
+    jQuery( "#jform_com_fields_country_drop_down" ).change(function() {
+        setStatesList();
+    });
+})
+</script>
 <div class="registration<?php echo $this->pageclass_sfx; ?>">
 	<?php if ($this->params->get('show_page_heading')) : ?>
 		<div class="page-header">
@@ -295,9 +327,7 @@ $countriesList = array (
 						<legend><?php echo JText::_($fieldset->label); ?></legend>
 					<?php endif; ?>
                     <?php 
-                    foreach($fields as $field){
-                        $this->form->renderField($field);                    
-                    };echo $this->form->renderFieldset($fieldset->name);
+                    echo $this->form->renderFieldset($fieldset->name);
                     ?>
 				</fieldset>
 			<?php endif; ?>
