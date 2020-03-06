@@ -33,7 +33,10 @@ function setStatesList(){
                 selectOption += "<option value='"+item.key+"'>"+item.value+"</option>"; 
                 
             });
+            var selected = jQuery("#jform_profile_state").val();
+
             jQuery("#jform_profile_state").html(selectOption);
+            jQuery("#jform_profile_state").val(selected).change();
             loadedStateList = true;
         });
     }
