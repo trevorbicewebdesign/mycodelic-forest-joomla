@@ -17,7 +17,7 @@ JHtml::_('behavior.formvalidator');
 var gettingStateList = false;
 var loadedStateList = false;
 function setStatesList(){
-    var countryCode = jQuery("#jform_profile_country").val()?jQuery("#jform_profile_country").val():null;
+    var countryCode = jQuery("#jform_profile_country").val();
     console.log(countryCode);
     if(countryCode){
         gettingStateList = true;
