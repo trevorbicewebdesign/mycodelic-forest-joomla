@@ -61,12 +61,24 @@ class JFormFieldState extends JFormFieldList
 		return $label;
 	}
     public function getOptions() {
-		
-		$countriesList = array (
-          '' => '- select -'
-          
+		require_once(JPATH_ROOT.'/administrator/components/com_civicrm/civicrm/api/class.api.php');
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));  
+        
+        $apiParams = array(
+          'rowCount'=>0
         );
-		
-		return array_merge(parent::getOptions(), $countriesList);
+        
+        if ($api->StateProvince->Get($apiParams)) {
+            //each key of the result array is an attribute of the api
+            $ch = $api->lastResult->values;
+        }
+        $stateList = array_map(function($state){
+            return ["value"=>"$state->id", "text"=>"$state->name"];
+        }, $ch );
+               
+		return array_merge(parent::getOptions(), $stateList);
 	}
 }
