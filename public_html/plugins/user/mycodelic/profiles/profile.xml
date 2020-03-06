@@ -93,15 +93,6 @@
 			/>
 
 			<field
-				name="favoritebook"
-				type="text"
-				label="PLG_MYCODELIC_USER_PROFILE_FIELD_FAVORITE_BOOK_LABEL"
-				description="PLG_MYCODELIC_USER_PROFILE_FIELD_FAVORITE_BOOK_DESC"
-				filter="string"
-				size="30"
-			/>
-
-			<field
 				name="aboutme"
 				type="textarea"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_ABOUT_ME_LABEL"
