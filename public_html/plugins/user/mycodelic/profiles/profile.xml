@@ -110,8 +110,98 @@
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
 				filter="string"
 			></field>
-
-			<field
+            
+            <field
+				name="skill_art"
+				type="skillArt"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_ART_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_ART_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_performance"
+				type="skillPerformance"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_PERFORMANCE_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_PERFORMANCE_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_event_management"
+				type="skillEventManagement"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_EVENTMANAGEMENT_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_EVENTMANAGEMENT_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_construction"
+				type="skillConstruction"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_CONSTRUCTION_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_CONSTRUCTION_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_media"
+				type="skillMedia"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_MEDIA_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_MEDIA_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_trades"
+				type="skillTrades"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_TRADES_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_TRADES_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+             <field
+				name="skill_professional"
+				type="skillProfessional"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_PROFESSIONAL_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_PROFESSIONAL_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_office"
+				type="skillOffice"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_OFFICE_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_OFFICE_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_computer"
+				type="skillComputer"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_COMPUTER_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_COMPUTER_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+            <field
+				name="skill_tech"
+				type="skillTech"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_TECH_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_TECH_DESC"
+				info=""
+				filter="string"
+			></field>
+            
+ 			<field
 				name="tos"
 				type="tos"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_LABEL"
