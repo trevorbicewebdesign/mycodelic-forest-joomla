@@ -110,7 +110,23 @@
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
 				filter="string"
 			></field>
-            
+    
+ 			<field
+				name="tos"
+				type="tos"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_DESC"
+				default="0"
+				filter="integer"
+				>
+				<option value="1">PLG_MYCODELIC_USER_PROFILE_OPTION_AGREE</option>
+				<option value="0">JNO</option>
+			</field>
+		</fieldset>
+        <fieldset
+			name="skills"
+			label="PLG_MYCODELIC_USER_SKILLS_SLIDER_LABEL"
+		>
             <field
 				name="skill_art"
 				type="skillArt"
@@ -200,18 +216,6 @@
 				info=""
 				filter="string"
 			></field>
-            
- 			<field
-				name="tos"
-				type="tos"
-				label="PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_LABEL"
-				description="PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_DESC"
-				default="0"
-				filter="integer"
-				>
-				<option value="1">PLG_MYCODELIC_USER_PROFILE_OPTION_AGREE</option>
-				<option value="0">JNO</option>
-			</field>
-		</fieldset>
-	</fields>
+        </fieldset>
+	</fields>		
 </form>
