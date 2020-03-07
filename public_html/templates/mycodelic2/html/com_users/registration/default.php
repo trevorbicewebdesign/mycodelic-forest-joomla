@@ -12,6 +12,17 @@ defined('_JEXEC') or die;
 JHtml::_('behavior.keepalive');
 JHtml::_('behavior.formvalidator');
 
+
+$yearsList = [];
+$start = 1986;
+$current = date("Y");
+$i=$start;
+while($i<$current){
+    $yearsList[] = ['value'=>$i, "text"=>$i];
+    $i++;
+}
+
+
 ?>
 <script type="text/javascript">
 var gettingStateList = false;
