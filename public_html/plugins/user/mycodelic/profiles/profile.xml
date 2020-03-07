@@ -81,16 +81,6 @@
 				size="30"
 			/>
 
-			<field
-				name="website"
-				type="url"
-				label="PLG_MYCODELIC_USER_PROFILE_FIELD_WEB_SITE_LABEL"
-				description="PLG_MYCODELIC_USER_PROFILE_FIELD_WEB_SITE_DESC"
-				id="website"
-				filter="url"
-				size="30"
-				validate="url"
-			/>
 
 			<field
 				name="aboutme"
@@ -112,6 +102,19 @@
 				showtime="false"
 				filter="server_utc"
 			/>
+            
+            <field
+				name="burningman_years"
+				type="burningmanyears"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_DESC"
+				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
+				translateformat="true"
+				showtime="false"
+				filter="string"
+			>
+                <option value="1">Test</option>
+            </field>
 
 			<field
 				name="tos"
