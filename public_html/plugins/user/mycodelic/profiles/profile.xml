@@ -94,14 +94,12 @@
 
             <field
 				name="burningman_years"
-				type="checkbox"
+				type="burningmanyears"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_LABEL"
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_DESC"
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
 				filter="string"
-			>
-                <option value="1">Test</option>
-            </field>
+			></field>
 
 			<field
 				name="tos"
