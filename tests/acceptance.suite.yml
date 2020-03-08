@@ -1,0 +1,18 @@
+actor: AcceptanceTester
+modules:
+    enabled:
+        - Db:
+             dsn: 'mysql:host=%TEST_SITE_DB_HOST%;dbname=%TEST_SITE_DB_NAME%'
+             user: '%TEST_SITE_DB_USER%'
+             password: '%TEST_SITE_DB_PASSWORD%'
+             populate: true # load dump before all tests
+             cleanup: true # load dump for each test
+             dump: 'tests/_data/dump2.sql'
+        - \Helper\Acceptance
+        - Mailtrap:
+            client_id: %MAILTRAP_CLIENT_ID%
+            inbox_id: %MAILTRAP_INBOX_ID%
+        - WebDriver:
+             window_size: 1920x1080
+             url: '%TEST_SITE_WP_URL%'
+             browser: phantomjs
