@@ -97,7 +97,7 @@ class plgSystemCivicrm_usersynch extends JPlugin
         $plugin = JPluginHelper::getPlugin('system', 'slack_integration');
         $params = new JRegistry($plugin->params);//Joomla 1.6 Onward
         $token = $params->get('token');
-        
+
         $api = new civicrm_api3(array(
           // Specify location of "civicrm.settings.php".
           'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
@@ -123,29 +123,27 @@ class plgSystemCivicrm_usersynch extends JPlugin
             , 'last_name' => $name[1]
             , 'nick_name' => $user['profile']['playaname']
             , 'source' => $user['profile']['referred_by']
-            , 'email' => array ( 
-                1=> array(
-                    'is_primary' => 1,
-                    'email' => $user['email']
-                )
-            )
+            , 'street_address' => $user['profile']['address1']
+            , 'email' => $user['email']
         );
         if($civiUser->id){
             $apiParams['id'] = $civiUser->id;
         }
+        //print_r($apiParams);
+       
         if ($api->Contact->Create($apiParams)) {
             //each key of the result array is an attribute of the api
             $civiUser = $api->lastResult->values[0];
         }
+        
 
         $apiParams = array(
             'contact_id' => $civiUser->id
         );
-
         if ($api->Address->Get($apiParams)) {
             //each key of the result array is an attribute of the api
             $civiUserAddress = $api->lastResult->values[0];
-        }
+        }        
 
         $apiParams = array(
             'contact_id' => $civiUser->id,
@@ -190,36 +188,39 @@ class plgSystemCivicrm_usersynch extends JPlugin
         }
         $api->Phone->Create($apiParams);
 
-        if($civiUser->id){
+        
 
-            $site_url = $_SERVER['HTTP_HOST'];
-            $scheme = $_SERVER['HTTPS']=='on'?"https":"http";
-
-            $message = "{$user['name']} wants to join the Mycodelic Forest!";
+        $site_url = $_SERVER['HTTP_HOST'];
+        $scheme = $_SERVER['HTTPS']=='on'?"https":"http";
+        $message = "";
+        if($isnew){
+            $message .= "{$user['name']} wants to join the Mycodelic Forest!";
             $message .= "\n";
             $message .= "•They were referred by: {$user['profile']['referred_by']}";
             $message .= "\n";
             $message .= "•They are from: {$country_name}";
             $message .= "\n";
             $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$civiUser->id}|Click here to view their profile. >";
-
-
-            $ch = curl_init("https://slack.com/api/chat.postMessage");
-            $data = http_build_query([
-                        "token" 		=> $token,
-                        "channel"		=> "#monitor-rsvp", //"#mychannel",
-                        "text" 		=> $message, //"Hello, Foo-Bar channel message.",
-                        "username" 	=> $civiUser->first_name." ".$civiUser->last_name.": ".$civiUser->phone,
-                        "icon_emoji"	=> ":robot_face:",
-            ]);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $result = curl_exec($ch);
-            curl_close($ch);
-
         }
+        else {
+            $message .= "{$user['name']} has just updated their profile information.";
+        }
+
+        $ch = curl_init("https://slack.com/api/chat.postMessage");
+        $data = http_build_query([
+                    "token" 		=> $token,
+                    "channel"		=> "#monitor-rsvp", //"#mychannel",
+                    "text" 		=> $message, //"Hello, Foo-Bar channel message.",
+                    "username" 	=> $civiUser->first_name." ".$civiUser->last_name.": ".$civiUser->phone,
+                    "icon_emoji"	=> ":robot_face:",
+        ]);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $result = curl_exec($ch);
+        curl_close($ch);
+
         
 	}
 }
