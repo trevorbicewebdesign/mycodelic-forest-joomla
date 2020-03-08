@@ -32,4 +32,5 @@ php_errorlog
 public_html/tmp/
 public_html/administrator/logs/error.php
 public_html/administrator/logs/rsfirewall.log
+vendor/
 
