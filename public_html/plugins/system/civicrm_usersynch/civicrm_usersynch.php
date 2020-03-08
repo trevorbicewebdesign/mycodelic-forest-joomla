@@ -204,6 +204,8 @@ class plgSystemCivicrm_usersynch extends JPlugin
         }
         else {
             $message .= "{$user['name']} has just updated their profile information.";
+            $message .= "\n";
+            $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$civiUser->id}|Click here to view their profile. >";
         }
 
         $ch = curl_init("https://slack.com/api/chat.postMessage");
