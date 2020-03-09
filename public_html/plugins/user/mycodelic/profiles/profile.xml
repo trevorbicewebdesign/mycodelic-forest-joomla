@@ -98,7 +98,7 @@
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_ABOUT_ME_LABEL"
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_ABOUT_ME_DESC"
 				cols="30"
-				rows="5"
+				rows="15"
 				filter="safehtml"
 			/>
 
