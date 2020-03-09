@@ -65,6 +65,7 @@ class JFormFieldBurningmanyears extends JFormFieldCheckboxes
         $start = 1986;
         $current = date("Y");
         $i=$start;
+        $addYearsList[] = "Never Been";
         while($i<$current){
             $addYearsList[] = $i;
             $i++;
