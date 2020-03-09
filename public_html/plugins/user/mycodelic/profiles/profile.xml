@@ -111,6 +111,7 @@
 				filter="string"
 			    class=""
 				default="0"
+                required="true"
 			>
 				<option value="1">Yes</option>
 				<option value="0">No</option>
