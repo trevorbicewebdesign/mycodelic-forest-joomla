@@ -102,6 +102,20 @@
 				filter="safehtml"
 			/>
 
+             <field
+				name="birgin"
+				type="radio"
+				label="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_LABEL"
+				description="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_DESC"
+				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
+				filter="string"
+			    class="btn-group btn-group-yesno"
+				default="0"
+			>
+				<option value="1">JYES</option>
+				<option value="0">JNO</option>
+            </field>
+            
             <field
 				name="burningman_years"
 				type="burningmanyears"
@@ -109,6 +123,7 @@
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_DESC"
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
 				filter="string"
+                showif="birgin::1"
 			></field>
             
             <field
