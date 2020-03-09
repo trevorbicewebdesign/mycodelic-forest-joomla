@@ -123,7 +123,7 @@
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_DESC"
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
 				filter="string"
-                showif="birgin::1"
+                showon="birgin::1"
 			></field>
             
             <field
