@@ -109,7 +109,7 @@
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_BIRGIN_DESC"
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
 				filter="string"
-			    class="btn-group btn-group-yesno"
+			    class=""
 				default="0"
 			>
 				<option value="1">Yes</option>
