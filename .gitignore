@@ -34,3 +34,6 @@ public_html/administrator/logs/error.php
 public_html/administrator/logs/rsfirewall.log
 vendor/
 
+public_html/media/civicrm/templates_c/en_US/
+public_html/media/civicrm/persist/contribute/dyn/
+public_html/media/civicrm/upload/cache/timestamp.txt
