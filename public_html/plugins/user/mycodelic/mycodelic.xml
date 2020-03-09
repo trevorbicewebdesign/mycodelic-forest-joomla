@@ -119,11 +119,11 @@
 					<option value="0">JDISABLED</option>
 				</field>
 
-				<field
-					name="register-require_website"
+                <field
+					name="register-require_burningmanyears"
 					type="list"
-					label="PLG_MYCODELIC_USER_PROFILE_FIELD_WEB_SITE_LABEL"
-					description="PLG_MYCODELIC_USER_PROFILE_FIELD_WEB_SITE_DESC"
+					label="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_LABEL"
+					description="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_DESC"
 					default="1"
 					filter="integer"
 					>
@@ -131,12 +131,12 @@
 					<option value="1">JOPTION_OPTIONAL</option>
 					<option value="0">JDISABLED</option>
 				</field>
-
-				<field
-					name="register-require_favoritebook"
+                
+                <field
+					name="register-require_playaname"
 					type="list"
-					label="PLG_MYCODELIC_USER_PROFILE_FIELD_FAVORITE_BOOK_LABEL"
-					description="PLG_MYCODELIC_USER_PROFILE_FIELD_FAVORITE_BOOK_DESC"
+					label="PLG_MYCODELIC_USER_PROFILE_FIELD_PLAYANAME_LABEL"
+					description="PLG_MYCODELIC_USER_PROFILE_FIELD_PLAYANAME_DESC"
 					default="1"
 					filter="integer"
 					>
@@ -144,7 +144,7 @@
 					<option value="1">JOPTION_OPTIONAL</option>
 					<option value="0">JDISABLED</option>
 				</field>
-
+				
 				<field
 					name="register-require_aboutme"
 					type="list"
