@@ -27,6 +27,19 @@
 					label="PLG_MYCODELIC_USER_PROFILE_FIELD_NAME_REGISTER_REQUIRE_USER"
 					class="text"
 				/>
+                
+                <field
+					name="register-require_referred_by"
+					type="list"
+					label="PLG_MYCODELIC_USER_PROFILE_FIELD_REFERREDBY_LABEL"
+					description="PLG_MYCODELIC_USER_PROFILE_FIELD_REFERREDBY_DESC"
+					default="1"
+					filter="integer"
+					>
+					<option value="2">JOPTION_REQUIRED</option>
+					<option value="1">JOPTION_OPTIONAL</option>
+					<option value="0">JDISABLED</option>
+				</field>
 
 				<field
 					name="register-require_address1"
@@ -200,13 +213,26 @@
 					type="spacer"
 					hr="true"
 				/>
-
+    
 				<field
 					name="profile-require-user"
 					type="spacer"
 					label="PLG_MYCODELIC_USER_PROFILE_FIELD_NAME_PROFILE_REQUIRE_USER"
 					class="text"
 				/>
+                
+                <field
+					name="profile-require_referred_by"
+					type="list"
+					label="PLG_MYCODELIC_USER_PROFILE_FIELD_REFERREDBY_LABEL"
+					description="PLG_MYCODELIC_USER_PROFILE_FIELD_REFERREDBY_DESC"
+					default="1"
+					filter="integer"
+					>
+					<option value="2">JOPTION_REQUIRED</option>
+					<option value="1">JOPTION_OPTIONAL</option>
+					<option value="0">JDISABLED</option>
+				</field>
 
 				<field
 					name="profile-require_address1"
