@@ -19,7 +19,7 @@ $lang = JFactory::getLanguage();
 $lang->load('plg_user_profile', JPATH_ADMINISTRATOR);
 
 ?>
-<div class="profile-edit<?php echo $this->pageclass_sfx; ?>">
+<div class=update-profile<?php echo $this->pageclass_sfx; ?>">
 	<?php if ($this->params->get('show_page_heading')) : ?>
 		<div class="page-header">
 			<h1>
@@ -45,7 +45,7 @@ $lang->load('plg_user_profile', JPATH_ADMINISTRATOR);
 			});
 		}
 	</script>
-	<form id="create-profile" action="<?php echo JRoute::_('index.php?option=com_users&task=profile.save'); ?>" method="post" class="form-validate form-horizontal well" enctype="multipart/form-data">
+	<form id="update-profile" action="<?php echo JRoute::_('index.php?option=com_users&task=profile.save'); ?>" method="post" class="form-validate form-horizontal well" enctype="multipart/form-data">
 		<?php // Iterate through the form fieldsets and display each one. ?>
 		<?php foreach ($this->form->getFieldsets() as $group => $fieldset) : ?>
 			<?php $fields = $this->form->getFieldset($group); ?>
