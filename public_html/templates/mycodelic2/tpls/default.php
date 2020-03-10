@@ -63,11 +63,15 @@ endif;
 				<div class="pagetop-wrapper2" >
 					<?php $this->loadBlock('top_drawer') ?>	
 					<?php $this->loadBlock('slideshow') ?>
+                    <?php if ($this->countModules('slideshow')) : ?>
                     <a id="parallax_logo_<?php echo $parallax; ?>" class="parallax_logo" href="/">
                         <div id="parallax_<?php echo $parallax; ?>" data-stellar-background-ratio="0.5" data-stellar-vertical-offset="0">
                             <img id="logo-parallax" src="/templates/mycodelic/images/Mycodelic-Forest-logo_white.svg" style=""  data-stellar-ratio=".8" />
                         </div>
                     </a>
+                    <?php else: ?>
+                    <div><br/><br/></div>
+                    <?php endif; ?>
                 </div>
 			</div>
 		</div>
