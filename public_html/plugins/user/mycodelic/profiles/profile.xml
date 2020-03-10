@@ -13,6 +13,7 @@
 				id="referredby"
 				filter="string"
 				size="30"
+                default="No one"
 			/>
             
 			<field
