@@ -109,13 +109,11 @@
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_BIRGIN_LABEL"
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_BIRGIN_DESC"
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
-				filter="string"
-			    class=""
-				default="0"
+				default="No"
                 required="true"
 			>
-				<option value="1">Yes</option>
-				<option value="0">No</option>
+				<option value="Yes">Yes</option>
+				<option value="No">No</option>
             </field>
             
             <field
@@ -125,7 +123,7 @@
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_DESC"
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_YEARS"
 				filter="string"
-                showon="birgin:1"
+                showon="birgin:Yes"
 			></field>
             
             <field
