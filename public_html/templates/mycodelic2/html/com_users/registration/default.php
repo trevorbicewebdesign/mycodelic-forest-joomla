@@ -21,33 +21,28 @@ while($i<$current){
     $yearsList[] = ['value'=>$i, "text"=>$i];
     $i++;
 }
-
-
 ?>
 <script type="text/javascript">
 var gettingStateList = false;
 var loadedStateList = false;
 function setStatesList(){
     var countryCode = jQuery("#jform_profile_country").val()?jQuery("#jform_profile_country").val():null;
-    console.log(countryCode);
     if(countryCode){
         gettingStateList = true;
         jQuery.ajax({
             url: "/index.php?option=com_civicrm&task=civicrm/ajax/jqState&_value="+countryCode,
             context: document.body
         }).done(function(msg) {
-            console.log(msg);
-            var selectOption = "<option value='' selected>--Select A State--</option>";
+            var selectOption = "<option value='0' selected>--Select A State--</option>";
             msg.forEach(function(item){
-                console.log(item);
-                
                 selectOption += "<option value='"+item.key+"'>"+item.value+"</option>"; 
-                
             });
             var selected = jQuery("#jform_profile_state").val();
-
+            if(!selected){selected="0";}
+            jQuery("#jform_profile_state").html();
             jQuery("#jform_profile_state").html(selectOption);
-            jQuery("#jform_profile_state").val(selected).change();
+            var actualValue = jQuery("#jform_profile_state").val(selected).change().val(selected);
+            console.log(actualValue);
             loadedStateList = true;
         });
     }
