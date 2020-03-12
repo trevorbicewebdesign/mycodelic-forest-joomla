@@ -86,13 +86,13 @@ jQuery( document ).ready(function() {
 		<div class="control-group">
 			<div class="controls">
 				<button type="submit" class="btn btn-primary validate">
-					<?php echo JText::_('JREGISTER'); ?>
+					<?php echo JText::_('JSUBMIT'); ?>
 				</button>
-				<a class="btn" href="<?php echo JRoute::_(''); ?>" title="<?php echo JText::_('JCANCEL'); ?>">
+				<a class="btn" href="<?php echo JRoute::_('index.php?option=com_users&view=profile'); ?>" title="<?php echo JText::_('JCANCEL'); ?>">
 					<?php echo JText::_('JCANCEL'); ?>
 				</a>
 				<input type="hidden" name="option" value="com_users" />
-				<input type="hidden" name="task" value="registration.register" />
+				<input type="hidden" name="task" value="profile.save" />
 			</div>
 		</div>
 		<?php echo JHtml::_('form.token'); ?>
