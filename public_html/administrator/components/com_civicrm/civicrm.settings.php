@@ -221,8 +221,16 @@ if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
  *      define( 'CIVICRM_UF_BASEURL' , 'http://www.example.com/joomla/');
  *
  */
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')  {
+    $link = "https"; 
+}
+else {
+    $link = "http"; 
+}
+$link .= "://".$_SERVER['HTTP_HOST']; 
+
 if (!defined('CIVICRM_UF_BASEURL')) {
-  define( 'CIVICRM_UF_BASEURL'      , 'https://mycodelicforest.org/administrator/');
+  define( 'CIVICRM_UF_BASEURL'      , $link.'/administrator/');
 }
 
 /**
