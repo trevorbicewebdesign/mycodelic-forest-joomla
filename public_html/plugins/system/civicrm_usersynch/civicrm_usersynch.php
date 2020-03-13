@@ -5,6 +5,12 @@ class plgSystemCivicrm_usersynch extends JPlugin
 	function __construct(&$subject, $config) {
 		parent::__construct($subject, $config);
 	}
+    function onUserAfterLogin($options) {
+        $app = JFactory::getApplication();
+        if(!$app->isAdmin()) {
+            $app->redirect(JRoute::_('/index.php?option=com_users&view=profile&layout=edit'));
+        }
+    }
     function onAfterRoute()	{
         /*
          $api = new civicrm_api3(array(
@@ -94,6 +100,9 @@ class plgSystemCivicrm_usersynch extends JPlugin
         */
     }
 	function onUserAfterSave($user,$isnew,$success,$msg)	{
+        $currentuser = JFactory::getUser();
+        
+        
         $plugin = JPluginHelper::getPlugin('system', 'slack_integration');
         $params = new JRegistry($plugin->params);//Joomla 1.6 Onward
         $token = $params->get('token');
@@ -203,7 +212,12 @@ class plgSystemCivicrm_usersynch extends JPlugin
             $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$civiUser->id}|Click here to view their profile. >";
         }
         else {
-            $message .= "{$user['name']} has just updated their profile information.";
+            if($currentuser->id != $user['id']){
+                $message .= "{$currentuser->name} has just updated {$user['name']}'s' profile information.";
+            }
+            else {
+                $message .= "{$user['name']} has just updated their profile information.";
+            }
             $message .= "\n";
             $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$civiUser->id}|Click here to view their profile. >";
         }
