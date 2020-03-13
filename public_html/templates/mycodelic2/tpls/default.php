@@ -92,6 +92,7 @@ endif;
 		</div>
 	</div>
 </div>
+<?php if ($this->countModules('slideshow')) : ?>
 <script src="/templates/mycodelic/js/jquery.stellar.js"></script>
 <script> 
 
@@ -100,5 +101,6 @@ jQuery.stellar({
     responsive: true
 });
 </script>
+<?php endif; ?>
 </body>
 </html>
