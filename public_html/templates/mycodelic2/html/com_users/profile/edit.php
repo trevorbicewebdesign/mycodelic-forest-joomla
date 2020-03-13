@@ -78,6 +78,14 @@ jQuery( document ).ready(function() {
 						<legend><?php echo JText::_($fieldset->label); ?></legend>
 					<?php endif; ?>
                     <?php 
+                    if($fieldset->name=='core'):?>
+                    <p>If you have a Burner Profile please make sure the email address here matches!</p>
+                    <?php elseif($fieldset->name=='profile'):?>
+                    <p>We mainly want your address so we can send you nice things in the mail. Like invitations! We will never give out this information.</p>
+                    <?php elseif($fieldset->name=='skills'):?>
+                    <p>Take a second to let us know any of your skills! These are totally optional!</p>
+                    <?php endif; ?>
+                    <?php 
                     echo $this->form->renderFieldset($fieldset->name);
                     ?>
 				</fieldset>
