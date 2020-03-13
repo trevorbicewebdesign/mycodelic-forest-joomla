@@ -73,11 +73,11 @@ class JFormFieldState extends JFormFieldList
         
         if ($api->StateProvince->Get($apiParams)) {
             //each key of the result array is an attribute of the api
-            $ch = $api->lastResult->values;
+            $statesResult = $api->lastResult->values;
         }
         $stateList = array_map(function($state){
             return ["value"=>"$state->id", "text"=>"$state->name"];
-        }, $ch );
+        }, $statesResult );
                
 		return array_merge(parent::getOptions(), $stateList);
 	}
