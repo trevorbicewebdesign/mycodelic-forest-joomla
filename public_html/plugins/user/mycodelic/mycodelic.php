@@ -265,18 +265,18 @@ class PlgUserMycodelic extends JPlugin
 
 		if ($app->isClient('site') || $name === 'com_users.user' || $name === 'com_admin.profile')
 		{
-			$form->setFieldAttribute('address1',     'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('address2',     'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('city',         'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('state',       'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('country',      'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('postal_code',  'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('phone',        'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('website',      'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('favoritebook', 'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('aboutme',      'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('dob',          'description', 'PLG_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
-			$form->setFieldAttribute('tos',          'description', 'PLG_USER_PROFILE_FIELD_TOS_DESC_SITE', 'profile');
+			$form->setFieldAttribute('address1',     'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('address2',     'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('city',         'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('state',       'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('country',      'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('postal_code',  'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('phone',        'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('website',      'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('favoritebook', 'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('aboutme',      'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('dob',          'description', 'PLG_MYCODELIC_USER_PROFILE_FILL_FIELD_DESC_SITE', 'profile');
+			$form->setFieldAttribute('tos',          'description', 'PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_DESC_SITE', 'profile');
 		}
 
 		$tosArticle = $this->params->get('register_tos_article');
@@ -375,13 +375,13 @@ class PlgUserMycodelic extends JPlugin
 			catch (Exception $e)
 			{
 				// Throw an exception if date is not valid.
-				throw new InvalidArgumentException(Text::_('PLG_USER_PROFILE_ERROR_INVALID_DOB'));
+				throw new InvalidArgumentException(Text::_('PLG_MYCODELIC_USER_PROFILE_ERROR_INVALID_DOB'));
 			}
 
 			if (Date::getInstance('now') < $date)
 			{
 				// Throw an exception if dob is greather than now.
-				throw new InvalidArgumentException(Text::_('PLG_USER_PROFILE_ERROR_INVALID_DOB_FUTURE_DATE'));
+				throw new InvalidArgumentException(Text::_('PLG_MYCODELIC_USER_PROFILE_ERROR_INVALID_DOB_FUTURE_DATE'));
 			}
 		}
 
@@ -394,7 +394,7 @@ class PlgUserMycodelic extends JPlugin
 		// Check that the tos is checked.
 		if ($task === 'register' && $tosEnabled && $tosArticle && $option === 'com_users' && !$data['profile']['tos'])
 		{
-			throw new InvalidArgumentException(Text::_('PLG_USER_PROFILE_FIELD_TOS_DESC_SITE'));
+			throw new InvalidArgumentException(Text::_('PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_DESC_SITE'));
 		}
 
 		return true;
