@@ -66,7 +66,7 @@ jQuery( document ).ready(function() {
 			<h1><?php echo $this->escape($this->params->get('page_heading')); ?></h1>
 		</div>
 	<?php endif; ?>
-	<form id="member-registration" action="<?php echo JRoute::_('index.php?option=com_users&task=registration.register'); ?>" method="post" class="form-validate form-horizontal well" enctype="multipart/form-data">
+	<form id="member-profile" action="<?php echo JRoute::_('index.php?option=com_users&task=profile.save'); ?>" method="post" class="form-validate form-horizontal well" enctype="multipart/form-data">
 		<?php // Iterate through the form fieldsets and display each one. ?>
 		<?php 
         foreach ($this->form->getFieldsets() as $fieldset) : 
