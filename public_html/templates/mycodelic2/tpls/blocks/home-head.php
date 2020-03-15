@@ -71,29 +71,22 @@ if (is_file(T3_TEMPLATE_PATH . '/css/custom.css')) {
 $this->addStyleSheet(	T3_TEMPLATE_URL . '/css/typography.css'); 
 ?>
 <script type="text/javascript">
-jQuery(document).ready(function($){
+function resizeParallax(){
     if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
         var slideshowHeight = jQuery("#slideshow").outerHeight(true);
-        var parallaxMarginTop = (slideshowHeight-100)/2;
+        var parallaxMarginTop = (slideshowHeight-(slideshowHeight/2))/2;
         jQuery("#parallax_logo_1").height(slideshowHeight);
         jQuery("#logo-parallax").css("margin-top", parallaxMarginTop);
     }
+}
+jQuery(document).ready(function($){
+    resizeParallax();
     jQuery(window).resize(function($) {
-        if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
-            var slideshowHeight = jQuery("#slideshow").outerHeight(true);
-            var parallaxMarginTop = (slideshowHeight-100)/2;
-            jQuery("#parallax_logo_1").height(slideshowHeight);
-            jQuery("#logo-parallax").css("margin-top", parallaxMarginTop);
-        }
+        resizeParallax();
     });
 });
 jQuery( window ).load(function() {
-    if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
-        var slideshowHeight = jQuery("#slideshow").outerHeight(true);
-        var parallaxMarginTop = (slideshowHeight-100)/2;
-        jQuery("#parallax_logo_1").height(slideshowHeight);
-        jQuery("#logo-parallax").css("margin-top", parallaxMarginTop);
-    }
+    resizeParallax();
 });
     
 
