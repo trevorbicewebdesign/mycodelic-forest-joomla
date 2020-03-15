@@ -87,7 +87,14 @@ jQuery(document).ready(function($){
         }
     });
 });
-
+jQuery( window ).load(function() {
+    if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
+        var slideshowHeight = jQuery("#slideshow").outerHeight(true);
+        var parallaxMarginTop = (slideshowHeight-100)/2;
+        jQuery("#parallax_logo_1").height(slideshowHeight);
+        jQuery("#logo-parallax").css("margin-top", parallaxMarginTop);
+    }
+});
     
 
 
