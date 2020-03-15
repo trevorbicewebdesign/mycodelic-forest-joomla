@@ -70,3 +70,21 @@ if (is_file(T3_TEMPLATE_PATH . '/css/custom.css')) {
 //$this->addScript(		T3_TEMPLATE_URL . '/js/custom-functions.js');
 $this->addStyleSheet(	T3_TEMPLATE_URL . '/css/typography.css'); 
 ?>
+<script type="text/javascript">
+jQuery(document).ready(function($){
+    if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
+        var slideshowHeight = jQuery("#slideshow").outerHeight(true);
+        jQuery("#parallax_logo_1").height(slideshowHeight);
+    }
+    jQuery(window).resize(function($) {
+        if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
+            var slideshowHeight = jQuery("#slideshow").outerHeight(true);
+            jQuery("#parallax_logo_1").height(slideshowHeight);
+        }
+    });
+});
+
+    
+
+
+</script>
