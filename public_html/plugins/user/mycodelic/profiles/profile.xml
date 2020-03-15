@@ -5,7 +5,7 @@
 			name="profile"
 			label="PLG_MYCODELIC_USER_PROFILE_SLIDER_LABEL"
 		>
-            <field
+			<field
 				name="referred_by"
 				type="text"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_REFERREDBY_LABEL"
@@ -15,7 +15,6 @@
 				size="30"
                 default="No one"
 			/>
-            
 			<field
 				name="address1"
 				type="text"
@@ -25,7 +24,6 @@
 				filter="string"
 				size="30"
 			/>
-
 			<field
 				name="address2"
 				type="text"
@@ -35,7 +33,6 @@
 				filter="string"
 				size="30"
 			/>
-
 			<field
 				name="city"
 				type="text"
@@ -45,9 +42,6 @@
 				filter="string"
 				size="30"
 			/>
-
-			
-
 			<field
 				name="country"
 				type="country"
@@ -57,10 +51,8 @@
                 default="1228"
 				filter="string"
 				size="1"
-			>
-            </field>
-            
-            <field
+			></field>
+			<field
 				name="state"
 				type="state"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_STATE_LABEL"
@@ -68,10 +60,7 @@
 				id="state"
 				filter="string"
 				size="1"
-			>
-            </field>
-            
-
+			></field>
 			<field
 				name="postal_code"
 				type="text"
@@ -81,7 +70,6 @@
 				filter="string"
 				size="30"
 			/>
-
 			<field
 				name="phone"
 				type="tel"
@@ -91,8 +79,6 @@
 				filter="string"
 				size="30"
 			/>
-
-
 			<field
 				name="aboutme"
 				type="textarea"
@@ -102,8 +88,7 @@
 				rows="15"
 				filter="safehtml"
 			/>
-
-             <field
+			<field
 				name="birgin"
 				type="radio"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_BIRGIN_LABEL"
@@ -114,9 +99,8 @@
 			>
 				<option value="Yes">Yes</option>
 				<option value="No">No</option>
-            </field>
-            
-            <field
+			</field>
+			<field
 				name="burningman_years"
 				type="burningmanyears"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_YEARS_LABEL"
@@ -125,17 +109,16 @@
 				filter="string"
                 showon="birgin:Yes"
 			></field>
-            
-            <field
+			<field
 				name="playaname"
 				type="text"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_PLAYANAME_LABEL"
 				description="PLG_MYCODELIC_USER_PROFILE_FIELD_PLAYANAME_DESC"
 				info="PLG_MYCODELIC_USER_PROFILE_SPACER_PLAYANAME"
 				filter="string"
+                showon="birgin:Yes"
 			></field>
-    
- 			<field
+			<field
 				name="tos"
 				type="tos"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_TOS_LABEL"
@@ -146,13 +129,12 @@
 				<option value="1">PLG_MYCODELIC_USER_PROFILE_OPTION_AGREE</option>
 				<option value="0">JNO</option>
 			</field>
-          
 		</fieldset>
-        <fieldset
+		<fieldset
 			name="skills"
 			label="PLG_MYCODELIC_USER_SKILLS_SLIDER_LABEL"
 		>
-            <field
+			<field
 				name="skill_art"
 				type="skillArt"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_ART_LABEL"
@@ -160,8 +142,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_performance"
 				type="skillPerformance"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_PERFORMANCE_LABEL"
@@ -169,8 +150,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_event_management"
 				type="skillEventManagement"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_EVENTMANAGEMENT_LABEL"
@@ -178,8 +158,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_construction"
 				type="skillConstruction"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_CONSTRUCTION_LABEL"
@@ -187,8 +166,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_media"
 				type="skillMedia"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_MEDIA_LABEL"
@@ -196,8 +174,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_trades"
 				type="skillTrades"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_TRADES_LABEL"
@@ -205,8 +182,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-             <field
+			<field
 				name="skill_professional"
 				type="skillProfessional"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_PROFESSIONAL_LABEL"
@@ -214,8 +190,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_office"
 				type="skillOffice"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_OFFICE_LABEL"
@@ -223,8 +198,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_computer"
 				type="skillComputer"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_COMPUTER_LABEL"
@@ -232,8 +206,7 @@
 				info=""
 				filter="string"
 			></field>
-            
-            <field
+			<field
 				name="skill_tech"
 				type="skillTech"
 				label="PLG_MYCODELIC_USER_PROFILE_FIELD_SKILL_TECH_LABEL"
@@ -241,6 +214,6 @@
 				info=""
 				filter="string"
 			></field>
-        </fieldset>
-	</fields>		
+		</fieldset>
+	</fields>
 </form>
