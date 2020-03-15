@@ -74,12 +74,16 @@ $this->addStyleSheet(	T3_TEMPLATE_URL . '/css/typography.css');
 jQuery(document).ready(function($){
     if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
         var slideshowHeight = jQuery("#slideshow").outerHeight(true);
+        var parallaxMarginTop = (slideshowHeight-100)/2;
         jQuery("#parallax_logo_1").height(slideshowHeight);
+        jQuery("#logo-parallax").css("margin-top", parallaxMarginTop);
     }
     jQuery(window).resize(function($) {
         if(jQuery("#slideshow") && jQuery("#parallax_logo_1")){
             var slideshowHeight = jQuery("#slideshow").outerHeight(true);
+            var parallaxMarginTop = (slideshowHeight-100)/2;
             jQuery("#parallax_logo_1").height(slideshowHeight);
+            jQuery("#logo-parallax").css("margin-top", parallaxMarginTop);
         }
     });
 });
