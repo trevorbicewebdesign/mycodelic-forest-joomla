@@ -19,11 +19,13 @@ if(CODECEPTION){$environment = 'codeception';}
 
 // Global definitions
 $parts = explode(DIRECTORY_SEPARATOR, JPATH_BASE);
+array_pop($parts);
 
 // Defines.
 define('JPATH_ROOT',          implode(DIRECTORY_SEPARATOR, $parts));
-$public_html = dirname(JPATH_ROOT, 2);
-define('JPATH_SITE',          $public_html . DIRECTORY_SEPARATOR . 'public_html');
+define('JPATH_SITE',          JPATH_ROOT);
+$public_html = dirname(JPATH_ROOT, 1);
+echo $public_html . DIRECTORY_SEPARATOR . 'configurations' . DIRECTORY_SEPARATOR .$environment;
 define('JPATH_CONFIGURATION', $public_html . DIRECTORY_SEPARATOR . 'configurations' . DIRECTORY_SEPARATOR .$environment);
 define('JPATH_ADMINISTRATOR', $public_html . DIRECTORY_SEPARATOR . 'public_html' . DIRECTORY_SEPARATOR . 'administrator');
 define('JPATH_LIBRARIES',     $public_html . DIRECTORY_SEPARATOR . 'public_html' . DIRECTORY_SEPARATOR . 'libraries');
