@@ -64,8 +64,9 @@ if (!defined('CIVICRM_UF')) {
 }
 
 // Get the config settings
-$basepath = preg_replace("#administrator(/.*)?#","",realpath(dirname(__FILE__, "../../")));  
+$basepath = dirname(__FILE__, 4);
 require_once $basepath. '/configuration.php';
+$basepath .= "/public_html/";
 //require_once JPATH_BASE . '/includes/framework.php';
 // Bootstrap the CMS libraries.
 $config = new JConfig;
@@ -186,6 +187,7 @@ if (!defined('CIVICRM_LOGGING_DSN')) {
 global $civicrm_root;
 
 $civicrm_root = $basepath.'/administrator/components/com_civicrm/civicrm';
+
 if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
   define( 'CIVICRM_TEMPLATE_COMPILEDIR', $basepath.'/media/civicrm/templates_c');
 }
