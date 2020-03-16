@@ -25,7 +25,6 @@ array_pop($parts);
 define('JPATH_ROOT',          implode(DIRECTORY_SEPARATOR, $parts));
 define('JPATH_SITE',          JPATH_ROOT);
 $public_html = dirname(JPATH_ROOT, 1);
-echo $public_html . DIRECTORY_SEPARATOR . 'configurations' . DIRECTORY_SEPARATOR .$environment;
 define('JPATH_CONFIGURATION', $public_html . DIRECTORY_SEPARATOR . 'configurations' . DIRECTORY_SEPARATOR .$environment);
 define('JPATH_ADMINISTRATOR', $public_html . DIRECTORY_SEPARATOR . 'public_html' . DIRECTORY_SEPARATOR . 'administrator');
 define('JPATH_LIBRARIES',     $public_html . DIRECTORY_SEPARATOR . 'public_html' . DIRECTORY_SEPARATOR . 'libraries');
