@@ -64,9 +64,9 @@ if (!defined('CIVICRM_UF')) {
 }
 
 // Get the config settings
-$basepath = preg_replace("#administrator(/.*)?#","",realpath(dirname(__FILE__, "../../")));  
-require_once $basepath. '/configuration.php';
-//require_once JPATH_BASE . '/includes/framework.php';
+$basepath = dirname(__FILE__, 5);  
+$basepath .= "/public_html/";
+
 // Bootstrap the CMS libraries.
 $config = new JConfig;
 /**
