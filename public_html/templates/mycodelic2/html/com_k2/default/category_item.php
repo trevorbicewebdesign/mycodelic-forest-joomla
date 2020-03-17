@@ -6,7 +6,8 @@
  * @copyright	Copyright (c) 2006 - 2012 JoomlaWorks Ltd. All rights reserved.
  * @license		GNU/GPL license: http://www.gnu.org/copyleft/gpl.html
  */
-
+jimport( 'joomla.user.helper' ); 
+$authorProfile = JUserHelper::getProfile( $this->item->author->id );
 // no direct access
 defined('_JEXEC') or die('Restricted access');
 
@@ -60,7 +61,7 @@ K2HelperUtilities::setDefaultImage($this->item, 'itemlist', $this->params);
 		<?php if($this->item->params->get('catItemAuthor')): ?>
 		<!-- Item Author -->
 		<span class="catItemAuthor">
-			<?php echo K2HelperUtilities::writtenBy($this->item->author->profile->gender); ?> <?php echo $this->item->author->name; ?>
+			<?php echo K2HelperUtilities::writtenBy($this->item->author->profile->gender); ?> <?php echo $authorProfile->profile['playaname']; ?>
 		</span>
 		<?php endif; ?>
         		<?php if($this->item->params->get('catItemDateCreated')): ?>
