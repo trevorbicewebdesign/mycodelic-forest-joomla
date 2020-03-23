@@ -4,6 +4,7 @@
         "vlucas/phpdotenv": "^4.1",
         "codeception/module-db": "^1.0",
         "whatdafox/codeception-mailtrap": "^1.4",
-        "codeception/module-webdriver": "^1.0"
+        "codeception/module-webdriver": "^1.0",
+        "codeception/module-asserts": "^1.1"
     }
 }
