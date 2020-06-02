@@ -1,13 +1,15 @@
 <?php
+
 $basepath = dirname(__FILE__, 5);  
-define('CIVICRM_SETTINGS_PATH', "{$basepath}administrator/components/com_civicrm/civicrm.settings.php");
-$error = include_once( "{$basepath}administrator/components/com_civicrm/civicrm.settings.php" );
+define("_JEXEC",true);
+require_once("{$basepath}/defines.php");
+require_once(JPATH_CONFIGURATION."/configuration.php");
+define('CIVICRM_SETTINGS_PATH', "{$basepath}/administrator/components/com_civicrm/civicrm.settings.php");
+$ClassLoader = "{$basepath}/administrator/components/com_civicrm/civicrm/CRM/Core/ClassLoader.php";
+$error = include_once( CIVICRM_SETTINGS_PATH );
 if ( $error == false ) {
-    echo "Could not load the settings file at: {$basepath}administrator/components/com_civicrm/civicrm.settings.php";
+    echo "Could not load the settings file at: ".CIVICRM_SETTINGS_PATH;
     exit( );
 }
-
-// Load class loader
-require_once $civicrm_root . '/CRM/Core/ClassLoader.php';
-
+require_once $ClassLoader;
 CRM_Core_ClassLoader::singleton()->register();
