@@ -3,7 +3,7 @@
  * @package     Joomla.Site
  * @subpackage  com_users
  *
- * @copyright   Copyright (C) 2005 - 2019 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2020 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -13,38 +13,6 @@ JHtml::_('behavior.keepalive');
 JHtml::_('behavior.formvalidator');
 
 ?>
-<script type="text/javascript">
-var gettingStateList = false;
-var loadedStateList = false;
-function setStatesList(){
-    var countryCode = jQuery("#jform_profile_country").val();
-    console.log(countryCode);
-    if(countryCode){
-        gettingStateList = true;
-        jQuery.ajax({
-            url: "/index.php?option=com_civicrm&task=civicrm/ajax/jqState&_value="+countryCode,
-            context: document.body
-        }).done(function(msg) {
-            console.log(msg);
-            var selectOption = "<option value='' selected>( Select A State)</option>";
-            msg.forEach(function(item){
-                console.log(item);
-                
-                selectOption += "<option value='"+item.key+"'>"+item.value+"</option>"; 
-                
-            });
-            jQuery("#jform_profile_state").html(selectOption);
-            loadedStateList = true;
-        });
-    }
-}
-jQuery( document ).ready(function() {
-    setStatesList();
-    jQuery( "#jform_profile_country" ).change(function() {
-        setStatesList();
-    });
-})
-</script>
 <div class="registration<?php echo $this->pageclass_sfx; ?>">
 	<?php if ($this->params->get('show_page_heading')) : ?>
 		<div class="page-header">
