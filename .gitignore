@@ -35,6 +35,7 @@ public_html/administrator/logs/rsfirewall.log
 /vendor/
 /cache/
 /logs/
+/tmp/
 
 public_html/media/civicrm/templates_c/en_US/
 public_html/media/civicrm/persist/contribute/dyn/
