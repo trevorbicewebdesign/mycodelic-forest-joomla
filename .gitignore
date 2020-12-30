@@ -32,7 +32,9 @@ php_errorlog
 public_html/tmp/
 public_html/administrator/logs/error.php
 public_html/administrator/logs/rsfirewall.log
-vendor/
+/vendor/
+/cache/
+/logs/
 
 public_html/media/civicrm/templates_c/en_US/
 public_html/media/civicrm/persist/contribute/dyn/
