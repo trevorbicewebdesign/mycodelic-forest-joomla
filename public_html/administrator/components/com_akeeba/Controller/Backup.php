@@ -1,14 +1,14 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Controller;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Controller\Mixin\CustomACL;
 use Akeeba\Backup\Admin\Controller\Mixin\PredefinedTaskList;
@@ -16,7 +16,7 @@ use Akeeba\Backup\Admin\Helper\Utils;
 use Akeeba\Engine\Platform;
 use FOF30\Container\Container;
 use FOF30\Controller\Controller;
-use JUri;
+use Joomla\CMS\Uri\Uri;
 
 /**
  * Backup page controller
@@ -59,7 +59,6 @@ class Backup extends Controller
 			 * else) assume that (actually really small) risk.
 			 */
 			// $this->csrfProtection();
-
 			$this->container->platform->setSessionVar('profile', $newProfile, 'akeeba');
 
 			/**
@@ -74,7 +73,7 @@ class Backup extends Controller
 		}
 
 		// Deactivate the menus
-		\JFactory::getApplication()->input->set('hidemainmenu', 1);
+		\Joomla\CMS\Factory::getApplication()->input->set('hidemainmenu', 1);
 
 		/** @var \Akeeba\Backup\Admin\Model\Backup $model */
 		$model = $this->getModel();

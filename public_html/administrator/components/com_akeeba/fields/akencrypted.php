@@ -1,18 +1,20 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
+
+use Joomla\CMS\Form\FormHelper;
 
 if (class_exists('JFormFieldUrlencoded'))
 {
 	return;
 }
 
-JFormHelper::loadFieldClass('text');
+FormHelper::loadFieldClass('text');
 
 class JFormFieldAkencrypted extends JFormFieldText
 {
@@ -33,7 +35,7 @@ class JFormFieldAkencrypted extends JFormFieldText
 				return $value;
 			}
 
-			$container = \FOF30\Container\Container::getInstance('com_akeeba', array(), 'admin');
+			$container = \FOF30\Container\Container::getInstance('com_akeeba', [], 'admin');
 
 			/** @var \Akeeba\Backup\Admin\Dispatcher\Dispatcher $dispatcher */
 			$dispatcher = $container->dispatcher;

@@ -1,19 +1,19 @@
 <?php
 /**
  * Akeeba Engine
- * The PHP-only site backup engine
  *
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
- * @license   GNU GPL version 3 or, at your option, any later version
  * @package   akeebaengine
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Engine\Util\Pushbullet;
 
-// Protection against direct access
-defined('AKEEBAENGINE') or die();
+defined('AKEEBAENGINE') || die();
 
-class ApiException extends \Exception
+use Exception;
+
+class ApiException extends Exception
 {
 	// Exception thrown by Pushbullet
 }

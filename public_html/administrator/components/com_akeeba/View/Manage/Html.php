@@ -1,26 +1,29 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\Manage;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Model\Profiles;
 use Akeeba\Backup\Admin\Model\Statistics;
+use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use DateTimeZone;
+use Exception;
 use FOF30\Date\Date;
 use FOF30\View\DataView\Html as BaseView;
-use JFactory;
-use JHtml;
-use JLoader;
-use JText;
-use JUri;
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\HTML\HTMLHelper as JHtml;
+use Joomla\CMS\Language\Text as JText;
+use Joomla\CMS\Pagination\Pagination;
+use Joomla\CMS\Uri\Uri as JUri;
+use stdClass;
 
 /**
  * View controller for the Backup Now page
@@ -60,7 +63,7 @@ class Html extends BaseView
 	 *
 	 * @var  array
 	 */
-	public $profiles = array();
+	public $profiles = [];
 
 	/**
 	 * List of profiles for JHtmlSelect
@@ -70,11 +73,11 @@ class Html extends BaseView
 	public $profilesList = [];
 
 	/**
-	 * Order column
+	 * List of frozen options for JHtmlSelect
 	 *
-	 * @var  string
+	 * @var  array
 	 */
-	public $order = 'backupstart';
+	public $frozenList = [];
 
 	/**
 	 * Order direction, ASC/DESC
@@ -119,16 +122,23 @@ class Html extends BaseView
 	public $fltProfile = '';
 
 	/**
+	 * Frozen records filter
+	 *
+	 * @var string
+	 */
+	public $fltFrozen = '';
+
+	/**
 	 * List of records to display
 	 *
 	 * @var  array
 	 */
-	public $list = [];
+	public $items = [];
 
 	/**
 	 * Pagination object
 	 *
-	 * @var \JPagination
+	 * @var Pagination
 	 */
 	public $pagination = null;
 
@@ -160,29 +170,26 @@ class Html extends BaseView
 	 *
 	 * @since 5.3.0
 	 */
-	public $permissions = array();
+	public $permissions = [];
 
 	/**
 	 * List the backup records
 	 *
 	 * @return  void
 	 *
-	 * @throws  \Exception
+	 * @throws  Exception
 	 */
 	public function onBeforeMain()
 	{
 		// Load custom Javascript for this page
-		$this->addJavascriptFile('media://com_akeeba/js/Manage.min.js');
-
-		// Load core classes used in the view template
-		JLoader::import('joomla.utilities.date');
+		$this->container->template->addJS('media://com_akeeba/js/Manage.min.js', true, false, $this->container->mediaVersion);
 
 		$user              = $this->container->platform->getUser();
-		$this->permissions = array(
+		$this->permissions = [
 			'configure' => $user->authorise('akeeba.configure', 'com_akeeba'),
 			'backup'    => $user->authorise('akeeba.backup', 'com_akeeba'),
 			'download'  => $user->authorise('akeeba.download', 'com_akeeba'),
-		);
+		];
 
 
 		/** @var Profiles $profilesModel */
@@ -191,45 +198,8 @@ class Html extends BaseView
 		$this->enginesPerProfile = $enginesPerPprofile;
 
 		// "Show warning first" download button.
-		$confirmationText = JText::_('COM_AKEEBA_BUADMIN_LOG_DOWNLOAD_CONFIRM', true, false);
-		$confirmationText = str_replace('\\\\n', '\\n', $confirmationText);
-		$baseURI          = JUri::base();
-		$js               = <<<JS
-
-;// This comment is intentionally put here to prevent badly written plugins from causing a Javascript error
-// due to missing trailing semicolon and/or newline in their code.
-function confirmDownloadButton()
-{
-	var answer = confirm("$confirmationText");
-	if (answer)
-	{
-		submitbutton('download')
-	}
-}
-
-function confirmDownload(id, part)
-{
-	var answer = confirm("$confirmationText");
-	var newURL = '$baseURI';
-	if (answer)
-	{
-		newURL += 'index.php?option=com_akeeba&view=Manage&task=download&id='+id;
-		
-		if (part != '')
-		{
-			newURL += '&part=' + part
-		}
-		
-		window.location = newURL;
-	}
-}
-
-akeeba.System.documentReady(function(){
-	akeeba.Tooltip.enableFor(document.querySelectorAll('.akeebaCommentPopover'), false);
-});
-
-JS;
-		$this->addJavascriptInline($js);
+		JText::script('COM_AKEEBA_BUADMIN_LOG_DOWNLOAD_CONFIRM', false);
+		$this->container->platform->addScriptOptions('akeeba.Manage.baseURI', JUri::base());
 
 		if (version_compare(JVERSION, '3.999.999', 'le'))
 		{
@@ -239,31 +209,50 @@ JS;
 		$hash = 'akeebamanage';
 
 		// ...ordering
-		$platform        = $this->container->platform;
-		$input           = $this->input;
-		$this->order     = $platform->getUserStateFromRequest($hash . 'filter_order', 'filter_order', $input, 'backupstart');
-		$this->order_Dir = $platform->getUserStateFromRequest($hash . 'filter_order_Dir', 'filter_order_Dir', $input, 'DESC');
+		$platform = $this->container->platform;
+		$input    = $this->input;
 
 		// ...filter state
-		$this->fltDescription = $platform->getUserStateFromRequest($hash . 'filter_description', 'description', $input, '');
-		$this->fltFrom        = $platform->getUserStateFromRequest($hash . 'filter_from', 'from', $input, '');
-		$this->fltTo          = $platform->getUserStateFromRequest($hash . 'filter_to', 'to', $input, '');
-		$this->fltOrigin      = $platform->getUserStateFromRequest($hash . 'filter_origin', 'origin', $input, '');
-		$this->fltProfile     = $platform->getUserStateFromRequest($hash . 'filter_profile', 'profile', $input, '');
+		$this->fltDescription   = $platform->getUserStateFromRequest($hash . 'filter_description', 'description', $input, '');
+		$this->fltFrom          = $platform->getUserStateFromRequest($hash . 'filter_from', 'from', $input, '');
+		$this->fltTo            = $platform->getUserStateFromRequest($hash . 'filter_to', 'to', $input, '');
+		$this->fltOrigin        = $platform->getUserStateFromRequest($hash . 'filter_origin', 'origin', $input, '');
+		$this->fltProfile       = $platform->getUserStateFromRequest($hash . 'filter_profile', 'profile', $input, '');
+		$this->fltFrozen        = $platform->getUserStateFromRequest($hash . 'filter_frozen', 'frozen', $input, '');
+
+		$this->lists            = new stdClass();
+		$this->lists->order     = $platform->getUserStateFromRequest($hash . 'filter_order', 'filter_order', $input, 'backupstart');
+		$this->lists->order_Dir = $platform->getUserStateFromRequest($hash . 'filter_order_Dir', 'filter_order_Dir', $input, 'DESC');
 
 		$filters  = $this->getFilters();
 		$ordering = $this->getOrdering();
 
 		/** @var Statistics $model */
-		$model = $this->getModel();
-		$list  = $model->getStatisticsListWithMeta(false, $filters, $ordering);
+		$model       = $this->getModel();
+		$this->items = $model->getStatisticsListWithMeta(false, $filters, $ordering);
+
+		// Default limits
+		$defaultLimit = 20;
+
+		if (!$this->container->platform->isCli() && class_exists('JFactory'))
+		{
+			$app = JFactory::getApplication();
+
+			if (method_exists($app, 'get'))
+			{
+				$defaultLimit = $app->get('list_limit');
+			}
+		}
+
+		$this->lists->limitStart = $model->getState('limitstart', 0, 'int');
+		$this->lists->limit      = $model->getState('limit', $defaultLimit, 'int');
 
 		// Let's create an array indexed with the profile id for better handling
 		$profiles = $profilesModel->get(true);
 
-		$profilesList = array(
-			JHtml::_('select.option', '', '–' . JText::_('COM_AKEEBA_BUADMIN_LABEL_PROFILEID') . '–')
-		);
+		$profilesList = [
+			JHtml::_('select.option', '', '–' . JText::_('COM_AKEEBA_BUADMIN_LABEL_PROFILEID') . '–'),
+		];
 
 		if (!empty($profiles))
 		{
@@ -276,8 +265,19 @@ JS;
 		// Assign data to the view
 		$this->profiles     = $profiles; // Profiles
 		$this->profilesList = $profilesList; // Profiles list for select box
-		$this->list         = $list; // Data
+		$this->itemCount    = count($this->items);
 		$this->pagination   = $model->getPagination($filters); // Pagination object
+
+		$this->frozenList = [
+			JHtml::_('select.option', '', '–' . JText::_('COM_AKEEBA_BUADMIN_LABEL_FROZEN_SELECT') . '–'),
+			JHtml::_('select.option', '1', JText::_('COM_AKEEBA_BUADMIN_LABEL_FROZEN_FROZEN')),
+			JHtml::_('select.option', '2', JText::_('COM_AKEEBA_BUADMIN_LABEL_FROZEN_UNFROZEN')),
+		];
+
+		if ($this->lists->order_Dir)
+		{
+			$this->lists->order_Dir = strtolower($this->lists->order_Dir);
+		}
 
 		// Date format
 		$dateFormat       = $this->container->params->get('dateformat', '');
@@ -292,12 +292,12 @@ JS;
 		$this->promptForBackupRestoration = $this->container->params->get('show_howtorestoremodal', 1) != 0;
 
 		// Construct the array of sorting fields
-		$this->sortFields = array(
+		$this->sortFields = [
 			'id'          => JText::_('COM_AKEEBA_BUADMIN_LABEL_ID'),
 			'description' => JText::_('COM_AKEEBA_BUADMIN_LABEL_DESCRIPTION'),
 			'backupstart' => JText::_('COM_AKEEBA_BUADMIN_LABEL_START'),
 			'profile_id'  => JText::_('COM_AKEEBA_BUADMIN_LABEL_PROFILEID'),
-		);
+		];
 	}
 
 	/**
@@ -320,21 +320,21 @@ JS;
 	/**
 	 * File size formatting function. COnverts number of bytes to a human readable represenation.
 	 *
-	 * @param   int    $sizeInBytes        Size in bytes
-	 * @param   int    $decimals           How many decimals should I use? Default: 2
-	 * @param   string $decSeparator       Decimal separator
-	 * @param   string $thousandsSeparator Thousands grouping character
+	 * @param   int     $sizeInBytes         Size in bytes
+	 * @param   int     $decimals            How many decimals should I use? Default: 2
+	 * @param   string  $decSeparator        Decimal separator
+	 * @param   string  $thousandsSeparator  Thousands grouping character
 	 *
 	 * @return string
 	 */
-	protected function formatFilesize($sizeInBytes, $decimals = 2, $decSeparator = '.', $thousandsSeparator = '')
+	public function formatFilesize($sizeInBytes, $decimals = 2, $decSeparator = '.', $thousandsSeparator = '')
 	{
 		if ($sizeInBytes <= 0)
 		{
 			return '-';
 		}
 
-		$units = array('b', 'KB', 'MB', 'GB', 'TB');
+		$units = ['b', 'KB', 'MB', 'GB', 'TB'];
 		$unit  = floor(log($sizeInBytes, 2) / 10);
 
 		if ($unit == 0)
@@ -344,7 +344,7 @@ JS;
 
 		if (version_compare(PHP_VERSION, '5.6.0', 'lt'))
 		{
-			return number_format($sizeInBytes / pow(1024, $unit), $decimals, $decSeparator, $thousandsSeparator) . ' ' . $units[$unit];
+			return number_format($sizeInBytes / 1024 ** $unit, $decimals, $decSeparator, $thousandsSeparator) . ' ' . $units[$unit];
 		}
 
 		return number_format($sizeInBytes / (1024 ** $unit), $decimals, $decSeparator, $thousandsSeparator) . ' ' . $units[$unit];
@@ -353,19 +353,19 @@ JS;
 	/**
 	 * Translates the internal backup type (e.g. cli) to a human readable string
 	 *
-	 * @param   string $recordType The internal backup type
+	 * @param   string  $recordType  The internal backup type
 	 *
 	 * @return  string
 	 */
-	protected function translateBackupType($recordType)
+	public function translateBackupType($recordType)
 	{
 		static $backup_types = null;
 
 		if (!is_array($backup_types))
 		{
 			// Load a mapping of backup types to textual representation
-			$scripting    = \Akeeba\Engine\Factory::getEngineParamsProvider()->loadScripting();
-			$backup_types = array();
+			$scripting    = Factory::getEngineParamsProvider()->loadScripting();
+			$backup_types = [];
 			foreach ($scripting['scripts'] as $key => $data)
 			{
 				$backup_types[$key] = JText::_($data['text']);
@@ -383,7 +383,7 @@ JS;
 	/**
 	 * Returns the origin's translated name and the appropriate icon class
 	 *
-	 * @param   array $record A backup record
+	 * @param   array  $record  A backup record
 	 *
 	 * @return  array  array(originTranslation, iconClass)
 	 */
@@ -414,10 +414,6 @@ JS;
 				$originIcon = 'akion-code';
 				break;
 
-			case 'restorepoint':
-				$originIcon = 'akion-refresh';
-				break;
-
 			case 'lazy':
 				$originIcon = 'akion-cube';
 				break;
@@ -432,16 +428,16 @@ JS;
 			$originDescription = '&ndash;';
 			$originIcon        = 'akion-help';
 
-			return array($originDescription, $originIcon);
+			return [$originDescription, $originIcon];
 		}
 
-		return array($originDescription, $originIcon);
+		return [$originDescription, $originIcon];
 	}
 
 	/**
 	 * Get the start time and duration of a backup record
 	 *
-	 * @param   array $record A backup record
+	 * @param   array  $record  A backup record
 	 *
 	 * @return  array  array(startTimeAsString, durationAsString)
 	 */
@@ -481,17 +477,17 @@ JS;
 			$timeZoneSuffix = $startTime->format($this->timeZoneFormat, $this->useLocalTime);
 		}
 
-		return array(
+		return [
 			$startTime->format($this->dateFormat, $this->useLocalTime),
 			$duration,
-			$timeZoneSuffix
-		);
+			$timeZoneSuffix,
+		];
 	}
 
 	/**
 	 * Get the class and icon for the backup status indicator
 	 *
-	 * @param   array $record A backup record
+	 * @param   array  $record  A backup record
 	 *
 	 * @return  array  array(class, icon)
 	 */
@@ -518,18 +514,18 @@ JS;
 				$statusClass = 'akeeba-label--teal';
 				break;
 			default:
-				$statusIcon = 'akion-trash-a';
+				$statusIcon  = 'akion-trash-a';
 				$statusClass = 'akeeba-label--grey';
 				break;
 		}
 
-		return array($statusClass, $statusIcon);
+		return [$statusClass, $statusIcon];
 	}
 
 	/**
 	 * Get the profile name for the backup record (or "–" if the profile no longer exists)
 	 *
-	 * @param   array $record A backup record
+	 * @param   array  $record  A backup record
 	 *
 	 * @return  string
 	 */
@@ -554,69 +550,80 @@ JS;
 	 */
 	private function getFilters()
 	{
-		$filters = array();
+		$filters = [];
 
 		if ($this->fltDescription)
 		{
-			$filters[] = array(
+			$filters[] = [
 				'field'   => 'description',
 				'operand' => 'LIKE',
-				'value'   => $this->fltDescription
-			);
+				'value'   => $this->fltDescription,
+			];
 		}
 
 		if ($this->fltFrom && $this->fltTo)
 		{
-			$filters[] = array(
+			$filters[] = [
 				'field'   => 'backupstart',
 				'operand' => 'BETWEEN',
 				'value'   => $this->fltFrom,
-				'value2'  => $this->fltTo
-			);
+				'value2'  => $this->fltTo,
+			];
 		}
 		elseif ($this->fltFrom)
 		{
-			$filters[] = array(
+			$filters[] = [
 				'field'   => 'backupstart',
 				'operand' => '>=',
 				'value'   => $this->fltFrom,
-			);
+			];
 		}
 		elseif ($this->fltTo)
 		{
-			JLoader::import('joomla.utilities.date');
 			$toDate = new Date($this->fltTo);
-			$to = $toDate->format('Y-m-d') . ' 23:59:59';
+			$to     = $toDate->format('Y-m-d') . ' 23:59:59';
 
-			$filters[] = array(
+			$filters[] = [
 				'field'   => 'backupstart',
 				'operand' => '<=',
 				'value'   => $to,
-			);
+			];
 		}
+
 		if ($this->fltOrigin)
 		{
-			$filters[] = array(
+			$filters[] = [
 				'field'   => 'origin',
 				'operand' => '=',
-				'value'   => $this->fltOrigin
-			);
+				'value'   => $this->fltOrigin,
+			];
 		}
+
 		if ($this->fltProfile)
 		{
-			$filters[] = array(
+			$filters[] = [
 				'field'   => 'profile_id',
 				'operand' => '=',
-				'value'   => (int) $this->fltProfile
-			);
+				'value'   => (int) $this->fltProfile,
+			];
 		}
 
-		$filters[] = array(
-			'field'   => 'tag',
-			'operand' => '<>',
-			'value'   => 'restorepoint'
-		);
-
+		if ($this->fltFrozen == 1)
+		{
+			$filters[] = [
+				'field'   => 'frozen',
+				'operand' => '=',
+				'value'   => 1,
+			];
+		}
+		elseif ($this->fltFrozen == 2)
+		{
+			$filters[] = [
+				'field'   => 'frozen',
+				'operand' => '=',
+				'value'   => 0,
+			];
+		}
 
 		if (empty($filters))
 		{
@@ -633,11 +640,12 @@ JS;
 	 */
 	private function getOrdering()
 	{
-		$order = array(
-			'by'    => $this->order,
-			'order' => strtoupper($this->order_Dir)
-		);
+		$order = [
+			'by'    => $this->lists->order,
+			'order' => strtoupper($this->lists->order_Dir),
+		];
 
 		return $order;
 	}
+
 }

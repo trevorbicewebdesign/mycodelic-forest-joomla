@@ -1,25 +1,30 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Controller;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Controller\Mixin\CustomACL;
 use Akeeba\Backup\Admin\Controller\Mixin\PredefinedTaskList;
 use Akeeba\Backup\Admin\Helper\Utils;
+use Akeeba\Backup\Admin\Model\Backup as BackupModel;
 use Akeeba\Backup\Admin\Model\ConfigurationWizard;
 use Akeeba\Backup\Admin\Model\Updates;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
+use Exception;
 use FOF30\Container\Container;
 use FOF30\Controller\Controller;
-use JUri, JFactory, JText;
+use FOF30\Factory\Exception\ModelNotFound;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+use RuntimeException;
 
 /**
  * The Control Panel controller class
@@ -28,47 +33,14 @@ class ControlPanel extends Controller
 {
 	use CustomACL, PredefinedTaskList;
 
-	public function __construct(Container $container, array $config = array())
+	public function __construct(Container $container, array $config = [])
 	{
 		parent::__construct($container, $config);
 
 		$this->setPredefinedTaskList([
-			'main', 'SwitchProfile', 'UpdateInfo', 'applydlid', 'resetSecretWord', 'reloadUpdateInformation', 'forceUpdateDb'
+			'main', 'SwitchProfile', 'applydlid', 'resetSecretWord',
+			'forceUpdateDb', 'dismissUpsell', 'fixOutputDirectory', 'checkOutputDirectory', 'addRandomToFilename',
 		]);
-	}
-
-	protected function onBeforeMain()
-	{
-		/** @var \Akeeba\Backup\Admin\Model\ControlPanel $model */
-		$model = $this->getModel();
-
-		$engineConfig = Factory::getConfiguration();
-
-		// Invalidate stale backups
-		$params = $this->container->params;
-
-		Factory::resetState(array(
-			'global' => true,
-			'log'    => false,
-			'maxrun' => $params->get('failure_timeout', 180)
-		));
-
-		// Just in case the reset() loaded a stale configuration...
-		Platform::getInstance()->load_configuration();
-		Platform::getInstance()->apply_quirk_definitions();
-
-		// Let's make sure the temporary and output directories are set correctly and writable...
-		/** @var ConfigurationWizard $wizmodel */
-		$wizmodel = $this->container->factory->model('ConfigurationWizard')->tmpInstance();
-		$wizmodel->autofixDirectories();
-
-		// Check if we need to toggle the settings encryption feature
-		$model->checkSettingsEncryption();
-
-		// Run the automatic update site refresh
-		/** @var Updates $updateModel */
-		$updateModel = $this->container->factory->model('Updates')->tmpInstance();
-		$updateModel->refreshUpdateSite();
 	}
 
 	public function SwitchProfile()
@@ -80,7 +52,7 @@ class ControlPanel extends Controller
 
 		if (!is_numeric($newProfile) || ($newProfile <= 0))
 		{
-			$this->setRedirect(JUri::base() . 'index.php?option=com_akeeba', JText::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_ERROR'), 'error');
+			$this->setRedirect(\Joomla\CMS\Uri\Uri::base() . 'index.php?option=com_akeeba', \Joomla\CMS\Language\Text::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_ERROR'), 'error');
 
 			return;
 		}
@@ -91,52 +63,10 @@ class ControlPanel extends Controller
 
 		if (empty($url))
 		{
-			$url = JUri::base() . 'index.php?option=com_akeeba';
+			$url = \Joomla\CMS\Uri\Uri::base() . 'index.php?option=com_akeeba';
 		}
 
-		$this->setRedirect($url, JText::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_OK'));
-	}
-
-	public function UpdateInfo()
-	{
-		/** @var Updates $updateModel */
-		$updateModel = $this->container->factory->model('Updates')->tmpInstance();
-		$infoArray   = $updateModel->getUpdates();
-		$updateInfo  = (object)$infoArray;
-
-		$result = '';
-
-		if ($updateInfo->hasUpdate)
-		{
-			$strings = array(
-				'header'  => JText::sprintf('COM_AKEEBA_CPANEL_MSG_UPDATEFOUND', $updateInfo->version),
-				'button'  => JText::sprintf('COM_AKEEBA_CPANEL_MSG_UPDATENOW', $updateInfo->version),
-				'infourl' => $updateInfo->infoURL,
-				'infolbl' => JText::_('COM_AKEEBA_CPANEL_MSG_MOREINFO'),
-			);
-
-			$result = <<<HTML
-	<div class="akeeba-block--warning">
-		<h3>
-			<span class="icon icon-exclamation-sign glyphicon glyphicon-exclamation-sign"></span>
-			{$strings['header']}
-		</h3>
-		<p>
-			<a href="index.php?option=com_installer&view=update" class="akeeba-btn--primary">
-				{$strings['button']}
-			</a>
-			<a href="{$strings['infourl']}" target="_blank" class="akeeba-btn--ghost akeeba-btn--small">
-				{$strings['infolbl']}
-			</a>
-		</p>
-	</div>
-HTML;
-		}
-
-		echo '###' . $result . '###';
-
-		// Cut the execution short
-		$this->container->platform->closeApplication();
+		$this->setRedirect($url, \Joomla\CMS\Language\Text::_('COM_AKEEBA_CPANEL_PROFILE_SWITCH_OK'));
 	}
 
 	/**
@@ -147,18 +77,22 @@ HTML;
 		// CSRF prevention
 		$this->csrfProtection();
 
-		$msg     = JText::_('COM_AKEEBA_CPANEL_ERR_INVALIDDOWNLOADID');
+		$msg     = \Joomla\CMS\Language\Text::_('COM_AKEEBA_CPANEL_ERR_INVALIDDOWNLOADID');
 		$msgType = 'error';
 		$dlid    = $this->input->getString('dlid', '');
 
+		/** @var Updates $updateModel */
+		$updateModel = $this->container->factory->model('Updates')->tmpInstance();
+		$dlid        = $updateModel->sanitizeLicenseKey($dlid);
+		$isValidDLID = $updateModel->isValidLicenseKey($dlid);
+
 		// If the Download ID seems legit let's apply it
-		if (preg_match('/^([0-9]{1,}:)?[0-9a-f]{32}$/i', $dlid))
+		if ($isValidDLID)
 		{
 			$msg     = null;
 			$msgType = null;
 
-			$this->container->params->set('update_dlid', $dlid);
-			$this->container->params->save();
+			$updateModel->setLicenseKey($dlid);
 		}
 
 		// Redirect back to the control panel
@@ -167,7 +101,7 @@ HTML;
 
 		if (empty($url))
 		{
-			$url = JUri::base() . 'index.php?option=com_akeeba';
+			$url = \Joomla\CMS\Uri\Uri::base() . 'index.php?option=com_akeeba';
 		}
 
 		$this->setRedirect($url, $msg, $msgType);
@@ -195,23 +129,9 @@ HTML;
 		$this->container->params->set('frontend_secret_word', $newSecret);
 		$this->container->params->save();
 
-		$msg = JText::sprintf('COM_AKEEBA_CPANEL_MSG_FESECRETWORD_RESET', $newSecret);
+		$msg = \Joomla\CMS\Language\Text::sprintf('COM_AKEEBA_CPANEL_MSG_FESECRETWORD_RESET', $newSecret);
 
 		$url = 'index.php?option=com_akeeba';
-		$this->setRedirect($url, $msg);
-	}
-
-	public function reloadUpdateInformation()
-	{
-		$msg = null;
-
-		/** @var Updates $model */
-		$model = $this->container->factory->model('Updates')->tmpInstance();
-		$model->getUpdates(true);
-
-		$msg = JText::_('COM_AKEEBA_COMMON_UPDATE_INFORMATION_RELOADED');
-		$url = 'index.php?option=com_akeeba';
-
 		$this->setRedirect($url, $msg);
 	}
 
@@ -238,4 +158,172 @@ HTML;
 
 		$this->setRedirect('index.php?option=com_akeeba');
 	}
+
+	/**
+	 * Dismisses the Core to Pro upsell for 15 days
+	 *
+	 * @return  void
+	 */
+	public function dismissUpsell()
+	{
+		// Reset the flag so the updates could take place
+		$this->container->params->set('lastUpsellDismiss', time());
+		$this->container->params->save();
+
+		$this->setRedirect('index.php?option=com_akeeba');
+	}
+
+	/**
+	 * Check the security of the backup output directory and return the results for consumption through AJAX
+	 *
+	 * @return  void
+	 *
+	 * @throws  Exception
+	 *
+	 * @since   7.0.3
+	 */
+	public function checkOutputDirectory()
+	{
+		/** @var \Akeeba\Backup\Admin\Model\ControlPanel $model */
+		$model  = $this->getModel();
+		$outDir = $model->getOutputDirectory();
+
+		try
+		{
+			$result = $model->getOutputDirectoryWebAccessibleState($outDir);
+		}
+		catch (RuntimeException $e)
+		{
+			$result = [
+				'readFile'   => false,
+				'listFolder' => false,
+				'isSystem'   => $model->isOutputDirectoryInSystemFolder(),
+				'hasRandom'  => $model->backupFilenameHasRandom(),
+			];
+		}
+
+		@ob_end_clean();
+
+		echo '###' . json_encode($result) . '###';
+
+		$this->container->platform->closeApplication();
+	}
+
+	/**
+	 * Add security files to the output directory of the currently configured backup profile
+	 *
+	 * @return  void
+	 *
+	 * @throws  Exception
+	 *
+	 * @since   7.0.3
+	 */
+	public function fixOutputDirectory()
+	{
+		// CSRF prevention
+		$this->csrfProtection();
+
+		/** @var \Akeeba\Backup\Admin\Model\ControlPanel $model */
+		$model  = $this->getModel();
+		$outDir = $model->getOutputDirectory();
+
+		$fsUtils = Factory::getFilesystemTools();
+		$fsUtils->ensureNoAccess($outDir, true);
+
+		$this->setRedirect('index.php?option=com_akeeba');
+	}
+
+	/**
+	 * Adds the [RANDOM] variable to the backup output filename, save the configuration and reload the Control Panel.
+	 *
+	 * @return  void
+	 *
+	 * @throws  Exception
+	 *
+	 * @since   7.0.3
+	 */
+	public function addRandomToFilename()
+	{
+		// CSRF prevention
+		$this->csrfProtection();
+		$registry     = Factory::getConfiguration();
+		$templateName = $registry->get('akeeba.basic.archive_name');
+
+		if (strpos($templateName, '[RANDOM]') === false)
+		{
+			$templateName .= '-[RANDOM]';
+			$registry->set('akeeba.basic.archive_name', $templateName);
+			Platform::getInstance()->save_configuration();
+		}
+
+		$this->setRedirect('index.php?option=com_akeeba');
+	}
+
+	/**
+	 * Run everything necessary to display the Control Panel page
+	 *
+	 * @return  void
+	 *
+	 * @throws  Exception
+	 *
+	 * @since   5.0.0
+	 */
+	protected function onBeforeMain()
+	{
+		/** @var \Akeeba\Backup\Admin\Model\ControlPanel $model */
+		$model = $this->getModel();
+
+		$engineConfig = Factory::getConfiguration();
+
+		// Invalidate stale backups
+		$params = $this->container->params;
+
+		try
+		{
+			Factory::resetState([
+				'global' => true,
+				'log'    => false,
+				'maxrun' => $params->get('failure_timeout', 180),
+			]);
+		}
+		catch (Exception $e)
+		{
+			// This will die if the output directory is invalid. Let it die, then.
+		}
+
+		// Just in case the reset() loaded a stale configuration...
+		Platform::getInstance()->load_configuration();
+		Platform::getInstance()->apply_quirk_definitions();
+
+		// Let's make sure the temporary and output directories are set correctly and writable...
+		/** @var ConfigurationWizard $wizmodel */
+		$wizmodel = $this->container->factory->model('ConfigurationWizard')->tmpInstance();
+		$wizmodel->autofixDirectories();
+
+		// Rebase Off-site Folder Inclusion filters to use site path variables
+		/** @var \Akeeba\Backup\Admin\Model\IncludeFolders $incFoldersModel */
+		try
+		{
+			$incFoldersModel = $this->container->factory->model('IncludeFolders')->tmpInstance();
+			$incFoldersModel->rebaseFiltersToSiteDirs();
+		}
+		catch (ModelNotFound $e)
+		{
+			// Not a problem. This is expected to happen in the Core version.
+		}
+
+		// Check if we need to toggle the settings encryption feature
+		$model->checkSettingsEncryption();
+
+		// Convert existing log files to the new .log.php format
+		/** @var BackupModel $backupModel */
+		$backupModel = $this->container->factory->model('Backup')->tmpInstance();
+		$backupModel->convertLogFiles();
+
+		// Run the automatic update site refresh
+		/** @var Updates $updateModel */
+		$updateModel = $this->container->factory->model('Updates')->tmpInstance();
+		$updateModel->refreshUpdateSite();
+	}
+
 }

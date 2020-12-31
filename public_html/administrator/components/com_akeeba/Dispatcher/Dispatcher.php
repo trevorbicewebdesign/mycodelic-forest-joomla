@@ -1,33 +1,38 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Dispatcher;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\Helper\SecretWord;
 use Akeeba\Backup\Admin\Model\ControlPanel;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
+use AkeebaFEFHelper;
 use FOF30\Container\Container;
 use FOF30\Dispatcher\Dispatcher as BaseDispatcher;
 use FOF30\Dispatcher\Mixin\ViewAliases;
-use FOF30\Factory\Exception\ModelNotFound;
-use JFactory;
+use Joomla\CMS\Factory as JFactory;
+use Joomla\CMS\Language\Text;
 
 class Dispatcher extends BaseDispatcher
 {
-	use ViewAliases {
+	/** @var   string  The name of the default view, in case none is specified */
+	public $defaultView = 'ControlPanel';
+
+	use ViewAliases
+	{
 		onBeforeDispatch as onBeforeDispatchViewAliases;
 	}
 
-	/** @var   string  The name of the default view, in case none is specified */
-	public $defaultView = 'ControlPanel';
+	/** @var  \Akeeba\Backup\Admin\Container  The container we belong to */
+	protected $container = null;
 
 	public function __construct(Container $container, array $config)
 	{
@@ -72,6 +77,9 @@ class Dispatcher extends BaseDispatcher
 	 */
 	public function onBeforeDispatch()
 	{
+		$this->container->platform->importPlugin('akeebabackup');
+		$this->container->platform->runPlugins('onComAkeebaDispatcherBeforeDispatch', []);
+
 		$this->onBeforeDispatchViewAliases();
 
 		// Load the FOF language
@@ -85,13 +93,30 @@ class Dispatcher extends BaseDispatcher
 		// Does the user have adequate permissions to access our component?
 		if (!$this->container->platform->authorise('core.manage', 'com_akeeba'))
 		{
-			throw new \RuntimeException(\JText::_('JERROR_ALERTNOAUTHOR'), 404);
+			throw new \RuntimeException(Text::_('JERROR_ALERTNOAUTHOR'), 404);
 		}
 
 		// FEF Renderer options. Used to load the common CSS file.
+		$darkMode  = $this->container->params->get('dark_mode', -1);
+		$customCss = 'media://com_akeeba/css/akeebaui.min.css';
+
+		if ($darkMode != 0)
+		{
+			$customCss .= ', media://com_akeeba/css/dark.min.css';
+		}
+
+		$helperFile = JPATH_SITE . '/media/fef/fef.php';
+
+		if (!class_exists('AkeebaFEFHelper') && is_file($helperFile))
+		{
+			include_once $helperFile;
+		}
+
+		AkeebaFEFHelper::load();
+
 		$this->container->renderer->setOptions([
-			'custom_css' => 'media://com_akeeba/css/akeebaui.min.css',
-			//'fef_dark'   => 0,
+			'custom_css' => $customCss,
+			'fef_dark'   => $darkMode,
 		]);
 
 		// Load Akeeba Engine
@@ -117,7 +142,7 @@ class Dispatcher extends BaseDispatcher
 				// The update is stuck. We will display a warning in the Control Panel
 			}
 
-			$msg = \JText::_('COM_AKEEBA_CONTROLPANEL_MSG_REBUILTTABLES');
+			$msg = Text::_('COM_AKEEBA_CONTROLPANEL_MSG_REBUILTTABLES');
 			$this->container->platform->redirect('index.php', 307, $msg, 'warning');
 		}
 
@@ -125,11 +150,15 @@ class Dispatcher extends BaseDispatcher
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		// !!!!! WARNING: ALWAYS GO THROUGH JFactory; DO NOT GO THROUGH $this->container->db !!!!!
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		$jDbo = JFactory::getDbo();
 
-		if ($jDbo->name == 'pdomysql')
+		if (version_compare(PHP_VERSION, '7.999.999', 'le'))
 		{
-			@JFactory::getDbo()->disconnect();
+			$jDbo = JFactory::getDbo();
+
+			if ($jDbo->name == 'pdomysql')
+			{
+				@JFactory::getDbo()->disconnect();
+			}
 		}
 
 		// Load the utils helper library
@@ -169,6 +198,36 @@ class Dispatcher extends BaseDispatcher
 		$this->container->renderer->setOption('linkbar_style', 'classic');
 	}
 
+	public function loadAkeebaEngine()
+	{
+		// Necessary defines for Akeeba Engine
+		if (!defined('AKEEBAENGINE'))
+		{
+			define('AKEEBAENGINE', 1);
+			define('AKEEBAROOT', $this->container->backEndPath . '/BackupEngine');
+		}
+
+		// Make sure we have a profile set throughout the component's lifetime
+		$profile_id = $this->container->platform->getSessionVar('profile', null, 'akeeba');
+
+		if (is_null($profile_id))
+		{
+			$this->container->platform->setSessionVar('profile', 1, 'akeeba');
+		}
+
+		// Load Akeeba Engine
+		$basePath = $this->container->backEndPath;
+		require_once $basePath . '/BackupEngine/Factory.php';
+	}
+
+	public function loadAkeebaEngineConfiguration()
+	{
+		Platform::addPlatform('joomla3x', $this->container->backEndPath . '/BackupPlatform/Joomla3x');
+		$akeebaEngineConfig = Factory::getConfiguration();
+		Platform::getInstance()->load_configuration();
+		unset($akeebaEngineConfig);
+	}
+
 	/**
 	 * Loads the Javascript files which are common across many views of the component.
 	 *
@@ -176,22 +235,18 @@ class Dispatcher extends BaseDispatcher
 	 */
 	private function loadCommonJavascript()
 	{
-		\JHtml::_('jquery.framework');
-
-		$mediaVersion = $this->container->mediaVersion;
-
-		// Do not mode: everything depends on UserInterfaceCommon
-		$this->container->template->addJS('media://com_akeeba/js/UserInterfaceCommon.min.js', false, false, $mediaVersion);
+		// Do not move: everything depends on UserInterfaceCommon
+		$this->container->template->addJS('media://com_akeeba/js/UserInterfaceCommon.min.js', true, false, $this->container->mediaVersion);
 		// Do not move: System depends on Modal
-		$this->container->template->addJS('media://com_akeeba/js/Modal.min.js', false, false, $mediaVersion);
+		$this->container->template->addJS('media://com_akeeba/js/Modal.min.js', true, false, $this->container->mediaVersion);
 		// Do not move: System depends on Ajax
-		$this->container->template->addJS('media://com_akeeba/js/Ajax.min.js', false, false, $mediaVersion);
+		$this->container->template->addJS('media://com_akeeba/js/Ajax.min.js', true, false, $this->container->mediaVersion);
 		// Do not move: System depends on Ajax
-		$this->container->template->addJS('media://com_akeeba/js/System.min.js', false, false, $mediaVersion);
+		$this->container->template->addJS('media://com_akeeba/js/System.min.js', true, false, $this->container->mediaVersion);
 		// Do not move: Tooltip depends on System
-		$this->container->template->addJS('media://com_akeeba/js/Tooltip.min.js', false, false, $mediaVersion);
+		$this->container->template->addJS('media://com_akeeba/js/Tooltip.min.js', true, false, $this->container->mediaVersion);
 		// Always add last (it's the least important)
-		$this->container->template->addJS('media://com_akeeba/js/piecon.min.js', false, false, $mediaVersion);
+		$this->container->template->addJS('media://com_akeeba/js/piecon.min.js', true, false, $this->container->mediaVersion);
 	}
 
 	/**
@@ -222,58 +277,5 @@ class Dispatcher extends BaseDispatcher
 
 		// Update magic parameters if necessary
 		$model->updateMagicParameters();
-	}
-
-	public function onAfterDispatch()
-	{
-		// See the after_render.php file for an explanation. TL;DR: CloudFlare Rocket Loader is a broken pile of crap.
-		if ($this->input->get('format', 'html') != 'html')
-		{
-			return;
-		}
-
-		if (!function_exists('akeebaBackupOnAfterRenderToFixBrokenCloudFlareRocketLoader'))
-		{
-			require_once __DIR__ . '/after_render.php';
-		}
-
-		JFactory::getApplication()->registerEvent('onAfterRender', 'akeebaBackupOnAfterRenderToFixBrokenCloudFlareRocketLoader');
-	}
-
-	public function loadAkeebaEngine()
-	{
-		// Necessary defines for Akeeba Engine
-		if (!defined('AKEEBAENGINE'))
-		{
-			define('AKEEBAENGINE', 1);
-			define('AKEEBAROOT', $this->container->backEndPath . '/BackupEngine');
-			define('ALICEROOT', $this->container->backEndPath . '/AliceEngine');
-		}
-
-		// Make sure we have a profile set throughout the component's lifetime
-		$profile_id = $this->container->platform->getSessionVar('profile', null, 'akeeba');
-
-		if (is_null($profile_id))
-		{
-			$this->container->platform->setSessionVar('profile', 1, 'akeeba');
-		}
-
-		// Load Akeeba Engine
-		$basePath = $this->container->backEndPath;
-		require_once $basePath . '/BackupEngine/Factory.php';
-
-		// Load ALICE (Pro version only)
-		if (@file_exists($basePath . '/AliceEngine/factory.php'))
-		{
-			require_once $basePath . '/AliceEngine/factory.php';
-		}
-	}
-
-	public function loadAkeebaEngineConfiguration()
-	{
-		Platform::addPlatform('joomla3x', $this->container->backEndPath . '/BackupPlatform/Joomla3x');
-		$akeebaEngineConfig = Factory::getConfiguration();
-		Platform::getInstance()->load_configuration();
-		unset($akeebaEngineConfig);
 	}
 }

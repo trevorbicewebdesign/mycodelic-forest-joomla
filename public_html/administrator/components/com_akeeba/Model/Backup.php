@@ -1,24 +1,32 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\Model;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
+use Akeeba\Engine\Base\Part;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\PushMessages;
+use Closure;
+use DateTimeZone;
+use DirectoryIterator;
 use Exception;
 use FOF30\Date\Date;
+use FOF30\Factory\Exception\ModelNotFound;
 use FOF30\Model\Model;
+use FOF30\Timer\Timer;
+use JDatabaseDriver;
 use JLoader;
-use JText;
+use Joomla\CMS\Language\Text;
 use Psr\Log\LogLevel;
+use RuntimeException;
 
 /**
  * Backup model. Handles the server-side logic of interfacing with the backup engine (Akeeba Engine)
@@ -33,7 +41,7 @@ class Backup extends Model
 	 */
 	public function runBackup()
 	{
-		$ret_array = array();
+		$ret_array = [];
 
 		$ajaxTask = $this->getState('ajax');
 
@@ -65,9 +73,9 @@ class Backup extends Model
 	 * Starts a new backup.
 	 *
 	 * State variables expected
-	 * backupid		The ID of the backup. If none is set up we will create a new one in the form id123
-	 * tag			The backup tag, e.g. "frontend". If none is set up we'll get it through the Platform.
-	 * description	The description of the backup (optional)
+	 * backupid        The ID of the backup. If none is set up we will create a new one in the form id123
+	 * tag            The backup tag, e.g. "frontend". If none is set up we'll get it through the Platform.
+	 * description    The description of the backup (optional)
 	 * comment      The comment of the backup (optional)
 	 * jpskey       JPS password
 	 * angiekey     ANGIE password
@@ -89,51 +97,26 @@ class Backup extends Model
 		// Try to get a backup ID if none is provided
 		if (is_null($backupId))
 		{
-			$db    = $this->container->db;
-			$query = $db->getQuery(true)
-			            ->select('MAX(' . $db->qn('id') . ')')
-			            ->from($db->qn('#__ak_stats'));
-
-			try
-			{
-				$maxId = $db->setQuery($query)->loadResult();
-			}
-			catch (Exception $e)
-			{
-				$maxId = 0;
-			}
-
-			$backupId = 'id' . ($maxId + 1);
+			$backupId = $this->getBackupId();
 		}
 
 		// Use the default description if none specified
 		if (empty($description))
 		{
-			JLoader::import('joomla.utilities.date');
-			$dateNow  = new Date();
-			$timezone = $this->container->platform->getConfig()->get('offset', 'UTC');
-
-			if (!$this->getContainer()->platform->isCli())
-			{
-				$user     = $this->container->platform->getUser();
-
-				if (!$user->guest)
-				{
-					$timezone = $user->getParam('timezone', $timezone);
-				}
-			}
-
-			$tz       = new \DateTimeZone($timezone);
-			$dateNow->setTimezone($tz);
-			$description =
-				JText::_('COM_AKEEBA_BACKUP_DEFAULT_DESCRIPTION') . ' ' .
-				$dateNow->format(JText::_('DATE_FORMAT_LC2'), true);
+			$description = $this->getDefaultDescription();
 		}
 
 		// Try resetting the engine
-		Factory::resetState(array(
-			'maxrun' => 0
-		));
+		try
+		{
+			Factory::resetState([
+				'maxrun' => 0,
+			]);
+		}
+		catch (Exception $e)
+		{
+			// This will die if the output directory is invalid. Let it die, then.
+		}
 
 		// Remove any stale memory files left over from the previous step
 		if (empty($tag))
@@ -148,6 +131,23 @@ class Backup extends Model
 		Factory::nuke();
 		Factory::getLog()->log(LogLevel::DEBUG, " -- Resetting Akeeba Engine factory ($tag.$backupId)");
 		Platform::getInstance()->load_configuration();
+
+		// Autofix the output directory
+		/** @var ConfigurationWizard $confWizModel */
+		$confWizModel = $this->container->factory->model('ConfigurationWizard')->tmpInstance();
+		$confWizModel->autofixDirectories();
+
+		// Rebase Off-site Folder Inclusion filters to use site path variables
+		/** @var \Akeeba\Backup\Admin\Model\IncludeFolders $incFoldersModel */
+		try
+		{
+			$incFoldersModel = $this->container->factory->model('IncludeFolders')->tmpInstance();
+			$incFoldersModel->rebaseFiltersToSiteDirs();
+		}
+		catch (ModelNotFound $e)
+		{
+			// Not a problem. This is expected to happen in the Core version.
+		}
 
 		// Should I apply any configuration overrides?
 		if (is_array($overrides) && !empty($overrides))
@@ -181,8 +181,8 @@ class Backup extends Model
 					'Domain'   => 'init',
 					'Step'     => '',
 					'Substep'  => '',
-					'Error'    => 'Failed configuration check Q' . $checkItem['code'] . ': ' . $checkItem['description'] . '. Please refer to https://www.akeebabackup.com/documentation/warnings/q' . $checkItem['code'] . '.html for more information and troubleshooting instructions.',
-					'Warnings' => array(),
+					'Error'    => 'Failed configuration check Q' . $checkItem['code'] . ': ' . $checkItem['description'] . '. Please refer to https://www.akeeba.com/documentation/warnings/q' . $checkItem['code'] . '.html for more information and troubleshooting instructions.',
+					'Warnings' => [],
 					'Progress' => 0,
 				];
 			}
@@ -212,7 +212,18 @@ class Backup extends Model
 
 		$this->setState('backupid', $backupId);
 
-		// Run the first backup step. We need to run tick() twice
+		/**
+		 * Convert log files in the backup output directory
+		 *
+		 * This removes the obsolete, default log files (akeeba.(backend|frontend|cli|json).log and converts the old .log
+		 * files into their .php counterparts.
+		 *
+		 * We are doing this when loading the the Control Panel page but ALSO when taking a new backup because some
+		 * people might be installing updates and taking backups automatically, without visiting the Control Panel
+		 * except in rare cases.
+		 */
+		$this->convertLogFiles(3);
+
 		/**
 		 * We need to run tick() twice in the first backup step.
 		 *
@@ -221,29 +232,42 @@ class Backup extends Model
 		 * the backup profile being used, therefore it will assume it's profile #1.
 		 *
 		 * The second tick() creates the backup record without doing much else, fixing this issue.
-		 * 
+		 *
 		 * However, if you have conservative settings where the min exec time is MORE than the max exec time the second
 		 * tick would never run. Therefore we need to tell the first tick to ignore the time settings (since it only
 		 * takes a few milliseconds to execute anyway) and then apply the time settings on the second tick (which also
 		 * only takes a few milliseconds). This is why we have setIgnoreMinimumExecutionTime before and after the first
 		 * tick. DO NOT REMOVE THESE.
 		 *
-		 * THEREFORE, DO NOT REMOVE THE SECOND tick(), IT IS THERE ON PURPOSE!
+		 * Furthermore, if the first tick reaches the end of backup or an error condition we MUST NOT run the second
+		 * tick() since the engine state will be invalid. Hence the check for the state that performs a hard break. This
+		 * could happen if you have a sufficiently high max execution time, no break between steps and we fail to
+		 * execute any step, e.g. the installer image is missing, a database error occurred or we can not list the files
+		 * and directories to back up.
+		 *
+		 * THEREFORE, DO NOT REMOVE THE LOOP OR THE if-BLOCK IN IT, THEY ARE THERE FOR A GOOD REASON!
 		 */
 		$kettenrad->setIgnoreMinimumExecutionTime(true);
-		$kettenrad->tick(); // Do not remove the first call to tick()!!!
-		$kettenrad->setIgnoreMinimumExecutionTime(false);
-		$kettenrad->tick(); // Do not remove the second call to tick()!!!
-		$ret_array = $kettenrad->getStatusArray();
 
-		// So as not to have duplicate warnings reports
-		$kettenrad->resetWarnings();
+		for ($i = 0; $i < 2; $i++)
+		{
+			$kettenrad->tick();
+
+			if (in_array($kettenrad->getState(), [Part::STATE_FINISHED, Part::STATE_ERROR]))
+			{
+				break;
+			}
+
+			$kettenrad->setIgnoreMinimumExecutionTime(false);
+		}
+
+		$ret_array = $kettenrad->getStatusArray();
 
 		try
 		{
 			Factory::saveState($tag, $backupId);
 		}
-		catch (\RuntimeException $e)
+		catch (RuntimeException $e)
 		{
 			$ret_array['Error'] = $e->getMessage();
 		}
@@ -255,8 +279,8 @@ class Backup extends Model
 	 * Steps through a backup.
 	 *
 	 * State variables expected (MUST be set):
-	 * backupid		The ID of the backup.
-	 * tag			The backup tag, e.g. "frontend".
+	 * backupid        The ID of the backup.
+	 * tag            The backup tag, e.g. "frontend".
 	 * profile      (optional) The profile ID of the backup.
 	 *
 	 * @param   bool  $requireBackupId  Should the backup ID be required?
@@ -312,15 +336,15 @@ class Backup extends Model
 		}
 
 		// Run a backup step
-		$ret_array = array(
-			'HasRun' => 0,
+		$ret_array = [
+			'HasRun'   => 0,
 			'Domain'   => 'init',
 			'Step'     => '',
 			'Substep'  => '',
-			'Error' => '',
-			'Warnings' => array(),
+			'Error'    => '',
+			'Warnings' => [],
 			'Progress' => 0,
-		);
+		];
 
 		try
 		{
@@ -335,11 +359,8 @@ class Backup extends Model
 			$kettenrad->setBackupId($backupId);
 			$kettenrad->tick();
 			$ret_array = $kettenrad->getStatusArray();
-
-			// Prevent duplicate reporting of warnings
-			$kettenrad->resetWarnings();
 		}
-		catch (\Exception $e)
+		catch (Exception $e)
 		{
 			$ret_array['Error'] = $e->getMessage();
 		}
@@ -351,7 +372,7 @@ class Backup extends Model
 				Factory::saveState($tag, $backupId);
 			}
 		}
-		catch (\RuntimeException $e)
+		catch (RuntimeException $e)
 		{
 			$ret_array['Error'] = $e->getMessage();
 		}
@@ -422,6 +443,91 @@ class Backup extends Model
 	}
 
 	/**
+	 * Convert the old, plaintext log files (.log) into their .log.php counterparts.
+	 *
+	 * @param   int  $timeOut  Maximum time, in seconds, to spend doing this conversion.
+	 *
+	 * @return  void
+	 *
+	 * @since   7.0.3
+	 */
+	public function convertLogFiles($timeOut = 10)
+	{
+		$registry = Factory::getConfiguration();
+		$logDir   = $registry->get('akeeba.basic.output_directory', '[DEFAULT_OUTPUT]', true);
+
+		$timer = new Timer($timeOut, 75);
+
+		// Part I. Remove these obsolete files first
+		$killFiles = [
+			'akeeba.log',
+			'akeeba.backend.log',
+			'akeeba.frontend.log',
+			'akeeba.cli.log',
+			'akeeba.json.log',
+		];
+
+		foreach ($killFiles as $fileName)
+		{
+			$path = $logDir . '/' . $fileName;
+
+			if (@is_file($path))
+			{
+				@unlink($path);
+			}
+		}
+
+		if ($timer->getTimeLeft() <= 0.01)
+		{
+			return;
+		}
+
+		// Part II. Convert .log files.
+		try
+		{
+			$di = new DirectoryIterator($logDir);
+		}
+		catch (Exception $e)
+		{
+			return;
+		}
+
+		foreach ($di as $file)
+		{
+
+			try
+			{
+				if (!$file->isFile())
+				{
+					continue;
+				}
+				$baseName = $file->getFilename();
+				if (substr($baseName, 0, 7) !== 'akeeba.')
+				{
+					continue;
+				}
+				if (substr($baseName, -4) !== '.log')
+				{
+					continue;
+				}
+				$this->convertLogFile($file->getPathname());
+				if ($timer->getTimeLeft() <= 0.01)
+				{
+					return;
+				}
+			}
+			catch (Exception $e)
+			{
+				/**
+				 * Someone did something stupid, like using the site's root as the backup output directory while having
+				 * an open_basedir restriction. Sorry, mate, you get insecure junk. We had warned you. You didn't heed
+				 * the warning. That's your problem now.
+				 */
+			}
+		}
+	}
+
+	/**
 	 * Get the profile used to take the last backup for the specified tag
 	 *
 	 * @param   string  $tag       The backup tag a.k.a. backup origin (backend, frontend, json, ...)
@@ -431,21 +537,21 @@ class Backup extends Model
 	 */
 	protected function getLastBackupProfile($tag, $backupId = null)
 	{
-		$filters  = array(
-			array('field' => 'tag', 'value' => $tag)
-		);
+		$filters = [
+			['field' => 'tag', 'value' => $tag],
+		];
 
 		if (!empty($backupId))
 		{
-			$filters[] = array('field' => 'backupid', 'value' => $backupId);
+			$filters[] = ['field' => 'backupid', 'value' => $backupId];
 		}
 
-		$statList = Platform::getInstance()->get_statistics_list(array(
-				'filters'  => $filters,
-				'order' => array(
-					'by' => 'id', 'order' => 'DESC'
-				)
-			)
+		$statList = Platform::getInstance()->get_statistics_list([
+				'filters' => $filters,
+				'order'   => [
+					'by' => 'id', 'order' => 'DESC',
+				],
+			]
 		);
 
 		if (is_array($statList))
@@ -464,4 +570,193 @@ class Backup extends Model
 		// Else, return the default backup profile
 		return 1;
 	}
+
+	/**
+	 * Converts a log file from .log to .log.php
+	 *
+	 * @param   string  $filePath
+	 *
+	 * @return  void
+	 *
+	 * @since   7.0.3
+	 */
+	protected function convertLogFile($filePath)
+	{
+		// The name of the converted log file is the same with the extension .php appended to it.
+		$newFile = $filePath . '.php';
+
+		// If the new log file exists I should return immediately
+		if (@file_exists($newFile))
+		{
+			return;
+		}
+
+		// Try to open the converted log file (.log.php)
+		$fp = @fopen($newFile, 'wb');
+
+		if ($fp === false)
+		{
+			return;
+		}
+
+		// Try to open the source log file (.log)
+		$sourceFP = @fopen($filePath, 'rb');
+
+		if ($sourceFP === false)
+		{
+			@fclose($fp);
+
+			return;
+		}
+
+		// Write the die statement to the source log file
+		fwrite($fp, '<' . '?' . 'php die(); ' . '?' . ">\n");
+
+		// Copy data, 512KB at a time
+		while (!feof($sourceFP))
+		{
+			$chunk = @fread($sourceFP, 524288);
+
+			if ($chunk === false)
+			{
+				break;
+			}
+
+			$result = fwrite($fp, $chunk);
+
+			if ($result === false)
+			{
+				break;
+			}
+		}
+
+		// Close both files
+		@fclose($sourceFP);
+		@fclose($fp);
+
+		// Delete the original (.log) file
+		@unlink($filePath);
+	}
+
+	/**
+	 * @return string
+	 */
+	private function getBackupId()
+	{
+		$db = $this->container->db;
+
+		/**
+		 * I need to get the current database name. I'll use Ocramius' trick.
+		 * See https://ocramius.github.io/blog/accessing-private-php-class-members-without-reflection/
+		 */
+		$protectedMethodAccessor = function (JDatabaseDriver $db) {
+			return $db->getDatabase();
+		};
+		$boundClosure            = Closure::bind($protectedMethodAccessor, null, $db);
+		$dbName                  = $boundClosure($db);
+		$tableName               = $db->replacePrefix('#__ak_stats');
+
+		/**
+		 * Now, I will first try to get the AUTO_INCREMENT value via INFORMATION_SCHEMA.
+		 * See https://stackoverflow.com/questions/15821532/get-current-auto-increment-value-for-any-table
+		 */
+		$query = $db->getQuery(true)
+			->select($db->qn('AUTO_INCREMENT'))
+			->from($db->qn('INFORMATION_SCHEMA.TABLES'))
+			->where($db->qn('TABLE_SCHEMA') . ' = ' . $db->q($dbName))
+			->where($db->qn('TABLE_NAME') . ' = ' . $db->q($tableName));
+
+		try
+		{
+			$backupId = $db->setQuery($query)->loadResult();
+
+			if (!empty($backupId))
+			{
+				return $backupId;
+			}
+		}
+		catch (Exception $e)
+		{
+			// This didn't work. No problem, I'll use my legacy method instead.
+		}
+
+		/**
+		 * Get the maximum ID already in use and add 1. This is not the same as the table's auto_increment value if the
+		 * user has deleted the latest backup records. If the latest existing backup record has an ID of 20 but the user
+		 * had already deleted records 21 and 22 then the auto_increment is 23. However, this legacy method will return
+		 * a backup ID of 21 instead of the correct value of 23. There's not much I can do since I could not read the
+		 * actual auto_increment value above. Oh well, it's not the end of the world :)
+		 */
+		$query = $db->getQuery(true)
+			->select('MAX(' . $db->qn('id') . ')')
+			->from($db->qn('#__ak_stats'));
+
+		try
+		{
+			$maxId = $db->setQuery($query)->loadResult();
+		}
+		catch (Exception $e)
+		{
+			$maxId = 0;
+		}
+
+		$backupId = 'id' . ($maxId + 1);
+
+		return $backupId;
+	}
+
+	/**
+	 * Get the default backup description.
+	 *
+	 * The default description is "Backup taken on DATE TIME" where DATE TIME is the current timestamp in the most
+	 * specific timezone. The timezone order, from least to most specific, is:
+	 * * UTC (fallback)
+	 * * Server Timezone from Joomla's Global Configuration
+	 * * Timezone from the current user's profile (only applicable to backend backups)
+	 * * Forced backup timezone
+	 *
+	 * @param   string  $format  Date and time format. Default: DATE_FORMAT_LC2 plus the abbreviated timezone
+	 *
+	 * @return  string
+	 */
+	public function getDefaultDescription(string $format = ''): string
+	{
+		// If no date format is specified we use DATE_FORMAT_LC2 plus the abbreviated timezone
+		if (empty($format))
+		{
+			$format = Text::_('DATE_FORMAT_LC2') . ' T';
+		}
+
+		// Get the most specific Joomla timezone (UTC, overridden by server timezone, overridden by user timezone)
+		$joomlaTimezone = $this->container->platform->getConfig()->get('offset', 'UTC');
+
+		if (!$this->getContainer()->platform->isCli())
+		{
+			$user = $this->container->platform->getUser();
+
+			if (!$user->guest)
+			{
+				$joomlaTimezone = $user->getParam('timezone', $joomlaTimezone);
+			}
+		}
+
+		$timezone = $joomlaTimezone;
+
+		// The forced timezone overrides everything else
+		$forcedTZ = Platform::getInstance()->get_platform_configuration_option('forced_backup_timezone', 'AKEEBA/DEFAULT');
+
+		if (!empty($forcedTZ) && ($forcedTZ != 'AKEEBA/DEFAULT'))
+		{
+			$timezone = $forcedTZ;
+		}
+
+		// Convert the current date and time to the selected timezone
+		$dateNow = new Date();
+		$tz      = new DateTimeZone($timezone);
+
+		$dateNow->setTimezone($tz);
+
+		return Text::_('COM_AKEEBA_BACKUP_DEFAULT_DESCRIPTION') . ' ' . $dateNow->format($format, true);
+	}
+
 }

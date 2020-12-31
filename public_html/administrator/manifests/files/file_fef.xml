@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Akeeba Frontend Framework (FEF)
+  ~
+  ~ @package   fef
+  ~ @copyright (c) 2017-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @license   GNU General Public License version 3, or later
+  -->
+
 <extension type="file" version="3.3" method="upgrade">
     <!-- Generic Metadata -->
     <name>file_fef</name>
     <author>Nicholas K. Dionysopoulos</author>
     <authorEmail>nicholas@dionysopoulos.me</authorEmail>
-    <authorUrl>https://www.akeebabackup.com</authorUrl>
+    <authorUrl>https://www.akeeba.com</authorUrl>
     <copyright>(C) 2017-2018 Akeeba Ltd.</copyright>
     <license>GNU GPL v3 or later</license>
-    <version>1.0.8</version>
-    <creationDate>2019-07-18</creationDate>
+    <version>1.1.1</version>
+    <creationDate>2020-12-14</creationDate>
     <description>Akeeba Frontend Framework - The CSS framework for Akeeba Ltd extensions.</description>
 
     <!-- Fileset definition -->
     <fileset>
-        <files folder="fef" target="media/fef">
+        <files target="media/fef">
             <folder>css</folder>
             <folder>fonts</folder>
             <folder>js</folder>
             <filename>fef.php</filename>
             <filename>version.php</filename>
-        </files>
-		<files target="media/fef">
 			<filename>version.txt</filename>
-		</files>
+        </files>
     </fileset>
 
     <!-- Installation / uninstallation script file -->
@@ -30,6 +36,6 @@
 
     <!-- Update server -->
     <updateservers>
-        <server type="extension" priority="1" name="Akeeba FEF">http://cdn.akeebabackup.com/updates/fef.xml</server>
+        <server type="extension" priority="1" name="Akeeba FEF">http://cdn.akeeba.com/updates/fef.xml</server>
     </updateservers>
 </extension>

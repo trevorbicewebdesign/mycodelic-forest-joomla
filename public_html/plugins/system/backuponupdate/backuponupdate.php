@@ -1,12 +1,23 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
-defined('_JEXEC') or die();
 
-if (!version_compare(PHP_VERSION, '5.6.0', '>='))
+defined('_JEXEC') || die();
+
+use FOF30\Container\Container;
+use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Factory;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\CMS\Uri\Uri;
+
+// Old PHP version detected. EJECT! EJECT! EJECT!
+if (!version_compare(PHP_VERSION, '7.2.0', '>='))
 {
 	return;
 }
@@ -17,42 +28,55 @@ if (!file_exists(JPATH_ADMINISTRATOR . '/components/com_akeeba'))
 	return;
 }
 
-// Load FOF
+// Joomla! version check
+if (version_compare(JVERSION, '2.5', 'lt'))
+{
+	// Joomla! earlier than 2.5. Nope.
+	return;
+}
+
+// Load FOF if not already loaded
 if (!defined('FOF30_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof30/include.php'))
 {
 	return;
 }
 
-JLoader::import('joomla.filesystem.file');
-$db = JFactory::getDbo();
+/*
+ * Hopefully, if we are still here, the site is running on at least PHP5. This means that
+ * including the Akeeba Backup factory class will not throw a White Screen of Death, locking
+ * the administrator out of the back-end.
+ */
 
-// Is Akeeba Backup enabled?
-$query = $db->getQuery(true)
-            ->select($db->qn('enabled'))
-            ->from($db->qn('#__extensions'))
-            ->where($db->qn('element') . ' = ' . $db->q('com_akeeba'))
-            ->where($db->qn('type') . ' = ' . $db->q('component'));
-$db->setQuery($query);
-$enabled = $db->loadResult();
+// Make sure Akeeba Backup is installed, or quit
+$akeeba_installed = @file_exists(JPATH_ADMINISTRATOR . '/components/com_akeeba/BackupEngine/Factory.php');
 
-if (!$enabled)
+if (!$akeeba_installed)
 {
 	return;
 }
 
-JLoader::import('joomla.application.plugin');
-
-class plgSystemBackuponupdate extends JPlugin
+// Make sure Akeeba Backup is enabled
+if (!ComponentHelper::isEnabled('com_akeeba'))
 {
+	return;
+}
+
+class plgSystemBackuponupdate extends CMSPlugin
+{
+	/** @var \Joomla\CMS\Application\AdministratorApplication */
+	public $app;
+
+	private $isEnabled;
+
 	/**
 	 * Constructor
 	 *
-	 * @param       object $subject The object to observe
-	 * @param       array  $config  An array that holds the plugin configuration
+	 * @param   object  $subject  The object to observe
+	 * @param   array   $config   An array that holds the plugin configuration
 	 *
-	 * @since       2.5
+	 * @since   3.8.0
 	 */
-	public function __construct(& $subject, $config)
+	public function __construct(&$subject, $config)
 	{
 		/**
 		 * I know that this piece of code cannot possibly be executed since I have already returned BEFORE declaring
@@ -70,21 +94,40 @@ class plgSystemBackuponupdate extends JPlugin
 		parent::__construct($subject, $config);
 	}
 
+	/**
+	 * Runs on application initialization. Implements the functionality of this plugin.
+	 *
+	 * @return  void
+	 * @since   3.8.0
+	 */
 	public function onAfterInitialise()
 	{
 		// Make sure this is the back-end
-		$app = JFactory::getApplication();
+		try
+		{
+			$app = Factory::getApplication();
+		}
+		catch (Exception $e)
+		{
+			return;
+		}
 
-		if (!in_array($app->getName(), array('administrator', 'admin')))
+		if (!$app->isClient('administrator'))
+		{
+			return;
+		}
+
+		// Make sure we are enabled
+		if (!$this->isEnabled())
 		{
 			return;
 		}
 
 		// Handle the flag toggle through AJAX
-		$ji        = new JInput();
+		$ji          = Factory::getApplication()->input;
 		$toggleParam = $ji->getCmd('_akeeba_backup_on_update_toggle');
 
-		if ($toggleParam && ($toggleParam == JFactory::getSession()->getToken()))
+		if ($toggleParam && ($toggleParam == Factory::getSession()->getToken()))
 		{
 			$this->toggleBoUFlag();
 
@@ -103,7 +146,9 @@ class plgSystemBackuponupdate extends JPlugin
 		$backedup  = $ji->getInt('is_backed_up', 0);
 
 		// Perform a redirection on Joomla! Update download or install task, unless we have already backed up the site
-		if (($component == 'com_joomlaupdate') && ($task == 'update.install') && !$backedup)
+		$redirectCondition = ($component == 'com_joomlaupdate') && ($task == 'update.install') && !$backedup;
+
+		if ($redirectCondition)
 		{
 			// Get the backup profile ID
 			$profileId = (int) $this->params->get('profileid', 1);
@@ -113,17 +158,44 @@ class plgSystemBackuponupdate extends JPlugin
 				$profileId = 1;
 			}
 
-			$jtoken = JFactory::getSession()->getFormToken();
+			// Get the description override
+			$this->loadLanguage();
+			$description = $this->preprocessDescription($this->params->get(
+				'description',
+				Text::_('PLG_SYSTEM_BACKUPONUPDATE_DEFAULT_DESCRIPTION')
+			));
+
+			$jtoken = Factory::getSession()->getFormToken();
 
 			// Get the return URL
-			$return_url = JUri::base() . 'index.php?option=com_joomlaupdate&task=update.install&is_backed_up=1&'.$jtoken.'=1';
+			$returnUri = new Uri(Uri::base() . 'index.php');
+			$params    = [
+				'option'       => 'com_joomlaupdate',
+				'task'         => 'update.install',
+				'is_backed_up' => 1,
+				$jtoken        => 1,
+			];
+			array_walk($params, function ($value, $key) use (&$returnUri) {
+				$returnUri->setVar($key, $value);
+			});
 
 			// Get the redirect URL
-			$redirect_url = JUri::base() . 'index.php?option=com_akeeba&view=Backup&autostart=1&returnurl=' . base64_encode($return_url) . '&profileid=' . $profileId . "&$jtoken=1";
+			$redirectUri = new Uri(Uri::base() . 'index.php');
+			$params      = [
+				'option'      => 'com_akeeba',
+				'view'        => 'Backup',
+				'autostart'   => 1,
+				'returnurl'   => base64_encode($returnUri->toString()),
+				'description' => urlencode($description),
+				'profileid'   => $profileId,
+				$jtoken       => 1,
+			];
+			array_walk($params, function ($value, $key) use (&$redirectUri) {
+				$redirectUri->setVar($key, $value);
+			});
 
 			// Perform the redirection
-			$app = JFactory::getApplication();
-			$app->redirect($redirect_url);
+			$app->redirect($redirectUri->toString());
 		}
 	}
 
@@ -136,12 +208,12 @@ class plgSystemBackuponupdate extends JPlugin
 	 *
 	 * @param   array  $modules  The array of module objects passed to us by Joomla!
 	 *
-	 * @since   5.4.1
 	 * @throws  Exception
+	 * @since   5.4.1
 	 */
 	public function onAfterModuleList(&$modules)
 	{
-		$app = JFactory::getApplication();
+		$app = $this->app;
 
 		// Only work when format=html (since we try adding CSS and Javascript on the page which is only valid in HTML).
 		if ($app->input->getCmd('format', 'html') != 'html')
@@ -150,16 +222,21 @@ class plgSystemBackuponupdate extends JPlugin
 		}
 
 		// Am I in the administrator application to begin with?
-		if (version_compare(JVERSION, '3.7.0', 'lt'))
-		{
-			$isAdmin = $app->isAdmin();
-		}
-		else
-		{
-			$isAdmin = $app->isClient('administrator');
-		}
+		$isAdmin = $app->isClient('administrator');
 
 		if (!$isAdmin)
+		{
+			return;
+		}
+
+		// Make sure we are enabled
+		if (!$this->isEnabled())
+		{
+			return;
+		}
+
+		// Is the main menu supposed to be hidden?
+		if ($this->app->input->getBool('hidemainmenu', false))
 		{
 			return;
 		}
@@ -167,15 +244,15 @@ class plgSystemBackuponupdate extends JPlugin
 		// Load the language
 		$this->loadLanguage();
 
-		JHtml::_('bootstrap.popover');
-
 		try
 		{
+			HTMLHelper::_('bootstrap.popover');
+
 			/**
 			 * Apparently you may have format=html with an application that returns no document...?! I can't see how it's
 			 * possible lest a 3PD has screwed up. In any case, this happened in tickets 28218, 28223, 28224 and 28225. My
 			 * workaround is to first check if the application can and does return a document. If not, try to get the document
-			 * via JFactory (legacy method). If that fails too, skip the "Disable plugin" feature altogether.
+			 * via Factory (legacy method). If that fails too, skip the "Disable plugin" feature altogether.
 			 */
 			$document = null;
 
@@ -191,9 +268,9 @@ class plgSystemBackuponupdate extends JPlugin
 				 * need to load it with the class_exists trick. As for the method_exists, it's us trying to make sure future
 				 * versions of Joomla! won't break anything.
 				 */
-				if (class_exists('JFactory', true) && method_exists('JFactory', 'getDocument'))
+				if (class_exists('Joomla\CMS\Factory', true) && method_exists(Factory::class, 'getDocument'))
 				{
-					$document = JFactory::getDocument();
+					$document = Factory::getDocument();
 				}
 			}
 
@@ -208,22 +285,22 @@ class plgSystemBackuponupdate extends JPlugin
 				return;
 			}
 
-			$isJoomla4 = version_compare(JVERSION, '3.999999.999999', 'gt');
+			$isJoomla4        = version_compare(JVERSION, '3.999999.999999', 'gt');
 			$baseDocumentName = $isJoomla4 ? 'joomla4' : 'default';
 
 			$document->addStyleDeclaration($this->loadTemplate($baseDocumentName . '.css'));
 
-			$fakeModule = (object)[
-				'id' => -1,
-				'title' => 'Backup on Update',
-				'module' => 'mod_custom',
-				'position' => 'status',
-				'content' => $this->loadTemplate($baseDocumentName . '.html', [
-					'active' => $this->getBoUFlag()
+			$fakeModule = (object) [
+				'id'        => -1,
+				'title'     => 'Backup on Update',
+				'module'    => 'mod_custom',
+				'position'  => 'status',
+				'content'   => $this->loadTemplate($baseDocumentName . '.html', [
+					'active' => $this->getBoUFlag(),
 				]),
 				'showtitle' => 0,
-				'params' => '{"prepare_content":"0","layout":"_:default","moduleclass_sfx":"","cache":"0","cache_time":"1","module_tag":"div","bootstrap_size":"0","header_tag":"h3","header_class":"","style":"0"}',
-				'menuid' => 0,
+				'params'    => '{"prepare_content":"0","layout":"_:default","moduleclass_sfx":"","cache":"0","cache_time":"1","module_tag":"div","bootstrap_size":"0","header_tag":"h3","header_class":"","style":"0"}',
+				'menuid'    => 0,
 			];
 		}
 		catch (Exception $e)
@@ -247,7 +324,7 @@ class plgSystemBackuponupdate extends JPlugin
 	 */
 	private function loadTemplate($layout, array $params = [])
 	{
-		$file = JPluginHelper::getLayoutPath('system', 'backuponupdate', $layout);
+		$file = PluginHelper::getLayoutPath('system', 'backuponupdate', $layout);
 
 		ob_start();
 
@@ -258,15 +335,150 @@ class plgSystemBackuponupdate extends JPlugin
 		return $ret;
 	}
 
+	/**
+	 * Get the Backup on Update flag
+	 *
+	 * @return  int
+	 * @since   5.5.0
+	 */
 	private function getBoUFlag()
 	{
-		return JFactory::getSession()->get('active', 1, 'plg_system_backuponupdate');
+		$container = Container::getInstance('com_akeeba', ['tempInstance' => 1]);
+
+		return $container->platform->getSessionVar('active', 1, 'plg_system_backuponupdate');
 	}
 
+	/**
+	 * Toggle the Backup on Update flag
+	 *
+	 * @return  void
+	 * @since   5.5.0
+	 */
 	private function toggleBoUFlag()
 	{
-		$status = 1 - $this->getBoUFlag();
+		$container = Container::getInstance('com_akeeba', ['tempInstance' => 1]);
+		$status    = 1 - $this->getBoUFlag();
 
-		JFactory::getSession()->set('active', $status, 'plg_system_backuponupdate');
+		$container->platform->setSessionVar('active', $status, 'plg_system_backuponupdate');
+	}
+
+	/**
+	 * Should this plugin be enabled at all?
+	 *
+	 * @return  bool
+	 * @since   7.0.0
+	 */
+	private function isEnabled()
+	{
+		if (!is_null($this->isEnabled))
+		{
+			return $this->isEnabled;
+		}
+
+		$this->isEnabled = false;
+
+		if (!version_compare(PHP_VERSION, '7.2.0', '>='))
+		{
+			return false;
+		}
+
+		// Make sure Akeeba Backup is installed
+		if (!file_exists(JPATH_ADMINISTRATOR . '/components/com_akeeba'))
+		{
+			return false;
+		}
+
+		// Is Akeeba Backup enabled?
+		try
+		{
+			$db    = Factory::getDbo();
+			$query = $db->getQuery(true)
+				->select($db->qn('enabled'))
+				->from($db->qn('#__extensions'))
+				->where($db->qn('element') . ' = ' . $db->q('com_akeeba'))
+				->where($db->qn('type') . ' = ' . $db->q('component'));
+			$db->setQuery($query);
+			$enabled         = $db->loadResult();
+			$this->isEnabled = is_null($enabled) ? false : ((bool) $enabled);
+		}
+		catch (Exception $e)
+		{
+			$this->isEnabled = false;
+		}
+
+		return $this->isEnabled;
+	}
+
+	/**
+	 * Returns the version number of the latest Joomla release.
+	 *
+	 * It will return the string "(???)" if no Joomla update is being listed
+	 *
+	 * @return  string
+	 * @since   7.0.0
+	 */
+	private function getLatestJoomlaVersion()
+	{
+		$latestVersion = '(???)';
+
+		// Get the extension ID for Joomla! itself (the files_joomla pseudo-extension)
+		try
+		{
+			$db    = Factory::getDbo();
+			$query = $db->getQuery(true)
+				->select($db->qn('extension_id'))
+				->from($db->qn('#__extensions'))
+				->where($db->qn('name') . ' = ' . $db->q('files_joomla'));
+
+			$jEid = $db->setQuery($query)->loadResult();
+		}
+		catch (Exception $e)
+		{
+			$jEid = 700;
+		}
+
+		if (is_null($jEid) || ($jEid <= 0))
+		{
+			$jEid = 700;
+		}
+
+		// Fetch the Joomla update information from the database.
+		try
+		{
+			$db           = Factory::getDbo();
+			$query        = $db->getQuery(true)
+				->select('*')
+				->from($db->quoteName('#__updates'))
+				->where($db->quoteName('extension_id') . ' = ' . $db->quote($jEid));
+			$updateObject = $db->setQuery($query)->loadObject();
+		}
+		catch (Exception $e)
+		{
+			return $latestVersion;
+		}
+
+		if (is_null($updateObject))
+		{
+			return $latestVersion;
+		}
+
+		return $updateObject->version;
+	}
+
+	/**
+	 * Pre
+	 *
+	 * @param $description
+	 *
+	 * @return string|string[]
+	 */
+	private function preprocessDescription($description)
+	{
+		$replacements = [
+			'[VERSION_FROM]' => JVERSION,
+			'[VERSION_TO]'   => $this->getLatestJoomlaVersion(),
+		];
+
+		return str_replace(array_keys($replacements), array_values($replacements), $description);
 	}
 }

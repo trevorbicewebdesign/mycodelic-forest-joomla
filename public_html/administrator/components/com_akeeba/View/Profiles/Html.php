@@ -1,20 +1,19 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2019 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 namespace Akeeba\Backup\Admin\View\Profiles;
 
 // Protect from unauthorized access
-defined('_JEXEC') or die();
+defined('_JEXEC') || die();
 
 use Akeeba\Backup\Admin\View\ViewTraits\ProfileIdAndName;
-use Akeeba\Engine\Platform;
 use FOF30\View\DataView\Html as BaseView;
-use JHtml;
-use JText;
+use Joomla\CMS\HTML\HTMLHelper as JHtml;
+use Joomla\CMS\Language\Text as JText;
 
 /**
  * View controller for the profiles management page
@@ -22,7 +21,7 @@ use JText;
 class Html extends BaseView
 {
 	use ProfileIdAndName;
-	
+
 	/**
 	 * Sorting order fields
 	 *
@@ -38,34 +37,12 @@ class Html extends BaseView
 		$this->getProfileIdAndName();
 
 		// Get Sort By fields
-		$this->sortFields = array(
+		$this->sortFields = [
 			'id'          => JText::_('JGRID_HEADING_ID'),
 			'description' => JText::_('COM_AKEEBA_PROFILES_COLLABEL_DESCRIPTION'),
-		);
+		];
 
 		parent::onBeforeBrowse();
-
-		$js = <<< JS
-	Joomla.orderTable = function ()
-	{
-		table = document.getElementById("sortTable");
-		direction = document.getElementById("directionTable");
-		order = table.options[table.selectedIndex].value;
-
-		if (order != '{$this->lists->order}')
-		{
-			dirn = 'asc';
-		}
-		else
-		{
-			dirn = direction.options[direction.selectedIndex].value;
-		}
-
-		Joomla.tableOrdering(order, dirn);
-	}
-
-JS;
-		$this->addJavascriptInline($js);
 
 		JHtml::_('behavior.multiselect');
 		JHtml::_('dropdown.init');
@@ -79,8 +56,9 @@ JS;
 		parent::onBeforeEdit();
 
 		// Include tooltip support
-		JHtml::_('behavior.tooltip');
+		if (version_compare(JVERSION, '3.9999.9999', 'lt'))
+		{
+			JHtml::_('behavior.tooltip');
+		}
 	}
-
-
 }
