@@ -9,4 +9,4 @@ extensions:
     enabled:
         - Codeception\Extension\RunFailed
 params:
-    - .env.testing
+    - .env
