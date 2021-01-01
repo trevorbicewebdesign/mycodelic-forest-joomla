@@ -113,13 +113,10 @@ class plgSystemCivicrm_usersynch extends JPlugin
           'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
         ));  
         
-        
-        $apiParams = array('email' => $user['email']);
-        if ($api->Contact->Get($apiParams)) {
-            //each key of the result array is an attribute of the api
-            $civiUser = $api->lastResult->values[0];
-            // Delete the contact
-            $results = $api->Contact->Delete(['id'=>$civiUser->contact_id]);
+        $contact = $this->getContact($user['email']);
+        if($contact){
+            $contact_id = $contact->id;
+            $this->deleteContact($contact_id);
         }
     }
     function getPhone($contact_id){
@@ -206,8 +203,13 @@ class plgSystemCivicrm_usersynch extends JPlugin
         }
         return false;
     }
-    function deleteContact($id){
+    function deleteContact($contact_id){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
         
+        $results = $api->Contact->Delete(['id'=>$contact_id]);
     }
     function updateContact($userinfo, $id){
         $api = new civicrm_api3(array(
