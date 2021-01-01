@@ -12,6 +12,10 @@ class plgSystemCivicrm_usersynch extends JPlugin
         }
     }
     function onAfterRoute()	{
+
+       // die("111111 1234qwer");
+        
+        
         /*
          $api = new civicrm_api3(array(
           // Specify location of "civicrm.settings.php".
@@ -118,63 +122,163 @@ class plgSystemCivicrm_usersynch extends JPlugin
             $results = $api->Contact->Delete(['id'=>$civiUser->contact_id]);
         }
     }
-	function onUserAfterSave($user,$isnew,$success,$msg)	{
-        $currentuser = JFactory::getUser();
-        
-        
-        $plugin = JPluginHelper::getPlugin('system', 'slack_integration');
-        $params = new JRegistry($plugin->params);//Joomla 1.6 Onward
-        $token = $params->get('token');
-
+    function getPhone($contact_id){
         $api = new civicrm_api3(array(
           // Specify location of "civicrm.settings.php".
           'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
-        ));  
-        $apiParams = array('id' => $user['profile']['country']);
-        if ($api->Country->Get($apiParams)) {
-            //each key of the result array is an attribute of the api
-            $country = $api->lastResult->values;
-        }
-        $country_name = $country[0]->name;
+        ));
         
-        $apiParams = array('email' => $user['email']);
+        $apiParams = array(
+            'contact_id' => $contact_id
+        ); 
+        $results = $api->Phone->Get($apiParams);
+        if ($results && $results->phone) {
+            //each key of the result array is an attribute of the api
+            $civiUserPhone = $api->lastResult->values[0];
+            return $civiUserPhone;
+        }
+        return false;
+    }
+    function createPhone($user, $contact_id){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
+        
+        $apiParams = array(
+            'contact_id' => $contact_id,
+            'phone' => $user['profile']['phone'],
+            'phone_numeric' => $user['profile']['phone'],
+            'phone_type_id' => 2,
+            'location_type_id' => 3,
+            'is_primary' => 1,
+            'is_billing' => 0,
+        );
+        // if($civiUserPhone->id){
+        //    $apiParams['id'] = $civiUserPhone->id;    
+        // }
+        $results = $api->Phone->Create($apiParams);
+        if ($results) {
+            //each key of the result array is an attribute of the api
+            $civiUserPhone = $api->lastResult->values[0];
+            return $civiUserPhone;
+        }
+        return false;
+    }
+    function updatePhone($user, $contact_id, $phone_id){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
+        
+        $apiParams = array(
+            'contact_id' => $contact_id,
+            'phone' => $user['profile']['phone'],
+            'phone_numeric' => $user['profile']['phone'],
+            'phone_type_id' => 2,
+            'location_type_id' => 3,
+            'is_primary' => 1,
+            'is_billing' => 0,
+            'id' => $phone_id
+        );
+
+        $results = $api->Phone->Create($apiParams);
+        if ($results) {
+            //each key of the result array is an attribute of the api
+            $civiUserPhone = $api->lastResult->values[0];
+            return $civiUserPhone;
+        }
+        return false;
+    }
+
+        
+
+    function getContact($email){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
+        $apiParams = array('email' => $email);
         if ($api->Contact->Get($apiParams)) {
+            // We found a user!
+            $civiUser = $api->lastResult->values[0];
+            return $civiUser;
+        }
+        return false;
+    }
+    function deleteContact($id){
+        
+    }
+    function updateContact($userinfo, $id){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
+        
+        $apiParams = array(
+              'contact_type' => 'individual'
+            , 'first_name' => $name[0]
+            , 'last_name' => $name[1]
+            , 'nick_name' => $userInfo['profile']['playaname']
+            , 'source' => $userInfouserInfo['profile']['referred_by']
+            , 'street_address' => $user['profile']['address1']
+            , 'email' => $userInfo['email']
+            , 'id' => $id
+        );
+        if ($api->Contact->Update($apiParams, $id)) {
             //each key of the result array is an attribute of the api
             $civiUser = $api->lastResult->values[0];
+            return true;
         }
-        
-        $name = explode (" ",$user['name']);
+        return false;
+    }
+    function createContact($userinfo){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
+        $name = explode (" ", $userinfo['name']);
 
         $apiParams = array(
               'contact_type' => 'individual'
             , 'first_name' => $name[0]
             , 'last_name' => $name[1]
-            , 'nick_name' => $user['profile']['playaname']
-            , 'source' => $user['profile']['referred_by']
-            , 'street_address' => $user['profile']['address1']
-            , 'email' => $user['email']
+            , 'nick_name' => $userInfo['profile']['playaname']
+            , 'source' => $userinfo['profile']['referred_by']
+            , 'street_address' => $userinfo['profile']['address1']
+            , 'email' => $userinfo['email']
         );
-        if($civiUser->id){
-            $apiParams['id'] = $civiUser->id;
-        }
-        //print_r($apiParams);
-       
-        if ($api->Contact->Create($apiParams)) {
+        if ($results = $api->Contact->Create($apiParams)) {
             //each key of the result array is an attribute of the api
             $civiUser = $api->lastResult->values[0];
+            return $civiUser;
         }
+        return false;
+    }
+    function getAddress($contact_id){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
         
-
         $apiParams = array(
-            'contact_id' => $civiUser->id
+            'contact_id' => $contact_id
         );
         if ($api->Address->Get($apiParams)) {
             //each key of the result array is an attribute of the api
             $civiUserAddress = $api->lastResult->values[0];
+            return $civiUserAddress;
         }        
-
+        return false;
+    }
+    function createAddress($contact_id, $address){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
+        
         $apiParams = array(
-            'contact_id' => $civiUser->id,
+            'contact_id' => $contact_id,
             'location_type_id' => 3,
             'street_address' => $user['profile']['address1'],
             'supplemental_address_1' => $user['profile']['address2'],
@@ -185,39 +289,52 @@ class plgSystemCivicrm_usersynch extends JPlugin
             'is_primary' => 1,
             'is_billing' => 1,
             'manual_geo_code' => 0,
+            'id'=>$address->id
         );
-
-        if($civiUserAddress->id){
-            $apiParams['id'] = $civiUserAddress->id;    
-        }
-
-        $api->Address->Create($apiParams);
-
-        $apiParams = array(
-            'contact_id' => $civiUser->id
-        );
-        //print_r($apiParams);
-        if ($api->Phone->Get($apiParams)) {
+        $results = $api->Address->Create($apiParams);
+        if ($results) {
             //each key of the result array is an attribute of the api
-            $civiUserPhone = $api->lastResult->values[0];
-        }
-
+            $civiUserAddress = $api->lastResult->values[0];
+            return $civiUserAddress;
+        }        
+        return false;
+    }
+    function updateAddress($user, $address_id, $contact_id){
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
+     
         $apiParams = array(
-            'contact_id' => $civiUser->id,
-            'phone' => $user['profile']['phone'],
-            'phone_numeric' => $user['profile']['phone'],
-            'phone_type_id' => 2,
+            'contact_id' => $contact_id,
             'location_type_id' => 3,
+            'street_address' => $user['profile']['address1'],
+            'supplemental_address_1' => $user['profile']['address2'],
+            'postal_code' => $user['profile']['postal_code'],
+            'state_province_id' => $user['profile']['state'],
+            'country_id' => $user['profile']['country'],
+            'city' => $user['profile']['city'],
             'is_primary' => 1,
-            'is_billing' => 0,
+            'is_billing' => 1,
+            'manual_geo_code' => 0,
+            'id'=>$address_id
         );
-        if($civiUserPhone->id){
-            $apiParams['id'] = $civiUserPhone->id;    
-        }
-        $api->Phone->Create($apiParams);
-
+        $results = $api->Address->Create($apiParams);
+        if( $results ) {
+            //each key of the result array is an attribute of the api
+            $civiUserAddress = $api->lastResult->values[0];
+            return $civiUserAddress;
+        }        
+        return false;
+    }
+    function slackNotification($user, $contact_id){
+        $currentuser = JFactory::getUser();
+        $name = explode (" ", $user['name']);
+        $api = new civicrm_api3(array(
+          // Specify location of "civicrm.settings.php".
+          'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));
         
-
         $site_url = $_SERVER['HTTP_HOST'];
         $scheme = $_SERVER['HTTPS']=='on'?"https":"http";
         $message = "";
@@ -228,7 +345,7 @@ class plgSystemCivicrm_usersynch extends JPlugin
             $message .= "\n";
             $message .= "•They are from: {$country_name}";
             $message .= "\n";
-            $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$civiUser->id}|Click here to view their profile. >";
+            $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$contact_id}|Click here to view their profile. >";
         }
         else {
             if($currentuser->id != $user['id']){
@@ -238,7 +355,7 @@ class plgSystemCivicrm_usersynch extends JPlugin
                 $message .= "{$user['name']} has just updated their profile information.";
             }
             $message .= "\n";
-            $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$civiUser->id}|Click here to view their profile. >";
+            $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$contact_id}|Click here to view their profile. >";
         }
 
         $ch = curl_init("https://slack.com/api/chat.postMessage");
@@ -246,7 +363,7 @@ class plgSystemCivicrm_usersynch extends JPlugin
                     "token" 		=> $token,
                     "channel"		=> "#monitor-rsvp", //"#mychannel",
                     "text" 		=> $message, //"Hello, Foo-Bar channel message.",
-                    "username" 	=> $civiUser->first_name." ".$civiUser->last_name.": ".$civiUser->phone,
+                    "username" 	=> $name[0]." ".$name[1].": ".$user['phone'],
                     "icon_emoji"	=> ":robot_face:",
         ]);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
@@ -255,8 +372,54 @@ class plgSystemCivicrm_usersynch extends JPlugin
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $result = curl_exec($ch);
         curl_close($ch);
+    }
+	function onUserAfterSave($user,$isnew,$success,$msg)	{
+        $plugin = JPluginHelper::getPlugin('system', 'slack_integration');
+        $params = new JRegistry($plugin->params);//Joomla 1.6 Onward
+        $token = $params->get('token');
 
+        $api = new civicrm_api3(array(
+        // Specify location of "civicrm.settings.php".
+            'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
+        ));  
+        $apiParams = array('id' => $user['profile']['country']);
+        if ($api->Country->Get($apiParams)) {
+            //each key of the result array is an attribute of the api
+            $country = $api->lastResult->values;
+        }
+        $country_name = $country[0]->name;
+            
+        // First create or update the contact
+        $contact = $this->getContact($user['email']);
+        if(!($contact)){
+            $contact_id = $this->createContact($user);
+        }
+        else {
+            $contact_id = $contact->id;
+            $this->updateContact($user, $contact_id);
+        }
         
+        // Update or create the address
+        $address = $this->getAddress($contact_id);
+        if(!($address)){
+            $address = $this->createAddress($contact_id, $user);
+            $address_id = $address->id;
+        }
+        else {
+            $address_id = $address->id;
+            $this->updateAddress($user, $address_id, $contact_id);
+        }
+        
+        // Update or create the phone
+        $phone = $this->getPhone($contact_id);
+        if(!($phone)){
+            $phone = $this->createPhone($user, $contact_id);
+            $phone_id = $phone->id;
+        }
+        
+        if($isnew){
+            $this->slackNotification($user,$contact_id);
+        }
 	}
 }
 ?>
