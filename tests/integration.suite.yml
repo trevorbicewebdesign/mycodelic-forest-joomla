@@ -1,0 +1,20 @@
+actor: IntegrationTester
+bootstrap: _bootstrap.php
+modules:
+    enabled:
+        - \Helper\Integration
+        - Db
+        - Asserts
+    config:
+        Db:
+            dsn: 'mysql:host=%DB_HOST%;dbname=%DB_NAME%'
+            user: '%DB_USER%'
+            password: '%DB_PASSWORD%'
+#            dump: 'tests/_data/dump2.sql'
+            populate: true 
+            cleanup: true 
+            waitlock: 5
+            url: '%SITEURL%'
+            urlReplacement: false
+            tablePrefix: '%TABLE_PREFIX%'
+
