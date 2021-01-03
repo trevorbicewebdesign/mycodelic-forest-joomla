@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,8 +10,10 @@ defined('_JEXEC') or die('Restricted access');
 
 class RsfirewallModelLogs extends JModelList
 {
-	public function __construct($config = array()) {
-		if (empty($config['filter_fields'])) {
+	public function __construct($config = array())
+	{
+		if (empty($config['filter_fields']))
+		{
 			$config['filter_fields'] = array(
 				'logs.level', 'logs.date', 'logs.ip', 'logs.user_id', 'logs.username', 'logs.page', 'logs.referer'
 			);
@@ -20,8 +22,9 @@ class RsfirewallModelLogs extends JModelList
 		parent::__construct($config);
 	}
 
-	protected function getListQuery() {
-		$db 	= JFactory::getDbo();
+	protected function getListQuery()
+	{
+		$db 	= $this->getDbo();
 		$query 	= $db->getQuery(true);
 
 		// get filtering states
@@ -72,7 +75,8 @@ class RsfirewallModelLogs extends JModelList
 		return $query;
 	}
 
-	protected function populateState($ordering = null, $direction = null) {
+	protected function populateState($ordering = null, $direction = null)
+	{
 		$this->setState('filter.search', $this->getUserStateFromRequest($this->context.'.filter.search', 'filter_search'));
 		$this->setState('filter.level',  $this->getUserStateFromRequest($this->context.'.filter.level',  'filter_level'));
 		$this->setState('filter.blocked_status', $this->getUserStateFromRequest($this->context.'.filter.blocked_status',  'filter_blocked_status', null, 'int'));
@@ -81,27 +85,9 @@ class RsfirewallModelLogs extends JModelList
 		parent::populateState('logs.date', 'desc');
 	}
 
-	public function getLevels()
-	{
-		return array(
-			JHtml::_('select.option', 'low', JText::_('COM_RSFIREWALL_LEVEL_LOW')),
-			JHtml::_('select.option', 'medium', JText::_('COM_RSFIREWALL_LEVEL_MEDIUM')),
-			JHtml::_('select.option', 'high', JText::_('COM_RSFIREWALL_LEVEL_HIGH')),
-			JHtml::_('select.option', 'critical', JText::_('COM_RSFIREWALL_LEVEL_CRITICAL'))
-		);
-	}
-
-	public function getBlockedStatuses()
-	{
-		return array(
-			JHtml::_('select.option', '-1', JText::_('COM_RSFIREWALL_NOT_BLOCKED')),
-			JHtml::_('select.option', '1', JText::_('COM_RSFIREWALL_BLOCKED'))
-		);
-	}
-
 	public function toCSV() {
 		// Get Dbo
-		$db = JFactory::getDbo();
+		$db = $this->getDbo();
 
 		// Populate state so filters and ordering is available.
 		$this->populateState();
@@ -168,7 +154,7 @@ class RsfirewallModelLogs extends JModelList
 	}
 
 	public function getBlockedIps(){
-		$db 	= JFactory::getDbo();
+		$db 	= $this->getDbo();
 		$query = $db->getQuery(true)
 			->select('COUNT('.$db->qn('ip').') AS num')
 			->select($db->qn('ip'))
@@ -192,63 +178,5 @@ class RsfirewallModelLogs extends JModelList
 		unset($results);
 
 		return $prepared;
-	}
-
-	public function getFilterBar() {
-		require_once JPATH_COMPONENT.'/helpers/adapters/filterbar.php';
-
-		$options = array();
-		$options['search'] = array(
-			'label' => JText::_('JSEARCH_FILTER'),
-			'value' => $this->getState('filter.search')
-		);
-		$options['limitBox']  = $this->getPagination()->getLimitBox();
-		$options['listDirn']  = $this->getState('list.direction', 'desc');
-		$options['listOrder'] = $this->getState('list.ordering', 'logs.date');
-		$options['sortFields'] = array(
-			JHtml::_('select.option', 'logs.level', JText::_('COM_RSFIREWALL_ALERT_LEVEL')),
-			JHtml::_('select.option', 'logs.date', JText::_('COM_RSFIREWALL_LOG_DATE_EVENT')),
-			JHtml::_('select.option', 'logs.ip', JText::_('COM_RSFIREWALL_LOG_IP_ADDRESS')),
-			JHtml::_('select.option', 'logs.user_id', JText::_('COM_RSFIREWALL_LOG_USER_ID')),
-			JHtml::_('select.option', 'logs.username', JText::_('COM_RSFIREWALL_LOG_USERNAME')),
-			JHtml::_('select.option', 'logs.page', JText::_('COM_RSFIREWALL_LOG_PAGE')),
-			JHtml::_('select.option', 'logs.referer', JText::_('COM_RSFIREWALL_LOG_REFERER'))
-		);
-		$options['rightItems'] = array(
-			array(
-				'input' => '<select name="filter_level" class="inputbox" onchange="this.form.submit()">'."\n"
-						   .'<option value="">'.JText::_('COM_RSFIREWALL_SELECT_LEVEL').'</option>'."\n"
-						   .JHtml::_('select.options', $this->getLevels(), 'value', 'text', $this->getState('filter.level'))."\n"
-						   .'</select>'
-			),
-			array(
-				'input' => '<select name="filter_blocked_status" class="inputbox" onchange="this.form.submit()">'."\n"
-					.'<option value="">'.JText::_('COM_RSFIREWALL_SELECT_BLOCKED_STATUS').'</option>'."\n"
-					.JHtml::_('select.options', $this->getBlockedStatuses(), 'value', 'text', $this->getState('filter.blocked_status'))."\n"
-					.'</select>'
-			)
-		);
-
-		$bar = new RSFilterBar($options);
-
-		return $bar;
-	}
-
-	public function getSideBar() {
-		require_once JPATH_COMPONENT.'/helpers/toolbar.php';
-
-		RSFirewallToolbarHelper::addFilter(
-			JText::_('COM_RSFIREWALL_SELECT_LEVEL'),
-			'filter_level',
-			JHtml::_('select.options', $this->getLevels(), 'value', 'text', $this->getState('filter.level'))
-		);
-
-		RSFirewallToolbarHelper::addFilter(
-			JText::_('COM_RSFIREWALL_SELECT_BLOCKED_STATUS'),
-			'filter_blocked_status',
-			JHtml::_('select.options', $this->getBlockedStatuses(), 'value', 'text', $this->getState('filter.blocked_status'))
-		);
-
-		return RSFirewallToolbarHelper::render();
 	}
 }

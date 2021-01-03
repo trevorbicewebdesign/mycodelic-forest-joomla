@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,82 +12,71 @@ abstract class RSFirewallReplacer
 {
 	protected static $emails = false;
 
-	public static function addCaptcha(&$buffer) {
-		$find = '<div class="button-holder">';
-
-		if (strpos($buffer, $find) !== false) {
-			$with  = '<div style="clear: both;">'."\n"
-					 .'<table cellspacing="0" cellpadding="2" border="0" width="100%">'."\n"
-					 .'<tr>'."\n"
-					 .'<td width="50%"><p>'.JText::_('COM_RSFIREWALL_PLEASE_ENTER_THE_IMAGE_CODE').'</p></td>'."\n"
-					 .'<td align="center"><img src="index.php?option=com_rsfirewall&amp;task=captcha" alt="Captcha" /></td>'."\n"
-					 .'</tr>'."\n"
-					 .'<tr>'."\n"
-					 .'<td width="50%"></td>'."\n"
-					 .'<td align="center"><input type="text" size="15" class="inputbox" id="mod-login-captcha" name="rsf_backend_captcha" /></td>'."\n"
-					 .'</tr>'."\n"
-					 .'</table>'."\n"
-					 .'</div>'."\n";
-			$with .= $find;
-
-			$buffer = str_replace($find, $with, $buffer);
-
-			return true;
+	public static function addCaptcha(&$buffer)
+	{
+		if (!class_exists('RSFirewallCaptcha'))
+		{
+			require_once JPATH_ADMINISTRATOR . '/components/com_rsfirewall/helpers/captcha.php';
 		}
 
-		$find = '<div class="btn-group pull-left">';
+		try
+		{
+			$captcha = new RSFirewallCaptcha();
+			$data = $captcha->getImage();
 
-		if (strpos($buffer, $find) !== false) {
-			$with = '
-			<div class="control-group">
-				<div class="controls">
-					<div class="center">
-						<img src="index.php?option=com_rsfirewall&amp;task=captcha" alt="Captcha" />
-					</div>
-				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-				  <div class="center">
-					<label for="mod-login-captcha" class="element-invisible">'.JText::_('COM_RSFIREWALL_PLEASE_ENTER_THE_IMAGE_CODE').'</label>
-					<input name="rsf_backend_captcha" id="mod-login-captcha" type="text" class="input-medium"  placeholder="'.JText::_('COM_RSFIREWALL_PLEASE_ENTER_THE_IMAGE_CODE').'" size="15" /></a>
-				  </div>
-				 </div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<div class="btn-group pull-left">';
+			if (!$data)
+			{
+				throw new Exception(JText::_('COM_RSFIREWALL_CAPTCHA_IMAGE_COULD_NOT_BE_GENERATED'));
+			}
 
-			$buffer = str_replace($find, $with, $buffer);
+			// Load the Text field
+			$field = JFormHelper::loadFieldType('text');
 
-			return true;
+			// Prepare the XML
+			$xml = new SimpleXMLElement('<field name="rsf_backend_captcha" type="text" label="COM_RSFIREWALL_CAPTCHA_SECURITY" hint="COM_RSFIREWALL_PLEASE_ENTER_THE_IMAGE_CODE" />');
+
+			// Setup the field
+			$field->setup($xml, '');
+
+			// Render the image
+			$image = '<img src="data:image/jpeg;base64,' . $data . '" alt="Captcha" />';
+
+			if (version_compare(JVERSION, '4.0', '>='))
+			{
+				// Joomla! 4
+				$find       = '<div class="form-group">';
+				$position   = strrpos($buffer, $find);
+
+				if ($position !== false)
+				{
+					$image = str_replace('<img ', '<img style="height: auto; max-height: auto;" ', $image);
+
+					$html = '<div class="form-group text-center">' . $image . '</div>';
+					$html .= str_replace('control-group', 'form-group', $field->renderField());
+
+					$buffer = substr_replace($buffer, $html . $find, $position, strlen($find));
+					return true;
+				}
+			}
+			else
+			{
+				// Joomla! 3
+				$find       = '<div class="control-group">';
+				$position   = strrpos($buffer, $find);
+
+				if ($position !== false)
+				{
+					$html = '<div class="control-group center">' . $image . '</div>';
+					$html .= $field->renderField(array('class' => 'center'));
+
+					$buffer = substr_replace($buffer, $html . $find, $position, strlen($find));
+					return true;
+				}
+			}
 		}
-
-		$find = '<div class="btn-group">';
-		if (strpos($buffer, $find) !== false) {
-			$with = '
-			<div class="control-group">
-				<div class="controls">
-					<div class="center">
-						<img src="index.php?option=com_rsfirewall&amp;task=captcha" alt="Captcha" />
-					</div>
-				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-				  <div class="center">
-					<label for="mod-login-captcha" class="element-invisible">'.JText::_('COM_RSFIREWALL_PLEASE_ENTER_THE_IMAGE_CODE').'</label>
-					<input name="rsf_backend_captcha" id="mod-login-captcha" type="text" class="input-medium"  placeholder="'.JText::_('COM_RSFIREWALL_PLEASE_ENTER_THE_IMAGE_CODE').'" size="15" /></a>
-				  </div>
-				 </div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<div class="btn-group">';
-
-			$buffer = str_replace($find, $with, $buffer);
-
-			return true;
+		catch (Exception $e)
+		{
+			JFactory::getApplication()->enqueueMessage($e->getMessage(), 'warning');
 		}
 
 		return false;
@@ -450,7 +439,7 @@ abstract class RSFirewallReplacer
 
 		if (self::$emails)
 		{
-		    $script = JHtml::_('rsfirewall_script', 'com_rsfirewall/mail.js', array('relative' => true, 'version' => 'auto', 'pathOnly' => true));
+		    $script = JHtml::_('script', 'com_rsfirewall/mail.js', array('relative' => true, 'version' => 'auto', 'pathOnly' => true));
 
 			$text = str_replace('</body>', '<script type="text/javascript" src="' . $script . '"></script></body>', $text);
 		}

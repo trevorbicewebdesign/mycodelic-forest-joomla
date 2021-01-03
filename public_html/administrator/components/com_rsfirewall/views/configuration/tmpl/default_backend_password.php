@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -18,8 +18,7 @@ if (isset($this->fieldset->description) && !empty($this->fieldset->description))
 	<div class="com-rsfirewall-ok"><p><?php echo JText::_('COM_RSFIREWALL_BACKEND_PASSWORD_IS_SET'); ?></p></div>
 <?php } ?>
 <?php
-$this->field->startFieldset();
-foreach ($this->fields as $field) {
+foreach ($this->fields as $field)
+{
 	echo $this->form->renderField($field->fieldname);
 }
-$this->field->endFieldset();

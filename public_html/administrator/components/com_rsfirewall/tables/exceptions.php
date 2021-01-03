@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -15,29 +15,32 @@ class RsfirewallTableExceptions extends JTable
 	 *
 	 * @public int
 	 */
-	public $id 			= null;
-	public $type 		= null;
-	public $regex 		= null;
-	public $match 		= null;
-	public $php 		= null;
-	public $sql 		= null;
-	public $js 			= null;
-	public $uploads 	= null;
-	public $reason 		= null;
-	public $date 		= null;
-	public $published 	= 1;
+	public $id;
+	public $type;
+	public $regex;
+	public $match;
+	public $php;
+	public $sql;
+	public $js;
+	public $uploads;
+	public $reason;
+	public $date;
+	public $published = 1;
 		
 	/**
 	 * Constructor
 	 *
 	 * @param object Database connector object
 	 */
-	public function __construct(& $db) {
+	public function __construct(& $db)
+	{
 		parent::__construct('#__rsfirewall_exceptions', 'id', $db);
 	}
 	
-	public function store($updateNulls = false) {
-		if (!$this->id) {
+	public function store($updateNulls = false)
+	{
+		if (!$this->id)
+		{
 			$this->date = JFactory::getDate()->toSql();
 		}
 		

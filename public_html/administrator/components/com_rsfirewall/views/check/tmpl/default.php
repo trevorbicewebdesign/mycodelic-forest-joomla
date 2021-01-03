@@ -1,18 +1,19 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
 defined('_JEXEC') or die('Restricted access');
+
+JHtml::_('behavior.keepalive');
+
 JText::script('COM_RSFIREWALL_ERROR_CHECK');
 JText::script('COM_RSFIREWALL_ERROR_CHECK_RETRYING');
 JText::script('COM_RSFIREWALL_ERROR_FIX');
 JText::script('COM_RSFIREWALL_CONFIGURATION_LINE');
-JText::script('COM_RSFIREWALL_USERNAME');
-JText::script('COM_RSFIREWALL_PASSWORD');
 JText::script('COM_RSFIREWALL_MORE_FOLDERS');
 JText::script('COM_RSFIREWALL_MORE_FILES');
 JText::script('COM_RSFIREWALL_RENAME_ADMIN');
@@ -54,27 +55,40 @@ JText::script('COM_RSFIREWALL_GRADE_NOT_FINISHED');
 JText::script('COM_RSFIREWALL_GRADE_NOT_FINISHED_DESC');
 JText::script('COM_RSFIREWALL_SCANNING_IN_PROGRESS_LEAVE');
 JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
+
+JHtml::_('script', 'com_rsfirewall/jquery.knob.js', array('relative' => true, 'version' => 'auto'));
+
+$this->document->addScriptDeclaration(
+	'RSFirewall.requestTimeOut.Seconds = \'' . (float) $this->config->get('request_timeout') . '\';' . "\n" .
+	'RSFirewall.MaxRetries = ' . (int) $this->config->get('max_retries') . ';' . "\n" .
+	'RSFirewall.RetriesTimeout = ' . (int) $this->config->get('retries_timeout') . ';'
+);
 ?>
 <form action="<?php echo JRoute::_('index.php?option=com_rsfirewall&view=check');?>" method="post" name="adminForm" id="adminForm">
-<div id="j-sidebar-container" class="span2">
-	<?php echo $this->sidebar; ?>
-</div>
-<div id="j-main-container" class="span10">
-	<p class="alert alert-info"><?php echo JText::sprintf('COM_RSFIREWALL_SYSTME_CHECK_LAST_RUN', $this->lastRun); ?></p>
+
+<?php echo RSFirewallAdapterGrid::sidebar(); ?>
+	<p class="alert alert-info" id="com-rsfirewall-last-run"><?php echo JText::sprintf('COM_RSFIREWALL_SYSTME_CHECK_LAST_RUN', $this->lastRun); ?></p>
 	<div id="com-rsfirewall-main-content">
 		<div id="com-rsfirewall-grade" style="display: none;">
-			<p><strong><?php echo JText::_('COM_RSFIREWALL_GRADE_FINISHED'); ?></strong><br /><?php echo JText::_('COM_RSFIREWALL_GRADE_FINISHED_DESC'); ?></p>
+			<h2><?php echo JText::_('COM_RSFIREWALL_GRADE_FINISHED'); ?></h2>
+			<p><?php echo JText::_('COM_RSFIREWALL_GRADE_FINISHED_DESC'); ?></p>
 			<input type="text" value="100" readonly="readonly" disabled="disabled" style="height: auto;" />
 		</div>
 		<?php if ($this->hasXdebug) { ?>
-		<p><strong><?php echo JText::_('COM_RSFIREWALL_SYSTEM_CHECK_HAS_DEBUG'); ?></strong></p>
-		<p><?php echo JText::_('COM_RSFIREWALL_SYSTEM_CHECK_HAS_DEBUG_DESC'); ?></p>
+			<div class="alert alert-danger" id="com-rsfirewall-xdebug-warning">
+			<p><strong><?php echo JText::_('COM_RSFIREWALL_SYSTEM_CHECK_HAS_DEBUG'); ?></strong></p>
+			<p><?php echo JText::_('COM_RSFIREWALL_SYSTEM_CHECK_HAS_DEBUG_DESC'); ?></p>
+			<p><button class="btn btn-danger btn-lg btn-large" type="button" onclick="document.getElementById('com-rsfirewall-start-button').removeAttribute('disabled'); document.getElementById('com-rsfirewall-xdebug-warning').style.display = 'none';"><?php echo JText::_('COM_RSFIREWALL_XDEBUG_I_UNDERSTAND_THE_RISKS_AND_WANT_TO_CONTINUE'); ?></button></p>
+			</div>
 		<?php } ?>
-		<p id="com-rsfirewall-scan-in-progress" class="com-rsfirewall-hidden"><?php echo JText::_('COM_RSFIREWALL_SCAN_IS_IN_PROGRESS'); ?></p>
-		<p><button type="button" class="btn btn-primary" id="com-rsfirewall-start-button" <?php if ($this->hasXdebug) { ?> disabled="disabled"<?php } else { ?> onclick="RSFirewallStartCheck();"<?php } ?>><?php echo JText::_('COM_RSFIREWALL_CHECK_SYSTEM'); ?></button></p>
+		<div id="com-rsfirewall-scan-in-progress" class="com-rsfirewall-hidden">
+			<div class="lds-ripple"><div></div><div></div></div>
+			<p><?php echo JText::_('COM_RSFIREWALL_SCAN_IS_IN_PROGRESS'); ?></p>
+		</div>
+		<p><button type="button" class="btn btn-primary" id="com-rsfirewall-start-button" <?php if ($this->hasXdebug) { ?>disabled="disabled"<?php } ?> onclick="RSFirewallStartCheck();"><?php echo JText::_('COM_RSFIREWALL_CHECK_SYSTEM'); ?></button></p>
 		<div class="com-rsfirewall-content-box">
 			<div class="com-rsfirewall-content-box-header">
-				<h3><span class="com-rsfirewall-icon-16-joomla"></span><?php echo JText::_('COM_RSFIREWALL_JOOMLA_CONFIGURATION'); ?></h3>
+				<h3><span class="icon-joomla"></span> <?php echo JText::_('COM_RSFIREWALL_JOOMLA_CONFIGURATION'); ?></h3>
 			</div>
 			<div id="com-rsfirewall-joomla-configuration" class="com-rsfirewall-content-box-content com-rsfirewall-hidden">
 				<div class="com-rsfirewall-progress" id="com-rsfirewall-joomla-configuration-progress"><div class="com-rsfirewall-bar" style="width: 0%;">0%</div></div>
@@ -87,74 +101,66 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						</tr>
 					</thead>
 					<tbody>
-						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_JOOMLA_VERSION_CHECK'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
-						</tr>
-						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
-							<td colspan="3"></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+							<td colspan="3"></td>
+						</tr>
+						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_FIREWALL_VERSION_CHECK'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
-						</tr>
-						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
-							<td colspan="3"></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
+							<td colspan="3"></td>
+						</tr>
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_SQL_PASSWORD'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td colspan="3"></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_ADMIN_USER'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3"><p><label for="com-rsfirewall-new-username"><?php echo JText::_('COM_RSFIREWALL_NEW_USERNAME'); ?></label> <input onkeyup="RSFirewallChangeAdminUserButtonText();" id="com-rsfirewall-new-username" type="text" name="" value="admin" /> <button type="button" onclick="RSFirewallFix('fixAdminUser', this)" id="com-rsfirewall-rename-admin-button" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::sprintf('COM_RSFIREWALL_RENAME_ADMIN', 'admin'); ?></button></p></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_FTP_PASSWORD'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixFTPPassword', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::_('COM_RSFIREWALL_REMOVE_FTP_PASSWORD'); ?></button></p></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_SEF'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixSEF', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::_('COM_RSFIREWALL_ENABLE_SEF'); ?></button></p></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_CONFIGURATION_INTEGRITY'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
-						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
+						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixConfiguration', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::_('COM_RSFIREWALL_REBUILD_CONFIGURATION'); ?></button></p><p><?php echo JText::_('COM_RSFIREWALL_CONFIGURATION_DETAILS'); ?></p></td>
-						</tr>
-						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
-							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_WEAK_PASSWORDS'); ?></span></td>
-							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
-						</tr>
-						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
-							<td colspan="3"><p><?php echo JText::_('COM_RSFIREWALL_WEAK_PASSWORDS_DETAILS'); ?></p></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_SESSION_LIFETIME'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixSession', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::_('COM_RSFIREWALL_DECREASE_SESSION'); ?></button></p></td>
@@ -162,7 +168,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_TEMPORARY_FILES'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixTemporaryFiles', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::_('COM_RSFIREWALL_EMPTY_TEMPORARY_FOLDER'); ?></button></p></td>
@@ -170,7 +176,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::sprintf('COM_RSFIREWALL_CHECKING_HTACCESS', $this->accessFile); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixHtaccess', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::sprintf('COM_RSFIREWALL_RENAME_HTACCESS', $this->defaultAccessFile, $this->accessFile); ?></button></p></td>
@@ -178,7 +184,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_SESSION_HANDLER'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td colspan="3"><p><button type="button" onclick="RSFirewallFix('fixSessionHandler', this)" class="com-rsfirewall-button com-rsfirewall-fix-button"><?php echo JText::_('COM_RSFIREWALL_FIX_SESSION_HANDLER'); ?></button></p></td>
@@ -186,7 +192,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td><span><?php echo JText::_('COM_RSFIREWALL_ADDITIONAL_BACKEND_PASSWORD_ENABLED'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3"></td>
@@ -195,7 +201,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 							<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 								<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_GOOGLE_SAFE_BROWSER'); ?></span></td>
 								<td class="com-rsfirewall-count"><span></span></td>
-								<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+								<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 							</tr>
 							<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 								<td colspan="3"></td>
@@ -205,7 +211,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 							<tr class="com-rsfirewall-table-row <?php if (count($this->config->get('google_apis')) == 2) { echo 'alt-row'; } ?> com-rsfirewall-hidden">
 								<td><span><?php echo JText::_('COM_RSFIREWALL_CHECKING_GOOGLE_WEB_RISK'); ?></span></td>
 								<td class="com-rsfirewall-count"><span></span></td>
-								<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+								<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 							</tr>
 							<tr class="com-rsfirewall-table-row <?php if (count($this->config->get('google_apis')) == 2) { echo 'alt-row'; } ?> com-rsfirewall-hidden">
 								<td colspan="3"></td>
@@ -217,7 +223,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 		</div><!-- Joomla! config -->
 		<div class="com-rsfirewall-content-box">
 			<div class="com-rsfirewall-content-box-header">
-				<h3><span class="com-rsfirewall-icon-16-server"></span><?php echo JText::_('COM_RSFIREWALL_SERVER_CONFIGURATION'); ?></h3>
+				<h3><span class="icon-database"></span> <?php echo JText::_('COM_RSFIREWALL_SERVER_CONFIGURATION'); ?></h3>
 			</div>
 			<div id="com-rsfirewall-server-configuration" class="com-rsfirewall-content-box-content com-rsfirewall-hidden">
 				<div class="com-rsfirewall-progress" id="com-rsfirewall-server-configuration-progress"><div class="com-rsfirewall-bar" style="width: 0%;">0%</div></div>
@@ -291,7 +297,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 		</div><!-- Server config -->
 		<div class="com-rsfirewall-content-box">
 			<div class="com-rsfirewall-content-box-header">
-				<h3><span class="com-rsfirewall-icon-16-filescan"></span><?php echo JText::_('COM_RSFIREWALL_SCAN_RESULT'); ?></h3>
+				<h3><span class="icon-file"></span> <?php echo JText::_('COM_RSFIREWALL_SCAN_RESULT'); ?></h3>
 			</div>
 			<div id="com-rsfirewall-file-scan" class="com-rsfirewall-content-box-content com-rsfirewall-hidden">
 				<table id="com-rsfirewall-file-scan-table">
@@ -305,8 +311,8 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 					<tbody>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td width="15%" nowrap="nowrap"><span><?php echo JText::_('COM_RSFIREWALL_SCANNING_JOOMLA_HASHES'); ?></span></td>
-							<td class="com-rsfirewall-count"><span></span> <button type="button" href="index.php?option=com_rsfirewall&view=ignored&tmpl=component" onclick="window.open(RSFirewall.$(this).attr('href'), 'ignoreWindow', 'width=800, height=600, left=50%, location=0, menubar=0, resizable=1, scrollbars=1, toolbar=0, titlebar=1')" class="com-rsfirewall-button com-rsfirewall-hidden" id="com-rsfirewall-ignore-files-button"><?php echo JText::_('COM_RSFIREWALL_VIEW_IGNORED'); ?></button></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td class="com-rsfirewall-count"><span></span> <button type="button" href="index.php?option=com_rsfirewall&view=ignored&tmpl=component" onclick="window.open(jQuery(this).attr('href'), 'ignoreWindow', 'width=800, height=600, left=50%, location=0, menubar=0, resizable=1, scrollbars=1, toolbar=0, titlebar=1')" class="com-rsfirewall-button com-rsfirewall-hidden" id="com-rsfirewall-ignore-files-button"><?php echo JText::_('COM_RSFIREWALL_VIEW_IGNORED'); ?></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3">
@@ -318,7 +324,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td width="15%" nowrap="nowrap"><span><?php echo JText::_('COM_RSFIREWALL_SCANNING_FOLDERS'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td colspan="3">
@@ -329,7 +335,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td width="15%" nowrap="nowrap"><span><?php echo JText::_('COM_RSFIREWALL_SCANNING_FILES'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3">
@@ -341,7 +347,7 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 						<tr class="com-rsfirewall-table-row com-rsfirewall-hidden">
 							<td width="15%" nowrap="nowrap"><span><?php echo JText::_('COM_RSFIREWALL_SCANNING_FILES_FOR_MALWARE'); ?></span></td>
 							<td class="com-rsfirewall-count"><span></span></td>
-							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="expand"></span></button></td>
+							<td nowrap="nowrap" width="1%"><button class="com-rsfirewall-button com-rsfirewall-details-button com-rsfirewall-hidden" type="button"><span class="icon-arrow-down"></span></button></td>
 						</tr>
 						<tr class="com-rsfirewall-table-row alt-row com-rsfirewall-hidden">
 							<td colspan="3">
@@ -361,40 +367,18 @@ JText::script('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER');
 </form>
 
 <script type="text/javascript">
-RSFirewall.requestTimeOut.Seconds = '<?php echo (float) $this->config->get('request_timeout'); ?>';
-RSFirewall.MaxRetries = <?php echo (int) $this->config->get('max_retries'); ?>;
-RSFirewall.RetriesTimeout = <?php echo (int) $this->config->get('retries_timeout'); ?>;
-
 function RSFirewallStartCheck() {
-	RSFirewall.$('#com-rsfirewall-start-button').remove();
+    jQuery('#com-rsfirewall-last-run').remove();
+	jQuery('#com-rsfirewall-start-button').remove();
 	RSFirewall.System.Check.unhide('#com-rsfirewall-scan-in-progress').hide().fadeIn('slow');
 
 	// Joomla! Configuration Check
 	RSFirewall.System.Check.prefix = 'com-rsfirewall-joomla-configuration';
-	RSFirewall.System.Check.steps   = [
-		'checkJoomlaVersion',
-		'checkRSFirewallVersion',
-		'checkSQLPassword',
-		'checkAdminUser',
-		'checkFTPPassword',
-		'checkSEFEnabled',
-		'checkConfigurationIntegrity',
-		'checkAdminPasswords',
-		'checkSession',
-		'checkTemporaryFiles',
-		'checkHtaccess',
-		'checkSessionHandler',
-		'checkBackendPassword'
-	];
-	<?php if (in_array('safebrowsing', $this->config->get('google_apis'))) { ?>
-		RSFirewall.System.Check.steps.push('checkGoogleSafeBrowsing');
-	<?php } ?>
-	<?php if (in_array('webrisk', $this->config->get('google_apis'))) { ?>
-		RSFirewall.System.Check.steps.push('checkGoogleWebRisk');
-	<?php } ?>
+
+	RSFirewall.System.Check.steps = <?php echo json_encode($this->getSystemCheckSteps()); ?>;
 
 	RSFirewall.System.Check.stopCheck = function() {
-		RSFirewall.$('#com-rsfirewall-joomla-configuration-progress').fadeOut('fast', function(){RSFirewall.$(this).remove()});
+		jQuery('#com-rsfirewall-joomla-configuration-progress').fadeOut('fast', function(){jQuery(this).remove()});
 		RSFirewallServerCheck();
 	};
 	RSFirewall.System.Check.startCheck();
@@ -403,16 +387,9 @@ function RSFirewallStartCheck() {
 function RSFirewallServerCheck() {
 	// Server Configuration Check
 	RSFirewall.System.Check.prefix = 'com-rsfirewall-server-configuration';
-	RSFirewall.System.Check.steps  = [
-		<?php if (!$this->isPHP54) { ?>'checkRegisterGlobals',<?php } ?>
-		'checkAllowURLInclude',
-		'checkOpenBasedir',
-		'checkDisableFunctions',
-		'checkExposePHP'<?php if (!$this->isPHP54) { ?>,
-		'checkSafeMode'<?php } ?>
-	];
+	RSFirewall.System.Check.steps = <?php echo json_encode($this->getServerCheckSteps()); ?>;
 	RSFirewall.System.Check.stopCheck = function() {
-		RSFirewall.$('#com-rsfirewall-server-configuration-progress').fadeOut('fast', function(){RSFirewall.$(this).remove()});
+		jQuery('#com-rsfirewall-server-configuration-progress').fadeOut('fast', function(){jQuery(this).remove()});
 		RSFirewallFilesCheck();
 	};
 	RSFirewall.System.Check.startCheck();
@@ -420,26 +397,19 @@ function RSFirewallServerCheck() {
 
 function RSFirewallFilesCheck() {
 	RSFirewall.System.Check.prefix = 'com-rsfirewall-file-scan';
-	RSFirewall.System.Check.steps  = [
-		'checkCoreFilesIntegrity',
-		<?php if (!$this->isWindows) { ?>
-		'checkFolderPermissions',
-		'checkFilePermissions',
-		<?php } ?>
-		'checkSignatures'
-	];
+	RSFirewall.System.Check.steps = <?php echo json_encode($this->getFilesCheckSteps()); ?>;
 	RSFirewall.System.Check.stopCheck = function() {
-		RSFirewall.$('#com-rsfirewall-scan-in-progress').remove();
+		jQuery('#com-rsfirewall-scan-in-progress').remove();
 
 		RSFirewall.Grade.create();
-		RSFirewall.$(window).scrollTop(0);
+		jQuery(window).scrollTop(0);
 	};
 	RSFirewall.System.Check.startCheck();
 }
 
 function RSFirewallChangeAdminUserButtonText() {
-	var text 	= RSFirewall.$('#com-rsfirewall-new-username').val();
-	var button 	= RSFirewall.$('#com-rsfirewall-rename-admin-button');
+	var text 	= jQuery('#com-rsfirewall-new-username').val();
+	var button 	= jQuery('#com-rsfirewall-rename-admin-button');
 
 	button.text(Joomla.JText._('COM_RSFIREWALL_RENAME_ADMIN').replace('%s', text));
 }
@@ -448,30 +418,28 @@ function RSFirewallFix(step, button) {
 	RSFirewall.System.Check.limit = <?php echo $this->offset; ?>;
 
 	// disable the checkboxes
-	if (step == 'fixFolderPermissions') {
-		RSFirewall.$('input[name="folders[]"]').prop('disabled', true);
-	} else if (step == 'fixFilePermissions') {
-		RSFirewall.$('input[name="files[]"]').prop('disabled', true);
-	} else if (step == 'fixHashes') {
-		RSFirewall.$('input[name="hashes[]"]').prop('disabled', true);
-	} else if (step == 'ignoreFiles') {
-		RSFirewall.$('input[name="ignorefiles[]"]').prop('disabled', true);
+	if (step === 'fixFolderPermissions') {
+		jQuery('input[name="folders[]"]').prop('disabled', true);
+	} else if (step === 'fixFilePermissions') {
+		jQuery('input[name="files[]"]').prop('disabled', true);
+	} else if (step === 'fixHashes') {
+		jQuery('input[name="hashes[]"]').prop('disabled', true);
+	} else if (step === 'ignoreFiles') {
+		jQuery('input[name="ignorefiles[]"]').prop('disabled', true);
 	}
 
-	if (step == 'fixSessionHandler' && !confirm(Joomla.JText._('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER'))) {
+	if (step === 'fixSessionHandler' && !confirm(Joomla.JText._('COM_RSFIREWALL_SURE_CHANGE_SESSION_HANDLER'))) {
 		return;
 	}
 
 	RSFirewall.System.Check.fix(step, button);
 }
 
-jQuery(function($){
-	window.onbeforeunload = function() {
-		try {
-			if (RSFirewall.$('#com-rsfirewall-scan-in-progress:visible').length > 0) {
-				return Joomla.JText._('COM_RSFIREWALL_SCANNING_IN_PROGRESS_LEAVE');
-			}
-		} catch (err) {}
-	}
-});
+window.onbeforeunload = function() {
+    try {
+        if (!document.getElementById('com-rsfirewall-scan-in-progress').classList.contains('com-rsfirewall-hidden')) {
+            return Joomla.JText._('COM_RSFIREWALL_SCANNING_IN_PROGRESS_LEAVE');
+        }
+    } catch (err) {}
+}
 </script>

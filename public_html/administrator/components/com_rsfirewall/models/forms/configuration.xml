@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <form>  
 	<fieldset name="country_block" label="COM_RSFIREWALL_BLOCK_COUNTRY" description="COM_RSFIREWALL_BLOCK_COUNTRY_DESC">
+		<field name="maxmind_license_key" type="text" description="COM_RSFIREWALL_MAXMIND_LICENSE_KEY_DESC" label="COM_RSFIREWALL_MAXMIND_LICENSE_KEY" />
 		<field name="blocked_continents" label="COM_RSFIREWALL_SELECT_CONTINENT_TO_BLOCK" description="COM_RSFIREWALL_SELECT_CONTINENT_TO_BLOCK_DESC" type="checkboxes" multiple="multiple">
-			<option onchange="checkCountries(this);" value="--">COM_RSFIREWALL_OTHER</option>
-			<option onchange="checkCountries(this);" value="AF">Africa</option>
-			<option onchange="checkCountries(this);" value="AN">Antarctica</option>
-			<option onchange="checkCountries(this);" value="AS">Asia</option>
-			<option onchange="checkCountries(this);" value="EU">Europe</option>
-			<option onchange="checkCountries(this);" value="NA">North America</option>
-			<option onchange="checkCountries(this);" value="OC">Oceania</option>
-			<option onchange="checkCountries(this);" value="SA">South America</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="--">COM_RSFIREWALL_OTHER</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="AF">Africa</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="AN">Antarctica</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="AS">Asia</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="EU">Europe</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="NA">North America</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="OC">Oceania</option>
+			<option onchange="RSFirewall.checkCountries(this);" value="SA">South America</option>
 		</field>
 		<field name="blocked_countries_checkall" label="COM_RSFIREWALL_SELECT_COUNTRY_TO_BLOCK" type="checkboxes">
-			<option value="checkall" onclick="checkAllCountries(this.checked)">JGLOBAL_CHECK_ALL</option>
+			<option value="checkall" onclick="RSFirewall.checkAllCountries(this.checked)">JGLOBAL_CHECK_ALL</option>
 		</field>
 		<field name="blocked_countries" label="" description="COM_RSFIREWALL_SELECT_COUNTRY_TO_BLOCK_DESC" type="checkboxes" multiple="multiple">
 			<option value="A1">Anonymous Proxy</option>
@@ -267,22 +268,22 @@
 		</field>
 	</fieldset>
 	<fieldset name="backend_password" label="COM_RSFIREWALL_BACKEND_PASSWORD" description="COM_RSFIREWALL_BACKEND_PASSWORD_DESC">
-		<field name="backend_password_enabled" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_BACKEND_PASSWORD_DESC" label="COM_RSFIREWALL_ENABLE_BACKEND_PASSWORD" size="1" >
-			<option value="1">JYES</option>
+		<field name="backend_password_enabled" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_BACKEND_PASSWORD_DESC" label="COM_RSFIREWALL_ENABLE_BACKEND_PASSWORD" size="1">
 			<option value="0">JNO</option>
-		</field>
-		<field name="backend_password_use_parameter" type="radio" class="btn-group" description="COM_RSFIREWALL_BACKEND_PASSWORD_USE_PARAMETER_DESC" label="COM_RSFIREWALL_BACKEND_PASSWORD_USE_PARAMETER" size="0" default="0" showon="backend_password_enabled:1">
 			<option value="1">JYES</option>
-			<option value="0">JNO</option>
 		</field>
-		<field name="backend_password_parameter" type="backendparameter" label="COM_RSFIREWALL_BACKEND_PASSWORD_PARAMETER" description="COM_RSFIREWALL_BACKEND_PASSWORD_PARAMETER_DESC" size="30" showon="backend_password_use_parameter:1[AND]backend_password_enabled:1"/>
-		<field name="backend_password" type="password" label="COM_RSFIREWALL_TYPE_BACKEND_PASSWORD" description="COM_RSFIREWALL_TYPE_BACKEND_PASSWORD_DESC" size="30" showon="backend_password_enabled:1"/>
-		<field name="backend_password2" type="password" label="COM_RSFIREWALL_RETYPE_BACKEND_PASSWORD" description="COM_RSFIREWALL_RETYPE_BACKEND_PASSWORD_DESC" size="30" showon="backend_password_enabled:1" />
+		<field name="backend_password_use_parameter" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_BACKEND_PASSWORD_USE_PARAMETER_DESC" label="COM_RSFIREWALL_BACKEND_PASSWORD_USE_PARAMETER" size="0" default="0" showon="backend_password_enabled:1">
+			<option value="0">JNO</option>
+			<option value="1">JYES</option>
+		</field>
+		<field name="backend_password_parameter" type="backendparameter" label="COM_RSFIREWALL_BACKEND_PASSWORD_PARAMETER" description="COM_RSFIREWALL_BACKEND_PASSWORD_PARAMETER_DESC" size="30" showon="backend_password_use_parameter:1[AND]backend_password_enabled:1" />
+		<field name="backend_password" type="password" label="COM_RSFIREWALL_TYPE_BACKEND_PASSWORD" description="COM_RSFIREWALL_TYPE_BACKEND_PASSWORD_DESC" size="30" showon="backend_password_enabled:1" autocomplete="new-password" filter="raw" validate="password" />
+		<field name="backend_password2" type="password" label="COM_RSFIREWALL_RETYPE_BACKEND_PASSWORD" description="COM_RSFIREWALL_RETYPE_BACKEND_PASSWORD_DESC" size="30" showon="backend_password_enabled:1" autocomplete="new-password" filter="raw" validate="equals" field="backend_password" class="validate-passwordExtra" message="COM_RSFIREWALL_BACKEND_PASSWORDS_DO_NOT_MATCH" />
 	</fieldset>
 	<fieldset name="system_check" label="COM_RSFIREWALL_SYSTEM_CHECK" description="COM_RSFIREWALL_SYSTEM_CHECK_DESC">
 		<field name="offset" type="text"  description="COM_RSFIREWALL_NUM_OF_FILES_FOLDERS_DESC" label="COM_RSFIREWALL_NUM_OF_FILES_FOLDERS" />
-		<field name="ignore_files_folders" type="filemanager" button="COM_RSFIREWALL_OPEN_FILE_MANAGER" allowfiles="1" allowfolders="1" description="COM_RSFIREWALL_IGNORE_FILES_FOLDERS_DESC" label="COM_RSFIREWALL_IGNORE_FILES_FOLDERS" filter="raw" cols="20" rows="10"  />
-		<field name="log_system_check" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_SYSTEM_CHECK_LOGGING_DESC" label="COM_RSFIREWALL_ENABLE_SYSTEM_CHECK_LOGGING" >
+		<field name="ignore_files_folders" type="filemanager" button="COM_RSFIREWALL_OPEN_FILE_MANAGER" allowfiles="1" allowfolders="1" description="COM_RSFIREWALL_IGNORE_FILES_FOLDERS_DESC" label="COM_RSFIREWALL_IGNORE_FILES_FOLDERS" filter="raw" cols="20" rows="10" class="form-control" />
+		<field name="log_system_check" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_SYSTEM_CHECK_LOGGING_DESC" label="COM_RSFIREWALL_ENABLE_SYSTEM_CHECK_LOGGING" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
@@ -291,7 +292,7 @@
 		<field name="request_timeout" type="text"  default="0" description="COM_RSFIREWALL_REQUEST_TIMEOUT_DESC" label="COM_RSFIREWALL_REQUEST_TIMEOUT" />
 		<field name="max_retries" type="text"  default="10" description="COM_RSFIREWALL_MAX_RETRIES_DESC" label="COM_RSFIREWALL_MAX_RETRIES" />
 		<field name="retries_timeout" type="text"  default="10" description="COM_RSFIREWALL_RETRIES_TIMEOUT_DESC" label="COM_RSFIREWALL_RETRIES_TIMEOUT" />
-		<field name="check_md5" type="radio" class="btn-group" description="COM_RSFIREWALL_CHECK_MD5_DESC" label="COM_RSFIREWALL_CHECK_MD5">
+		<field name="check_md5" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_CHECK_MD5_DESC" label="COM_RSFIREWALL_CHECK_MD5">
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
@@ -301,38 +302,40 @@
 		</field>
 		<field name="google_safebrowsing_api_key" type="text" default="" description="COM_RSFIREWALL_GOOGLE_SAFE_BROWSING_DESC" label="COM_RSFIREWALL_GOOGLE_SAFE_BROWSING_LABEL"/>
 		<field name="google_webrisk_api_key" type="text" default="" description="COM_RSFIREWALL_GOOGLE_WEB_RISK_DESC" label="COM_RSFIREWALL_GOOGLE_WEB_RISK_LABEL"/>
+		<field name="optional_folders" type="filemanager" button="COM_RSFIREWALL_OPEN_FILE_MANAGER" allowfiles="0" allowfolders="1" description="COM_RSFIREWALL_OPTIONAL_FOLDERS_DESC" label="COM_RSFIREWALL_OPTIONAL_FOLDERS" filter="raw" cols="20" rows="10" class="form-control" />
+		<field name="dot_files" type="textarea" description="COM_RSFIREWALL_DOT_FILES_DESC" label="COM_RSFIREWALL_DOT_FILES" filter="raw" cols="20" rows="10" />
 	</fieldset>
 	<fieldset name="active_scanner" label="COM_RSFIREWALL_ACTIVE_SCANNER" description="COM_RSFIREWALL_ACTIVE_SCANNER_DESC">
-		<field name="active_scanner_status" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER_DESC" label="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER" size="1" >
+		<field name="active_scanner_status" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER_DESC" label="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="active_scanner_status_backend" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER_BACKEND_DESC" label="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER_BACKEND" size="1" >
+		<field name="active_scanner_status_backend" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER_BACKEND_DESC" label="COM_RSFIREWALL_ENABLE_ACTIVE_SCANNER_BACKEND" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="enable_extra_logging" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_EXTRA_LOGGING_DESC" label="COM_RSFIREWALL_ENABLE_EXTRA_LOGGING" >
+		<field name="enable_extra_logging" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_EXTRA_LOGGING_DESC" label="COM_RSFIREWALL_ENABLE_EXTRA_LOGGING" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="verify_generator" type="radio" class="btn-group" description="COM_RSFIREWALL_VERIFY_GENERATOR_DESC" label="COM_RSFIREWALL_VERIFY_GENERATOR" size="1" >
+		<field name="verify_generator" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_VERIFY_GENERATOR_DESC" label="COM_RSFIREWALL_VERIFY_GENERATOR" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="verify_emails" type="radio" class="btn-group" description="COM_RSFIREWALL_VERIFY_EMAILS_DESC" label="COM_RSFIREWALL_VERIFY_EMAILS" size="1" >
+		<field name="verify_emails" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_VERIFY_EMAILS_DESC" label="COM_RSFIREWALL_VERIFY_EMAILS" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
 		<field name="email_text_color" type="color" format="hex" description="COM_RSFIREWALL_EMAIL_TEXT_COLOR_DESC" label="COM_RSFIREWALL_EMAIL_TEXT_COLOR" />
-		<field name="check_user_password" type="radio" class="btn-group" description="COM_RSFIREWALL_CHECK_USER_PASSWORD_DESC" label="COM_RSFIREWALL_CHECK_USER_PASSWORD" size="1" >
+		<field name="check_user_password" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_CHECK_USER_PASSWORD_DESC" label="COM_RSFIREWALL_CHECK_USER_PASSWORD" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="monitor_core" type="radio" class="btn-group" description="COM_RSFIREWALL_MONITOR_CORE_DESC" label="COM_RSFIREWALL_MONITOR_CORE" size="1" >
+		<field name="monitor_core" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_MONITOR_CORE_DESC" label="COM_RSFIREWALL_MONITOR_CORE" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="monitor_files" type="filemanager" button="COM_RSFIREWALL_OPEN_FILE_MANAGER" allowfiles="1" description="COM_RSFIREWALL_MONITOR_FILES_DESC" label="COM_RSFIREWALL_MONITOR_FILES" filter="raw" cols="20" rows="10" />
+		<field name="monitor_files" type="filemanager" button="COM_RSFIREWALL_OPEN_FILE_MANAGER" allowfiles="1" description="COM_RSFIREWALL_MONITOR_FILES_DESC" label="COM_RSFIREWALL_MONITOR_FILES" filter="raw" cols="20" rows="10" class="form-control" />
 		<field name="check_proxy_ip_headers" type="list" multiple="multiple" class="advancedSelect" description="COM_RSFIREWALL_CHECK_PROXY_IP_HEADERS_DESC" label="COM_RSFIREWALL_CHECK_PROXY_IP_HEADERS" size="1">
 			<option value="HTTP_X_REAL_IP">HTTP_X_REAL_IP</option>
 			<option value="HTTP_CLIENT_IP">HTTP_CLIENT_IP</option>
@@ -349,11 +352,11 @@
 			<option value="HTTP_INCAP_CLIENT_IP">HTTP_INCAP_CLIENT_IP</option>
 		</field>
 		<field name="spacer_php" type="spacer" class="text" label="COM_RSFIREWALL_PHP_PROTECTIONS" />
-		<field name="lfi" type="radio" class="btn-group" description="COM_RSFIREWALL_LFI_INCLUSION_DESC" label="COM_RSFIREWALL_LFI_INCLUSION" size="1" >
+		<field name="lfi" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_LFI_INCLUSION_DESC" label="COM_RSFIREWALL_LFI_INCLUSION" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="rfi" type="radio" class="btn-group" description="COM_RSFIREWALL_RFI_INCLUSION_DESC" label="COM_RSFIREWALL_RFI_INCLUSION" size="1" >
+		<field name="rfi" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_RFI_INCLUSION_DESC" label="COM_RSFIREWALL_RFI_INCLUSION" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
@@ -367,7 +370,7 @@
 			<option value="get">COM_RSFIREWALL_GET_DATA</option>
 		</field>
 		<field name="spacer_js" type="spacer" class="text" label="COM_RSFIREWALL_JS_PROTECTIONS" />
-		<field name="filter_js" type="radio" class="btn-group" description="COM_RSFIREWALL_FILTER_JS_DESC" label="COM_RSFIREWALL_FILTER_JS" size="1">
+		<field name="filter_js" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_FILTER_JS_DESC" label="COM_RSFIREWALL_FILTER_JS" size="1">
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
@@ -383,46 +386,51 @@
 			<option value="java">Java</option>
 			<option value="mozilla">COM_RSFIREWALL_MOZILLA_IMPERSONATOR</option>
 		</field>
-		<field name="abusive_ips" type="radio" class="btn-group" default="0" description="COM_RSFIREWALL_ABUSIVE_IPS_DESC" label="COM_RSFIREWALL_ABUSIVE_IPS" size="1" >
+		<field name="abusive_ips" type="radio" class="btn-group btn-group-yesno" default="0" description="COM_RSFIREWALL_ABUSIVE_IPS_DESC" label="COM_RSFIREWALL_ABUSIVE_IPS" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
+		</field>
+		<field name="abusive_ips_checks" type="list" multiple="multiple" class="advancedSelect" description="COM_RSFIREWALL_ABUSIVE_IPS_CHECKS_DESC" label="COM_RSFIREWALL_ABUSIVE_IPS_CHECKS">
+			<option value="dnsbl.tornevall.org">COM_RSFIREWALL_TORNEVALL</option>
+			<option value="sbl-xbl.spamhaus.org">COM_RSFIREWALL_SPAMHAUS</option>
+			<option value="dnsbl.justspam.org">COM_RSFIREWALL_JUSTSPAM</option>
 		</field>
 		<field name="deny_referer" type="textarea" description="COM_RSFIREWALL_DENY_REFERER_DESC" label="COM_RSFIREWALL_DENY_REFERER"  filter="raw" cols="20" rows="10"  />
 		<field name="spacer_automatic_blacklisting" type="spacer" class="text" label="COM_RSFIREWALL_AUTOMATIC_BLACKLISTING" />
-		<field name="enable_autoban" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_AUTOBAN_DESC" label="COM_RSFIREWALL_ENABLE_AUTOBAN" size="1" >
+		<field name="enable_autoban" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_AUTOBAN_DESC" label="COM_RSFIREWALL_ENABLE_AUTOBAN" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="enable_autoban_login" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_AUTOBAN_LOGIN_DESC" label="COM_RSFIREWALL_ENABLE_AUTOBAN_LOGIN" size="1" >
+		<field name="enable_autoban_login" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_AUTOBAN_LOGIN_DESC" label="COM_RSFIREWALL_ENABLE_AUTOBAN_LOGIN" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
 		<field name="autoban_attempts" type="text"  description="COM_RSFIREWALL_AUTOBAN_ATTEMPTS_DESC" label="COM_RSFIREWALL_AUTOBAN_ATTEMPTS" />
 		<field name="spacer_captcha" type="spacer" class="text" label="COM_RSFIREWALL_CAPTCHA" />
-		<field name="enable_backend_captcha" type="radio" class="btn-group" description="COM_RSFIREWALL_ENABLE_BACKEND_CAPTCHA_DESC" label="COM_RSFIREWALL_ENABLE_BACKEND_CAPTCHA" size="1" >
+		<field name="enable_backend_captcha" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_ENABLE_BACKEND_CAPTCHA_DESC" label="COM_RSFIREWALL_ENABLE_BACKEND_CAPTCHA" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="backend_captcha" type="text"  description="COM_RSFIREWALL_BACKEND_CAPTCHA_DESC" label="COM_RSFIREWALL_BACKEND_CAPTCHA" />
+		<field name="backend_captcha_font_size" type="number" label="COM_RSFIREWALL_CAPTCHA_FONT_SIZE" description="COM_RSFIREWALL_CAPTCHA_FONT_SIZE_DESC" />
 		<field name="spacer_backend_login" type="spacer" class="text" label="COM_RSFIREWALL_BACKEND_LOGIN" />
-		<field name="capture_backend_login" type="radio" class="btn-group" description="COM_RSFIREWALL_CAPTURE_BACKEND_LOGIN_ATTEMPTS_DESC" label="COM_RSFIREWALL_CAPTURE_BACKEND_LOGIN_ATTEMPTS" size="1" >
+		<field name="capture_backend_login" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_CAPTURE_BACKEND_LOGIN_ATTEMPTS_DESC" label="COM_RSFIREWALL_CAPTURE_BACKEND_LOGIN_ATTEMPTS" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="capture_backend_password" type="radio" class="btn-group" description="COM_RSFIREWALL_STORE_USERNAME_PASSWORD_ATTEMPT_DESC" label="COM_RSFIREWALL_STORE_USERNAME_PASSWORD_ATTEMPT" size="1" >
+		<field name="capture_backend_password" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_STORE_USERNAME_PASSWORD_ATTEMPT_DESC" label="COM_RSFIREWALL_STORE_USERNAME_PASSWORD_ATTEMPT" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
 		<field name="spacer_uploads" type="spacer" class="text" label="COM_RSFIREWALL_UPLOADS" />
-		<field name="filter_uploads" type="radio" class="btn-group" description="COM_RSFIREWALL_FILTER_UPLOADS_DESC" label="COM_RSFIREWALL_FILTER_UPLOADS" size="1">
+		<field name="filter_uploads" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_FILTER_UPLOADS_DESC" label="COM_RSFIREWALL_FILTER_UPLOADS" size="1">
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="verify_multiple_exts" type="radio" class="btn-group" description="COM_RSFIREWALL_VERIFY_MULTIPLE_EXTS_DESC" label="COM_RSFIREWALL_VERIFY_MULTIPLE_EXTS" size="1" >
+		<field name="verify_multiple_exts" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_VERIFY_MULTIPLE_EXTS_DESC" label="COM_RSFIREWALL_VERIFY_MULTIPLE_EXTS" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="verify_upload" type="radio" class="btn-group" description="COM_RSFIREWALL_VERIFY_FILES_DESC" label="COM_RSFIREWALL_VERIFY_FILES" size="1" >
+		<field name="verify_upload" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_VERIFY_FILES_DESC" label="COM_RSFIREWALL_VERIFY_FILES" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
@@ -430,11 +438,11 @@
 	</fieldset>
 	<fieldset name="lockdown" label="COM_RSFIREWALL_LOCKDOWN" description="COM_RSFIREWALL_LOCKDOWN_DESC">
 		<field name="monitor_users" type="users" multiple="multiple" class="advancedSelect" label="COM_RSFIREWALL_MONITOR_USERS" description="COM_RSFIREWALL_MONITOR_USERS_DESC" />
-		<field name="disable_installer" type="radio" class="btn-group" description="COM_RSFIREWALL_DISABLE_ACCESS_TO_INSTALLER_DESC" label="COM_RSFIREWALL_DISABLE_ACCESS_TO_INSTALLER" size="1" >
+		<field name="disable_installer" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_DISABLE_ACCESS_TO_INSTALLER_DESC" label="COM_RSFIREWALL_DISABLE_ACCESS_TO_INSTALLER" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
-		<field name="disable_new_admin_users" type="radio" class="btn-group" description="COM_RSFIREWALL_DISABLE_CREATION_OF_NEW_ADMINS_DESC" label="COM_RSFIREWALL_DISABLE_CREATION_OF_NEW_ADMINS" size="1" >
+		<field name="disable_new_admin_users" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_DISABLE_CREATION_OF_NEW_ADMINS_DESC" label="COM_RSFIREWALL_DISABLE_CREATION_OF_NEW_ADMINS" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
@@ -455,7 +463,7 @@
 	</fieldset>
 	<fieldset name="import" label="COM_RSFIREWALL_IMPORT_CONFIGURATION">
 		<field name="configuration_upload" label="COM_RSFIREWALL_UPLOAD_CONFIGURATION_JSON" description="COM_RSFIREWALL_UPLOAD_CONFIGURATION_JSON_DESC" type="file" size="40" />
-		<field name="configuration_update_code" default="1" type="radio" class="btn-group" description="COM_RSFIREWALL_CONFIGURATION_UPDATE_CODE_DESC" label="COM_RSFIREWALL_CONFIGURATION_UPDATE_CODE" size="1" >
+		<field name="configuration_update_code" default="1" type="radio" class="btn-group btn-group-yesno" description="COM_RSFIREWALL_CONFIGURATION_UPDATE_CODE_DESC" label="COM_RSFIREWALL_CONFIGURATION_UPDATE_CODE" size="1" >
 			<option value="1">JYES</option>
 			<option value="0">JNO</option>
 		</field>
@@ -464,16 +472,5 @@
 		<field name="code" type="text" description="COM_RSFIREWALL_LICENSE_CODE_DESC" label="COM_RSFIREWALL_LICENSE_CODE" size="70" />
 	</fieldset>
 	<fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL" description="JCONFIG_PERMISSIONS_DESC">
-		<field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" filter="rules" component="com_rsfirewall" section="component">
-			<action name="core.admin" title="JACTION_ADMIN" description="JACTION_ADMIN_COMPONENT_DESC" />
-			<action name="core.manage" title="JACTION_MANAGE" description="JACTION_MANAGE_COMPONENT_DESC" />
-			<action name="check.run" title="COM_RSFIREWALL_PERMISSION_SYSTEM_CHECK" description="COM_RSFIREWALL_PERMISSION_SYSTEM_CHECK_DESC" />
-			<action name="dbcheck.run" title="COM_RSFIREWALL_PERMISSION_DB_CHECK" description="COM_RSFIREWALL_PERMISSION_DB_CHECK_DESC" />
-			<action name="logs.view" title="COM_RSFIREWALL_PERMISSION_VIEW_LOGS" description="COM_RSFIREWALL_PERMISSION_VIEW_LOGS_DESC" />
-			<action name="lists.manage" title="COM_RSFIREWALL_PERMISSION_MANAGE_LISTS" description="COM_RSFIREWALL_PERMISSION_MANAGE_LISTS_DESC" />
-			<action name="exceptions.manage" title="COM_RSFIREWALL_PERMISSION_MANAGE_EXCEPTIONS" description="COM_RSFIREWALL_PERMISSION_MANAGE_EXCEPTIONS_DESC" />
-			<action name="feeds.manage" title="COM_RSFIREWALL_PERMISSION_MANAGE_FEEDS" description="COM_RSFIREWALL_PERMISSION_MANAGE_FEEDS_DESC" />
-			<action name="updates.view" title="COM_RSFIREWALL_PERMISSION_VIEW_UPDATES" description="COM_RSFIREWALL_PERMISSION_VIEW_UPDATES_DESC" />
-		</field>
 	</fieldset>
 </form>

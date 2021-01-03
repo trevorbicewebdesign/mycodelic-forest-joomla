@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link           https://www.rsjoomla.com
  * @license        GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -100,23 +100,44 @@ class RsfirewallModelConfiguration extends JModelAdmin
 		);
 
         $filename 	= $this->getGeoIPFileName();
-        $url 		= 'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz';
+        $url 		= false;
 		
-		try {
+		try
+		{
 			$tmp_path = $this->getGeoIPPath();
 			$tmp_name = $filename.'.gz';
 			
 			// Make sure tmp folder is writable
-			if (!is_writable($tmp_path)) {
+			if (!is_writable($tmp_path))
+			{
 				throw new Exception(JText::sprintf('COM_RSFIREWALL_GEOIP_DB_FOLDER_NOT_WRITABLE', $tmp_path));
 			}
+
+			// Check if license key is supplied
+			$license_key = JFactory::getApplication()->input->getString('license_key');
+			if (!$license_key)
+			{
+				throw new Exception(JText::_('COM_RSFIREWALL_GEOIP_DB_NO_LICENSE_KEY'));
+			}
+
+			// Save it
+			RSFirewallConfig::getInstance()->set('maxmind_license_key', $license_key);
+
+			// Craft URL
+			$url = 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=' . urlencode($license_key) . '&suffix=tar.gz';
 			
 			// Connect to server
 			$http 		= JHttpFactory::getHttp();
 			$response 	= $http->get($url, array(), 10);
 			
 			// Check if request is successful
-			if ($response->code != 200) {
+			if ($response->code != 200)
+			{
+				if ($response->code === 401)
+				{
+					throw new Exception(JText::sprintf('COM_RSFIREWALL_GEOIP_DB_ERROR_RESPONSE_BODY', strip_tags(trim($response->body))));
+				}
+
 				throw new Exception(JText::sprintf('COM_RSFIREWALL_HTTP_ERROR_RESPONSE_CODE', $response->code));
 			}
 			
@@ -130,11 +151,13 @@ class RsfirewallModelConfiguration extends JModelAdmin
 			$this->processGeoIPDatabase($tmp_name, $tmp_path.'/'.$tmp_name);
 			
 			// Remove the tmp file
-			if (file_exists($tmp_path.'/'.$tmp_name)) {
+			if (file_exists($tmp_path.'/'.$tmp_name))
+			{
 				JFile::delete($tmp_path.'/'.$tmp_name);
 			}
-			
-		} catch (Exception $e) {
+		}
+		catch (Exception $e)
+		{
 			$result['success'] = false;
 			$result['url']     = $url;
 			$result['message'] = $e->getMessage();
@@ -428,30 +451,6 @@ class RsfirewallModelConfiguration extends JModelAdmin
 
 		$db = $this->getDbo();
 
-		// parse rules
-		if (isset($data['rules']))
-		{
-			$rules = new JAccessRules($data['rules']);
-			$asset = JTable::getInstance('asset');
-
-			if (!$asset->loadByName($this->option))
-			{
-				$root = JTable::getInstance('asset');
-				$root->loadByName('root.1');
-				$asset->name  = $this->option;
-				$asset->title = $this->option;
-				$asset->setLocation($root->id, 'last-child');
-			}
-			$asset->rules = (string) $rules;
-
-			if (!$asset->check() || !$asset->store())
-			{
-				$this->setError($asset->getError());
-
-				return false;
-			}
-		}
-
 		// get configuration
 		$config = $this->getConfig();
 		// get configuration keys
@@ -634,27 +633,9 @@ class RsfirewallModelConfiguration extends JModelAdmin
 		return RSFirewallConfig::getInstance();
 	}
 
-	public function getSideBar()
-	{
-		require_once JPATH_COMPONENT . '/helpers/toolbar.php';
-
-		return RSFirewallToolbarHelper::render();
-	}
-
-	public function getRSFieldset()
-	{
-		require_once JPATH_COMPONENT . '/helpers/adapters/fieldset.php';
-
-		$fieldset = new RSFieldset();
-
-		return $fieldset;
-	}
-
 	public function getRSTabs()
 	{
-		require_once JPATH_COMPONENT . '/helpers/adapters/tabs.php';
-
-		$tabs = new RSTabs('com-rsfirewall-configuration');
+		$tabs = new RSFirewallAdapterTabs('com-rsfirewall-configuration');
 
 		return $tabs;
 	}

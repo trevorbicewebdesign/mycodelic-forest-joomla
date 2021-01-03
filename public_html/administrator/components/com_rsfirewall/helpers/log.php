@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -59,7 +59,7 @@ class RSFirewallLogger {
 	}
 	
 	protected function getIP() {
-		require_once dirname(__FILE__).'/ip/ip.php';
+		require_once __DIR__ . '/ip/ip.php';
 		
 		return RSFirewallIP::get();
 	}
@@ -90,6 +90,7 @@ class RSFirewallLogger {
 			$this->bound = false;
 			
 			$this->table->store();
+
 			// if this level is higher or equal to the configured minimum level
 			if (in_array($this->table->level, $this->config->get('log_alert_level'))) {
 				// send the email alert
@@ -98,7 +99,18 @@ class RSFirewallLogger {
 		}
 	}
 	
-	protected function sendAlert() {
+	protected function sendAlert()
+	{
+		$lang = JFactory::getLanguage();
+		// When SEF and Language Filter is enabled, the language could have untranslated strings
+		if (!$lang->hasKey('COM_RSFIREWALL_WEBSITE'))
+		{
+			// Load the backend language
+			$lang->load('com_rsfirewall', JPATH_ADMINISTRATOR, 'en-GB', true);
+			$lang->load('com_rsfirewall', JPATH_ADMINISTRATOR, $lang->getDefault(), true);
+			$lang->load('com_rsfirewall', JPATH_ADMINISTRATOR, null, true);
+		}
+
 		$subject = JText::sprintf('COM_RSFIREWALL_LOG_EMAIL_SUBJECT',
 			JText::_('COM_RSFIREWALL_LEVEL_'.$this->table->level),
 			$this->escape($this->root),
@@ -127,33 +139,47 @@ class RSFirewallLogger {
 		$limit = $this->config->get('log_hour_limit');
 		// after the hour we're allowed to send
 		$after = $this->config->get('log_emails_send_after');
-		// the start of the current hour
-		$start = gmmktime(gmdate('H'), 0, 0, gmdate('n'), gmdate('j'), gmdate('Y'));
 		// now
-		$now = @gmmktime();
+		$dateNow = JFactory::getDate();
+		$now = $dateNow->toUnix();
 		
 		// are we allowed to send?
-		if ($now > $after) {
+		if ($now > $after)
+		{
 			// do we have emails set?
-			if ($this->emails) {
+			if ($this->emails)
+			{
 				// loop through emails and attempt sending
-				foreach ($this->emails as $email) {
+				foreach ($this->emails as $email)
+				{
 					$email = trim($email);
-					if (JMailHelper::isEmailAddress($email) && $sent < $limit) {
-						$mailer = JFactory::getMailer();
-						$mailer->sendMail($this->mailfrom, $this->fromname, $email, $subject, $body, true);
-						// increment number of sent emails
-						$sent++;
+					if (JMailHelper::isEmailAddress($email) && $sent < $limit)
+					{
+						try
+						{
+							JFactory::getMailer()->sendMail($this->mailfrom, $this->fromname, $email, $subject, $body, true);
+
+							// increment number of sent emails
+							$sent++;
+						}
+						catch (Exception $e)
+						{
+							JFactory::getApplication()->enqueueMessage($e->getMessage(), 'warning');
+						}
 					}
 				}
 				
 				// reached the limit?
-				if ($sent >= $limit) {
+				if ($sent >= $limit)
+				{
 					// allow to send in the next hour
-					$next_after = gmmktime(gmdate('H')+1, 0, 0, gmdate('n'), gmdate('j'), gmdate('Y'));
+					$nextDate = JFactory::getDate()->setTime((int) $dateNow->hour + 1, 0);
+					$next_after = $nextDate->toUnix();
 					$this->config->set('log_emails_send_after', $next_after);
 					$this->config->set('log_emails_count', 0);
-				} else {
+				}
+				else
+				{
 					$this->config->set('log_emails_count', $sent);
 				}
 			}

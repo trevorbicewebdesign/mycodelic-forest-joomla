@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -63,65 +63,22 @@ class com_rsfirewallInstallerScript
 		}
 	}
 	
-	public function preflight($type, $parent) {
+	public function preflight($type, $parent)
+	{
 		$app = JFactory::getApplication();
-		
 		$jversion = new JVersion();
-		$minj = '3.0.0';
-		if (!$jversion->isCompatible($minj)) {
+
+		$minj = '3.7.0';
+		if (!$jversion->isCompatible($minj))
+		{
 			$app->enqueueMessage('Please upgrade to at least Joomla! ' . $minj . ' before continuing!', 'error');
 			return false;
 		}
 
-        if (version_compare(PHP_VERSION, '5.4.0', '<')) {
+        if (version_compare(PHP_VERSION, '5.4.0', '<'))
+        {
             $app->enqueueMessage('You have a very old PHP version; the Country Blocking feature will not work since it requires a newer version. Please ask your hosting provider to upgrade to a newer version of PHP.', 'warning');
         }
-
-		if ($type == 'update') {
-			require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/version.php';
-			$rsf_version = new RSFirewallVersion();
-			$geoip_path = JPATH_ADMINISTRATOR.'/components/com_rsfirewall/assets/geoip/';
-			
-			if (version_compare($rsf_version->version, '2.11.24', '<') && (file_exists($geoip_path.'GeoIP.dat') || file_exists($geoip_path.'GeoIPv6.dat'))) {
-				$filename 	= 'GeoLite2-Country.mmdb';
-				$url 		= 'https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz';
-
-				try {
-					$tmp_path = $geoip_path;
-					$tmp_name = $filename.'.gz';
-					
-					// Make sure tmp folder is writable
-					if (!is_writable($tmp_path)) {
-						throw new Exception(JText::sprintf('The folder <strong>%s</strong> is not writable!', $tmp_path));
-					}
-					
-					// Connect to server
-					$http 		= JHttpFactory::getHttp();
-					$response 	= $http->get($url, array(), 10);
-					
-					// Check if request is successful
-					if ($response->code != 200) {
-						throw new Exception(JText::sprintf('Error when connecting, response code returned is %d.', $response->code));
-					}
-					
-					// Write to a temporary file
-					if (!file_put_contents($tmp_path.'/'.$tmp_name, $response->body)) {
-						throw new Exception(JText::sprintf('Could not write to %s!', $tmp_path.'/'.$tmp_name));
-					}
-					
-					$this->decompress($tmp_path.'/'.$tmp_name);
-					
-					// Remove the tmp file
-					if (file_exists($tmp_path.'/'.$tmp_name)) {
-						JFile::delete($tmp_path.'/'.$tmp_name);
-					}
-					
-				} catch (Exception $e) {
-				    $app->enqueueMessage($e->getMessage(), 'error');
-					$app->enqueueMessage('<strong>The new GeoLite2 library could not be downloaded!</strong> Please try to download it manually from Firewall Configuration - Country Blocking', 'error');
-				}
-			}
-		}
 		
 		return true;
 	}
@@ -251,21 +208,6 @@ class com_rsfirewallInstallerScript
 			$db->execute();
 		}
 		
-		// update the configuration for R45
-		
-		// change published column
-		$columns = $db->getTableColumns('#__rsfirewall_feeds');
-		if (strpos($columns['published'], 'enum') !== false) {
-			$db->setQuery("ALTER TABLE ".$db->qn('#__rsfirewall_feeds')." CHANGE ".$db->qn('published')." ".$db->qn('published')." TINYINT(1) NOT NULL");
-			$db->execute();
-			
-			$query = $db->getQuery(true);
-			$query->update('#__rsfirewall_feeds')
-				  ->set($db->qn('published')."=".$db->q(1));
-			$db->setQuery($query);
-			$db->execute();
-		}
-		
 		// change date
 		$columns = $db->getTableColumns('#__rsfirewall_logs');
 		if ($columns['date'] == 'int') {
@@ -358,7 +300,6 @@ class com_rsfirewallInstallerScript
 				'enable_autoban_login' => 'int',
 				'autoban_attempts' => 'int',
 				'enable_backend_captcha' => 'int',
-				'backend_captcha' => 'int',
 				'verify_multiple_exts' => 'int',
 				'verify_upload' => 'int',
 				'verify_upload_blacklist_exts' => 'text',
@@ -488,6 +429,25 @@ class com_rsfirewallInstallerScript
 				$db->execute();
 			}
 		}
+		// Some dot files need to be hardcoded
+		$config = RSFirewallConfig::getInstance();
+		$dot_files = $config->get('dot_files', array(), true);
+		$dot_files = array_filter($dot_files);
+		$save = false;
+		foreach (array('.htaccess', '.htpasswd', '.htusers', '.htgroups') as $file)
+		{
+			$pos = array_search($file, $dot_files);
+			if ($pos !== false)
+			{
+				unset($dot_files[$pos]);
+
+				$save = true;
+			}
+		}
+		if ($save)
+		{
+			$config->set('dot_files', $dot_files);
+		}
 		
 		// lockdown has changed into disable_installer & disable_new_admin_users
 		$query = $db->getQuery(true);
@@ -542,7 +502,6 @@ class com_rsfirewallInstallerScript
 			$db->dropTable('#__rsfirewall_patterns');
 			
 			$this->runSQL($source, 'signatures.sql');
-			$this->runSQL($source, 'signatures.data.sql');
 		}
 		
 		// remove monitor_files
@@ -580,55 +539,6 @@ class com_rsfirewallInstallerScript
 			}
 		}
 		
-		// add hashes
-		$this->runSQL($source, 'hashes.data.sql');
-		// add signatures
-		$this->runSQL($source, 'signatures.data.sql');
-		
-		// remove duplicates
-		// messy, but worth it.
-		$query = $db->getQuery(true);
-		$query->select('*')
-			  ->from('#__rsfirewall_hashes');
-		$db->setQuery($query);
-		$results = $db->loadObjectList();
-		$hashes = array();
-		$to_delete = array();
-		$version = new JVersion();
-		$version = $version->getShortVersion();
-		foreach ($results as $result) {
-			// not what we are interested in...
-			if (strpos($result->type, '.') === false) continue;
-			if (version_compare($result->type, $version, '<')) {
-				$to_delete[] = $result->id;
-				continue;
-			}
-			
-			$hashes[$result->type][] = $result;
-		}
-
-		foreach ($hashes as $type => $types) {
-			$duplicates = array();
-			foreach ($types as $result) {
-				$duplicates[$result->file][] = $result->id;
-			}
-			foreach ($duplicates as $file => $ids) {
-				if (count($ids) > 1) {
-					// keep the oldest id
-					array_shift($ids);
-					$to_delete = array_merge($to_delete, $ids);
-				}
-			}
-		}
-		
-		if ($to_delete) {
-			$query = $db->getQuery(true);
-			$query->delete('#__rsfirewall_hashes')
-				  ->where($db->qn('id').' IN ('.$this->quoteImplode($to_delete).')');
-			$db->setQuery($query);
-			$db->execute();
-		}
-		
 		// admin_users should not be empty...
 		require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/users.php';
 		// get the current admin users
@@ -654,6 +564,12 @@ class com_rsfirewallInstallerScript
 			$db->setQuery('ALTER TABLE #__rsfirewall_lists CHANGE `ip` `ip` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ');
 			$db->execute();
 		}
+
+		if ($columns['reason']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_lists` CHANGE `reason` `reason` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
 		
 		// logs
 		$columns = $db->getTableColumns('#__rsfirewall_logs', false);
@@ -668,6 +584,30 @@ class com_rsfirewallInstallerScript
 			$db->setQuery('ALTER TABLE #__rsfirewall_lists ADD INDEX(`ip`); ');
 			$db->execute();
 		}
+
+		if ($columns['username']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_logs` CHANGE `username` `username` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
+
+		if ($columns['page']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_logs` CHANGE `page` `page` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
+
+		if ($columns['referer']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_logs` CHANGE `referer` `referer` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
+
+		if ($columns['referer']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_logs` CHANGE `debug_variables` `debug_variables` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
 		
 		// offenders
 		$columns = $db->getTableColumns('#__rsfirewall_offenders', false);
@@ -675,12 +615,85 @@ class com_rsfirewallInstallerScript
 			$db->setQuery('ALTER TABLE #__rsfirewall_offenders CHANGE `ip` `ip` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL');
 			$db->execute();
 		}
+
+		// exceptions
+		$columns = $db->getTableColumns('#__rsfirewall_exceptions', false);
+		if ($columns['reason']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_exceptions` CHANGE `reason` `reason` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
+
+		// hashes
+		$columns = $db->getTableColumns('#__rsfirewall_hashes', false);
+		if ($columns['flag']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_hashes` CHANGE `flag` `flag` VARCHAR(1) CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
+
+		if ($columns['date']->Null === 'NO')
+		{
+			$db->setQuery("ALTER TABLE `#__rsfirewall_hashes` CHANGE `date` `date` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL");
+			$db->execute();
+		}
+
+		// add hashes
+		$this->runSQL($source, 'hashes.data.sql');
+
+		// remove duplicates
+		$query = $db->getQuery(true);
+		$query->select('COUNT(' . $db->qn('type')  . ') AS ' . $db->qn('found'))
+			->select($db->qn('file'))
+			->select($db->qn('type'))
+			->from($db->qn('#__rsfirewall_hashes'))
+			->where($db->qn('type') . ' LIKE ' . $db->q('%.%.%'))
+			->group($db->qn('type'))
+			->group($db->qn('file'))
+			->having($db->qn('found') . ' > 1');
+
+		if ($results = $db->setQuery($query)->loadObjectList())
+		{
+			foreach ($results as $result)
+			{
+				$query = $db->getQuery(true);
+				$query->delete('#__rsfirewall_hashes')
+					->where($db->qn('file') . ' = ' . $db->q($result->file))
+					->where($db->qn('type') . ' = ' . $db->q($result->type))
+					->order($db->qn('id') . ' ' . $db->escape('ASC'))
+					->setLimit($result->found - 1);
+
+				$db->setQuery($query)->execute();
+			}
+		}
+
+		// Remove old versions
+		list($major, $minor, $patch) = explode('.', JVERSION, 3);
+		if (strpos($patch, '-') !== false)
+		{
+			$tmp = explode('-', $patch, 2);
+			$patch = reset($tmp);
+		}
+
+		$query = $db->getQuery(true)
+			->delete($db->qn('#__rsfirewall_hashes'))
+			->where($db->qn('type') . ' LIKE ' . $db->q('%.%.%'))
+			->where("CONCAT(
+			LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(" . $db->qn('type') . ", '.', 1), '.', -1), 2, '0'),
+			LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(" . $db->qn('type') . ", '.', 2), '.', -1), 2, '0'),
+			LPAD(SUBSTRING_INDEX(SUBSTRING_INDEX(" . $db->qn('type') . ", '.', 3), '.', -1), 2, '0')
+		) < CONCAT(LPAD(" . $db->q($major) . ", 2, '0'), LPAD(" . $db->q($minor) . ", 2, '0'), LPAD(" . $db->q($patch) . ", 2, '0'))");
+		$db->setQuery($query)->execute();
+
+		// add signatures
+		$this->runSQL($source, 'signatures.data.sql');
 		
 		$this->removeSignatures();
 		
 		// Remove GeoLite2 CABundle.php file
 		$caBundle = JPATH_ADMINISTRATOR. '/components/com_rsfirewall/helpers/geolite2/vendor/composer/ca-bundle/src/CaBundle.php';
-        if (file_exists($caBundle)) {
+        if (file_exists($caBundle))
+        {
             JFile::delete($caBundle);
         }
 	}
@@ -691,8 +704,7 @@ class com_rsfirewallInstallerScript
 		jimport('joomla.filesystem.file');
 
 		$files = array(
-			JPATH_ADMINISTRATOR.'/components/com_rsfirewall/sql/mysql/signatures.data.sql',
-			JPATH_ADMINISTRATOR.'/components/com_rsfirewall/sql/sqlazure/signatures.data.sql'
+			JPATH_ADMINISTRATOR.'/components/com_rsfirewall/sql/mysql/signatures.data.sql'
 		);
 
 		foreach ($files as $file)
@@ -704,36 +716,23 @@ class com_rsfirewallInstallerScript
 		}
 	}
 	
-	protected function runSQL($source, $file) {
-		$db = JFactory::getDbo();
-		$driver = strtolower($db->name);
-		if (strpos($driver, 'mysql') !== false) {
-			$driver = 'mysql';
-		} elseif ($driver == 'sqlsrv') {
-			$driver = 'sqlazure';
-		}
+	protected function runSQL($source, $file)
+	{
+		$db 	= JFactory::getDbo();
+		$driver = 'mysql';
 		
-		$sqlfile = $source.'/admin/sql/'.$driver.'/'.$file;
+		$sqlfile = $source . '/admin/sql/' . $driver . '/' . $file;
 		
-		if (file_exists($sqlfile)) {
+		if (file_exists($sqlfile))
+		{
 			$buffer = file_get_contents($sqlfile);
-			if ($buffer !== false) {
-				if (is_callable(array($db, 'splitSql')))
+			if ($buffer !== false)
+			{
+				if ($queries = $db->splitSql($buffer))
 				{
-					$queries = $db->splitSql($buffer);
-				}
-				else
-				{
-					$queries = JInstallerHelper::splitSql($buffer);
-				}
-				
-				foreach ($queries as $query) {
-					$query = trim($query);
-					if ($query != '' && $query{0} != '#') {
-						$db->setQuery($query);
-						if (!$db->execute()) {
-							JError::raiseWarning(1, JText::sprintf('JLIB_INSTALLER_ERROR_SQL_ERROR', $db->stderr(true)));
-						}
+					foreach ($queries as $query)
+					{
+						$db->setQuery($query)->execute();
 					}
 				}
 			}
@@ -876,42 +875,41 @@ class com_rsfirewallInstallerScript
 	padding: 3px;
 }
 </style>
-	<div class="row-fluid">
-		<div class="span2">
-			<!-- until Watchful fix their code this part has to be written like this; they're emulating the backend in a frontend request and template overrides don't work because 'isis' doesn't exist in the frontend, so any calls that use the /media folder will throw an error -->
-			<img src="<?php echo JUri::root(true) . '/media/com_rsfirewall/images/rsfirewall-box.png'; ?>" alt="RSFirewall!" />
-		</div>
-		<div class="span10">
+	<div>
+		<!-- until Watchful fix their code this part has to be written like this; they're emulating the backend in a frontend request and template overrides don't work because 'isis' doesn't exist in the frontend, so any calls that use the /media folder will throw an error -->
+		<p><img src="<?php echo JUri::root(true) . '/media/com_rsfirewall/images/rsfirewall-box.png'; ?>" alt="RSFirewall!" /></p>
 			<p>System Plugin ...
 				<?php if ($messages['plg_rsfirewall']) { ?>
-				<b class="install-ok">Installed</b>
+				<strong class="install-ok">Installed</strong>
 				<?php } else { ?>
-				<b class="install-not-ok">Error installing!</b>
+				<strong class="install-not-ok">Error installing!</strong>
 				<?php } ?>
 			</p>
 			<p>Installer Plugin ...
 				<?php if ($messages['plg_installer']) { ?>
-				<b class="install-ok">Installed</b>
+				<strong class="install-ok">Installed</strong>
 				<?php } else { ?>
-				<b class="install-not-ok">Error installing!</b>
+				<strong class="install-not-ok">Error installing!</strong>
 				<?php } ?>
 			</p>
 			<p>RSFirewall! Control Panel Module ...
 				<?php if ($messages['mod_rsfirewall']) { ?>
-				<b class="install-ok">Installed</b>
+				<strong class="install-ok">Installed</strong>
 				<?php } else { ?>
-				<b class="install-not-ok">Error installing!</b>
+				<strong class="install-not-ok">Error installing!</strong>
 				<?php } ?>
 			</p>
-			<h2>Changelog v2.12.1</h2>
+			<h2>Changelog v3.0.2</h2>
 			<ul class="version-history">
-				<li><span class="version-upgraded">Upg</span> Choose which Google APIs to use during the System Check.</li>
+				<li><span class="version-upgraded">Upg</span> Replaced references to lists as 'Blocklist' and 'Safelist'.</li>
+				<li><span class="version-upgraded">Upg</span> The System Check can now be run with Xdebug enabled by adjusting the xdebug.max_nesting_level directive.</li>
+				<li><span class="version-fixed">Fix</span> Removed some 'Ignored Hidden Files' because some hosting providers block requests containing those names; these have been instead hardcoded in the System Check process.</li>
+			</ul>
 			<p>
-			<a class="btn btn-primary btn-large" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>
-			<a class="btn" href="https://www.rsjoomla.com/support/documentation/rsfirewall-user-guide.html" target="_blank">Read the RSFirewall! User Guide</a>
-			<a class="btn" href="https://www.rsjoomla.com/support.html" target="_blank">Get Support!</a>
+				<a class="btn btn-primary btn-large btn-lg" href="index.php?option=com_rsfirewall">Start using RSFirewall!</a>
+				<a class="btn btn-secondary" href="https://www.rsjoomla.com/support/documentation/rsfirewall-user-guide.html" target="_blank">Read the RSFirewall! User Guide</a>
+				<a class="btn btn-secondary" href="https://www.rsjoomla.com/support.html" target="_blank">Get Support!</a>
 			</p>
-		</div>
 	</div>
 		<?php
 	}

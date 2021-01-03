@@ -1,17 +1,17 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
 defined('_JEXEC') or die('Restricted access');
 
-require_once dirname(__FILE__).'/protocols/base.php';
-require_once dirname(__FILE__).'/protocols/interface.php';
-require_once dirname(__FILE__).'/protocols/v4.php';
-require_once dirname(__FILE__).'/protocols/v6.php';
+require_once __DIR__ . '/protocols/base.php';
+require_once __DIR__ . '/protocols/interface.php';
+require_once __DIR__ . '/protocols/v4.php';
+require_once __DIR__ . '/protocols/v6.php';
 
 class RSFirewallIP
 {	
@@ -118,6 +118,13 @@ class RSFirewallIP
 				}
 				
 				return true;
+			} elseif ($this->version == 6) {
+				$range = preg_quote($range);
+				$range = str_replace('\*', '(.*?)', $range);
+				if (preg_match('/' . $range . '/', $this->toAddress()))
+				{
+					return true;
+				}
 			}
 			
 			return false;

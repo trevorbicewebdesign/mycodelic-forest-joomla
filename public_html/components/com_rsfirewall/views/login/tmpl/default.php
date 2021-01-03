@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,9 +12,7 @@ defined('_JEXEC') or die('Restricted access');
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" href="<?php echo JHtml::_('rsfirewall_stylesheet', 'jui/bootstrap.min.css', array('relative' => true, 'pathOnly' => true)); ?>" type="text/css" />
-	<link rel="stylesheet" href="<?php echo JHtml::_('rsfirewall_stylesheet', 'jui/bootstrap-responsive.min.css', array('relative' => true, 'pathOnly' => true)); ?>" type="text/css" />
-	<link rel="stylesheet" href="<?php echo JHtml::_('rsfirewall_stylesheet', 'jui/bootstrap-extended.css', array('relative' => true, 'pathOnly' => true)); ?>" type="text/css" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<title><?php echo JText::_('COM_RSFIREWALL_PROTECTED_AREA'); ?></title>
 	<style type="text/css">
       body {
@@ -24,7 +22,7 @@ defined('_JEXEC') or die('Restricted access');
       }
 
       .form-signin {
-        max-width: 300px;
+        max-width: 370px;
         padding: 19px 29px 29px;
         margin: 0 auto 20px;
         background-color: #fff;
@@ -42,40 +40,29 @@ defined('_JEXEC') or die('Restricted access');
         height: auto;
         margin-bottom: 15px;
         padding: 7px 9px;
+        text-align: center;
       }
 
     </style>
 	<script type="text/javascript">
-	function addEvent(obj, evType, fn) {
-		if (obj.addEventListener) {
-			obj.addEventListener(evType, fn, false); 
-			return true; 
-		} else if (obj.attachEvent) {
-			var r = obj.attachEvent("on"+evType, fn); 
-			return r; 
-		} else { 
-			return false; 
-		}
-	}
-	addEvent(window, 'load', function() {
-		var element = document.getElementsByName('rsf_backend_password')[0];
-		element.focus();
+	document.addEventListener('DOMContentLoaded', function() {
+		document.getElementsByName('rsf_backend_password')[0].focus();
 	});
 	</script>
 </head>
 <body>
 	<div class="container">
 		<?php if ($this->password_sent) { ?>
-			<div class="alert alert-error">
+			<div class="alert alert-danger" role="alert">
 				<h4><?php echo JText::_('COM_RSFIREWALL_ERROR'); ?></h4>
 				<?php echo JText::_('COM_RSFIREWALL_PASSWORD_INCORRECT'); ?>
 			</div>
 		<?php } ?>
 		<form method="post" action="index.php" class="form-signin text-center">
-			<p><?php echo JHtml::_('image', 'com_rsfirewall/icon-48-rsfirewall.png', 'RSFirewall!', 'align="middle"', true); ?></p>
+			<p><?php echo JHtml::_('image', 'com_rsfirewall/icon-48-rsfirewall.png', 'RSFirewall!', array(), true); ?></p>
 			<h3><?php echo JText::_('COM_RSFIREWALL_PLEASE_LOGIN_TO_CONTINUE'); ?></h3>
 			<input type="password" class="input-block-level" name="rsf_backend_password" placeholder="<?php echo $this->escape(JText::_('COM_RSFIREWALL_PASSWORD')); ?>" />
-			<button class="btn btn-large btn-primary" type="submit"><?php echo JText::_('COM_RSFIREWALL_LOGIN'); ?></button>
+			<button class="btn btn-primary btn-lg" type="submit"><?php echo JText::_('COM_RSFIREWALL_LOGIN'); ?></button>
 		</form>
 	</div>
 </body>

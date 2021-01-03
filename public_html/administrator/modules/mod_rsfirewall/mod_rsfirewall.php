@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,6 +12,13 @@ defined('_JEXEC') or die('Restricted access');
 // logged in user
 $user = JFactory::getUser();
 
+if (!file_exists(JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/config.php'))
+{
+	return false;
+}
+
+require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/config.php';
+
 JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR.'/components/com_rsfirewall/models');
 $model = JModelLegacy::getInstance('RSFirewall', 'RsfirewallModel', array(
     'option' => 'com_rsfirewall',
@@ -19,11 +26,8 @@ $model = JModelLegacy::getInstance('RSFirewall', 'RsfirewallModel', array(
 ));
 
 if ($model && $user->authorise('core.admin', 'com_rsfirewall')) {
-    require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/config.php';
-
     $config = RSFirewallConfig::getInstance();
 
-	JHtml::_('behavior.framework');
 	// load the frontend language
 	// this language file contains some event log translations
 	$lang = JFactory::getLanguage();
@@ -32,14 +36,14 @@ if ($model && $user->authorise('core.admin', 'com_rsfirewall')) {
 	$lang->load('com_rsfirewall', JPATH_SITE, $lang->getDefault(), true);
 	$lang->load('com_rsfirewall', JPATH_SITE, null, true);
 
-    JHtml::_('rsfirewall_stylesheet', 'com_rsfirewall/style.css', array('relative' => true, 'version' => 'auto'));
-    JHtml::_('rsfirewall_stylesheet', 'mod_rsfirewall/style.css', array('relative' => true, 'version' => 'auto'));
+    JHtml::_('stylesheet', 'com_rsfirewall/style.css', array('relative' => true, 'version' => 'auto'));
+    JHtml::_('stylesheet', 'mod_rsfirewall/style.css', array('relative' => true, 'version' => 'auto'));
 
 	// Load jQuery
     JHtml::_('jquery.framework');
 
-    JHtml::_('rsfirewall_script', 'com_rsfirewall/rsfirewall.js', array('relative' => true, 'version' => 'auto'));
-    JHtml::_('rsfirewall_script', 'mod_rsfirewall/rsfirewall.js', array('relative' => true, 'version' => 'auto'));
+    JHtml::_('script', 'com_rsfirewall/rsfirewall.js', array('relative' => true, 'version' => 'auto'));
+    JHtml::_('script', 'mod_rsfirewall/rsfirewall.js', array('relative' => true, 'version' => 'auto'));
 	
 	$logs = array();
 	if ($user->authorise('logs.view', 'com_rsfirewall')) {

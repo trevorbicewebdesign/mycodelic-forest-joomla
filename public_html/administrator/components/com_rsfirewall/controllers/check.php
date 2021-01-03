@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -289,24 +289,6 @@ class RsfirewallControllerCheck extends JControllerLegacy
 		} else {
 			$data->result 	= true;
 			$data->message 	= JText::_('COM_RSFIREWALL_CONFIGURATION_OK');
-		}
-
-		$this->showResponse($success, $data);
-	}
-
-	public function checkAdminPasswords() {
-		$model 		= $this->getModel('check');
-		$success 	= true;
-		$data		= new stdClass();
-		$results	= $model->checkAdminPasswords();
-
-		if ($results) {
-			$data->result  = false;
-			$data->message = JText::plural('COM_RSFIREWALL_WEAK_PASSWORDS_N_FOUND', count($results));
-			$data->details = $results;
-		} else {
-			$data->result  = true;
-			$data->message = JText::_('COM_RSFIREWALL_WEAK_PASSWORDS_OK');
 		}
 
 		$this->showResponse($success, $data);

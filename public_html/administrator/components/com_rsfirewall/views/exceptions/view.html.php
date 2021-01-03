@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -13,13 +13,14 @@ class RsfirewallViewExceptions extends JViewLegacy
 	protected $items;
 	protected $pagination;
 	protected $state;
-	protected $filterbar;
-	protected $sidebar;
-	protected $dropdown;
+
+	public $filterForm;
+	public $activeFilters;
 	
-	function display($tpl=null) {
-		$user = JFactory::getUser();
-		if (!$user->authorise('exceptions.manage', 'com_rsfirewall')) {
+	public function display($tpl=null)
+	{
+		if (!JFactory::getUser()->authorise('exceptions.manage', 'com_rsfirewall'))
+		{
 			$app = JFactory::getApplication();
 			$app->enqueueMessage(JText::_('JERROR_ALERTNOAUTHOR'), 'error');
 			$app->redirect(JRoute::_('index.php?option=com_rsfirewall', false));
@@ -30,21 +31,20 @@ class RsfirewallViewExceptions extends JViewLegacy
 		$this->items 		= $this->get('Items');
 		$this->pagination 	= $this->get('Pagination');
 		$this->state 		= $this->get('State');
-		
-		$this->filterbar	= $this->get('FilterBar');		
-		$this->sidebar 		= $this->get('SideBar');
-		$this->dropdown		= $this->get('Dropdown');
+
+		$this->filterForm    = $this->get('FilterForm');
+		$this->activeFilters = $this->get('ActiveFilters');
 		
 		parent::display($tpl);
 	}
 	
-	protected function addToolBar() {
+	protected function addToolBar()
+	{
+		RSFirewallToolbarHelper::addToolbar('exceptions');
+
 		// set title
 		JToolbarHelper::title('RSFirewall!', 'rsfirewall');
-		
-		require_once JPATH_COMPONENT.'/helpers/toolbar.php';
-		RSFirewallToolbarHelper::addToolbar('exceptions');
-		
+
 		JToolbarHelper::addNew('exception.add');
 		JToolbarHelper::editList('exception.edit');
 		JToolbarHelper::divider();

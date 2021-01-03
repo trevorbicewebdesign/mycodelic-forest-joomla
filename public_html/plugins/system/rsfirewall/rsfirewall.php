@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -509,22 +509,26 @@ class plgSystemRsfirewall extends JPlugin
 	}
 
 	public function onUserLogin($response, $options = array()) {
-		if (JFactory::getApplication()->isAdmin() && $response['status'] == JAuthentication::STATUS_SUCCESS && $response['type'] == 'Joomla' && !$this->isWhitelisted()) {
+		if (JFactory::getApplication()->isClient('administrator') && $response['status'] == JAuthentication::STATUS_SUCCESS && $response['type'] == 'Joomla' && !$this->isWhitelisted()) {
 			$this->clearOffenders();
 		}
 	}
 
-	public function onUserLoginFailure($response) {
+	public function onUserLoginFailure($response)
+	{
 		// run only in the backend
 		// & only if failed login
 		// & just with the Joomla! authentication
 		// & if the IP is NOT in the whitelist
-		if (JFactory::getApplication()->isAdmin() && $response['status'] != JAuthentication::STATUS_SUCCESS && $response['type'] == 'Joomla' && !$this->isWhitelisted()) {
+		if (JFactory::getApplication()->isClient('administrator') && $response['status'] !== JAuthentication::STATUS_SUCCESS && $response['type'] == 'Joomla' && !$this->isWhitelisted())
+		{
 			// run only if the config has been loaded
 			// & the Active Scanner is enabled
-			if ($this->config && $this->config->get('active_scanner_status')) {
+			if ($this->config && $this->config->get('active_scanner_status'))
+			{
 				// count attempts for captcha
-				if ($this->config->get('enable_backend_captcha')) {
+				if ($this->config->get('enable_backend_captcha'))
+				{
 					$session  = JFactory::getSession();
 					$attempts = (int) $session->get('com_rsfirewall.login_attempts', 0);
 					$session->set('com_rsfirewall.login_attempts', $attempts+1);
@@ -613,7 +617,14 @@ class plgSystemRsfirewall extends JPlugin
 	}
 
 	protected function isSQLi($uri) {
-		if (preg_match('#[\d\W](union select|union join|union distinct)[\d\W]#is', $uri, $match)) {
+		if (preg_match('#(name_const\()#is', $uri, $match))
+		{
+			return array(
+				'match' => $match[0],
+				'uri'	=> $uri
+			);
+		}
+		if (preg_match('#[\d\W](union select|union join|union distinct|information_schema|name_const\()[\d\W]#is', $uri, $match)) {
 			return array(
 				'match' => $match[0],
 				'uri'	=> $uri
@@ -667,7 +678,7 @@ class plgSystemRsfirewall extends JPlugin
 		// built-in exceptions
 		$app 		= JFactory::getApplication();
 		$options 	= array('com_config', 'com_rsfirewall', 'com_rsform', 'com_rsseo', 'com_installer', 'com_plugins', 'com_templates', 'com_modules', 'com_advancedmodules');
-		if ($app->isAdmin() && in_array($this->option, $options)) {
+		if ($app->isClient('administrator') && in_array($this->option, $options)) {
 			return $default_exception;
 		}
 		// find the first match
@@ -802,7 +813,7 @@ class plgSystemRsfirewall extends JPlugin
             ));
 		}
 
-		return $model->checkSignatures($file);
+		return $model->checkSignatures($file->tmp_name, $file->name);
 	}
 
 	protected function isBot() {
@@ -901,13 +912,15 @@ class plgSystemRsfirewall extends JPlugin
 		$db->execute();
 	}
 
-	public function onAfterRoute() {
+	public function onAfterRoute()
+	{
 		$app   = JFactory::getApplication();
 		$user  = JFactory::getUser();
 		$input = $app->input;
 
 		// the config has not been loaded...
-		if (!$this->config) {
+		if (!$this->config)
+		{
 			return;
 		}
 
@@ -916,34 +929,44 @@ class plgSystemRsfirewall extends JPlugin
 		// user is not logged in
 		// & only running in the /administrator section
 		// & we have captcha enabled
-		if ($user->get('guest') && $app->isAdmin() && $this->config->get('enable_backend_captcha')) {
-			// show captcha image if this has been requested
-			if ($this->option == 'com_rsfirewall' && $input->get('task') == 'captcha' && $this->_autoLoadClass('RSFirewallCaptcha')) {
-				$captcha = new RSFirewallCaptcha();
-				$captcha->showImage();
-
-				$app->close();
-			}
-
+		if ($app->isClient('administrator') && $user->get('guest') && $this->config->get('enable_backend_captcha') && !$this->isWhitelisted())
+		{
 			// check if we're attempting to login
-			if ($input->get('option') == 'com_login' && $input->get('username', '', 'string') && $input->get('passwd', '', 'string')) {
-				$session = JFactory::getSession();
-				$attempts = (int) $session->get('com_rsfirewall.login_attempts', 0);
-				if ($attempts >= $this->config->get('backend_captcha')) {
-					$code 	 = $session->get('com_rsfirewall.backend_captcha');
-					$sent	 = $input->get('rsf_backend_captcha');
+			if ($input->get('option') == 'com_login' && $input->get('username', '', 'string') && $input->get('passwd', '', 'string'))
+			{
+				$code = JFactory::getSession()->get('com_rsfirewall.backend_captcha');
+				$sent = $input->get('rsf_backend_captcha');
 
-					if ($code != $sent) {
-						$app->enqueueMessage(JText::_('COM_RSFIREWALL_CAPTCHA_CODE_NOT_CORRECT'), 'notice');
-						// clear the password
-						$_POST['passwd'] = '';
-					}
+				if ($code !== $sent)
+				{
+					$app->enqueueMessage(JText::_('COM_RSFIREWALL_CAPTCHA_CODE_NOT_CORRECT'), 'warning');
+					// clear the password
+					$_POST['passwd'] = '';
 				}
 			}
 		}
 
-		if ($this->config->get('disable_new_admin_users')) {
-			if ($app->isAdmin() && $input->get('option') == 'com_users' && $input->get('view') == 'user') {
+		$monitor_users = $this->config->get('monitor_users');
+		if (is_array($monitor_users))
+		{
+			$monitor_users = array_filter($monitor_users);
+		}
+		else
+		{
+			$monitor_users = array();
+		}
+
+		$isUserManager = $app->isClient('administrator') && $input->get('option') == 'com_users' && $input->get('view') == 'user';
+
+		if ($isUserManager && in_array($input->getInt('id'), $monitor_users))
+		{
+			$app->enqueueMessage(JText::_('COM_RSFIREWALL_THIS_USER_CANNOT_BE_EDITED_BECAUSE_IT_IS_PROTECTED'), 'warning');
+		}
+
+		if ($this->config->get('disable_new_admin_users'))
+		{
+			if ($isUserManager)
+			{
 				$app->enqueueMessage(JText::sprintf('COM_RSFIREWALL_DISABLE_CREATION_OF_NEW_ADMINS_WARNING', JText::_('COM_RSFIREWALL_DISABLE_CREATION_OF_NEW_ADMINS')), 'warning');
 			}
 			require_once JPATH_ADMINISTRATOR.'/components/com_rsfirewall/helpers/users.php';
@@ -951,25 +974,28 @@ class plgSystemRsfirewall extends JPlugin
 			// get the current admin users
 			$users = RSFirewallUsersHelper::getAdminUsers();
 			$admin_users = array();
-			foreach ($users as $user) {
+			foreach ($users as $user)
+			{
 				$admin_users[] = $user->id;
 			}
 			unset($users);
 
 			$lockdown_users = $this->config->get('admin_users');
-			if (is_array($lockdown_users)) {
-				foreach ($lockdown_users as $k => $v) {
-					$v = (int) $v;
-					if (!$v) {
-						unset($lockdown_users[$k]);
-					}
-				}
+			if (is_array($lockdown_users))
+			{
+				$lockdown_users = array_filter($lockdown_users);
+			}
+			else
+			{
+				$lockdown_users = array();
 			}
 
 			// these are the only users that should be in the database
-			if ($lockdown_users) {
+			if ($lockdown_users)
+			{
 				// we must have some users or else we'll end up leaving no admins
-				if ($diff_users = array_diff($admin_users, $lockdown_users)) {
+				if ($diff_users = array_diff($admin_users, $lockdown_users))
+				{
 					$db 	= JFactory::getDbo();
 					$query 	= $db->getQuery(true);
 
@@ -1102,7 +1128,7 @@ class plgSystemRsfirewall extends JPlugin
 			}
 
 
-			if ($app->isAdmin() && $this->config->get('backend_password_enabled') && $this->config->get('backend_password'))
+			if ($app->isClient('administrator') && $this->config->get('backend_password_enabled') && $this->config->get('backend_password'))
 			{
 				$use_parameter 	= $this->config->get('backend_password_use_parameter');
 				$session 		= JFactory::getSession();
@@ -1207,7 +1233,7 @@ class plgSystemRsfirewall extends JPlugin
 			if ($this->config->get('active_scanner_status')) {
 				// are we in the backend and is the protection on ?
 				// or are we in the frontend
-				if (($app->isAdmin() && $this->config->get('active_scanner_status_backend')) || $app->isSite()) {
+				if (($app->isClient('administrator') && $this->config->get('active_scanner_status_backend')) || $app->isClient('site')) {
 					// get if it's an exception
 					$exception = $this->isException();
 					// build URI out of $_GET and $_POST to compare easier
@@ -1216,7 +1242,7 @@ class plgSystemRsfirewall extends JPlugin
 						'post' => urldecode(http_build_query($_POST))
 					);
 
-					if ((int) $this->config->get('abusive_ips') && !empty($uri['post']) && $app->isSite()) {
+					if ((int) $this->config->get('abusive_ips') && !empty($uri['post']) && $app->isClient('site')) {
 						// Initialize caching
 						$cache = JFactory::getCache('plg_system_rsfirewall');
 						$cache->setCaching(true);
@@ -1357,7 +1383,7 @@ class plgSystemRsfirewall extends JPlugin
 											continue;
 										}
 										if ($verify_upload && $ext == 'php') {
-											if ($match = $this->isMalwareUpload($file->tmp_name)) {
+											if ($match = $this->isMalwareUpload($file)) {
 												if (!$filter_uploads) {
 													$this->logger->add('medium', 'UPLOAD_SHELL', $file->name.' / '.$match['reason']);
 													$this->reason = JText::_('COM_RSFIREWALL_EVENT_UPLOAD_SHELL');
@@ -1377,67 +1403,78 @@ class plgSystemRsfirewall extends JPlugin
 			}
 		}
 
-		if ($app->isAdmin()) {
+		if ($app->isClient('administrator')) {
 			$this->clearLogHistory();
 			$this->clearOldOffenders();
 		}
 	}
 
-	public function onAfterDispatch() {
-		// config has been loaded
-		if ($this->config) {
-			$doc  = JFactory::getDocument();
-			$app  = JFactory::getApplication();
-			$user = JFactory::getUser();
+	public function onAfterDispatch()
+	{
+		// Config has not been loaded
+		if (!$this->config)
+		{
+			return false;
+		}
 
-			// remove generator
-			if ($this->config->get('verify_generator')) {
-				$doc->setGenerator('');
+		$doc = JFactory::getDocument();
+		// Remove generator
+		if ($this->config->get('verify_generator'))
+		{
+			$doc->setGenerator('');
+		}
+
+		$app = JFactory::getApplication();
+		// No point in going further
+		if ($app->isClient('site'))
+		{
+			return false;
+		}
+
+		if ($doc->getType() !== 'html')
+		{
+			return false;
+		}
+
+		if ($this->config->get('check_user_password') && $this->option == 'com_users' && $app->input->get('view') == 'user' && $app->input->get('layout') == 'edit')
+		{
+			JText::script('COM_RSFIREWALL_PASSWORD_INFO');
+			JText::script('COM_RSFIREWALL_PLEASE_TYPE_PASSWORD');
+
+			JText::script('COM_RSFIREWALL_PASSWORD_MIN_LENGTH');
+			JText::script('COM_RSFIREWALL_PASSWORD_MIN_INTEGERS');
+			JText::script('COM_RSFIREWALL_PASSWORD_MIN_SYMBOLS');
+			JText::script('COM_RSFIREWALL_PASSWORD_MIN_UPPERCASE');
+			JText::script('COM_RSFIREWALL_PASSWORD_MIN_LOWERCASE');
+
+			JHtml::_('script', 'com_rsfirewall/password.js', array('relative' => true, 'version' => 'auto'));
+
+			// get and set the global user parameters
+			$params = JComponentHelper::getParams('com_users');
+			$options = array(
+				'minLength'     => $params->get('minimum_length'),
+				'minIntegers'   => $params->get('minimum_integers'),
+				'minSymbols'    => $params->get('minimum_symbols'),
+				'minUppercase'  => $params->get('minimum_uppercase'),
+				'minLowercase'  => $params->get('minimum_lowercase', 0),
+			);
+
+			$doc->addScriptDeclaration('RSFirewallPassword.userOptions = '.json_encode($options));
+		}
+
+		// Captcha is enabled in the backend, not in whitelist
+		if (!$this->isWhitelisted() && $this->config->get('enable_backend_captcha') && JFactory::getUser()->get('guest') && $this->_autoLoadClass('RSFirewallReplacer'))
+		{
+			$buffer = $doc->getBuffer('component');
+
+			if (RSFirewallReplacer::addCaptcha($buffer))
+			{
+				$doc->setBuffer($buffer, array('type' => 'component', 'name' => null, 'title' => null));
 			}
-
-			if ($app->isAdmin()) {
-				if ($this->option == 'com_users' && $app->input->get('view') == 'user' && $app->input->get('layout') == 'edit' && $this->config->get('check_user_password')) {
-                    JText::script('COM_RSFIREWALL_PASSWORD_INFO');
-                    JText::script('COM_RSFIREWALL_PLEASE_TYPE_PASSWORD');
-
-                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_LENGTH');
-                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_INTEGERS');
-                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_SYMBOLS');
-                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_UPPERCASE');
-                    JText::script('COM_RSFIREWALL_PASSWORD_MIN_LOWERCASE');
-
-                    JHtml::_('rsfirewall_script', 'com_rsfirewall/password.js', array('relative' => true, 'version' => 'auto'));
-
-                    // get and set the global user parameters
-                    $params = JComponentHelper::getParams('com_users');
-                    $options = array(
-                        'minLength'     => $params->get('minimum_length'),
-                        'minIntegers'   => $params->get('minimum_integers'),
-                        'minSymbols'    => $params->get('minimum_symbols'),
-                        'minUppercase'  => $params->get('minimum_uppercase'),
-                        'minLowercase'  => $params->get('minimum_lowercase', 0),
-                    );
-
-                    $userOptionsScript = 'RSFirewallPassword.userOptions = '.json_encode($options);
-                    $doc->addScriptDeclaration($userOptionsScript);
-				}
-
-				// captcha is enabled in the backend
-				if ($this->config->get('enable_backend_captcha') && $user->get('guest')) {
-					$session  = JFactory::getSession();
-					$attempts = (int) $session->get('com_rsfirewall.login_attempts', 0);
-					if ($attempts >= $this->config->get('backend_captcha')) {
-						if ($this->_autoLoadClass('RSFirewallReplacer')) {
-							$component = $doc->getBuffer('component');
-							if (RSFirewallReplacer::addCaptcha($component)) {
-								$doc->setBuffer($component, array('type' => 'component', 'name' => null, 'title' => null));
-							} else {
-								// disable it...
-								$this->config->set('enable_backend_captcha', 0);
-							}
-						}
-					}
-				}
+			else
+			{
+				// Disable it, template not supported
+				$this->config->set('enable_backend_captcha', 0);
 			}
 		}
 	}
@@ -1446,7 +1483,7 @@ class plgSystemRsfirewall extends JPlugin
     {
 		$app = JFactory::getApplication();
 
-		if ($app->isAdmin())
+		if ($app->isClient('administrator'))
         {
             return;
         }
@@ -1483,17 +1520,5 @@ class plgSystemRsfirewall extends JPlugin
 
             $app->setBody($html);
         }
-	}
-
-	public function onAfterInitialise()
-	{
-		$helper = JPATH_ADMINISTRATOR . '/components/com_rsfirewall/helpers/html.php';
-
-		if (file_exists($helper))
-		{
-			require_once $helper;
-
-			RSFirewallHtml::registerFunctions();
-		}
 	}
 }

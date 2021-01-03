@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -15,7 +15,7 @@ JText::script('COM_RSFIREWALL_BUTTON_PROCESSING');
 JText::script('COM_RSFIREWALL_BUTTON_SUCCESS');
 ?>
 
-<div class="rsfirewall-replace-original text-center" style="margin:25px">
+<div class="rsfirewall-replace-original text-center">
 	<button type="button" id="replace-original" class="btn btn-primary" style="margin-bottom:10px" onclick="RSFirewall.diffs.download('<?php echo $this->escape($this->filename); ?>', '<?php echo $this->escape($this->hashId); ?>', window.opener.document)"><?php echo JText::_('COM_RSFIREWALL_DOWNLOAD_ORIGINAL') ?></button>
 </div>
 

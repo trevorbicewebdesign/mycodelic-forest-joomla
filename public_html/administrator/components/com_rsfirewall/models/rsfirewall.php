@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -99,60 +99,6 @@ class RsfirewallModelRsfirewall extends JModelLegacy
 		return $this->config->get('code');
 	}
 	
-	public function getFeeds() {
-		$feeds  = array();
-		$db 	= $this->getDbo();
-		$query 	= $db->getQuery(true);		
-		$query->select('*')
-			  ->from('#__rsfirewall_feeds')
-			  ->where($db->qn('published').'='.$db->q(1))
-			  ->order($db->qn('ordering').' ASC');
-		$db->setQuery($query);
-		$items = $db->loadObjectList();
-		foreach ($items as $item) {
-			if ($feed = $this->getParsedFeed($item)) {
-				$feeds[] = $feed;
-			}
-		}
-		
-		return $feeds;
-	}
-	
-	protected function getParsedFeed($item) {
-		$parsedFeed = new stdClass;
-		$url	 	= $item->url;
-
-		// 3.x
-		$parser = new JFeedFactory;
-		try {
-			$feed = $parser->getFeed($url);
-		} catch (Exception $e) {
-			JError::raiseError($e->getCode(), $e->getMessage());
-			return false;
-		}
-
-		$parsedFeed->title = $feed->title;
-		$parsedFeed->items = array();
-
-		if (!empty($feed[0])) {
-			for ($i = 0; $i < $item->limit; $i++) {
-				if (!empty($feed[$i])) {
-					$uri = !empty($feed[$i]->guid) || !is_null($feed[$i]->guid) ? $feed[$i]->guid : $feed[$i]->uri;
-					$uri = substr($uri, 0, 4) != 'http' ? '' : $uri;
-
-					$parsedFeed->items[] = (object) array(
-						'title' => $feed[$i]->title,
-						'date' 	=> $feed[$i]->updatedDate,
-						'link'	=> $uri
-					);
-				}
-			}
-
-		}
-
-		return $parsedFeed;
-	}
-	
 	public function getModifiedFiles() {
 		$db 		= $this->getDbo();
 		$query 		= $db->getQuery(true);		
@@ -227,15 +173,5 @@ class RsfirewallModelRsfirewall extends JModelLegacy
 		
 		// Does it work?
 		return $info->works;
-	}
-
-	public function isPluginEnabled() {
-		return JPluginHelper::isEnabled('system', 'rsfirewall');
-	}
-	
-	public function getSideBar() {
-		require_once JPATH_COMPONENT.'/helpers/toolbar.php';
-		
-		return RSFirewallToolbarHelper::render();
 	}
 }

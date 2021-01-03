@@ -1,4 +1,4 @@
-RSFirewall.$(document).ready(function($) {
+jQuery(document).ready(function($) {
 	function checkJoomlaVersion()
 	{
 		$.ajax({
@@ -13,20 +13,20 @@ RSFirewall.$(document).ready(function($) {
 				'task': 'getLatestJoomlaVersion'
 			},
 			error: function(jqXHR, textStatus, errorThrown) {				
-				RSFirewall.$('#mod-rsfirewall-joomla-version').html(textStatus).addClass('com-rsfirewall-error');
+				jQuery('#mod-rsfirewall-joomla-version').html(textStatus).addClass('com-rsfirewall-error');
 			},
 			success: function(json) {				
 				if (json.success == true) {
 					if (json.data.is_latest == true) {
 						var message = Joomla.JText._('MOD_RSFIREWALL_YOU_ARE_RUNNING_LATEST_VERSION').replace('%s', json.data.current);
-						RSFirewall.$('#mod-rsfirewall-joomla-version').html(message).addClass('com-rsfirewall-ok');
+						jQuery('#mod-rsfirewall-joomla-version').html(message).addClass('com-rsfirewall-ok');
 					} else {
 						var message = Joomla.JText._('MOD_RSFIREWALL_UPDATE_IS_AVAILABLE_JOOMLA').replace('%s', json.data.latest);
-						RSFirewall.$('#mod-rsfirewall-joomla-version').html(message).addClass('com-rsfirewall-notice');
+						jQuery('#mod-rsfirewall-joomla-version').html(message).addClass('com-rsfirewall-notice');
 					}
 				} else {
 					var message = json.data.message;
-					RSFirewall.$('#mod-rsfirewall-joomla-version').html(message).addClass('com-rsfirewall-error');
+					jQuery('#mod-rsfirewall-joomla-version').html(message).addClass('com-rsfirewall-error');
 				}
 			}
 		});
@@ -47,21 +47,21 @@ RSFirewall.$(document).ready(function($) {
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
 				checkJoomlaVersion();
-				RSFirewall.$('#mod-rsfirewall-firewall-version').html(textStatus).addClass('com-rsfirewall-error');
+				jQuery('#mod-rsfirewall-firewall-version').html(textStatus).addClass('com-rsfirewall-error');
 			},
 			success: function(json) {
 				checkJoomlaVersion();
 				if (json.success == true) {
 					if (json.data.is_latest == true) {
 						var message = Joomla.JText._('MOD_RSFIREWALL_YOU_ARE_RUNNING_LATEST_VERSION').replace('%s', json.data.current);
-						RSFirewall.$('#mod-rsfirewall-firewall-version').html(message).addClass('com-rsfirewall-ok');
+						jQuery('#mod-rsfirewall-firewall-version').html(message).addClass('com-rsfirewall-ok');
 					} else {
 						var message = Joomla.JText._('MOD_RSFIREWALL_UPDATE_IS_AVAILABLE_RSFIREWALL').replace('%s', json.data.latest);
-						RSFirewall.$('#mod-rsfirewall-firewall-version').html(message).addClass('com-rsfirewall-notice');
+						jQuery('#mod-rsfirewall-firewall-version').html(message).addClass('com-rsfirewall-notice');
 					}
 				} else {
 					var message = json.data.message;
-					RSFirewall.$('#mod-rsfirewall-firewall-version').html(message).addClass('com-rsfirewall-error');
+					jQuery('#mod-rsfirewall-firewall-version').html(message).addClass('com-rsfirewall-error');
 				}
 			}
 		});

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -49,7 +49,7 @@ JText::script('MOD_RSFIREWALL_UPDATE_IS_AVAILABLE_JOOMLA');
 	<tr class="row<?php echo $i % 2; ?>">
 		<td class="com-rsfirewall-level-<?php echo $log->level; ?>"><?php echo JText::_('MOD_RSFIREWALL_LEVEL_'.$log->level); ?></td>
 		<td><?php echo JHtml::_('date', $log->date, 'Y-m-d H:i:s'); ?></td>
-		<td><?php echo JHtml::_('image', 'com_rsfirewall/flags/' . $geoip->getCountryFlag($log->ip), $geoip->getCountryCode($log->ip), '', true); ?> <?php echo $geoip->show($log->ip); ?></td>
+		<td><?php echo JHtml::_('image', 'com_rsfirewall/flags/' . $geoip->getCountryFlag($log->ip), $geoip->getCountryCode($log->ip), array(), true); ?> <?php echo $geoip->show($log->ip); ?></td>
 		<td class="mod-rsfirewall-break-word"><?php echo htmlentities($log->page, ENT_COMPAT, 'utf-8'); ?></td>
 		<td><?php echo JText::_('COM_RSFIREWALL_EVENT_'.$log->code); ?></td>
 	</tr>

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -15,10 +15,10 @@ class RsfirewallViewCheck extends JViewLegacy
 	protected $isWindows;
 	protected $isPHP54;
 	protected $offset;
-	protected $sidebar;
 	protected $lastRun;
 	
-	public function display($tpl = null) {
+	public function display($tpl = null)
+	{
 		$user = JFactory::getUser();
 		if (!$user->authorise('check.run', 'com_rsfirewall')) {
 			$app = JFactory::getApplication();
@@ -59,16 +59,75 @@ class RsfirewallViewCheck extends JViewLegacy
 			$this->lastRun = JText::_('COM_RSFIREWALL_NEVER');
 		}
 		
-		$this->sidebar = $this->get('SideBar');
-		
 		parent::display($tpl);
 	}
 	
-	protected function addToolbar() {
+	protected function addToolbar()
+	{
 		// set title
 		JToolbarHelper::title('RSFirewall!', 'rsfirewall');
-		
-		require_once JPATH_COMPONENT.'/helpers/toolbar.php';
+
 		RSFirewallToolbarHelper::addToolbar('check');
+	}
+
+	protected function getSystemCheckSteps()
+	{
+		// Build steps array
+		$steps = array('checkJoomlaVersion',
+			'checkRSFirewallVersion',
+			'checkSQLPassword',
+			'checkAdminUser',
+			'checkFTPPassword',
+			'checkSEFEnabled',
+			'checkConfigurationIntegrity',
+			'checkSession',
+			'checkTemporaryFiles',
+			'checkHtaccess',
+			'checkSessionHandler',
+			'checkBackendPassword');
+
+		if (in_array('safebrowsing', $this->config->get('google_apis')))
+		{
+			$steps[] = 'checkGoogleSafeBrowsing';
+		}
+
+		if (in_array('webrisk', $this->config->get('google_apis')))
+		{
+			$steps[] = 'checkGoogleWebRisk';
+		}
+
+		return $steps;
+	}
+
+	protected function getServerCheckSteps()
+	{
+		$steps = array(
+			'checkAllowURLInclude',
+			'checkOpenBasedir',
+			'checkDisableFunctions',
+			'checkExposePHP');
+
+		if (!$this->isPHP54)
+		{
+			array_unshift($steps, 'checkRegisterGlobals');
+			array_push($steps, 'checkSafeMode');
+		}
+
+		return $steps;
+	}
+
+	protected function getFilesCheckSteps()
+	{
+		$steps = array();
+
+		$steps[] = 'checkCoreFilesIntegrity';
+		if (!$this->isWindows)
+		{
+			$steps[] = 'checkFolderPermissions';
+			$steps[] = 'checkFilePermissions';
+		}
+		$steps[] = 'checkSignatures';
+
+		return $steps;
 	}
 }

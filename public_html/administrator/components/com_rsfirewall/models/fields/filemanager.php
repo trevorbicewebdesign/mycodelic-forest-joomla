@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -12,7 +12,8 @@ class JFormFieldFileManager extends JFormField
 {
 	public $type = 'FileManager';
 
-	protected function getInput() {
+	protected function getInput()
+	{
 		$html  = '';
 		
 		// textarea
@@ -24,6 +25,9 @@ class JFormFieldFileManager extends JFormField
 		// file manager
 		$allowfolders 	= !empty($this->element['allowfolders']) ? '&allowfolders=1' : '';
 		$allowfiles 	= !empty($this->element['allowfiles']) ? '&allowfiles=1' : '';
+
+		// Do we have an array?
+		$value = is_array($this->value) ? implode("\n", $this->value) : $this->value;
 		
 		$href = JRoute::_('index.php?option=com_rsfirewall&view=folders&tmpl=component&name='.$this->fieldname.$allowfolders.$allowfiles);
 		$open = "window.open('".addslashes($href)."', 'com_rsfirewall_fileman', 'width=520, height=480,scrollbars=1');";
@@ -31,7 +35,7 @@ class JFormFieldFileManager extends JFormField
 		$html .= '<div class="com-rsfirewall-file-manager-box">'."\n";
 		$html .= '<button type="button" onclick="'.$open.'" class="btn btn-secondary">'.JText::_($this->element['button']).'</button>'."\n";
 		$html .= '<span class="com-rsfirewall-clear"></span>';
-		$html .= '<textarea name="'.$this->name.'" id="'.$this->id.'"'.$columns.$rows.$class.$disabled.'>'.$this->escape($this->value).'</textarea>'."\n";
+		$html .= '<textarea name="'.$this->name.'" id="'.$this->id.'"'.$columns.$rows.$class.$disabled.'>'.$this->escape($value).'</textarea>'."\n";
 		$html .= '</div>'."\n";
 		
 		return $html;

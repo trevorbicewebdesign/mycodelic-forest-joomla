@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -10,8 +10,11 @@ defined('_JEXEC') or die('Restricted access');
 class RSFirewallSpamCheck {
 	protected $resolver;
 	protected $ip;
-	protected $dnsbls = array('dnsbl.tornevall.org', 'sbl-xbl.spamhaus.org');
+	protected $dnsbls = array();
 	protected $interpreter = array(
+		'dnsbl.justspam.org' => array(
+			'2' => 'IP listed on JustSpam.org'
+		),
 		'dnsbl.tornevall.org' => array(
 			'64' => 'IP marked as "abusive host"'
 		),
@@ -27,7 +30,7 @@ class RSFirewallSpamCheck {
 	
 	public function __construct($ip) {
 		try {
-			require_once dirname(__FILE__).'/ip/ip.php';
+			require_once __DIR__ . '/ip/ip.php';
 			
 			// Check if the IP is IPv4 compatible
 			$ipClass = new RSFirewallIP($ip);
@@ -37,15 +40,18 @@ class RSFirewallSpamCheck {
 			
 			$this->ip = $ip;
 		
-			require_once dirname(__FILE__).'/Net/DNS2.php';
+			require_once __DIR__ . '/Net/DNS2.php';
 			$this->resolver = new Net_DNS2_Resolver(array(
 				'nameservers' => array(
 					'208.67.222.222', '208.67.220.220', // Open DNS
+					'1.1.1.1', '1.0.0.1', // Cloudflare
 					'8.26.56.26', '8.20.247.20', // Comodo Secure DNS
 					'37.235.1.174', '37.235.1.177' // Free DNS
 				),
 				'timeout' => 2
 			));
+
+			$this->dnsbls = array_filter(RSFirewallConfig::getInstance()->get('abusive_ips_checks'));
 		} catch (Exception $e) {
 			return false;
 		}
@@ -61,17 +67,31 @@ class RSFirewallSpamCheck {
 		
 		// Get the reverse IP
 		$reverseip = implode('.', array_reverse(explode('.', $this->ip)));
-		
+
+		if (empty($this->dnsbls) || !is_array($this->dnsbls))
+		{
+			return false;
+		}
+
 		// Loop through DNSBL lists
-		foreach ($this->dnsbls as $dnsbl) {
-			try {
+		foreach ($this->dnsbls as $dnsbl)
+		{
+			if (!$dnsbl)
+			{
+				continue;
+			}
+
+			try
+			{
 				$result = $this->resolver->query($reverseip.'.'.$dnsbl, 'A');
-				if ($result && isset($result->answer[0]->address)) {
+				if ($result && isset($result->answer[0]->address))
+				{
 					// Start parsing the result
 					$parts = explode('.', $result->answer[0]->address);
 					// Get the last bit of the address
 					$bit = end($parts);
-					if (isset($this->interpreter[$dnsbl][$bit])) {
+					if (isset($this->interpreter[$dnsbl][$bit]))
+					{
 						return (object) array(
 							'dnsbl'  => $dnsbl,
 							'reason' => $this->interpreter[$dnsbl][$bit]

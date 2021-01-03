@@ -6,7 +6,7 @@
 		<option value="0">COM_RSFIREWALL_LIST_TYPE_0</option>
 	</field>
 	<field name="reason" type="textarea" class="inputbox" cols="70" rows="20" description="COM_RSFIREWALL_LIST_REASON_DESC" label="COM_RSFIREWALL_LIST_REASON" filter="raw" />
-	<field name="published" type="radio" class="btn-group" label="JPUBLISHED" size="1" default="0">
+	<field name="published" type="radio" class="btn-group btn-group-yesno" label="JPUBLISHED" size="1" default="0">
 		<option value="1">JYES</option>
 		<option value="0">JNO</option>
 	</field>

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -28,7 +28,7 @@ class RsfirewallModelCheck extends JModelLegacy
 		parent::__construct($config);
 
 		// Enable logging
-		if ($this->getConfig()->get('log_system_check') && is_writable(JFactory::getConfig()->get('log_path'))) {
+		if ($this->getConfig()->get('log_system_check') && is_writable(JFactory::getApplication()->get('log_path'))) {
 			$this->log = true;
 		}
 	}
@@ -40,7 +40,7 @@ class RsfirewallModelCheck extends JModelLegacy
 
 		static $path;
 		if (!$path) {
-			$path = JFactory::getConfig()->get('log_path').'/rsfirewall.log';
+			$path = JFactory::getApplication()->get('log_path').'/rsfirewall.log';
 		}
 		$prepend = gmdate('Y-m-d H:i:s ');
 		if ($error) {
@@ -53,13 +53,17 @@ class RsfirewallModelCheck extends JModelLegacy
 		return RSFirewallConfig::getInstance();
 	}
 
-	protected function connect($url, $caching = true) {
+	protected function connect($url, $caching = true)
+	{
 		$cache = JFactory::getCache('com_rsfirewall');
 		$cache->setCaching($caching);
 
-		try {
+		try
+		{
 			$response = $cache->get(array('RsfirewallModelCheck', 'connectCache'), array($url));
-		} catch (Exception $e) {
+		}
+		catch (Exception $e)
+		{
 			$this->setError($e->getMessage());
 			return false;
 		}
@@ -67,23 +71,25 @@ class RsfirewallModelCheck extends JModelLegacy
 		return $response;
 	}
 
-	public static function connectCache($url) {
-		$http = JHttpFactory::getHttp();
-		$response = $http->get($url, array(), 30);
+	public static function connectCache($url)
+	{
+		$response = JHttpFactory::getHttp()->get($url, array(), 30);
 
-		return $response;
+		return (object) array(
+			'code' => $response->code,
+			'body' => $response->body,
+			'headers' => $response->headers,
+		);
 	}
 
-	public function getCurrentJoomlaVersion() {
+	public function getCurrentJoomlaVersion()
+	{
 		static $current = null;
 
-		if (is_null($current)) {
+		if (is_null($current))
+		{
 			$jversion 	= new JVersion();
 			$current	= $jversion->getShortVersion();
-			// workaround for DutchJoomla! and other variations
-			if (strpos($current, ' ') !== false) {
-				$current = reset(explode(' ', $current));
-			}
 		}
 
 		return $current;
@@ -193,12 +199,9 @@ class RsfirewallModelCheck extends JModelLegacy
 		return array($current, $latest, version_compare($current, $latest, '>='));
 	}
 
-	public function checkSQLPassword() {
-		if (($password = $this->checkWeakPassword(JFactory::getConfig()->get('password'))) !== false) {
-			return $password;
-		}
-
-		return false;
+	public function checkSQLPassword()
+	{
+		return $this->checkWeakPassword(JFactory::getApplication()->get('password'));
 	}
 
 	public function hasAdminUser() {
@@ -215,46 +218,26 @@ class RsfirewallModelCheck extends JModelLegacy
 	}
 
 	public function hasFTPPassword() {
-		return JFactory::getConfig()->get('ftp_pass') != '';
+		return JFactory::getApplication()->get('ftp_pass') != '';
 	}
 
 	public function isSEFEnabled() {
-		return JFactory::getConfig()->get('sef') > 0;
+		return JFactory::getApplication()->get('sef') > 0;
 	}
 
-	public function buildConfiguration($overwrite=null) {
-		$data = get_object_vars(new JConfig());
-		if (is_array($overwrite)) {
-			foreach ($overwrite as $key => $value) {
-				if (isset($data[$key]))
-					$data[$key] = $value;
-			}
-		}
+	public function buildConfiguration($overwrite = array())
+	{
+		$oldConfig = new JRegistry(new JConfig());
 
-		return $this->arrayToString($data);
-	}
-
-	protected function arrayToString($object) {
-		// Build the object variables string
-		$vars = '';
-
-		foreach ($object as $k => $v)
+		if ($overwrite)
 		{
-			if (is_scalar($v))
+			foreach ($overwrite as $key => $value)
 			{
-				$vars .= "\tpublic $" . $k . " = '" . addcslashes($v, '\\\'') . "';\n";
-			}
-			elseif (is_array($v) || is_object($v))
-			{
-				$vars .= "\tpublic $" . $k . " = " . $this->getArrayString((array) $v) . ";\n";
+				$oldConfig->set($key, $value);
 			}
 		}
 
-		$str = "<?php\nclass JConfig {\n";
-		$str .= $vars;
-		$str .= "}";
-
-		return $str;
+		return $oldConfig->toString('PHP', array('class' => 'JConfig', 'closingtag' => false));
 	}
 
 	protected function getArrayString($a)
@@ -372,64 +355,16 @@ class RsfirewallModelCheck extends JModelLegacy
 		return RSFirewallUsersHelper::getAdminUsers();
 	}
 
-	public function checkAdminPasswords() {
-		$passwords 	= $this->_loadPasswords();
-		$users	   	= $this->getAdminUsers();
-		$return 	= array();
-
-		foreach ($users as $user) {
-			foreach ($passwords as $password) {
-				$match = false;
-				if (substr($user->password, 0, 4) == '$2y$') {
-					// Cracking these passwords is extremely CPU intensive, skip.
-					continue 2;
-				} elseif (substr($user->password, 0, 8) == '{SHA256}') {
-					// Check the password
-					$parts	= explode(':', $user->password);
-					$crypt	= $parts[0];
-					$salt	= @$parts[1];
-					$testcrypt = JUserHelper::getCryptedPassword($password, $salt, 'sha256', false);
-
-					if ($user->password == $testcrypt) {
-						$match = true;
-					}
-				} else {
-					// Check the password
-					$parts	= explode(':', $user->password);
-					$crypt	= $parts[0];
-					$salt	= @$parts[1];
-
-					$testcrypt = JUserHelper::getCryptedPassword($password, $salt, 'md5-hex', false);
-
-					if ($crypt == $testcrypt) {
-						$match = true;
-					}
-				}
-
-				if ($match === true) {
-					$found = new stdClass();
-					$found->username = $user->username;
-					$found->password = $password;
-
-					$return[] = $found;
-					break;
-				}
-			}
-		}
-
-		return $return;
-	}
-
 	public function getSessionLifetime() {
-		return JFactory::getConfig()->get('lifetime');
+		return JFactory::getApplication()->get('lifetime');
 	}
 
 	public function getTemporaryFolder() {
-		return JFactory::getConfig()->get('tmp_path');
+		return JFactory::getApplication()->get('tmp_path');
 	}
 
 	public function getLogFolder() {
-		return JFactory::getConfig()->get('log_path');
+		return JFactory::getApplication()->get('log_path');
 	}
 
 	public function getServerSoftware() {
@@ -792,7 +727,7 @@ class RsfirewallModelCheck extends JModelLegacy
 	}
 
 	public function getSessionHandler() {
-		return JFactory::getConfig()->get('session_handler');
+		return JFactory::getApplication()->get('session_handler');
 	}
 
 	public function checkGoogleSafeBrowsing(){
@@ -1159,144 +1094,7 @@ class RsfirewallModelCheck extends JModelLegacy
 	}
 
 	protected function getOptionalFolders() {
-		return array(
-			/* administrator components */
-			'administrator/components/com_associations',
-			'administrator/components/com_banners',
-			'administrator/components/com_contact',
-			'administrator/components/com_contenthistory',
-			'administrator/components/com_fields',
-			'administrator/components/com_finder',
-			'administrator/components/com_newsfeeds',
-			'administrator/components/com_search',
-			'administrator/components/com_weblinks',
-
-			/* administrator modules */
-			'administrator/modules/mod_feed',
-			'administrator/modules/mod_latest',
-			'administrator/modules/mod_logged',
-			'administrator/modules/mod_menu',
-			'administrator/modules/mod_popular',
-			'administrator/modules/mod_status',
-			'administrator/modules/mod_submenu',
-			'administrator/modules/mod_sampledata',
-			'administrator/modules/mod_stats_admin',
-			'administrator/modules/mod_title',
-			'administrator/modules/mod_multilangstatus',
-			'administrator/modules/mod_version',
-
-			/* administrator templates */
-			'administrator/templates/bluestork',
-			'administrator/templates/isis',
-			'administrator/templates/hathor',
-
-			/* components */
-			'components/com_banners',
-			'components/com_contact',
-			'components/com_contenthistory',
-			'components/com_fields',
-			'components/com_finder',
-			'components/com_newsfeeds',
-			'components/com_search',
-			'components/com_weblinks',
-
-			/* media */
-			'media/editors/tinymce',
-			'media/com_finder',
-			'media/mod_sampledata',
-			'images/sampledata',
-
-			/* modules */
-			'modules/mod_articles_archive',
-			'modules/mod_articles_categories',
-			'modules/mod_articles_category',
-			'modules/mod_articles_popular',
-			'modules/mod_articles_latest',
-			'modules/mod_articles_news',
-			'modules/mod_banners',
-			'modules/mod_random_image',
-			'modules/mod_related_items',
-			'modules/mod_search',
-			'modules/mod_stats',
-			'modules/mod_weblinks',
-			'modules/mod_whosonline',
-			'modules/mod_wrapper',
-			'modules/mod_feed',
-			'modules/mod_finder',
-			'modules/mod_footer',
-			'modules/mod_tags_popular',
-			'modules/mod_tags_similar',
-			'modules/mod_users_latest',
-
-			/* plugins */
-			'plugins/content/contact',
-			'plugins/content/emailcloak',
-			'plugins/content/fields',
-			'plugins/content/finder',
-			'plugins/content/joomla',
-			'plugins/content/loadmodule',
-			'plugins/content/pagebreak',
-			'plugins/content/pagenavigation',
-			'plugins/content/vote',
-			'plugins/authentication/cookie',
-			'plugins/authentication/gmail',
-			'plugins/authentication/ldap',
-			'plugins/captcha/recaptcha',
-			'plugins/editors/tinymce',
-			'plugins/editors-xtd/article',
-			'plugins/editors-xtd/contact',
-			'plugins/editors-xtd/fields',
-			'plugins/editors-xtd/image',
-			'plugins/editors-xtd/menu',
-			'plugins/editors-xtd/module',
-			'plugins/editors-xtd/pagebreak',
-			'plugins/editors-xtd/readmore',
-			'plugins/fields/calendar',
-			'plugins/fields/checkboxes',
-			'plugins/fields/color',
-			'plugins/fields/editor',
-			'plugins/fields/imagelist',
-			'plugins/fields/integer',
-			'plugins/fields/list',
-			'plugins/fields/media',
-			'plugins/fields/radio',
-			'plugins/fields/sql',
-			'plugins/fields/text',
-			'plugins/fields/textarea',
-			'plugins/fields/url',
-			'plugins/fields/user',
-			'plugins/fields/usergrouplist',
-			'plugins/finder/categories',
-			'plugins/finder/contacts',
-			'plugins/finder/content',
-			'plugins/finder/newsfeeds',
-			'plugins/finder/tags',
-			'plugins/sampledata/blog',
-			'plugins/search/categories',
-			'plugins/search/contacts',
-			'plugins/search/content',
-			'plugins/search/newsfeeds',
-			'plugins/search/tags',
-			'plugins/system/debug',
-			'plugins/system/fields',
-			'plugins/system/highlight',
-			'plugins/system/languagecode',
-			'plugins/system/p3p',
-			'plugins/system/sef',
-			'plugins/system/stats',
-			'plugins/system/updatenotification',
-			'plugins/twofactorauth/totp',
-			'plugins/twofactorauth/yubikey',
-			'plugins/user/contactcreator',
-			'plugins/user/profile',
-
-			/* templates */
-			'templates/atomic',
-			'templates/beez3',
-			'templates/beez5',
-			'templates/beez_20',
-			'templates/protostar'
-		);
+		return $this->getConfig()->get('optional_folders');
 	}
 
 	public function isAlpha($version = null) {
@@ -1483,6 +1281,11 @@ class RsfirewallModelCheck extends JModelLegacy
 
 		$db->setQuery($query);
 		$signatures = $db->loadObjectList();
+
+		foreach ($signatures as $signature)
+		{
+			$signature->signature = base64_decode($signature->signature);
+		}
 		
 		// Load MD5 signatures
 		$file = JPATH_ADMINISTRATOR . self::SIGS_DIR . '/php.csv';
@@ -1510,7 +1313,7 @@ class RsfirewallModelCheck extends JModelLegacy
 		return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
 	}
 
-	public function checkSignatures($file)
+	public function checkSignatures($file, $filename = null)
 	{
 		static $signatures;
 		if (!is_array($signatures)) {
@@ -1522,8 +1325,13 @@ class RsfirewallModelCheck extends JModelLegacy
 		{
 			throw new Exception (JText::_('COM_RSFIREWALL_NO_MALWARE_SIGNATURES'));
 		}
+
+		if ($filename === null)
+		{
+			$filename = $this->basename($file);
+		}
 		
-		$ext = strtolower(JFile::getExt($file));
+		$ext = strtolower(JFile::getExt($filename));
 
 		if ($ext == 'php')
 		{
@@ -1551,7 +1359,7 @@ class RsfirewallModelCheck extends JModelLegacy
 			$md5 = md5($contents);
 		}
 		
-		$basename 	= $this->basename($file);
+		$basename 	= $filename;
 		$dirname	= dirname($file);
 
 		foreach ($signatures as $signature)
@@ -1634,22 +1442,13 @@ class RsfirewallModelCheck extends JModelLegacy
 		}
 		else
 		{
-			if ($basename[0] == ' ')
+			if (substr($basename, 0, 1) == ' ')
 			{
 				return array('match' => $basename, 'reason' => JText::_('COM_RSFIREWALL_SUSPICIOUS_SPACE_FILE'));
 			}
 
-			$ignoredDotFiles = array(
-				'.htaccess',
-				'.htpasswd',
-				'.htusers',
-				'.htgroups',
-				'.gitignore',
-				'.gitattributes',
-				'.mailmap',
-				'.php_cs',
-			);
-			if ($basename[0] == '.' && !in_array(strtolower($basename), $ignoredDotFiles) && $ext != 'yml')
+			$ignoredDotFiles = $this->getDotFiles();
+			if (substr($basename, 0, 1) == '.' && !in_array(strtolower($basename), $ignoredDotFiles) && $ext != 'yml')
 			{
 				return array('match' => $basename, 'reason' => JText::_('COM_RSFIREWALL_SUSPICIOUS_HIDDEN_FILE'));
 			}
@@ -1658,6 +1457,14 @@ class RsfirewallModelCheck extends JModelLegacy
 		$this->addLogEntry("[checkSignatures] File $basename appears to be clean. Moving on to next...");
 
 		return false;
+	}
+
+	private function getDotFiles()
+	{
+		$ignoredDotFiles = (array) array_filter($this->getConfig()->get('dot_files', array(), true));
+		$ignoredDotFiles = array_merge($ignoredDotFiles, array('.htaccess', '.htpasswd', '.htusers', '.htgroups'));
+
+		return $ignoredDotFiles;
 	}
 	
 	protected function basename($filename)
@@ -1703,11 +1510,5 @@ class RsfirewallModelCheck extends JModelLegacy
 		$this->getConfig()->set('system_check_last_run', JFactory::getDate()->toSql(true));
 
 		$this->addLogEntry("System check finished: $grade");
-	}
-
-	public function getSideBar() {
-		require_once JPATH_COMPONENT.'/helpers/toolbar.php';
-
-		return RSFirewallToolbarHelper::render();
 	}
 }

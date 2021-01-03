@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `#__rsfirewall_hashes` (
   `file` text NOT NULL,
   `hash` varchar(32) NOT NULL,
   `type` varchar(64) NOT NULL,
-  `flag` varchar(1) NOT NULL,
-  `date` varchar(255) NOT NULL,
+  `flag` varchar(1) NULL,
+  `date` varchar(255) NULL,
   PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8;

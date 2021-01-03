@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `#__rsfirewall_exceptions` (
   `sql` tinyint(1) NOT NULL,
   `js` tinyint(1) NOT NULL,
   `uploads` tinyint(1) NOT NULL,
-  `reason` text NOT NULL,
+  `reason` text NULL,
   `date` datetime NOT NULL,
   `published` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)

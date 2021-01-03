@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -38,9 +38,9 @@ class RsfirewallModelLog extends JModelAdmin
 	}
 	
 	public function truncate() {
-		$db = JFactory::getDbo();
-		$db->truncateTable('#__rsfirewall_logs');
-		
+		JFactory::getDbo()->truncateTable('#__rsfirewall_logs');
+
+		require_once JPATH_ADMINISTRATOR . '/components/com_rsfirewall/helpers/log.php';
 		RSFirewallLogger::getInstance()->add('critical', 'LOG_EMPTIED')->save();
 	}
 	

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package        RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link           https://www.rsjoomla.com
  * @license        GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -69,7 +69,7 @@ class RSFirewallGeoIP
 		return $this->flags[$code];
 	}
 
-	public function show($ip)
+	public function show($ip, $usePlaceholder = true)
 	{
 		static $placeholders = array();
 		if (empty($placeholders))
@@ -93,7 +93,7 @@ class RSFirewallGeoIP
 			$placeholder = $placeholders['ipv6'];
 		}
 
-		if ($placeholder)
+		if ($usePlaceholder && $placeholder)
 		{
 			$link = str_ireplace('{ip}', $ip, $placeholder);
 

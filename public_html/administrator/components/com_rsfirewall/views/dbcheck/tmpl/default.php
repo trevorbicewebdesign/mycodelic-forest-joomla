@@ -1,29 +1,32 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
 defined('_JEXEC') or die('Restricted access');
+
+$this->document->addScriptDeclaration("RSFirewall.requestTimeOut.Seconds = '" . (float) $this->request_timeout . "';");
 ?>
 <form action="<?php echo JRoute::_('index.php?option=com_rsfirewall');?>" method="post" name="adminForm" id="adminForm">
-<div id="j-sidebar-container" class="span2">
-	<?php echo $this->sidebar; ?>
-</div>
-<div id="j-main-container" class="span10">
+
+<?php echo RSFirewallAdapterGrid::sidebar(); ?>
 	<div id="com-rsfirewall-main-content">
 	<?php if ($this->supported) { ?>
 	<div id="com-rsfirewall-dbcheck-messages">
 		<div class="alert alert-info"><p><?php echo JText::_('COM_RSFIREWALL_ONLY_TABLES_WITH_MYISAM_STORAGE_ENGINE_DESC');?></p></div>
 	</div>
-	<p id="com-rsfirewall-scan-in-progress" class="com-rsfirewall-hidden"><?php echo JText::_('COM_RSFIREWALL_SCAN_IS_IN_PROGRESS'); ?></p>
+	<div id="com-rsfirewall-scan-in-progress" class="com-rsfirewall-hidden">
+		<div class="lds-ripple"><div></div><div></div></div>
+		<p><?php echo JText::_('COM_RSFIREWALL_SCAN_IS_IN_PROGRESS'); ?></p>
+	</div>
 	<p><button type="button" class="btn btn-primary" id="com-rsfirewall-start-button" onclick="RSFirewallStartCheck();"><?php echo JText::_('COM_RSFIREWALL_CHECK_DB'); ?></button></p>
 
 	<div class="com-rsfirewall-content-box">
 		<div class="com-rsfirewall-content-box-header">
-			<h3><span class="com-rsfirewall-icon-16-database"></span><?php echo JText::_('COM_RSFIREWALL_SERVER_DATABASE'); ?></h3>
+			<h3><span class="icon-database"></span> <?php echo JText::_('COM_RSFIREWALL_SERVER_DATABASE'); ?></h3>
 		</div>
 		<div id="com-rsfirewall-database" class="com-rsfirewall-content-box-content com-rsfirewall-hidden">
 			<div class="com-rsfirewall-progress" id="com-rsfirewall-database-progress"><div class="com-rsfirewall-bar" style="width: 0%;">0%</div></div>
@@ -69,10 +72,9 @@ defined('_JEXEC') or die('Restricted access');
 	</div>
 			
 	<script type="text/javascript">
-	RSFirewall.requestTimeOut.Seconds = <?php echo $this->request_timeout;?>;
 	// DB Check
 	function RSFirewallStartCheck() {
-		RSFirewall.$('#com-rsfirewall-start-button').remove();
+		jQuery('#com-rsfirewall-start-button').remove();
 		RSFirewall.Database.Check.unhide('#com-rsfirewall-scan-in-progress').hide().fadeIn('slow');
 		
 		RSFirewall.Database.Check.prefix = 'com-rsfirewall-database';
@@ -84,9 +86,9 @@ defined('_JEXEC') or die('Restricted access');
 		RSFirewall.Database.Check.tablesNum = RSFirewall.Database.Check.tables.length;
 		
 		RSFirewall.Database.Check.stopCheck = function() {
-			RSFirewall.$('#com-rsfirewall-database-progress').fadeOut('fast', function(){RSFirewall.$(this).remove()});
-			RSFirewall.$('#com-rsfirewall-scan-in-progress').remove();
-		}
+			jQuery('#com-rsfirewall-database-progress').fadeOut('fast', function(){jQuery(this).remove()});
+			jQuery('#com-rsfirewall-scan-in-progress').remove();
+		};
 		
 		RSFirewall.Database.Check.startCheck();
 	}

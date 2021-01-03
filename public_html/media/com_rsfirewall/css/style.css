@@ -1,42 +1,8 @@
-/* label fix, only for top level items */
-ul.config-option-list > li > label {
-	width: 135px;
-	word-wrap: break-word;
-}
-
-.adminform > .control-group > .control-label {
-	width: 135px;
-	word-wrap: break-word;
-}
-
-.com-rsfirewall-float-left {
-	float: left;
-}
-
 .icon-48-rsfirewall {
 	background-image: url(../images/icon-48-rsfirewall.png);
 }
 
-/* configuration checkboxes hack */
-#jform_blocked_countries ul,
-#jform_blocked_countries_checkall ul,
-#jform_blocked_continents ul {
-	list-style-type: none;
-	margin: 0px;
-}
-
-#jform_blocked_countries ul li input,
-#jform_blocked_countries_checkall ul li input,
-#jform_blocked_continents ul li input {
-	margin: 0 5px 5px 0;
-}
-
-#jform_blocked_countries ul li label,
-#jform_blocked_countries_checkall ul li label,
-#jform_blocked_continents ul li label {
-	margin: 0;
-}
-
+/* Configuration spacers should look more prominent */
 .text label {
 	font-size: 120%;
 	font-weight: bold;
@@ -77,24 +43,6 @@ ul.config-option-list > li > label {
 	margin-right: 4px;
 }
 
-.com-rsfirewall-icon-16-server {
-	background: url(../images/icon-16-server.png) no-repeat left center;
-	width: 16px;
-	height: 16px;
-	display: block;
-	float: left;
-	margin-right: 4px;
-}
-
-.com-rsfirewall-icon-16-filescan {
-	background: url(../images/icon-16-filescan.png) no-repeat left center;
-	width: 16px;
-	height: 16px;
-	display: block;
-	float: left;
-	margin-right: 4px;
-}
-
 .com-rsfirewall-icon-16-database {
 	background: url(../images/icon-16-database.png) no-repeat left center;
 	width: 16px;
@@ -121,9 +69,7 @@ ul.config-option-list > li > label {
 }
 
 .com-rsfirewall-current-item {
-	background-image: url(../images/icon-16-rightarr.png);
-	background-repeat: no-repeat;
-	background-position: left center;
+	background: url(../images/icon-16-rightarr.png) no-repeat left center;
 	padding-left: 20px;
 }
 
@@ -181,58 +127,27 @@ ul.config-option-list > li > label {
 
 .com-rsfirewall-button {
 	display: inline-block;
-	background: #459300 url(../images/bg-button-green.gif) top left repeat-x !important;
+	background: #78b900;
 	border: 1px solid #459300 !important;
-	padding: 2px;
+	padding: 5px;
 	color: #fff !important;
 	cursor: pointer;
 	margin: 0;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
 }
 
 .com-rsfirewall-button.btn-processing {
-	background: #FFAA4F !important;
-	background-image: none !important;
+	background: #FFAA4F none !important;
 	border-color: #FFAA4F !important;
 }
 
 .com-rsfirewall-button.btn-success {
-	background: #459300 url(../images/bg-button-green.gif) top left repeat-x !important;
+	background: #78b900 !important;
 	border-color: #459300 !important;
 }
 
 .com-rsfirewall-button.btn-failed {
-	background: #E3425D !important;
-	background-image: none !important;
+	background: #E3425D none !important;
 	border-color: #E3425D !important;
-}
-
-.com-rsfirewall-button .expand {
-	background: url(../images/icon-16-downarrow.png) no-repeat center;
-	width: 16px;
-	height: 16px;
-	display: block;
-}
-
-.com-rsfirewall-button .shrink {
-	background: url(../images/icon-16-uparrow.png) no-repeat center;
-	width: 16px;
-	height: 16px;
-	display: block;
-}
-
-.com-rsfirewall-button .fix {
-	background: url(../images/icon-18-fix.png) no-repeat center;
-	width: 18px;
-	height: 18px;
-	display: block;
-}
-
-.com-rsfirewall-file-manager-box {
-	float: left;
-	width: 100%;
 }
 
 .com-rsfirewall-file-manager-box textarea {
@@ -247,7 +162,7 @@ table.com-rsfirewall-colored-table tr th {
 	background: #F2F2F2;
 }
 
-table.com-rsfirewall-colored-table tr td, table.com-rsfirewall-colored-table tr th {
+table.com-rsfirewall-colored-table tr td:not(.com-rsfirewall-default-font), table.com-rsfirewall-colored-table tr th {
 	font-family: Consolas, "Liberation Mono", Courier, monospace;
 }
 
@@ -322,19 +237,7 @@ table.com-rsfirewall-colored-table tr td.broken-word {
 	height: 20px;
 	margin-bottom: 20px;
 	overflow: hidden;
-	background-color: #f7f7f7;
-	background-image: -moz-linear-gradient(top, #f5f5f5, #f9f9f9);
-	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#f9f9f9));
-	background-image: -webkit-linear-gradient(top, #f5f5f5, #f9f9f9);
-	background-image: -o-linear-gradient(top, #f5f5f5, #f9f9f9);
-	background-image: linear-gradient(to bottom, #f5f5f5, #f9f9f9);
-	background-repeat: repeat-x;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	filter: progid:dximagetransform.microsoft.gradient(startColorstr='#fff5f5f5', endColorstr='#fff9f9f9', GradientType=0);
-	-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-	-moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+	background: #f7f7f7 linear-gradient(to bottom, #f5f5f5, #f9f9f9) repeat-x;
 	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -345,27 +248,13 @@ table.com-rsfirewall-colored-table tr td.broken-word {
 	float: left;
 	width: 0;
 	height: 100%;
-	font-size: 12px;
+	font-size: 14px;
 	color: #ffffff;
 	text-align: right;
 	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-	background-color: #0e90d2;
-	background-image: -moz-linear-gradient(top, #149bdf, #0480be);
-	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#149bdf), to(#0480be));
-	background-image: -webkit-linear-gradient(top, #149bdf, #0480be);
-	background-image: -o-linear-gradient(top, #149bdf, #0480be);
-	background-image: linear-gradient(to bottom, #149bdf, #0480be);
-	background-repeat: repeat-x;
-	filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ff149bdf', endColorstr='#ff0480be', GradientType=0);
-	-webkit-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
-	-moz-box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+	background: #0e90d2 linear-gradient(to bottom, #149bdf, #0480be) repeat-x;
 	box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
 	box-sizing: border-box;
-	-webkit-transition: width 0.6s ease;
-	-moz-transition: width 0.6s ease;
-	-o-transition: width 0.6s ease;
 	transition: width 0.6s ease;
 }
 
@@ -378,10 +267,40 @@ pre#com-rsfirewall-php-ini {
 
 #com-rsfirewall-scan-in-progress {
 	font-size: 150%;
-	background: url(../images/icon-50-loading.gif) no-repeat left center;
-	height: 50px;
-	line-height: 50px;
-	padding-left: 55px;
+	text-align: center;
+}
+
+.lds-ripple {
+	display: inline-block;
+	position: relative;
+	width: 80px;
+	height: 80px;
+}
+.lds-ripple div {
+	position: absolute;
+	border: 4px solid #333;
+	opacity: 1;
+	border-radius: 50%;
+	animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.lds-ripple div:nth-child(2) {
+	animation-delay: -0.5s;
+}
+@keyframes lds-ripple {
+	0% {
+		top: 36px;
+		left: 36px;
+		width: 0;
+		height: 0;
+		opacity: 1;
+	}
+	100% {
+		top: 0;
+		left: 0;
+		width: 72px;
+		height: 72px;
+		opacity: 0;
+	}
 }
 
 .com-rsfirewall-clear {
@@ -393,13 +312,9 @@ pre#com-rsfirewall-php-ini {
 
 .com-rsfirewall-tooltip {
 	border: solid 1px #F5C070;
-	background-color: #FDF2E2;
-	background-image: url(../images/info.png);
-	background-repeat: no-repeat;
-	background-position: 10px 5px;
+	background: #FDF2E2 url(../images/info.png) no-repeat 10px 5px;
 	margin: 0 10px 10px;
-	padding: 5px;
-	padding-left: 74px;
+	padding: 5px 5px 5px 74px;
 	min-height: 48px;
 }
 
@@ -460,27 +375,18 @@ pre#com-rsfirewall-php-ini {
 /* new style */
 #com-rsfirewall-grade {
 	padding: 10px;
-	width: 370px;
 	background: #F5F5F5;
 	border: 1px solid #E3E3E3;
 	overflow: hidden;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
 	margin-bottom: 10px;
-
-	box-shadow: inset 0 1px 1px #ccc, 0 1px 2px #ccc, 0 0px 0px 1px #f3f3f2;
-	-webkit-box-shadow: inset 0 1px 1px #ccc, 0 1px 2px #ccc, 0 0px 0px 1px #f3f3f2;
-	-moz-box-shadow: inset 0 1px 1px #ccc, 0 1px 2px #ccc, 0 0px 0px 1px #f3f3f2;
+	text-align: center;
+	box-shadow: inset 0 1px 1px #ccc, 0 1px 2px #ccc, 0 0 0 1px #f3f3f2;
 }
 
 #com-rsfirewall-grade p {
-	display: inline;
-	width: 265px;
-	float: left;
+	display: block;
 	margin: 0;
 	padding: 0 8px 0 0;
-	font-size: 12px;
 }
 
 .com-rsfirewall-content-box {
@@ -490,21 +396,17 @@ pre#com-rsfirewall-php-ini {
 }
 
 .com-rsfirewall-content-box-header {
-	background: #e5e5e5 url(../images/bg-content-box.gif) top left repeat-x;
+	background: #eeeeee;
 	margin-top: 1px;
-	height: 40px;
 }
 
 .com-rsfirewall-content-box-header h3 {
 	padding: 12px 15px 10px;
 	margin: 0;
-	float: left;
-	font-size: 15px;
 }
 
 .com-rsfirewall-content-box-content {
 	padding: 20px;
-	font-size: 13px;
 	border-top: 1px solid #ccc;
 }
 
@@ -515,7 +417,6 @@ pre#com-rsfirewall-php-ini {
 
 #com-rsfirewall-main-content table thead th {
 	font-weight: bold;
-	font-size: 15px;
 	border-bottom: 1px solid #ddd;
 }
 
@@ -539,8 +440,6 @@ pre#com-rsfirewall-php-ini {
 
 .com-rsfirewall-break-word {
 	word-wrap: break-word;
-	-ms-word-break: break-all;
-	word-break: break-all;
 	word-break: break-word;
 	-webkit-hyphens: auto;
 	-moz-hyphens: auto;
@@ -548,54 +447,12 @@ pre#com-rsfirewall-php-ini {
 }
 
 /* dashboard about box */
-#dashboard-left {
-	float: left;
-	width: 74%;
-	padding-right: 1%;
-	overflow: hidden;
-}
-
-#dashboard-right {
-	float: left;
-	width: 25%;
-}
-
-.dashboard-container {
-	width: 100%;
-	overflow: hidden;
-}
-
-.dashboard-container:before,
-.dashboard-container:after {
-	display: table;
-	content: "";
-}
-
-.dashboard-container:after {
-	clear: both;
-}
-
 .dashboard-info {
-	font-size: 12px;
 	color: #333;
 	display: block;
 	padding: 10px;
-	background: rgb(255, 255, 255); /* Old browsers */
-	background: -moz-linear-gradient(top, rgba(255, 255, 255, 1) 0%, rgba(246, 246, 246, 1) 47%, rgba(237, 237, 237, 1) 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255, 255, 255, 1)), color-stop(47%, rgba(246, 246, 246, 1)), color-stop(100%, rgba(237, 237, 237, 1))); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top, rgba(255, 255, 255, 1) 0%, rgba(246, 246, 246, 1) 47%, rgba(237, 237, 237, 1) 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top, rgba(255, 255, 255, 1) 0%, rgba(246, 246, 246, 1) 47%, rgba(237, 237, 237, 1) 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top, rgba(255, 255, 255, 1) 0%, rgba(246, 246, 246, 1) 47%, rgba(237, 237, 237, 1) 100%); /* IE10+ */
-	background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(246, 246, 246, 1) 47%, rgba(237, 237, 237, 1) 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ededed', GradientType=0); /* IE6-9 */
+	background: #f0f0f0;
 	border: #d8d8d8 1px solid;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	-moz-box-shadow: 0 0 4px rgba(000, 000, 000, 0.1) inset;
-	-webkit-box-shadow: 0 0 4px rgba(000, 000, 000, 0.1) inset;
-	box-shadow: 0 0 3px rgba(000, 000, 000, 0.1) inset;
-
 	text-align: center;
 }
 
@@ -603,32 +460,29 @@ pre#com-rsfirewall-php-ini {
 	margin: 0 auto;
 }
 
-.dashboard-table {
-	width: 100%;
-	border-top: solid 1px #ddd;
-	margin-top: 5px;
-}
-
-.dashboard-info td {
-	padding: 2px;
-}
-
 .correct-code {
+	padding: 3px;
 	background: green;
 	color: white;
 }
 
 .incorrect-code {
+	padding: 3px;
 	background: red;
 	color: white;
 }
 
 .missing-code {
+	padding: 3px;
 	background: orange;
 }
 
 .missing-code a {
 	color: white !important;
+}
+
+#com-rsfirewall-logs-chart svg {
+	width: 100%;
 }
 
 /* Diff table styling */
@@ -638,22 +492,21 @@ table.diff {
 	margin: 0 auto 1.5em;
 }
 
-.diff th {
+table.diff th {
 	color: #fff;
 }
 
-.diff th:last-child {
+table.diff th:last-child {
 	background: #990000;
 }
 
-.diff th:first-child {
+table.diff th:first-child {
 	background: #009900;
 }
 
-.diff td, .diff th {
+table.diff tbody td, .diff thead th {
 	padding: 0 0.667em;
 	vertical-align: top;
-	white-space: pre;
 	white-space: pre-wrap;
 	font-family: Consolas, 'Courier New', Courier, monospace;
 	font-size: 1em;
@@ -888,4 +741,8 @@ table.diff {
 	margin-right: 10px;
 	font-family: 'IcoMoon';
 	color: #ad312b;
+}
+
+.com-rsfirewall-code {
+	max-height: 73vh;
 }

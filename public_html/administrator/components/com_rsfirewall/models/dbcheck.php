@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -11,7 +11,7 @@ defined('_JEXEC') or die('Restricted access');
 class RsfirewallModelDbcheck extends JModelLegacy
 {
 	public function getIsSupported() {
-		return (strpos(JFactory::getConfig()->get('dbtype'), 'mysql') !== false && $this->getTables());
+		return (strpos(JFactory::getApplication()->get('dbtype'), 'mysql') !== false && $this->getTables());
 	}
 	
 	public function getTables() {
@@ -64,11 +64,5 @@ class RsfirewallModelDbcheck extends JModelLegacy
 		}
 		
 		return $return;
-	}
-	
-	public function getSideBar() {
-		require_once JPATH_COMPONENT.'/helpers/toolbar.php';
-		
-		return RSFirewallToolbarHelper::render();
 	}
 }

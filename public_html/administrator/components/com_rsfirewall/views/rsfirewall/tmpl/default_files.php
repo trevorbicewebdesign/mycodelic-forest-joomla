@@ -1,18 +1,20 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
 defined('_JEXEC') or die('Restricted access');
 ?>
-<table class="adminlist table table-striped">
+<table class="table table-striped">
 <thead>
 	<tr>
 		<th width="1%" nowrap="nowrap"><?php echo JText::_('#'); ?></th>
-		<th width="1%" nowrap="nowrap"><input type="checkbox" name="checkall-toggle" value="" title="<?php echo JText::_('JGLOBAL_CHECK_ALL'); ?>" onclick="Joomla.checkAll(this)" /></th>
+		<th style="width:1%" class="text-center">
+			<?php echo JHtml::_('grid.checkall'); ?>
+		</th>
 		<th width="1%" nowrap="nowrap"><?php echo JText::_('COM_RSFIREWALL_FILES_MODIFIED_DATE'); ?></th>
 		<th><?php echo JText::_('COM_RSFIREWALL_FILES_FILE_PATH'); ?></th>
 		<th><?php echo JText::_('COM_RSFIREWALL_ORIGINAL_HASH'); ?></th>
@@ -20,7 +22,7 @@ defined('_JEXEC') or die('Restricted access');
 	</tr>
 </thead>
 <?php foreach ($this->files as $i => $file) { ?>
-<tr class="row<?php echo $i % 2; ?>">
+<tr>
 	<td width="1%" nowrap="nowrap"><?php echo $i+1; ?></td>
 	<td width="1%" nowrap="nowrap"><?php echo JHtml::_('grid.id', $i, $file->id); ?></td>
 	<td width="1%" nowrap="nowrap"><?php echo $this->showDate($file->date); ?></td>

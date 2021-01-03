@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -15,19 +15,20 @@ class RsfirewallTableLists extends JTable
 	 *
 	 * @var int
 	 */
-	public $id 			= null;
-	public $ip 			= null;
-	public $type 		= null;
-	public $reason 		= null;
-	public $date 		= null;
-	public $published 	= 1;
+	public $id;
+	public $ip;
+	public $type;
+	public $reason;
+	public $date;
+	public $published = 1;
 		
 	/**
 	 * Constructor
 	 *
 	 * @param object Database connector object
 	 */
-	public function __construct(& $db) {
+	public function __construct(& $db)
+	{
 		parent::__construct('#__rsfirewall_lists', 'id', $db);
 	}
 	
@@ -81,7 +82,7 @@ class RsfirewallTableLists extends JTable
 				// And check if it matches any of the current entries from the db
 				// Done only in the administration section to prevent flooding when autoban is enabled.
 				$app = JFactory::getApplication();
-				if ($app->isAdmin() && $app->input->getCmd('option') == 'com_rsfirewall') {
+				if ($app->isClient('administrator') && $app->input->getCmd('option') == 'com_rsfirewall') {
 					$query->clear();
 					$query->select($db->qn('ip'))
 						  ->from($this->getTableName())

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -92,12 +92,6 @@ class RsfirewallModelDiff extends JModelLegacy
 
 	public function getRemoteFile()
 	{
-		// Joomla! 2.5.13 minimum
-		if (version_compare($this->getJoomlaVersion(), '2.5.13', '<'))
-		{
-			throw new Exception(JText::_('COM_RSFIREWALL_DIFF_MIN_2513'));
-		}
-
 		$url = $this->getRemoteFilename();
 
 		// Try to connect
@@ -192,9 +186,11 @@ class RsfirewallModelDiff extends JModelLegacy
 
 	public static function connectCache($url)
 	{
-		$http     = JHttpFactory::getHttp();
-		$response = $http->get($url, array(), 30);
+		$response = JHttpFactory::getHttp()->get($url, array(), 30);
 
-		return $response;
+		return (object) array(
+			'code' => $response->code,
+			'body' => $response->body
+		);
 	}
 }

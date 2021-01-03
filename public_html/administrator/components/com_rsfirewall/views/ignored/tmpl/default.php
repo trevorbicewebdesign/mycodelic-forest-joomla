@@ -1,7 +1,7 @@
 <?php
 /**
  * @package    RSFirewall!
- * @copyright  (c) 2009 - 2019 RSJoomla!
+ * @copyright  (c) 2009 - 2020 RSJoomla!
  * @link       https://www.rsjoomla.com
  * @license    GNU General Public License http://www.gnu.org/licenses/gpl-3.0.en.html
  */
@@ -15,10 +15,10 @@ JText::script('COM_RSFIREWALL_CONFIRM_UNIGNORE');
 
 <div class="com-rsfirewall-page-wrapper" style="padding:50px;">
 	<div class="alert alert-warning">
-		<p><small><?php echo JText::_('COM_RSFIREWALL_IGNORED_FILES_ALERT_WARNING'); ?></small></p>
+		<p><?php echo JText::_('COM_RSFIREWALL_IGNORED_FILES_ALERT_WARNING'); ?></p>
 	</div>
+	<h3><?php echo JText::_('COM_RSFIREWALL_IGNORED_FILE_TITLE') ?></h3>
 	<table id="com-rsfirewall-joomla-configuration-table" class="table table-striped">
-		<caption><h3><?php echo JText::_('COM_RSFIREWALL_IGNORED_FILE_TITLE') ?></h3></caption>
 		<thead>
 		<tr>
 			<th><?php echo JText::_('COM_RSFIREWALL_IGNORED_FILE_DATE'); ?></th>
