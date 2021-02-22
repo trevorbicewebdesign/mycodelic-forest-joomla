@@ -14,10 +14,10 @@ class plgSystemMf_twilio extends JPlugin {
         $mainframe = JFactory::getApplication();
         $jinput = JFactory::getApplication()->input;
 
-        $task = $jinput->get( 'task', $_REQUEST[ 'task' ], 'RAW' );
-        $key = $jinput->get( 'key', $_REQUEST[ 'key' ], 'RAW' );
-        $from = $jinput->get( 'From', $_REQUEST[ 'From' ], 'RAW' );
-        $body = $jinput->get( 'Body', $_REQUEST[ 'Body' ], 'RAW' );
+        $task = $jinput->get( 'task', NULL, 'RAW' );
+        $key = $jinput->get( 'key', NULL, 'RAW' );
+        $from = $jinput->get( 'From', NULL, 'RAW' );
+        $body = $jinput->get( 'Body', NULL, 'RAW' );
 
 
         if ( $task == 'twilio.insertSlack' ) {
