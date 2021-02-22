@@ -147,7 +147,7 @@ defined('_JEXEC') or die('Restricted access');
 
 		<div class="clr"></div>
 
-	  <?php if($this->item->params->get('itemExtraFields') && count($this->item->extra_fields)): ?>
+	  <?php if($this->item->params->get('itemExtraFields') && is_countable($this->item->extra_fields) && count($this->item->extra_fields)): ?>
 	  <!-- Item extra fields -->
 	  <div class="itemExtraFields">
 	  	<h3><?php echo JText::_('K2_ADDITIONAL_INFO'); ?></h3>
