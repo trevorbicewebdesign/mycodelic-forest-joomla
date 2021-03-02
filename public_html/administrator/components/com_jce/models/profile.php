@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2019 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -80,10 +80,15 @@ class JceModelProfile extends JModelAdmin
                 $config['editor']['toolbar_theme'] = 'default.touch';
             }
     
-            if (isset($config['editor']['relative_urls'])) {
+            if (isset($config['editor']['relative_urls']) && !isset($config['editor']['convert_urls'])) {
                 $config['editor']['convert_urls'] = $config['editor']['relative_urls'] == 0 ? 'absolute' : 'relative';
             }
         }
+
+        // decode config values for display
+        array_walk_recursive($config, function(&$value) {
+            $value = htmlspecialchars_decode($value);
+        });
 
         $data->config = $config;
 	}
@@ -166,7 +171,7 @@ class JceModelProfile extends JModelAdmin
         }
 
         // pro manifest
-        $manifest = WF_EDITOR_LIBRARIES . '/pro/xml/image.xml';
+        $manifest = WF_EDITOR_LIBRARIES . '/pro/xml/pro.xml';
 
         // load pro manifest
         if (is_file($manifest)) {
@@ -717,7 +722,7 @@ class JceModelProfile extends JModelAdmin
                 if (array_key_exists($item, $data['params'])) {
                     $value = $data['params'][$item];
                     // clean and add to json array for merging
-                    $json[$item] = filter_var_array($value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+                    $json[$item] = filter_var_array($value, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
                 }
             }
 

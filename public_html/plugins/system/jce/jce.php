@@ -19,6 +19,59 @@ class PlgSystemJce extends JPlugin
         return $this->onContentPrepareForm($form, $data);
     }
 
+    private function redirectMedia()
+    {
+        $app = JFactory::getApplication();
+
+        require_once JPATH_ADMINISTRATOR . '/components/com_jce/helpers/browser.php';
+
+        $id = $app->input->get('fieldid');
+        $mediatpye = $app->input->get('view', 'images');
+
+        $options = WFBrowserHelper::getMediaFieldOptions(array(
+            'element' => $id,
+            'converted' => true,
+            'mediatype' => $mediatype,
+        ));
+
+        $app->redirect($options['url']);
+    }
+
+    private function isEditorEnabled()
+    {
+        $config = JFactory::getConfig();
+        $user = JFactory::getUser();
+
+        if (!JPluginHelper::getPlugin('editors', 'jce')) {
+            return false;
+        }
+
+        if ($user->getParam('editor', $config->get('editor')) !== 'jce') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function onAfterRoute()
+    {
+        $app = JFactory::getApplication();
+
+        if ($app->input->getCmd('option') == 'com_media') {
+            if ($app->input->getWord('asset') && $app->input->getWord('tmpl') == 'component') {
+
+                if ($this->isEditorEnabled()) {
+                    $params = JComponentHelper::getParams('com_jce');
+
+                    if ((bool) $params->get('replace_media_manager', 1) == true) {
+                        // redirect to file browser
+                        $this->redirectMedia();
+                    }
+                }
+            }
+        }
+    }
+
     public function onAfterDispatch()
     {
         $app = JFactory::getApplication();
@@ -28,13 +81,12 @@ class PlgSystemJce extends JPlugin
             return;
         }
 
-        // only if enabled
-        if ((int) $this->params->get('column_styles', 1) === 0) {
-            return;
-        }
-
         $document = JFactory::getDocument();
-        $document->addStyleSheet(JURI::root(true) . '/plugins/system/jce/css/content.css?' . $document->getMediaVersion());
+
+        // only if enabled
+        if ((int) $this->params->get('column_styles', 1)) {
+            $document->addStyleSheet(JURI::root(true) . '/plugins/system/jce/css/content.css?' . $document->getMediaVersion());
+        }
     }
 
     public function onWfContentPreview($context, &$article, &$params, $page)
@@ -70,10 +122,6 @@ class PlgSystemJce extends JPlugin
 
         $params = JComponentHelper::getParams('com_jce');
 
-        if ((bool) $params->get('replace_media_manager', 1) === false) {
-            return;
-        }
-
         // get form name.
         $name = $form->getName();
 
@@ -94,14 +142,7 @@ class PlgSystemJce extends JPlugin
             }
         }
 
-        $config = JFactory::getConfig();
-        $user = JFactory::getUser();
-
-        if ($user->getParam('editor', $config->get('editor')) !== 'jce') {
-            return true;
-        }
-
-        if (!JPluginHelper::getPlugin('editors', 'jce')) {
+        if (!$this->isEditorEnabled()) {
             return true;
         }
 
@@ -123,15 +164,32 @@ class PlgSystemJce extends JPlugin
             $type = $field->getAttribute('type');
 
             if (strtolower($type) === 'media') {
+
+                if ((bool) $params->get('replace_media_manager', 1) === false) {
+                    continue;
+                }
+
                 $group = (string) $field->group;
                 $form->setFieldAttribute($name, 'type', 'mediajce', $group);
+                $form->setFieldAttribute($name, 'converted', '1', $group);
+                $hasMedia = true;
+            }
+
+            if (strtolower($type) === 'mediajce') {
                 $hasMedia = true;
             }
         }
-        
+
         // form has a converted media field
         if ($hasMedia) {
             $form->addFieldPath(JPATH_PLUGINS . '/system/jce/fields');
+
+            // Include jQuery
+            JHtml::_('jquery.framework');
+
+            $document = JFactory::getDocument();
+            $document->addScript(JURI::root(true) . '/plugins/system/jce/js/media.js', array('version' => 'auto'));
+            $document->addStyleSheet(JURI::root(true) . '/plugins/system/jce/css/media.css', array('version' => 'auto'));
         }
 
         return true;

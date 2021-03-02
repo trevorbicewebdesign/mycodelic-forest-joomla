@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright    Copyright (c) 2009-2019 Ryan Demmer. All rights reserved
+ * @copyright    Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license    GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -18,6 +18,66 @@ if (function_exists('mb_internal_encoding')) {
 abstract class WFUtility
 {
     /**
+     * Multi-byte-safe pathinfo replacement.
+     * Drop-in replacement for pathinfo(), but multibyte- and cross-platform-safe.
+     *
+     * From PHPMailer - https://github.com/PHPMailer/PHPMailer/blob/v6.1.4/src/PHPMailer.php#L4256-L4302
+     *
+     * @see http://www.php.net/manual/en/function.pathinfo.php#107461
+     *
+     * @param string     $path    A filename or path, does not need to exist as a file
+     * @param int|string $options Either a PATHINFO_* constant,
+     *                            or a string name to return only the specified piece
+     *
+     * @return string|array
+     */
+    public static function mb_pathinfo($path, $options = null)
+    {
+        // check if multibyte string, use pathname() if not
+        if (function_exists('mb_strlen')) {
+            if (mb_strlen($path) === strlen($path)) {
+                return pathinfo($path, $options);
+            }
+        }
+
+        $ret = array('dirname' => '', 'basename' => '', 'extension' => '', 'filename' => '');
+
+        $pathinfo = array();
+
+        if (preg_match('#^(.*?)[\\\\/]*(([^/\\\\]*?)(\.([^.\\\\/]+?)|))[\\\\/.]*$#m', $path, $pathinfo)) {
+            if (array_key_exists(1, $pathinfo)) {
+                $ret['dirname'] = $pathinfo[1];
+            }
+            if (array_key_exists(2, $pathinfo)) {
+                $ret['basename'] = $pathinfo[2];
+            }
+            if (array_key_exists(5, $pathinfo)) {
+                $ret['extension'] = $pathinfo[5];
+            }
+            if (array_key_exists(3, $pathinfo)) {
+                $ret['filename'] = $pathinfo[3];
+            }
+        }
+
+        switch ($options) {
+            case PATHINFO_DIRNAME:
+            case 'dirname':
+                return $ret['dirname'];
+            case PATHINFO_BASENAME:
+            case 'basename':
+                return $ret['basename'];
+            case PATHINFO_EXTENSION:
+            case 'extension':
+                return $ret['extension'];
+            case PATHINFO_FILENAME:
+            case 'filename':
+                return $ret['filename'];
+            default:
+                return $ret;
+        }
+    }
+
+    /**
      * Get the file extension from a path
      *
      * @param  string $path The file path
@@ -25,7 +85,8 @@ abstract class WFUtility
      */
     public static function getExtension($path)
     {
-        return pathinfo($path, PATHINFO_EXTENSION);
+        $dot = strrpos($path, '.') + 1;
+        return substr($path, $dot);
     }
 
     /**
@@ -47,19 +108,17 @@ abstract class WFUtility
      */
     public static function getFilename($path)
     {
-        $info = pathinfo($path);
-
-        // basename should be set
-        if (empty($info['basename'])) {
-            return $path;
+        // check if multibyte string, use basename() if not
+        if (function_exists('mb_strlen')) {
+            if (mb_strlen($path) === strlen($path)) {
+                return pathinfo($path, PATHINFO_FILENAME);
+            }
         }
+        // get basename
+        $path = self::mb_basename($path);
 
-        // "filename" is empty, posssibly due to incorrect locale
-        if (empty($info['filename'])) {
-            return self::stripExtension($info['basename']);
-        }
-
-        return $info['filename'];
+        // remove name without extension
+        return self::stripExtension($path);
     }
 
     public static function cleanPath($path, $ds = DIRECTORY_SEPARATOR, $prefix = '')
@@ -67,9 +126,12 @@ abstract class WFUtility
         $path = trim(rawurldecode($path));
 
         // check for UNC path on IIS and set prefix
-        if ($ds == '\\' && $path[0] == '\\' && $path[1] == '\\') {
-            $prefix = '\\';
+        if ($ds == '\\' && strlen($path) > 1) {
+            if ($path[0] == '\\' && $path[1] == '\\') {
+                $prefix = '\\';
+            }
         }
+        
         // clean path, removing double slashes, replacing back/forward slashes with DIRECTORY_SEPARATOR
         $path = preg_replace('#[/\\\\]+#', $ds, $path);
 
@@ -97,7 +159,7 @@ abstract class WFUtility
             return false;
         }
 
-        if (preg_match('#([^\w\.\-~\/\\\\\s ])#i', $string, $matches)) {
+        if (preg_match('#([^\w\.\-\/\\\\\s ])#i', $string, $matches)) {
             foreach ($matches as $match) {
                 // not a safe UTF-8 character
                 if (ord($match) < 127) {
@@ -212,7 +274,7 @@ abstract class WFUtility
     private static function cleanUTF8($string)
     {
         // remove some common characters
-        $string = preg_replace('#[\+\\\/\?\#%&<>"\'=\[\]\{\},;@\^\(\)£€$]#', '', $string);
+        $string = preg_replace('#[\+\\\/\?\#%&<>"\'=\[\]\{\},;@\^\(\)£€$~]#', '', $string);
 
         $result = '';
         $length = strlen($string);
@@ -221,7 +283,7 @@ abstract class WFUtility
             $char = $string[$i];
 
             // only process on possible restricted characters or utf-8 letters/numbers
-            if (preg_match('#[^\w\.\-~\s ]#', $char)) {
+            if (preg_match('#[^\w\.\-\s ]#', $char)) {
                 // skip any character less than 127, eg: &?@* etc.
                 if (ord($char) < 127) {
                     continue;
@@ -267,10 +329,10 @@ abstract class WFUtility
         }
 
         if ($mode === 'utf-8') {
-            $search[] = '#[^\pL\pM\pN_\.\-~\s ]#u';
+            $search[] = '#[^\pL\pM\pN_\.\-\s ]#u';
         } else {
             $subject = self::utf8_latin_to_ascii($subject);
-            $search[] = '#[^a-zA-Z0-9_\.\-~\s ]#';
+            $search[] = '#[^a-zA-Z0-9_\.\-\s ]#';
         }
 
         // remove multiple . characters
@@ -372,6 +434,58 @@ abstract class WFUtility
         return self::formatSize(@filesize($file));
     }
 
+    /**
+     * Multi-byte-safe dirname replacement.
+     * https://gist.github.com/tcyrus/257a1ed93c5e115b7b33426d029b5c5f
+     *
+     * @param string $path A Path
+     * @param int $levels The number of parent directories to go up.
+     * @return string The path of a parent directory.
+     */
+    public static function mb_dirname($path)
+    {
+        // check if multibyte string, use dirname() if not
+        if (function_exists('mb_strlen')) {
+            if (mb_strlen($path) === strlen($path)) {
+                return dirname($path);
+            }
+        }
+
+        // clean
+        $path = self::cleanPath($path, '/');
+
+        // get last slash position
+        $slash = strrpos($path, '/') + 1;
+
+        // return dirname
+        return substr($path, 0, $slash);
+    }
+
+    public static function mb_basename($path, $ext = '')
+    {
+        // check if multibyte string, use basename() if not
+        if (function_exists('mb_strlen')) {
+            if (mb_strlen($path) === strlen($path)) {
+                return basename($path, $ext);
+            }
+        }
+
+        // clean
+        $path = self::cleanPath($path, '/');
+
+        // split path
+        $parts = explode('/', $path);
+
+        // return basename
+        $path = end($parts);
+
+        if ($ext === '.' . self::getExtension($path)) {
+            $path = self::stripExtension($path);
+        }
+    
+        return $path;
+    }
+
     public static function convertEncoding($string)
     {
         if (!function_exists('mb_detect_encoding')) {
@@ -404,7 +518,7 @@ abstract class WFUtility
 
         // invalid encoding, so make a "safe" string
         if ($encoding === false) {
-            return preg_replace('#[^a-zA-Z0-9_\.\-~\s ]#', '', $string);
+            return preg_replace('#[^a-zA-Z0-9_\.\-\s ]#', '', $string);
         }
 
         // convert to utf-8 and return
@@ -448,7 +562,7 @@ abstract class WFUtility
         }
 
         // Convert to bytes
-        switch (strtolower($unit)) {
+        switch (strtolower($unit[0])) {
             case 'g':
                 $value = intval($value) * 1073741824;
                 break;
@@ -648,7 +762,7 @@ abstract class WFUtility
         foreach ($array2 as $key => $value) {
             if (self::is_associative_array($value) && array_key_exists($key, $merged) && self::is_associative_array($merged[$key])) {
                 $merged[$key] = self::array_merge_recursive_distinct($merged[$key], $value, $ignore_empty_string);
-            } else {                
+            } else {
                 if (is_null($value)) {
                     continue;
                 }

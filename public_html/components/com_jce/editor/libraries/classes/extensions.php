@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2019 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -106,6 +106,7 @@ class WFExtension extends JObject
                 }
 
                 $language->load('plg_jce_' . $p->name, JPATH_ADMINISTRATOR);
+                $language->load('plg_jce_' . $p->name, $p->path);
 
                 // add to array
                 $extensions[$p->extension] = $p;
