@@ -1,15 +1,12 @@
 <?php
-
-$basepath = dirname(__FILE__, 5);  
-define("_JEXEC",true);
-require_once("{$basepath}/defines.php");
-require_once(JPATH_CONFIGURATION."/configuration.php");
-define('CIVICRM_SETTINGS_PATH', "{$basepath}/administrator/components/com_civicrm/civicrm.settings.php");
-$ClassLoader = "{$basepath}/administrator/components/com_civicrm/civicrm/CRM/Core/ClassLoader.php";
-$error = include_once( CIVICRM_SETTINGS_PATH );
+define('CIVICRM_SETTINGS_PATH', '/volume1/tbwebdesign/www/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php');
+$error = @include_once( '/volume1/tbwebdesign/www/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php' );
 if ( $error == false ) {
-    echo "Could not load the settings file at: ".CIVICRM_SETTINGS_PATH;
+    echo "Could not load the settings file at: /volume1/tbwebdesign/www/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php
+";
     exit( );
 }
-require_once $ClassLoader;
+
+// Load class loader
+require_once $civicrm_root . '/CRM/Core/ClassLoader.php';
 CRM_Core_ClassLoader::singleton()->register();

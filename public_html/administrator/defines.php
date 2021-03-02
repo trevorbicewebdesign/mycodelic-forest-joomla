@@ -11,11 +11,7 @@ defined('_JEXEC') or die;
 define('_JDEFINES', 1); 
 define('JPATH_BASE', dirname(__FILE__));
 
-define( 'CODECEPTION', ($_SERVER['HTTP_USER_AGENT']=='Symfony BrowserKit' || preg_match("#PhantomJS#", $_SERVER['HTTP_USER_AGENT']) )?true:false );
-
 $environment = getenv("APPLICATION_ENV")?getenv("APPLICATION_ENV"):'production';
-
-if(CODECEPTION){$environment = 'codeception';}
 
 // Global definitions
 $parts = explode(DIRECTORY_SEPARATOR, JPATH_BASE);

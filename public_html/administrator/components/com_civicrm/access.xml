@@ -62,6 +62,8 @@
             <action name="civicrm.edit_api_keys" title="CiviCRM: edit api keys" description="Edit API keys" />
             <action name="civicrm.edit_own_api_keys" title="CiviCRM: edit own api keys" description="Edit user's own API keys" />
             <action name="civicrm.send_sms" title="CiviCRM: send SMS" description="Send an SMS" />
+            <action name="civicrm.administer_civicrm_system" title="CiviCRM: administer CiviCRM System" description="Perform all system administration tasks in CiviCRM" />
+            <action name="civicrm.administer_civicrm_data" title="CiviCRM: administer CiviCRM Data" description="Permit altering all restricted data options" />
             <action name="civicrm.access_civigrant" title="CiviGrant: access CiviGrant" description="View all grants" />
             <action name="civicrm.edit_grants" title="CiviGrant: edit grants" description="Create and update grants" />
             <action name="civicrm.delete_in_civigrant" title="CiviGrant: delete in CiviGrant" description="Delete grants" />

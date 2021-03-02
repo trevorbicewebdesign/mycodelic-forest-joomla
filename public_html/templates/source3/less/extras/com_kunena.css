@@ -1,0 +1,157 @@
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         https://github.com/t3framework/ 
+ *------------------------------------------------------------------------------
+*/
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+/* joomla 3.x 400px */
+@-webkit-keyframes toRightFromLeft {
+  49% {
+    -webkit-transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    -webkit-transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+@-moz-keyframes toRightFromLeft {
+  49% {
+    -moz-transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    -moz-transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+@keyframes toRightFromLeft {
+  49% {
+    transform: translate(100%);
+  }
+  50% {
+    opacity: 0;
+    transform: translate(-100%);
+  }
+  51% {
+    opacity: 1;
+  }
+}
+/** 
+ *------------------------------------------------------------------------------
+ * @package       T3 Framework for Joomla!
+ *------------------------------------------------------------------------------
+ * @copyright     Copyright (C) 2004-2013 JoomlArt.com. All Rights Reserved.
+ * @license       GNU General Public License version 2 or later; see LICENSE.txt
+ * @authors       JoomlArt, JoomlaBamboo, (contribute to this project at github 
+ *                & Google group to become co-author)
+ * @Google group: https://groups.google.com/forum/#!forum/t3fw
+ * @Link:         http://t3-framework.org 
+ *------------------------------------------------------------------------------
+ */
+.com_kunena #Kunena fieldset {
+  border: 1px solid #bfbfbf;
+}
+.com_kunena #Kunena fieldset legend {
+  margin: 0;
+  padding: 0 4.25px;
+  width: inherit;
+}
+.com_kunena #Kunena .kbutton,
+.com_kunena #Kunena .kbutton:hover,
+.com_kunena #Kunena .kbutton-container .kbutton {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+  padding: 4.25px 8.5px;
+}
+.com_kunena #Kunena #kprofilebox .input span {
+  display: inline-block;
+  padding: 8.5px 17px 8.5px 0;
+}
+.com_kunena #Kunena #kprofilebox .input span .inputbox {
+  display: inline-block;
+}
+.com_kunena #Kunena .klist-actions .inputbox,
+.com_kunena #Kunena .klist-bottom .inputbox {
+  display: inline-block;
+  padding: 4px 3px;
+}
+.com_kunena #Kunena .klist-actions .kbutton,
+.com_kunena #Kunena .klist-bottom .kbutton {
+  display: inline-block;
+}
+.com_kunena #Kunena .klist-bottom {
+  padding-bottom: 0 !important;
+  overflow: hidden;
+}
+.com_kunena #Kunena div.kheader {
+  color: #fff !important;
+  padding: 8.5px 17px;
+}
+.com_kunena #Kunena div.kheader a {
+  color: #fff !important;
+}
+.com_kunena #Kunena #kwhoisonline .kwhoonline {
+  border-width: 0;
+  border-bottom-width: 1px;
+}
+.com_kunena #Kunena #kwhoisonline .kwholegend {
+  border-width: 0;
+  border-top-width: 1px;
+}
+.com_kunena #Kunena .kadvsearch input {
+  margin-bottom: 8.5px;
+}
+.com_kunena #Kunena .kadvsearch select {
+  background: #fff !important;
+  margin-bottom: 8.5px;
+  padding: 4px 3px;
+}
+.com_kunena #Kunena #kprofile-edit .tabs dt {
+  margin-right: 2px;
+  border-radius: 5px 5px 0 0;
+  font-weight: normal;
+}
+.com_kunena #Kunena #kprofile-edit .tabs .open {
+  background: #80a7f4;
+  color: #fff;
+}
+.com_kunena #Kunena #kprofile-edit .tabs .closed {
+  background: #666;
+  color: #fff;
+}
