@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -340,11 +340,6 @@ class Html extends BaseView
 		if ($unit == 0)
 		{
 			$decimals = 0;
-		}
-
-		if (version_compare(PHP_VERSION, '5.6.0', 'lt'))
-		{
-			return number_format($sizeInBytes / 1024 ** $unit, $decimals, $decSeparator, $thousandsSeparator) . ' ' . $units[$unit];
 		}
 
 		return number_format($sizeInBytes / (1024 ** $unit), $decimals, $decSeparator, $thousandsSeparator) . ' ' . $units[$unit];

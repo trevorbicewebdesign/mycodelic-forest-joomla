@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -106,18 +106,7 @@ class Dispatcher extends AdminDispatcher
 		unset($akeebaEngineConfig);
 
 		// Prevents the "SQLSTATE[HY000]: General error: 2014" due to resource sharing with Akeeba Engine
-		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		// !!!!! WARNING: ALWAYS GO THROUGH JFactory; DO NOT GO THROUGH $this->container->db !!!!!
-		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		if (version_compare(PHP_VERSION, '7.999.999', 'le'))
-		{
-			$jDbo = JFactory::getDbo();
-
-			if ($jDbo->name == 'pdomysql')
-			{
-				@JFactory::getDbo()->disconnect();
-			}
-		}
+		$this->fixPDOMySQLResourceSharing();
 
 		// Load the utils helper library
 		Platform::getInstance()->load_version_defines();

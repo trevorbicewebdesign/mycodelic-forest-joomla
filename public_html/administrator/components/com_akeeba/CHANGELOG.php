@@ -1,4 +1,40 @@
 <?php die();?>
+Akeeba Backup 7.5.3
+================================================================================
++ Rewritten Backup on Update plugin for improved UX (gh-685)
++ Joomla 4: backup profile selection uses Choices.js for easier navigation among many backup profiles
+~ Releasing the previous version without changes, due to server and CDN issues which resulted in inconsistent updates
+~ Internals: normalised use JVERSION conditionals
+~ Document Microsoft Edge “sleeping tabs” and workarounds for long-running backups in background browser tabs
+~ Improved CHANGELOG layout in the Control Panel page
+# [HIGH] Import from S3: you cannot select .jps files
+# [MEDIUM] Frozen backups toggle wouldn't work on Joomla 4
+# [LOW] Import from S3: invisible breadcrumbs in Dark Mode
+# [LOW] Recommended PHP version was shown as 7.3 instead of 7.4
+# [LOW] Unable to access the component on Joomla 4 when using the PDOMySQL database driver with Site Debug enabled, see https://github.com/joomla/joomla-cms/issues/32019
+
+Akeeba Backup 7.5.2
+================================================================================
++ Rewritten Backup on Update plugin for improved UX (gh-685)
++ Joomla 4: backup profile selection uses Choices.js for easier navigation among many backup profiles
+~ Internals: normalised use JVERSION conditionals
+~ Document Microsoft Edge “sleeping tabs” and workarounds for long-running backups in background browser tabs
+~ Improved CHANGELOG layout in the Control Panel page
+# [HIGH] Import from S3: you cannot select .jps files
+# [MEDIUM] Frozen backups toggle wouldn't work on Joomla 4
+# [LOW] Import from S3: invisible breadcrumbs in Dark Mode
+# [LOW] Recommended PHP version was shown as 7.3 instead of 7.4
+# [LOW] Unable to access the component on Joomla 4 when using the PDOMySQL database driver with Site Debug enabled, see https://github.com/joomla/joomla-cms/issues/32019
+
+Akeeba Backup 7.5.1
+================================================================================
++ Post-backup emails can now display the total backup size and the approximate size of each part file
+# [HIGH] The Joomla 4 console plugin could not install due to a bug in Joomla 4's plugins installer code
+# [HIGH] Backup failure to S3 with a PHP Type Error when the Dual Stack option has no value
+# [HIGH] Uploading to Dropbox would fail if you linked your Dropbox account after December 2020
+# [LOW] No list of backup files in the post-backup email when using a post-processing engine
+# [LOW] Manage Remotely Stored Files actions could fail on Box, Dropbox, OneDrive and Google Drive if the access token had expired in the meantime.
+
 Akeeba Backup 7.5.0.1
 ================================================================================
 ! [HIGH] The Backup on Update plugin can cause the site to fail to load

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -236,14 +236,12 @@ class UsageStatistics extends Model
 			}
 			else
 			{
-				$keyName = version_compare(JVERSION, '1.7.0', 'lt') ? $db->qn('key') : 'key';
-
 				$insertObject = (object) [
-					$keyName => $key,
-					'value'  => $value,
+					'key'   => $key,
+					'value' => $value,
 				];
 
-				$db->updateObject('#__akeeba_common', $insertObject, $keyName);
+				$db->updateObject('#__akeeba_common', $insertObject, 'key');
 			}
 		}
 		catch (\Exception $e)

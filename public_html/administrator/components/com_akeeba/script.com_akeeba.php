@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2020 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -466,6 +466,9 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 
 			// Update notification
 			"administrator/components/com_akeeba/ViewTemplates/ControlPanel/updateinfo.blade.php",
+
+			// Temporary console plugin installation workaround until Joomla 4 fixes its installer bug for modern plugins
+			"plugins/console/akeebabackup/akeebabackup.php"
 		],
 		'folders' => [
 			// Directories used up to version 4.1 (inclusive)
@@ -558,6 +561,12 @@ class Com_AkeebaInstallerScript extends \FOF30\Utils\InstallScript
 
 			// 7.0.0 alpha base plugin
 			'administrator/components/com_akeeba/Master/AkeebaPlugin',
+
+			// Backup on Update view templates
+			'plugins/system/backuponupdate/tmpl',
+
+			// Changelog PNG images
+			'media/com_akeeba/icons/changelog.png',
 		],
 	];
 
