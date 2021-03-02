@@ -48,3 +48,4 @@ public_html/media/civicrm/upload/version-msgs-cache.json
 configurations/
 php_errors.log
 public_html.zip
+.env
