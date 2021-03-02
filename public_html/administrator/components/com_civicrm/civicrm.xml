@@ -5,12 +5,12 @@
 -->
 <extension method="upgrade" type="component" version="2.5">
   <name>CiviCRM</name>
-  <creationDate>December 11 2020</creationDate>
+  <creationDate>February 03 2021</creationDate>
   <copyright>(C) CiviCRM LLC</copyright>
   <author>CiviCRM LLC</author>
   <authorEmail>info@civicrm.org</authorEmail>
   <authorUrl>civicrm.org</authorUrl>
-  <version>5.32.2</version>
+  <version>5.34.0</version>
   <description>CiviCRM</description>
   <files folder="site">
     <filename>civicrm.php</filename>

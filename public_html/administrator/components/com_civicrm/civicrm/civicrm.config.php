@@ -1,8 +1,8 @@
 <?php
-define('CIVICRM_SETTINGS_PATH', '/volume1/tbwebdesign/www/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php');
-$error = @include_once( '/volume1/tbwebdesign/www/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php' );
+define('CIVICRM_SETTINGS_PATH', 'C:\MAMP\htdocs\mycodelic-forest-joomla\public_html\administrator\components\com_civicrm\civicrm.settings.php');
+$error = @include_once( 'C:\MAMP\htdocs\mycodelic-forest-joomla\public_html\administrator\components\com_civicrm\civicrm.settings.php' );
 if ( $error == false ) {
-    echo "Could not load the settings file at: /volume1/tbwebdesign/www/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm.settings.php
+    echo "Could not load the settings file at: C:\MAMP\htdocs\mycodelic-forest-joomla\public_html\administrator\components\com_civicrm\civicrm.settings.php
 ";
     exit( );
 }
