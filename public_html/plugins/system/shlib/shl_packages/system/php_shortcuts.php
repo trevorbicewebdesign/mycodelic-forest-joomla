@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2018
+ * @copyright   (c) Yannick Gaultier 2020
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.4.0.685
- * @date        2019-04-25
+ * @version     0.4.0.711
+ * @date        2020-06-26
  */
 
 use Joomla\String\StringHelper;
@@ -347,7 +347,7 @@ if (!function_exists('wbArrayMerge'))
 	 */
 	function wbArrayMerge()
 	{
-		$args = func_get_args();
+		$args   = func_get_args();
 		$merged = array();
 		foreach ($args as $array)
 		{
@@ -388,7 +388,7 @@ if (!function_exists('wbDump'))
 			$caller = '';
 		}
 		$output = '';
-		$name = empty($name) ? 'Var dump' : $name;
+		$name   = empty($name) ? 'Var dump' : $name;
 		$output .= $newLine . '<b>' . $name . ': </b><small>(' . $caller . ')</small>' . $newLine;
 		$output .= sprintf($codeWrapper, is_null($value) ? 'null' : print_r($value, true));
 		$output .= $newLine;
@@ -416,7 +416,7 @@ if (!function_exists('wbLog'))
 
 		if ($includeBacktrace)
 		{
-			$back = debug_backtrace(false);
+			$back    = debug_backtrace(false);
 			$message .= $newLine . sprintf($codeWrapper, print_r($back, true));
 		}
 
@@ -526,7 +526,7 @@ if (!function_exists('wbJoin'))
 	 * Warning: empty strings are removed prior to joining
 	 *
 	 * @param string $glue the string to use to glue things
-	 * @param        mixed variable numbers or aguments te be joined
+	 * @param mixed variable numbers or aguments te be joined
 	 *
 	 * @return mixed
 	 */
@@ -537,7 +537,7 @@ if (!function_exists('wbJoin'))
 		// get glue out
 		array_shift($args);
 
-		return join(array_filter($args), $glue);
+		return join($glue, array_filter($args));
 	}
 }
 
@@ -556,7 +556,7 @@ if (!function_exists('wbDotJoin'))
 	{
 		$args = func_get_args();
 
-		return join(array_filter($args), '.');
+		return join('.', array_filter($args));
 	}
 }
 
@@ -575,7 +575,7 @@ if (!function_exists('wbSlashJoin'))
 	{
 		$args = func_get_args();
 
-		return join(array_filter($args), '/');
+		return join('/', array_filter($args));
 	}
 }
 
@@ -639,10 +639,10 @@ if (!function_exists('wbAbridge'))
 	 *
 	 * Note that this method does not scan for HTML tags so will potentially break them.
 	 *
-	 * @param   string  $text The text to abridge.
-	 * @param   integer $length The maximum length of the text (default is 50).
-	 * @param   integer $intro The maximum length of the intro text (default is 30).
-	 * @param string    $bridge the string to use to bridge
+	 * @param string  $text The text to abridge.
+	 * @param integer $length The maximum length of the text (default is 50).
+	 * @param integer $intro The maximum length of the intro text (default is 30).
+	 * @param string  $bridge the string to use to bridge
 	 *
 	 * @return  string   The abridged text.
 	 *
@@ -712,12 +712,12 @@ if (!function_exists('wbGetProtectedProperty'))
 			if (!$static)
 			{
 				// poor man's reflection, pre 5.3.0
-				$dump = print_r($instance, true);
-				$propertytag = '[' . $propertyName . ':protected]';
-				$bits = explode($propertytag, $dump);
-				$bit = $bits[1];
-				$bits = explode('[_', $bit);
-				$bit = str_replace('=>', '', $bits[0]);
+				$dump          = print_r($instance, true);
+				$propertytag   = '[' . $propertyName . ':protected]';
+				$bits          = explode($propertytag, $dump);
+				$bit           = $bits[1];
+				$bits          = explode('[_', $bit);
+				$bit           = str_replace('=>', '', $bits[0]);
 				$propertyValue = trim($bit);
 			}
 			else

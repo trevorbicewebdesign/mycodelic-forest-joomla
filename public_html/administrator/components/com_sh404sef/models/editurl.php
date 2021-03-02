@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -82,7 +82,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			$whereIds = ShlDbHelper::arrayToIntValList($ids);
 			$urls     = ShlDbHelper::selectObjectList($this->_getTableName(), '*', $this->_db->quoteName('id') . ' in (' . $whereIds . ')');
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 		}
@@ -163,7 +163,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			// finally, we can simply delete from db by ids
 			ShlDbHelper::deleteIn('#__sh404sef_urls', 'id', $ids);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->setError('Internal database error ' . $e->getMessage());
@@ -198,7 +198,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			{
 				ShlDbHelper::updateIn('#__sh404sef_urls', array('rank' => 0), 'id', $newMainUrls, ShlDbHelper::INTEGER);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 				$this->setError('Internal database error ' . $e->getMessage());
@@ -251,7 +251,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			// finally, we can simply delete from db by ids
 			ShlDbHelper::deleteIn('#__sh404sef_urls', 'id', $urlsIds);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->setError('Internal database error # ' . $e->getMessage());
@@ -350,7 +350,10 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			$this->_db->setQuery($query);
 			$dbUrlList = $this->_db->loadObjectList();
 
-			$aliasList = ShlSystem_Strings::stringToCleanedArray($this->_data['shAliasList'], "\n");
+			$aliasList = ShlSystem_Strings::stringToCleanedArray(
+				$this->_data['shAliasList'],
+				"\n"
+			);
 
 			// do we have urls in the db with same SEF ?
 			if (count($dbUrlList) > 0)
@@ -401,7 +404,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 						//   - this sef url does not already exists in the DB; which will happen if the url
 						//     being saved was customized and also had duplicates
 						// TODO this code is duplicated just a few line below, need refactoring
-						if (!empty($previousSefUrl) && !in_array($previousSefUrl, $this->_data['shAliasList']))
+						if (!empty($previousSefUrl) && !in_array($previousSefUrl, $aliasList))
 						{
 							// check if not already a valid SEF url in the DB
 							$query = 'SELECT count(id) FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($previousSefUrl);
@@ -435,7 +438,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 					if (!empty($previousSefUrl) && $previousSefUrl != $row->newurl)
 					{
 						// search for the old #2 record in duplicate list
-						$query = 'SELECT `id` FROM `#__sh404sef_urls` WHERE binary `oldurl` = ' . $this->_db->Quote($previousSefUrl) . ' ORDER BY '. $this->_db->qn('rank') . ' ASC';
+						$query = 'SELECT `id` FROM `#__sh404sef_urls` WHERE binary `oldurl` = ' . $this->_db->Quote($previousSefUrl) . ' ORDER BY ' . $this->_db->qn('rank') . ' ASC';
 						$this->_db->setQuery($query);
 						$previousRanked2 = $this->_db->loadObject();
 
@@ -478,7 +481,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 				//   - this sef url does not already exists in the DB; which will happen if the url
 				//     begin saved was customized and also had duplicates
 				// note : when importing, we don't enter this test as previousSefUrl is empty
-				if (!empty($previousSefUrl) && !in_array($previousSefUrl, $this->_data['shAliasList']))
+				if (!empty($previousSefUrl) && !in_array($previousSefUrl, $aliasList))
 				{
 					// check if not already a valid SEF url in the DB
 					$query = 'SELECT count(id) FROM #__sh404sef_urls WHERE binary oldurl = ' . $this->_db->Quote($previousSefUrl);
@@ -515,7 +518,7 @@ class Sh404sefModelEditurl extends Sh404sefClassBaseeditmodel
 			// return what should be a non-zero id
 			return $this->_url->id;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->setError($e->getMessage());

@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2018
+ * @copyright   (c) Yannick Gaultier 2020
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.4.0.685
- * @date        2019-04-25
+ * @version     0.4.0.711
+ * @date        2020-06-26
  */
 
 /** ensure this file is being included by a parent file */
@@ -42,21 +42,28 @@ class ShlMvcLayout_File extends \ShlMvcLayout_Base
 	/**
 	 * Method to instantiate the file-based layout.
 	 *
-	 * @param   string $layoutId Dot separated path to the layout file, relative to base path
-	 * @param   mixed  $basePath Base path, or list of base paths to use when loading layout files
+	 * @param string $layoutId Dot separated path to the layout file, relative to base path
+	 * @param mixed  $basePath Base path, or list of base paths to use when loading layout files
 	 *
 	 * @since   3.0
 	 */
 	public function __construct($layoutId, $basePath = null)
 	{
 		$this->layoutId = $layoutId;
-		$this->basePath = empty($basePath) ? JPATH_ROOT . '/layouts' : is_string($basePath) ? rtrim($basePath, DIRECTORY_SEPARATOR) : $basePath;
+		$this->basePath = empty($basePath) ?
+			JPATH_ROOT . '/layouts'
+			:
+			(is_string($basePath) ?
+				rtrim($basePath, DIRECTORY_SEPARATOR)
+				:
+				$basePath
+			);
 	}
 
 	/**
 	 * Method to render the layout.
 	 *
-	 * @param   object $displayData Object which properties are used inside the layout file to build displayed output
+	 * @param object $displayData Object which properties are used inside the layout file to build displayed output
 	 *
 	 * @return  string  The necessary HTML to display the layout
 	 *
@@ -79,7 +86,7 @@ class ShlMvcLayout_File extends \ShlMvcLayout_Base
 		}
 
 		// apply a filter for 3rd-party content customization
-		$filterName = 'shlib_layout_' . str_replace('.', '_', $this->layoutId);
+		$filterName   = 'shlib_layout_' . str_replace('.', '_', $this->layoutId);
 		$layoutOutput = \ShlHook::filter($filterName, $layoutOutput, $displayData);
 
 		return $layoutOutput;
@@ -96,7 +103,7 @@ class ShlMvcLayout_File extends \ShlMvcLayout_Base
 	{
 		if (is_null($this->fullPath) && !empty($this->layoutId))
 		{
-			$rawPath = str_replace('.', '/', $this->layoutId) . '.php';
+			$rawPath  = str_replace('.', '/', $this->layoutId) . '.php';
 			$fileName = basename($rawPath);
 			$filePath = dirname($rawPath);
 

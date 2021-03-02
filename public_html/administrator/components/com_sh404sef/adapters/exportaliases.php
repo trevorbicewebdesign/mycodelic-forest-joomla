@@ -3,18 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-{
-	die('Direct Access to this location is not allowed.');
-}
+defined('_JEXEC') || die;
 
 /**
  * Implement wizard based exportation of pageids data
@@ -80,16 +80,16 @@ class Sh404sefAdapterExportaliases extends JObject
 		$properties = array();
 
 		$properties['_defaultController'] = 'wizard';
-		$properties['_defaultTask'] = '';
-		$properties['_defaultModel'] = '';
-		$properties['_defaultView'] = 'wizard';
-		$properties['_defaultLayout'] = 'default';
+		$properties['_defaultTask']       = '';
+		$properties['_defaultModel']      = '';
+		$properties['_defaultView']       = 'wizard';
+		$properties['_defaultLayout']     = 'default';
 
 		$properties['_returnController'] = 'aliases';
-		$properties['_returnTask'] = '';
-		$properties['_returnView'] = 'aliases';
-		$properties['_returnLayout'] = 'default';
-		$properties['_pageTitle'] = JText::_('COM_SH404SEF_EXPORTING_TITLE');
+		$properties['_returnTask']       = '';
+		$properties['_returnView']       = 'aliases';
+		$properties['_returnLayout']     = 'default';
+		$properties['_pageTitle']        = Text::_('COM_SH404SEF_EXPORTING_TITLE');
 
 		return $properties;
 	}
@@ -110,7 +110,7 @@ class Sh404sefAdapterExportaliases extends JObject
 		// return results
 		$result = array();
 
-		$result['mainText'] = JText::_('COM_SH404SEF_EXPORT_ALIASES_START');
+		$result['mainText'] = Text::_('COM_SH404SEF_EXPORT_ALIASES_START');
 
 		return $result;
 	}
@@ -121,7 +121,7 @@ class Sh404sefAdapterExportaliases extends JObject
 	 */
 	public function doExport()
 	{
-		$app = JFactory::getApplication();
+		$app = Factory::getApplication();
 
 		// which button should be displayed ?
 		$this->_visibleButtonsList = array();
@@ -141,13 +141,13 @@ class Sh404sefAdapterExportaliases extends JObject
 		// calculate number of items to export
 		$model = ShlMvcModel_Base::getInstance('aliases', 'Sh404sefModel');
 		$model->setContext('aliases.default');
-		$options = (object) array('layout' => 'default', 'includeHomeData' => true);
+		$options      = (object) array('layout' => 'default', 'includeHomeData' => true);
 		$this->_total = $model->getTotal($options);
 
 		// do we have anything to export ?
 		if (empty($this->_total))
 		{
-			$result['mainText'] = JText::_('COM_SH404SEF_NOTHING_TO_EXPORT');
+			$result['mainText'] = Text::_('COM_SH404SEF_NOTHING_TO_EXPORT');
 			// which button should be displayed ?
 			$this->_visibleButtonsList = array('terminate');
 			// next step so to trigger download, as file is ready now
@@ -160,7 +160,7 @@ class Sh404sefAdapterExportaliases extends JObject
 		if (empty($nextStart))
 		{
 			// this is first pass, starting from 0
-			$start = 0;
+			$start     = 0;
 			$nextStart = $start + self::MAX_PAGEIDS_PER_STEP;
 			if ($nextStart >= $this->_total)
 			{
@@ -170,7 +170,7 @@ class Sh404sefAdapterExportaliases extends JObject
 		}
 		else
 		{
-			$start = $nextStart;
+			$start     = $nextStart;
 			$nextStart = $start + self::MAX_PAGEIDS_PER_STEP;
 		}
 
@@ -179,7 +179,7 @@ class Sh404sefAdapterExportaliases extends JObject
 
 		if ($start >= $this->_total)
 		{
-			$result['mainText'] = JText::sprintf('COM_SH404SEF_EXPORT_DONE', $this->_total);
+			$result['mainText'] = Text::sprintf('COM_SH404SEF_EXPORT_DONE', $this->_total);
 			$result['mainText'] .= $this->_getTerminateOptions();
 			// which button should be displayed ?
 			$this->_visibleButtonsList = array('terminate');
@@ -192,13 +192,13 @@ class Sh404sefAdapterExportaliases extends JObject
 			$this->_export($start);
 
 			// continuing for another round
-			$result['mainText'] = JText::sprintf('COM_SH404SEF_EXPORT_EXPORTING', $start + 1, $this->_total);
+			$result['mainText']   = Text::sprintf('COM_SH404SEF_EXPORT_EXPORTING', $start + 1, $this->_total);
 			$result['hiddenText'] = '<input type="hidden" name="nextstart" value="' . $nextStart . '" />';
-			$result['nextStart'] = $nextStart;
+			$result['nextStart']  = $nextStart;
 		}
 
-		$result['continue'] = array('task' => 'next', 'nextstart' => $nextStart, 'filename' => base64_encode($this->_filename));
-		$result['continue'] = array_merge($result['continue'], $this->_steps);
+		$result['continue']   = array('task' => 'next', 'nextstart' => $nextStart, 'filename' => base64_encode($this->_filename));
+		$result['continue']   = array_merge($result['continue'], $this->_steps);
 		$result['hiddenText'] .= '<input type="hidden" name="filename" value="' . $this->_filename . '" />';
 
 		return $result;
@@ -229,16 +229,14 @@ class Sh404sefAdapterExportaliases extends JObject
 	public function doTerminate()
 	{
 		// are we set to purge temporary files ?
-		$purgeTempFiles = JFactory::getApplication()->input->getInt('purge_temp_files', 0);
+		$purgeTempFiles = Factory::getApplication()->input->getInt('purge_temp_files', 0);
 		if (!empty($purgeTempFiles))
 		{
 			Sh404sefHelperFiles::purgeTempFiles('sh404sef_export_' . $this->_context);
 		}
 
 		// now go back to main page
-		$result = array('redirectTo' => true);
-
-		return $result;
+		return array('redirectTo' => true);
 	}
 
 	/**
@@ -247,8 +245,8 @@ class Sh404sefAdapterExportaliases extends JObject
 	 */
 	public function doCancel()
 	{
-		$result = array();
-		$result['redirectTo'] = true;
+		$result                    = array();
+		$result['redirectTo']      = true;
 		$result['redirectOptions'] = array('sh404sefMsg' => 'COM_SH404SEF_WIZARD_CANCELLED');
 
 		return $result;
@@ -270,12 +268,12 @@ class Sh404sefAdapterExportaliases extends JObject
 		$records = $model->getList($options, $returnZeroElement = false, $start, $forcedLimit = self::MAX_PAGEIDS_PER_STEP);
 
 		// do we need a header written to the file, for first record
-		$header = $start == 0 ? Sh404sefHelperGeneral::getExportHeaders($this->_context) . "\n" : '';
+		$header = $start == 0 ? Sh404sefHelperGeneral::getExportHeaders($this->_context, true) . "\n" : '';
 
 		// format them for text file output
-		$data = '';
+		$data    = '';
 		$counter = $start;
-		$glue = Sh404sefHelperFiles::$stringDelimiter . Sh404sefHelperFiles::$fieldDelimiter . Sh404sefHelperFiles::$stringDelimiter;
+		$glue    = Sh404sefHelperFiles::$stringDelimiter . Sh404sefHelperFiles::$fieldDelimiter . Sh404sefHelperFiles::$stringDelimiter;
 		if (!empty($records))
 		{
 			foreach ($records as $record)
@@ -294,8 +292,8 @@ class Sh404sefAdapterExportaliases extends JObject
 					. $glue . $record->ordering
 					. $glue . $record->state
 					. Sh404sefHelperFiles::$stringDelimiter;
-				$line = Sh404sefHelperFiles::$stringDelimiter . $counter . $glue . $textRecord;
-				$data .= $line . "\n";
+				$line       = Sh404sefHelperFiles::$stringDelimiter . $counter . $glue . $textRecord;
+				$data       .= $line . "\n";
 			}
 		}
 
@@ -307,17 +305,14 @@ class Sh404sefAdapterExportaliases extends JObject
 		}
 
 		// store in file
-		$status = Sh404sefHelperFiles::appendToFile($this->_filename, $data);
-
-		// return any error
-		return $status;
+		return Sh404sefHelperFiles::appendToFile($this->_filename, $data);
 	}
 
 	protected function _getTerminateOptions()
 	{
 		$options = '<br /><br />';
 		$options .= '<input type="checkbox" name="purge_temp_files" value="1" checked="checked" >';
-		$options .= JText::_('COM_SH404SEF_PURGE_TEMP_FILES');
+		$options .= Text::_('COM_SH404SEF_PURGE_TEMP_FILES');
 		$options .= '<br />';
 
 		return $options;

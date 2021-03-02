@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -23,6 +23,7 @@ class Sh404sefModelRedirector
 	 */
 	const TARGET_TYPE_REDIRECT = 0;
 	const TARGET_TYPE_CANONICAL = 1;
+	const TARGET_TYPE_INTERNAL_REWRITE = 2;
 
 	/**
 	 * If there are less placeholders in alias target than in alias source, in which direction
@@ -56,9 +57,9 @@ class Sh404sefModelRedirector
 	private $matchedRules = array();
 
 	/**
-	 * @var bool Stores whether a URL was triggered.
+	 * @var array Stores whether a URL was triggered, per target type.
 	 */
-	private $aliasFound = false;
+	private $aliasFound = array();
 
 	/**
 	 * @var array The alias rule that should be executed.
@@ -77,7 +78,7 @@ class Sh404sefModelRedirector
 	 * @param $config
 	 * @param $jconfig
 	 */
-	public function __construct($uri, $config, $jconfig)
+	public function __construct(&$uri, $config, $jconfig)
 	{
 		$this->uri     = $uri;
 		$this->config  = $config;
@@ -115,7 +116,7 @@ class Sh404sefModelRedirector
 			$this->findHardcodedMatchedRules($requestPathAndQuery, $path, $queryString)
 			     ->findWildcardMatchedRules($requestPathAndQuery, $path, $queryString);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			// if error, just log
 			ShlSystem_Log::error(
@@ -145,7 +146,7 @@ class Sh404sefModelRedirector
 			$this->redirectFromAliases('hardcoded')
 			     ->redirectFromAliases('wildcard');
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			// if error, just log
 			ShlSystem_Log::error(
@@ -159,13 +160,13 @@ class Sh404sefModelRedirector
 	 * Finds and store all the hardcoded aliases redirect rules that match the current URI.
 	 * Those rules target is a non-sef URL that has an sh404SEF SEF record.
 	 *
-	 * @param string $requestPath
+	 * @param string $requestPathAndQuery
 	 * @param string $path
 	 * @param string $queryString
 	 *
 	 * @return $this
 	 */
-	private function findHardcodedMatchedRules($requestPath, $path, $queryString)
+	private function findHardcodedMatchedRules($requestPathAndQuery, $path, $queryString)
 	{
 		if (!isset($this->matchedRules['hardcoded']))
 		{
@@ -179,17 +180,17 @@ class Sh404sefModelRedirector
 				'alias'
 			);
 			$quoted     = array(
-				$requestPath
+				$requestPathAndQuery
 			);
 
 			$isNonSefRequest = wbStartsWith(
-				$requestPath,
+				$requestPathAndQuery,
 				array('index.php?', '?')
 			);
 			if ($isNonSefRequest)
 			{
 				// a non-sef, let's try with the router version
-				$sef          = JRoute::_($requestPath);
+				$sef          = JRoute::_($requestPathAndQuery);
 				$sef          = wbLTrim($sef, JUri::base(true));
 				$sef          = JString::ltrim($sef, '/');
 				$sql          .= ' or ?? = ?';
@@ -198,7 +199,7 @@ class Sh404sefModelRedirector
 			}
 
 			// path different from full url requested, means there is a query string
-			else if (!empty($path) && $path != $requestPath)
+			else if (!empty($path) && $path != $requestPathAndQuery)
 			{
 				$sql          .= ' or ?? = ?';
 				$nameQuoted[] = 'alias';
@@ -229,23 +230,24 @@ class Sh404sefModelRedirector
 			}
 
 			// do the redirect, after checking a few conditions
-
 			if (!empty($aliasRecord))
 			{
-				// if match occured on full requested URL, or this is a non-sef or this is a canonilca, not a redirect: no need to re-append the query string
+				// if match occured on full requested URL, or this is a non-sef or this is a canonical, not a redirect: no need to re-append the query string
 				// to the target URL.
-
 				$queryString =
 					$aliasRecord->target_type == self::TARGET_TYPE_CANONICAL
 					||
 					$isNonSefRequest
 					||
-					($aliasRecord->target_type == self::TARGET_TYPE_REDIRECT && $aliasRecord->alias == $requestPath)
-						? '' : $queryString;
+					($aliasRecord->target_type == self::TARGET_TYPE_REDIRECT && $aliasRecord->alias == $requestPathAndQuery)
+						?
+						''
+						:
+						$queryString;
 
 				$this->matchedRules['hardcoded'][] = array(
 					'rule'         => $aliasRecord,
-					'request_path' => $requestPath,
+					'request_path' => $requestPathAndQuery,
 					'matches'      => array(),
 					'query_string' => $queryString
 				);
@@ -258,19 +260,19 @@ class Sh404sefModelRedirector
 	/**
 	 * Finds and store all the wildcard aliases redirect rules that match the current URI.
 	 *
-	 * @param string $requestPath
+	 * @param string $requestPathAndQuery
 	 * @param string $path
 	 * @param string $queryString
 	 *
 	 * @return $this
 	 */
-	private function findWildcardMatchedRules($requestPath, $path, $queryString)
+	private function findWildcardMatchedRules($requestPathAndQuery, $path, $queryString)
 	{
 		if (!isset($this->matchedRules['wildcard']))
 		{
 			$this->matchedRules['wildcard'] = array();
 			$isNonSefRequest                = wbStartsWith(
-				$requestPath,
+				$requestPathAndQuery,
 				array('index.php?', '?')
 			);
 
@@ -281,8 +283,8 @@ class Sh404sefModelRedirector
 					'*',
 					'state = 1 and (type = ? or type = ?)',
 					array(
-						Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_WILDCARD,
-						Sh404sefHelperGeneral::COM_SH404SEF_URLTYPE_ALIAS_CUSTOM
+						Sh404sefTableAliases::URLTYPE_ALIAS_WILDCARD,
+						Sh404sefTableAliases::URLTYPE_ALIAS_CUSTOM
 					)
 				);
 				$this->wildcardAliases = empty($this->wildcardAliases) ? array() : $this->wildcardAliases;
@@ -290,27 +292,50 @@ class Sh404sefModelRedirector
 			foreach ($this->wildcardAliases as $wildcardsAliasRecord)
 			{
 				// test the full URL
-				$matches = ShlSystem_Route::urlRuleMatch($wildcardsAliasRecord->alias, $requestPath, $wildChar = '{*}', $singleChar = '{?}', $regexpChar = '~');
+				$matches = ShlSystem_Route::urlRuleMatch(
+					$wildcardsAliasRecord->alias,
+					$requestPathAndQuery,
+					$wildChar = '{*}',
+					$singleChar = '{?}',
+					$regexpChar = '~'
+				);
 				if (!empty($matches[0]))
 				{
 					$this->matchedRules['wildcard'][] = array(
 						'rule'         => $wildcardsAliasRecord,
-						'request_path' => $requestPath,
+						'request_path' => $requestPathAndQuery,
 						'matches'      => $matches,
 						'query_string' => ''
 					);
 				}
 
 				// test the path only
-				$matches = ShlSystem_Route::urlRuleMatch($wildcardsAliasRecord->alias, $path, $wildChar = '{*}', $singleChar = '{?}', $regexpChar = '~');
+				$matches = ShlSystem_Route::urlRuleMatch(
+					$wildcardsAliasRecord->alias,
+					$path,
+					$wildChar = '{*}',
+					$singleChar = '{?}',
+					$regexpChar = '~'
+				);
+
 				if (!empty($matches[0]))
 				{
-					// if match occured on full requested URL, or this is a non-sef or this is a canonilca, not a redirect: no need to re-append the query string
+					// if match occured on full requested URL, or this is a non-sef or this is a canonical, not a redirect: no need to re-append the query string
 					// to the target URL.
-					$queryString                      = $wildcardsAliasRecord->target_type == self::TARGET_TYPE_CANONICAL || $isNonSefRequest || $wildcardsAliasRecord->newurl == $requestPath ? '' : $queryString;
+					$queryString =
+						$wildcardsAliasRecord->target_type == self::TARGET_TYPE_CANONICAL
+						||
+						$isNonSefRequest
+						||
+						$wildcardsAliasRecord->newurl == $requestPathAndQuery
+							?
+							''
+							:
+							$queryString;
+
 					$this->matchedRules['wildcard'][] = array(
 						'rule'         => $wildcardsAliasRecord,
-						'request_path' => $requestPath,
+						'request_path' => $requestPathAndQuery,
 						'matches'      => $matches,
 						'query_string' => $queryString
 					);
@@ -338,15 +363,22 @@ class Sh404sefModelRedirector
 			return $this;
 		}
 
+		// Iterate over all matched rules. We execute the first
+		// rule found for each target type. That way user can set
+		// a rule for both an internal rewrite and a canonical for instance.
 		foreach ($this->matchedRules[$type] as $matchedRule)
 		{
-			if ($this->aliasFound)
-			{
-				break;
-			}
-			$this->executeAlias(
-				$matchedRule
+			$alreadyFound = wbArrayGet(
+				$this->aliasFound,
+				$matchedRule['rule']->target_type,
+				false
 			);
+			if (!$alreadyFound)
+			{
+				$this->executeAlias(
+					$matchedRule
+				);
+			}
 		}
 
 		return $this;
@@ -409,8 +441,31 @@ class Sh404sefModelRedirector
 						ShlSystem_Http::redirectPermanent($destUrl);
 						break;
 					case self::TARGET_TYPE_CANONICAL:
-						$this->aliasFound     = true;
-						$this->aliasToExecute = ShlSystem_Route::absolutify($destUrl, $forceDomain = true);
+						$this->aliasFound[self::TARGET_TYPE_CANONICAL] = true;
+						$this->aliasToExecute                          = ShlSystem_Route::absolutify(
+							$destUrl,
+							$forceDomain = true
+						);
+						break;
+					case self::TARGET_TYPE_INTERNAL_REWRITE:
+						$this->aliasFound[self::TARGET_TYPE_INTERNAL_REWRITE] = true;
+						$newUri                                               = JURI::getInstance(
+							$destUrl
+						);
+						$newPath                                              = wbLTrim(
+							$newUri->getPath(),
+							$newUri->base($pathOnly = true)
+						);
+						$newPath                                              = wbLTrim(
+							$newPath,
+							'/'
+						);
+						$this->uri->setPath(
+							$newPath
+						);
+						$this->uri->setQuery(
+							$newUri->getQuery()
+						);
 						break;
 				}
 			}
@@ -498,7 +553,7 @@ class Sh404sefModelRedirector
 			// redirect target is a non-sef url, route it
 			case wbStartsWith($redirectTarget, 'index.php'):
 				$shUri          = new JURI($redirectTarget);
-				$shOriginalUri  = clone ($shUri);
+				$shOriginalUri  = clone($shUri);
 				$redirectTarget = shSefRelToAbs($redirectTarget, '', $shUri, $shOriginalUri) . $shUri->toString(array('query'));
 				break;
 			// directly use the redirect target

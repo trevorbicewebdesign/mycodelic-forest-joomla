@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -61,7 +61,7 @@ abstract class Sh404sefClassBasemodel extends ShlMvcModel_Base
 			{
 				$this->_data->load($id);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 				$this->_data->setError($e->getMessage());
@@ -103,7 +103,7 @@ abstract class Sh404sefClassBasemodel extends ShlMvcModel_Base
 				$list = ShlDbHelper::selectObjectList($this->_getTableName(), '*', $options);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$list = $countOnly ? 0 : array();
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
@@ -122,7 +122,7 @@ abstract class Sh404sefClassBasemodel extends ShlMvcModel_Base
 		{
 			$this->_data->bind($data);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->_data->setError($e->getMessage());
@@ -156,7 +156,7 @@ abstract class Sh404sefClassBasemodel extends ShlMvcModel_Base
 		{
 			$status = $this->_data->save($post);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->_data->setError($e->getMessage());

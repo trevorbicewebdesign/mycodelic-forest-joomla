@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -41,6 +41,12 @@ Class Sh404sefControllerEditurl extends Sh404sefClassBaseeditcontroller
 		// save incoming data
 		$this->_editData = $input->post->getArray();
 
+		// accept raw data for raw content
+		$this->_editData['raw_content_head_top']    = $input->post->get('raw_content_head_top', '', 'raw');
+		$this->_editData['raw_content_head_bottom'] = $input->post->get('raw_content_head_bottom', '', 'raw');
+		$this->_editData['raw_content_body_top']    = $input->post->get('raw_content_body_top', '', 'raw');
+		$this->_editData['raw_content_body_bottom'] = $input->post->get('raw_content_body_bottom', '', 'raw');
+
 		// find and store edited item id
 		$this->_id = $input->getInt('id');
 
@@ -62,7 +68,7 @@ Class Sh404sefControllerEditurl extends Sh404sefClassBaseeditcontroller
 			);
 		}
 
-		$response = array(
+		$response            = array(
 			'status' => true,
 		);
 		$response['message'] = JText::_('COM_SH404SEF_ELEMENT_SAVED');
@@ -88,9 +94,9 @@ Class Sh404sefControllerEditurl extends Sh404sefClassBaseeditcontroller
 		$cid = wbArrayGet($cid, 'cid', array());
 
 		// Set the view name and create the view object
-		$viewName = 'confirm';
-		$document = JFactory::getDocument();
-		$viewType = $document->getType();
+		$viewName   = 'confirm';
+		$document   = JFactory::getDocument();
+		$viewType   = $document->getType();
 		$viewLayout = $app->input->getCmd('layout', $this->_defaultLayout);
 
 		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));

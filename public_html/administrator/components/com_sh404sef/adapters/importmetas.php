@@ -3,18 +3,17 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
+use Joomla\CMS\Language\Text;
+
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-{
-	die('Direct Access to this location is not allowed.');
-}
+defined('_JEXEC') || die;
 
 /**
  * Implement wizard based exportation of pageids data
@@ -38,9 +37,9 @@ class Sh404sefAdapterImportmetas extends Sh404sefClassImportgeneric
 
 		// setup a few custom properties
 		$properties['_returnController'] = 'metas';
-		$properties['_returnTask'] = '';
-		$properties['_returnView'] = 'metas';
-		$properties['_returnLayout'] = 'default';
+		$properties['_returnTask']       = '';
+		$properties['_returnView']       = 'metas';
+		$properties['_returnLayout']     = 'default';
 
 		// and return the whole thing
 		return $properties;
@@ -51,29 +50,28 @@ class Sh404sefAdapterImportmetas extends Sh404sefClassImportgeneric
 	 * on data read from import file
 	 *
 	 * @param array  $header an array of fields, as built from the header line
-	 * @param string $line   raw record obtained from import file
+	 * @param string $line raw record obtained from import file
+	 *
+	 * @throws \Exception
 	 */
 	protected function _createRecord($header, $line)
 	{
-		// extract the record
-		$line = $this->_lineToArray(trim($line));
-
 		// get table object to store record
 		$model = ShlMvcModel_Base::getInstance('metas', 'Sh404sefModel');
 
 		// bind table to current record
-		$record = array();
+		$record           = array();
 		$record['newurl'] = $line[2];
 		if ($record['newurl'] == '__ Homepage __')
 		{
 			$record['newurl'] = sh404SEF_HOMEPAGE_CODE;
 		}
-		$record['metatitle'] = $line[6];
-		$record['metadesc'] = $line[7];
-		$record['metakey'] = $line[8];
-		$record['metalang'] = $line[9];
+		$record['metatitle']  = $line[6];
+		$record['metadesc']   = $line[7];
+		$record['metakey']    = $line[8];
+		$record['metalang']   = $line[9];
 		$record['metarobots'] = $line[10];
-		$record['canonical'] = $line[11];
+		$record['canonical']  = $line[11];
 
 		// clean up records
 		foreach ($record as $key => $value)
@@ -113,7 +111,9 @@ class Sh404sefAdapterImportmetas extends Sh404sefClassImportgeneric
 		if (!$status)
 		{
 			// rethrow a more appropriate error message
-			throw new Sh404sefExceptionDefault(JText::sprintf('COM_SH404SEF_IMPORT_ERROR_INSERTING_INTO_DB', $line[0]) . ('<small>(' . $model->getError() . ')</small>'));
+			throw new \Exception(
+				Text::sprintf('COM_SH404SEF_IMPORT_ERROR_INSERTING_INTO_DB', $line[0]) . ('<small>(' . $model->getError() . ')</small>')
+			);
 		}
 	}
 
@@ -127,9 +127,7 @@ class Sh404sefAdapterImportmetas extends Sh404sefClassImportgeneric
 	 */
 	protected function _getTerminateOptions()
 	{
-		$options = JText::_('COM_SH404SEF_IMPORT_URLS_WARNING');
-
-		return $options;
+		return Text::_('COM_SH404SEF_IMPORT_URLS_WARNING');
 	}
 
 }

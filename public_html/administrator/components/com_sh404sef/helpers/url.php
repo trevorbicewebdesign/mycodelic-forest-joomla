@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -32,14 +32,16 @@ class Sh404sefHelperUrl
 	{
 		$url = 'index.php?option=' . $option;
 
-		if (is_array($elements) && !empty($elements))
+		if (empty($elements) || !is_array($elements))
 		{
-			foreach ($elements as $key => $value)
+			return $url;
+		}
+
+		foreach ($elements as $key => $value)
+		{
+			if ('option' != $key)
 			{
-				if ('option' != $key)
-				{
-					$url .= '&' . $key . '=' . $value;
-				}
+				$url .= '&' . $key . '=' . $value;
 			}
 		}
 
@@ -97,7 +99,7 @@ class Sh404sefHelperUrl
 		// VM 2.x actually sets JRequest variables to communicate between view.html.php and layouts!
 		// so the current non-sef url is modified (showall=1 is added) which prevent
 		// all meta data associated with this non-sef to be properly retrieved
-		$isVm = self::getUrlVar($nonSef, 'option', null) == 'com_virtuemart';
+		$isVm             = self::getUrlVar($nonSef, 'option', null) == 'com_virtuemart';
 		$isProductDetails = $isVm && self::getUrlVar($nonSef, 'view', null) == 'productdetails';
 		if ($isProductDetails)
 		{
@@ -128,7 +130,7 @@ class Sh404sefHelperUrl
 	/** works only with non-sef urls, starting with index.php? */
 	public static function clearUrlVar($string, $var)
 	{
-		$string = str_replace('index.php?', '&', $string);
+		$string  = str_replace('index.php?', '&', $string);
 		$cleaned = ShlSystem_Strings::pr('/(&|\?)' . preg_quote($var, '/') . '=[^&]*/iu', '', $string);
 		$cleaned = ltrim($cleaned, '&');
 		return empty($cleaned) || $cleaned == 'index.php' ? 'index.php' : 'index.php?' . $cleaned;
@@ -145,8 +147,8 @@ class Sh404sefHelperUrl
 		}
 
 		$trackingVars = self::_getTrackingVars();
-		$cleaned = self::stripVarsFromNonSef('?' . $parts[1], $trackingVars);
-		$cleaned = wbLTrim($cleaned, 'index.php');
+		$cleaned      = self::stripVarsFromNonSef('?' . $parts[1], $trackingVars);
+		$cleaned      = wbLTrim($cleaned, 'index.php');
 
 		// rebuild and return
 		$cleaned = JString::ltrim($cleaned, '?&');
@@ -188,7 +190,7 @@ class Sh404sefHelperUrl
 			}
 			$string = str_replace('&amp;', '&', $string); // normalize
 			$string = str_replace('&amp;', '&', $string); // normalize #2
-			$vars = array();
+			$vars   = array();
 			parse_str($string, $vars);
 			$_parsed[$string] = $vars;
 		}
@@ -209,7 +211,7 @@ class Sh404sefHelperUrl
 			return $string;
 		}
 		$string = str_replace('&amp;', '&', $string); // normalize
-		$exp = '/(&|\?)' . preg_quote($var, '/') . '=[^&]*/iu';
+		$exp    = '/(&|\?)' . preg_quote($var, '/') . '=[^&]*/iu';
 		$result = preg_match($exp, $string);
 		if ($result) // var already in URL
 		{
@@ -254,7 +256,7 @@ class Sh404sefHelperUrl
 			if (count($shVars) > 0)
 			{
 				ksort($shVars); // sort URL array
-				$shNewString = '';
+				$shNewString      = '';
 				$_sorted[$nonSef] = 'index.php?';
 				foreach ($shVars as $key => $value)
 				{
@@ -334,8 +336,8 @@ class Sh404sefHelperUrl
 	public static function getUrlLang($string)
 	{
 		$matches = array();
-		$string = str_replace('&amp;', '&', $string); // normalize
-		$result = preg_match('/(&|\?)lang=[^&]*/i', $string, $matches);
+		$string  = str_replace('&amp;', '&', $string); // normalize
+		$result  = preg_match('/(&|\?)lang=[^&]*/i', $string, $matches);
 		if (!empty($matches))
 		{
 			$result = JString::trim($matches[0], '&?');
@@ -352,7 +354,7 @@ class Sh404sefHelperUrl
 		// search for proxy functions first
 		// so as to be pre-3.3 compatible
 		$functionName = ucfirst($componentName) . 'BuildRoute';
-		$fileName = JPATH_ROOT . '/components/' . $option . '/router.php';
+		$fileName     = JPATH_ROOT . '/components/' . $option . '/router.php';
 		if (!function_exists($functionName) && file_exists($fileName))
 		{
 			include_once $fileName;
@@ -401,7 +403,7 @@ class Sh404sefHelperUrl
 	/**
 	 * Encode route segments
 	 *
-	 * @param   array $segments An array of route segments
+	 * @param array $segments An array of route segments
 	 *
 	 * @return  array  Array of encoded route segments
 	 *
@@ -433,14 +435,14 @@ class Sh404sefHelperUrl
 			$originalUrl = Sh404sefHelperGeneral::getProtectedProperty('Juri', 'uri', $uri);
 			if ($originalUrl == 'index.php')
 			{
-				$query = $uri->getQuery();
+				$query       = $uri->getQuery();
 				$originalUrl = empty($query) ? $originalUrl : $originalUrl . '?' . $query;
 			}
 		}
 		else
 		{
 			$propertyName = version_compare(JVERSION, '3.0', 'ge') ? 'uri' : '_uri';
-			$originalUrl = Sh404sefHelperGeneral::getProtectedProperty('Juri', $propertyName, $uri);
+			$originalUrl  = Sh404sefHelperGeneral::getProtectedProperty('Juri', $propertyName, $uri);
 		}
 
 		return $originalUrl;
@@ -458,9 +460,9 @@ class Sh404sefHelperUrl
 	public static function getOriginalPathFromUri($uri, $base)
 	{
 		$propertyName = version_compare(JVERSION, '3.0', 'ge') ? 'uri' : '_uri';
-		$originalUrl = Sh404sefHelperGeneral::getProtectedProperty('Juri', $propertyName, $uri);
+		$originalUrl  = Sh404sefHelperGeneral::getProtectedProperty('Juri', $propertyName, $uri);
 		$originalPath = wbLTrim($originalUrl, JUri::base());
-		$pathBits = explode('?', $originalPath);
+		$pathBits     = explode('?', $originalPath);
 		$originalPath = $pathBits[0];
 
 		return $originalPath;
@@ -537,11 +539,11 @@ class Sh404sefHelperUrl
 
 		if (is_null($basePath))
 		{
-			$basePath = Juri::base(true);
-			$sefPlgParams = Sh404sefHelperGeneral::getExtensionParams('plg_sef', array('type' => 'plugin', 'folder' => 'system', 'element' => 'sef'));
+			$basePath        = Juri::base(true);
+			$sefPlgParams    = Sh404sefHelperGeneral::getExtensionParams('plg_sef', array('type' => 'plugin', 'folder' => 'system', 'element' => 'sef'));
 			$canonicalDomain = JString::trim($sefPlgParams->get('domain', ''));
-			$baseFull = empty($canonicalDomain) ? JUri::base(false) : $canonicalDomain;
-			$baseFull = JString::trim($baseFull, '/');
+			$baseFull        = empty($canonicalDomain) ? JUri::base(false) : $canonicalDomain;
+			$baseFull        = JString::trim($baseFull, '/');
 		}
 
 		$absoluteUrl = $baseFull . wbLTrim($routedUrl, $basePath);
@@ -578,19 +580,19 @@ class Sh404sefHelperUrl
 	public static function storeUrlSourceData($nonsef, $sef, $rank)
 	{
 		self::$buildingNonSef = $nonsef;
-		self::$buildingSef = $sef;
-		self::$buildingRank = $rank;
+		self::$buildingSef    = $sef;
+		self::$buildingRank   = $rank;
 	}
 
 	public static function storeUrlSource($nonsef = null, $sef = null, $rank = null, $currentNonSef = null, $currentSef = null, $trace = null)
 	{
 		if (Sh404sefFactory::getConfig()->logUrlsSource)
 		{
-			$data = array();
-			$data['url'] = empty($nonsef) ? self::$buildingNonSef : $nonsef;
-			$data['url'] = self::sortURL($data['url']);
+			$data               = array();
+			$data['url']        = empty($nonsef) ? self::$buildingNonSef : $nonsef;
+			$data['url']        = self::sortURL($data['url']);
 			$data['routed_url'] = empty($sef) ? self::$buildingSef : $sef;
-			$pageInfo = Sh404sefFactory::getPageInfo();
+			$pageInfo           = Sh404sefFactory::getPageInfo();
 			$data['source_url'] = is_null($currentNonSef) ? $pageInfo->currentNonSefUrl : $currentNonSef;
 			$data['source_url'] = self::sortURL($data['source_url']);
 
@@ -634,10 +636,10 @@ class Sh404sefHelperUrl
 				$data['source_routed_url'] = is_null($currentSef) ? wbLTrim($pageInfo->currentSefUrl, $pageInfo->getDefaultFrontLiveSite()) : $currentSef;
 				if (is_null($trace))
 				{
-					$e = new Exception;
+					$e     = new Exception;
 					$trace = $e->getTraceAsString();
 				}
-				$data['trace'] = wbLTrim($trace, JPATH_ROOT);
+				$data['trace']    = wbLTrim($trace, JPATH_ROOT);
 				$data['datetime'] = ShlSystem_Date::getSiteNow();
 
 				ShlDbHelper::insert('#__sh404sef_urls_src', $data);

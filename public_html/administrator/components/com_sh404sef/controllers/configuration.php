@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date		2019-09-30
+ * @version     4.21.0.4206
+ * @date		2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -75,7 +75,7 @@ Class Sh404sefControllerConfiguration extends ShlMvcController_Base
 			ShlDbHelper::update('#__extensions', array('params' => $textParams), array('element' => 'com_sh404sef', 'type' => 'component'));
 			JFactory::getApplication()->enqueueMessage(JText::_('COM_SH404SEF_ELEMENT_SAVED'));
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			JFactory::getApplication()->enqueueMessage(JText::_('COM_SH404SEF_ELEMENT_NOT_SAVED'), 'error');
 		}

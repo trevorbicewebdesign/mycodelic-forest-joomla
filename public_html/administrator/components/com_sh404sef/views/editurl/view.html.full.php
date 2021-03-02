@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -122,6 +122,9 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 		// push social seo data
 		$this->_pushDataSocial_seo();
 
+		// and custom raw contnet
+		$this->_pushDataRawContent();
+
 		// find active starting panel
 		$this->activePanel = $this->_getActiveStartingPanel();
 
@@ -193,6 +196,7 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 		$ogData['og_postal_code'] = $this->meta->og_postal_code;
 		$ogData['og_region'] = $this->meta->og_region;
 		$ogData['og_country_name'] = $this->meta->og_country_name;
+		$ogData['og_custom_description'] = $this->meta->og_custom_description;
 
 		$ogData['og_enable_contact'] = Sh404sefHelperHtml::buildBooleanAndDefaultSelectList($this->meta->og_enable_contact, 'og_enable_contact');
 		$ogData['og_email'] = $this->meta->og_email;
@@ -208,6 +212,15 @@ class Sh404sefViewEditurl extends ShlMvcView_Base
 		$this->twCardsData['twittercards_enable'] = Sh404sefHelperHtml::buildBooleanAndDefaultSelectList($enabled, 'twittercards_enable');
 		$this->twCardsData['twittercards_site_account'] = $this->meta->twittercards_site_account;
 		$this->twCardsData['twittercards_creator_account'] = $this->meta->twittercards_creator_account;
+	}
+
+	private function _pushDataRawContent()
+	{
+		$rawContent['raw_content_head_top'] = $this->meta->raw_content_head_top;
+		$rawContent['raw_content_head_bottom'] = $this->meta->raw_content_head_bottom;
+		$rawContent['raw_content_body_top'] = $this->meta->raw_content_body_top;
+		$rawContent['raw_content_body_bottom'] = $this->meta->raw_content_body_bottom;
+		$this->rawContent = $rawContent;
 	}
 
 	/**

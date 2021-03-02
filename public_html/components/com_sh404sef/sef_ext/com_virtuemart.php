@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  *
  */
 
@@ -36,7 +36,7 @@ if (!function_exists('shGetVmShopName'))
 		if (empty($shopNames[$Itemid]))
 		{
 			$Itemid = empty($helper->menu['virtuemart']) ? $Itemid : $helper->menu['virtuemart'];
-			$menuItem = JFactory::getApplication()->getMenu()->getItem($Itemid);
+			$menuItem = JFactory::getApplication()->getMenu('site')->getItem($Itemid);
 			if (!empty($menuItem))
 			{
 				$shopNames[$Itemid] = $menuItem->route;
@@ -250,7 +250,7 @@ else
 	)
 	{
 		// use directly menu item
-		$item = JFactory::getApplication()->getMenu()->getItem($originalVars['Itemid']);
+		$item = JFactory::getApplication()->getMenu('site')->getItem($originalVars['Itemid']);
 		if (!empty($item) && !Sh404sefHelperLanguage::isHomepageMenuItem($item))
 		{
 			$query = $item->query;
@@ -347,7 +347,7 @@ else
 				}
 				if ($shouldInsertMenuItem || $askAQuestionTask)
 				{
-					$item = JFactory::getApplication()->getMenu()->getItem($originalVars['Itemid']);
+					$item = JFactory::getApplication()->getMenu('site')->getItem($originalVars['Itemid']);
 					if (!empty($item))
 					{
 						$validItemid = $originalVars['Itemid'];
@@ -362,7 +362,7 @@ else
 					$originalUri->setVar('Itemid', $validItemid);
 					shAddToGETVarsList('Itemid', $validItemid);
 
-					$menuItem = JFactory::getApplication()->getMenu()->getItem($validItemid);
+					$menuItem = JFactory::getApplication()->getMenu('site')->getItem($validItemid);
 					$prodRoute = empty($menuItem) || Sh404sefHelperLanguage::isHomepageMenuItem($item) ? '' : ($shouldInsertCat ? $menuItem->route : $menuItem->alias);
 					!empty($prodRoute) ? array_unshift($title, $prodRoute) : null;
 					$hasCategoryId = false;
@@ -377,7 +377,7 @@ else
 				if (count($originalVars) == 2 && !empty($originalVars['Itemid']) && !empty($originalVars['option'])
 				)
 				{
-					$item = JFactory::getApplication()->getMenu()->getItem($originalVars['Itemid']);
+					$item = JFactory::getApplication()->getMenu('site')->getItem($originalVars['Itemid']);
 					if (!empty($item))
 					{
 						$validItemid = $originalVars['Itemid'];
@@ -386,7 +386,7 @@ else
 				if ($isCategoryView)
 				{
 					unset($originalVars['categorylayout']);
-					$item = JFactory::getApplication()->getMenu()->getItem($originalVars['Itemid']);
+					$item = JFactory::getApplication()->getMenu('site')->getItem($originalVars['Itemid']);
 					if (!empty($item))
 					{
 						$validItemid = $originalVars['Itemid'];
@@ -409,7 +409,7 @@ else
 					// adjust to change to getCategoryRoute, somewhere around VM 3.0.x: ->itemId has become ->Itemid
 					if (!empty($categoryItemid))
 					{
-						$menuItem = JFactory::getApplication()->getMenu()->getItem($categoryItemid);
+						$menuItem = JFactory::getApplication()->getMenu('site')->getItem($categoryItemid);
 						$catRoute = empty($menuItem) || Sh404sefHelperLanguage::isHomepageMenuItem($item) ? '' : ($shouldInsertCat ? $menuItem->route : $menuItem->alias);
 					}
 					!empty($catRoute) ? array_unshift($title, $catRoute) : null;
@@ -419,9 +419,9 @@ else
 			if ($isCartView)
 			{
 				//if only option and Itemid left, VM wants Joomla router to prepend menu item. Let's do that
-				if (empty($title) && count($originalVars) == 2 && !empty($originalVars['Itemid']) && !empty($originalVars['option']))
+				if (empty($title) && !empty($originalVars['Itemid']) && !empty($originalVars['option']))
 				{
-					$menuItem = JFactory::getApplication()->getMenu()->getItem($originalVars['Itemid']);
+					$menuItem = JFactory::getApplication()->getMenu('site')->getItem($originalVars['Itemid']);
 					if (!empty($menuItem) && !Sh404sefHelperLanguage::isHomepageMenuItem($menuItem))
 					{
 						$cartRoute = ($shouldInsertCat ? $menuItem->route : $menuItem->alias);
@@ -435,7 +435,7 @@ else
 				//if only option and Itemid left, VM wants Joomla router to prepend menu item. Let's do that
 				if (empty($title) && count($originalVars) == 2 && !empty($originalVars['Itemid']) && !empty($originalVars['option']))
 				{
-					$item = JFactory::getApplication()->getMenu()->getItem($originalVars['Itemid']);
+					$item = JFactory::getApplication()->getMenu('site')->getItem($originalVars['Itemid']);
 					if (!empty($item) && !Sh404sefHelperLanguage::isHomepageMenuItem($item))
 					{
 						$userRoute = $item->title;

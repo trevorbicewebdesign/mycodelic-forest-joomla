@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2018
+ * @copyright   (c) Yannick Gaultier 2020
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.4.0.685
- * @date        2019-04-25
+ * @version     0.4.0.711
+ * @date        2020-06-26
  */
 
 use Joomla\String\StringHelper;
@@ -39,12 +39,12 @@ class ShlHtmlContent_Image
 
 		if (empty($rootPath))
 		{
-			$rootUrl = Juri::root();
-			$rootLength = StringHelper::strlen($rootUrl);
-			$protocoleRelRootUrl = str_replace(array('https://', 'http://'), '//', $rootUrl);
+			$rootUrl                = Juri::root();
+			$rootLength             = StringHelper::strlen($rootUrl);
+			$protocoleRelRootUrl    = str_replace(array('https://', 'http://'), '//', $rootUrl);
 			$protocoleRelRootLength = StringHelper::strlen($protocoleRelRootUrl);
-			$rootPath = JUri::base(true);
-			$pathLength = StringHelper::strlen($rootPath);
+			$rootPath               = JUri::base(true);
+			$pathLength             = StringHelper::strlen($rootPath);
 			if (\JFactory::getApplication()->isAdmin())
 			{
 				$rootPath = str_replace('/administrator', '', $rootPath);
@@ -80,7 +80,7 @@ class ShlHtmlContent_Image
 		}
 
 		$cleanedPath = !empty($rootPath) && substr($cleanedPath, 0, $pathLength) == $rootPath ? substr($url, $pathLength) : $cleanedPath;
-		$imagePath = trim(JPATH_ROOT . '/' . $cleanedPath);
+		$imagePath   = trim(JPATH_ROOT . '/' . $cleanedPath);
 		if (file_exists($imagePath))
 		{
 			$imageInfos = getimagesize($imagePath);
@@ -94,7 +94,7 @@ class ShlHtmlContent_Image
 
 	private static function trimQuery($url)
 	{
-		$bits = explode('?', $url);
+		$bits    = explode('?', $url);
 		$trimmed = $bits[0];
 
 		return $trimmed;
@@ -105,11 +105,11 @@ class ShlHtmlContent_Image
 		$key = JFile::makeSafe($url);
 
 		// was it cached?
-		$dimensionsCache = JCache::getInstance(
+		$dimensionsCache  = JCache::getInstance(
 			'output',
 			array(
-				'caching' => 1,
-				'lifetime' => 10080,
+				'caching'      => 1,
+				'lifetime'     => 10080,
 				'defaultgroup' => 'shlib_remote_img_size',
 			)
 		);
@@ -125,8 +125,13 @@ class ShlHtmlContent_Image
 		if (is_array($dimensionsRead))
 		{
 			$cachedDimensions = $dimensionsRead;
-			$dimensionsCache->store($cachedDimensions, $key);
 		}
+		else if (!empty($dimensionsRead))
+		{
+			$cachedDimensions = array('width' => $dimensionsRead[0], 'height' => $dimensionsRead[1]);
+		}
+
+		$dimensionsCache->store($cachedDimensions, $key);
 
 		return $cachedDimensions;
 	}
@@ -143,14 +148,14 @@ class ShlHtmlContent_Image
 	public static function getRemoteImageDimensions($url)
 	{
 		$dimensions = false;
-		$lockKey = JFile::makeSafe($url);
+		$lockKey    = JFile::makeSafe($url);
 
 		// get lock cache object
 		$lockCache = JCache::getInstance(
 			'output',
 			array(
-				'caching' => 1,
-				'lifetime' => 1,
+				'caching'      => 1,
+				'lifetime'     => 1,
 				'defaultgroup' => 'shlib_remote_img_lock',
 			)
 		);
@@ -163,7 +168,7 @@ class ShlHtmlContent_Image
 		$lockCache->store($url, $lockKey);
 
 		// use utility class to fetch remote image
-		$sizeReader = new \ShlHtmlContentRemoteimage_Fasterimage();
+		$sizeReader     = new \ShlHtmlContentRemoteimage_Fasterimage();
 		$dimensionsRead = $sizeReader->getSize($url);
 
 		// clear lock
@@ -250,7 +255,7 @@ class ShlHtmlContent_Image
 							$currentImageSize = (int) $imageSize['width'] + (int) $imageSize['height'];
 							if ($currentImageSize > $bestImageSize)
 							{
-								$bestImage = $imageUrl;
+								$bestImage     = $imageUrl;
 								$bestImageSize = $currentImageSize;
 							}
 						}

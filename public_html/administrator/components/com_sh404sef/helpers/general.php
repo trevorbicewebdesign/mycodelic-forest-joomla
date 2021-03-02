@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -139,7 +139,7 @@ class Sh404sefHelperGeneral
 					$lines = 0, $key = 'element'
 				);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				JError::raiseWarning('SOME_ERROR_CODE', "Error loading Components: " . $e->getMessage());
 				return false;
@@ -161,7 +161,7 @@ class Sh404sefHelperGeneral
 				$_params   = new JRegistry();
 				$_params->loadString($oldParams);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$_params = new JRegistry();
 				ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
@@ -183,7 +183,7 @@ class Sh404sefHelperGeneral
 				$_params[$extension] = new JRegistry();
 				$_params[$extension]->loadString($oldParams);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$_params[$extension] = new JRegistry();
 				ShlSystem_Log::error('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, $e->getMessage());
@@ -200,7 +200,7 @@ class Sh404sefHelperGeneral
 			ShlDbHelper::update('#__extensions', array('params' => (string) $params), array('element' => 'com_sh404sef', 'type' => 'component'));
 			return true;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			return false;
@@ -343,31 +343,49 @@ class Sh404sefHelperGeneral
 	 * import type
 	 *
 	 * @param string $type the data type being imported
+	 *
+	 * @param bool   $asString
+	 *
+	 * @return array|bool|string
 	 */
-	public static function getExportHeaders($type = null)
+	public static function getExportHeaders($type = null, $asString = false)
 	{
 		static $_headers = array(
-			'aliases'        => '"Nbr","Alias","Sef url","Non sef url","Type","Hits","Target type","Ordering", "State"',
-			'urls'           => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Canonical","Referrer type","Src id"',
-			'metas'          => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Canonical"',
-			'pageids'        => '"Nbr","pageId","Sef url","Non sef url","Type","Hits"',
-			'view404'        => '"Nbr","Sef url","Non sef url","Hits","Rank","Date added","Page title","Page description","Page keywords","Page language","Robots tag","Referrer type"'
-			// legacy files
-			, 'sh404sefurls' => '"id","Count","Rank","SEF URL","non-SEF URL","Date added"',
-			'sh404sefmetas'  => '"id","newurl","metadesc","metakey","metatitle","metalang","metarobots"'
+			'aliases' =>
+				array("Nbr", "Alias", "Sef url", "Non sef url", "Type", "Hits", "Target type", "Ordering", "State"),
+			'urls'    =>
+				array("Nbr", "Sef url", "Non sef url", "Hits", "Rank", "Date added", "Page title", "Page description", "Page keywords", "Page language", "Robots tag", "Canonical", "Referrer type", "Src id"),
+			'metas'   =>
+				array("Nbr", "Sef url", "Non sef url", "Hits", "Rank", "Date added", "Page title", "Page description", "Page keywords", "Page language", "Robots tag", "Canonical"),
+			'pageids' =>
+				array("Nbr", "pageId", "Sef url", "Non sef url", "Type", "Hits"),
+			'view404' =>
+				array("Nbr", "Sef url", "Non sef url", "Hits", "Rank", "Date added", "Page title", "Page description", "Page keywords", "Page language", "Robots tag", "Referrer type"),
 		);
 
-		if (is_null($type))
+		static $headersAsStrings = null;
+
+		if (empty($type))
 		{
 			return $_headers;
 		}
 
-		if (isset($_headers[$type]))
+		if (empty($_headers[$type]))
 		{
-			return $_headers[$type];
+			return false;
 		}
 
-		return false;
+		if ($asString && empty($headersAsStrings))
+		{
+			$headersAsStrings = array_map(
+				function ($header) {
+					return '"' . join('","', $header) . '"';
+				},
+				$_headers
+			);
+		}
+
+		return $asString ? $headersAsStrings[$type] : $_headers[$type];
 	}
 
 	public static function checkIPList($ip, $ipList)
@@ -412,7 +430,7 @@ class Sh404sefHelperGeneral
 			{
 				$rawGroups = ShlDbHelper::selectObjectList('#__usergroups', array('id', 'title'));
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			}
@@ -512,8 +530,10 @@ class Sh404sefHelperGeneral
 		{
 			$base = str_replace(array('http://', 'https://'), '', $liveSite);
 			$bits = explode('/', $base);
+			// remove the domain
 			array_shift($bits);
-			$sefUrl = '/' . trim(implode('/', $bits), '/') . '/' . $newUri->toString(array('path', 'query', 'fragment'));
+			$base   = empty($bits) ? '' : $base = '/' . rtrim(implode('/', $bits), '/');
+			$sefUrl = $base . '/' . $newUri->toString(array('path', 'query', 'fragment'));
 		}
 
 		if ($xhtml)
@@ -566,19 +586,34 @@ class Sh404sefHelperGeneral
 	}
 
 	/**
-	 * Creates a link to the shLib plugin page
+	 * Get a link to the shLib system plugin settings page.
+	 *
+	 * @param bool $xhtml
+	 *
 	 * @return string
+	 * @deprecated 5.0
 	 */
 	public static function getShLibPluginLink($xhtml = true)
 	{
+		return self::getPluginLink(
+			'system',
+			'shlib',
+			$xhtml
+		);
+	}
+
+	/**
+	 * Get a link to a plugin settings page.
+	 *
+	 * @return string
+	 */
+	public static function getPluginLink($folder, $element, $xhtml = true)
+	{
 		try
 		{
-			$pluginId = ShlDbHelper::selectResult(
-				'#__extensions', array('extension_id'),
-				array('type' => 'plugin', 'element' => 'shlib', 'folder' => 'system')
-			);
+			$pluginId = JPluginHelper::getPlugin($folder, $element)->id;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', __CLASS__ . '/' . __METHOD__ . '/' . __LINE__ . ': ' . $e->getMessage());
 		}
@@ -631,7 +666,7 @@ class Sh404sefHelperGeneral
 				$propertyValue = $static ? $_propertiesCache[$className . $propertyName]->getStaticValue($instance)
 					: $_propertiesCache[$className . $propertyName]->getValue($instance);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				ShlSystem_Log::error('sh404sef', __CLASS__ . '/' . __METHOD__ . '/' . __LINE__ . ': ' . $e->getMessage());
 				$propertyValue = null;
@@ -667,10 +702,11 @@ class Sh404sefHelperGeneral
 	 * @param string $tagName
 	 * @param string $tagContent
 	 * @param string $position
+	 * @param array  $options
 	 *
 	 * @return string
 	 */
-	public static function addCommentedTag($content, $tagName, $tagContent, $position = 'after')
+	public static function addCommentedTag($content, $tagName, $tagContent, $position = 'after', $options = array())
 	{
 		static $alreadyAdded = array();
 
@@ -680,12 +716,30 @@ class Sh404sefHelperGeneral
 		}
 
 		$tagName = strtolower($tagName);
-		$tag     = "\n<!-- "
+		$tag     = "<!-- "
 			. $tagName
 			. ' '
 			. base64_encode($tagContent)
-			. ' /' . $tagName . " -->\n";
+			. ' /' . $tagName . " -->";
 
+		if ('split' == $position)
+		{
+			$splitOn = wbArrayGet($options, 'split_on', '');
+			if (!empty($splitOn) && JString::strpos($content, $splitOn) !== false)
+			{
+				$splitPosition = wbArrayGet($options, 'split_position', 'after');
+				$content       = str_replace(
+					$splitOn,
+					'after' == $splitPosition ? $splitOn . $tag : $tag . $splitOn,
+					$content
+				);
+				return $content;
+			}
+			else
+			{
+				$position = wbArrayGet($options, 'if_no_split_text', 'before');
+			}
+		}
 		switch ($position)
 		{
 			case 'after':
@@ -696,9 +750,8 @@ class Sh404sefHelperGeneral
 				$content                = $tag . $content;
 				$alreadyAdded[$tagName] = true;
 				break;
-			default:
-				break;
 		}
+
 		return $content;
 	}
 

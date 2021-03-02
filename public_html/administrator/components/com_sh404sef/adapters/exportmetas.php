@@ -3,18 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-{
-	die('Direct Access to this location is not allowed.');
-}
+defined('_JEXEC') || die;
 
 /**
  * Implement wizard based exportation of page title and metas data
@@ -80,16 +80,16 @@ class Sh404sefAdapterExportmetas extends JObject
 		$properties = array();
 
 		$properties['_defaultController'] = 'wizard';
-		$properties['_defaultTask'] = '';
-		$properties['_defaultModel'] = '';
-		$properties['_defaultView'] = 'wizard';
-		$properties['_defaultLayout'] = 'default';
+		$properties['_defaultTask']       = '';
+		$properties['_defaultModel']      = '';
+		$properties['_defaultView']       = 'wizard';
+		$properties['_defaultLayout']     = 'default';
 
 		$properties['_returnController'] = 'metas';
-		$properties['_returnTask'] = '';
-		$properties['_returnView'] = 'metas';
-		$properties['_returnLayout'] = 'default';
-		$properties['_pageTitle'] = JText::_('COM_SH404SEF_EXPORTING_TITLE');
+		$properties['_returnTask']       = '';
+		$properties['_returnView']       = 'metas';
+		$properties['_returnLayout']     = 'default';
+		$properties['_pageTitle']        = Text::_('COM_SH404SEF_EXPORTING_TITLE');
 
 		return $properties;
 	}
@@ -110,7 +110,7 @@ class Sh404sefAdapterExportmetas extends JObject
 		// return results
 		$result = array();
 
-		$result['mainText'] = JText::_('COM_SH404SEF_EXPORT_METAS_START');
+		$result['mainText'] = Text::_('COM_SH404SEF_EXPORT_METAS_START');
 
 		return $result;
 	}
@@ -131,7 +131,7 @@ class Sh404sefAdapterExportmetas extends JObject
 		$result = array();
 
 		// exporting a limited set of pageids at a time
-		$nextStart = JFactory::getApplication()->input->getInt('nextstart', 0);
+		$nextStart = Factory::getApplication()->input->getInt('nextstart', 0);
 
 		// are we adding to an existing data file ?
 		$this->_filename = Sh404sefHelperFiles::createFileName($this->_filename, 'sh404sef_export_' . $this->_context);
@@ -139,7 +139,7 @@ class Sh404sefAdapterExportmetas extends JObject
 		// calculate number of items to export
 		$model = ShlMvcModel_Base::getInstance('urls', 'Sh404sefModel');
 		$model->setContext('metas.default');
-		$options = (object) array('layout' => 'export', 'getMetaData' => true, 'onlyWithMetaData' => true, 'simpleUrlList' => true);
+		$options      = (object) array('layout' => 'export', 'getMetaData' => true, 'onlyWithMetaData' => true, 'simpleUrlList' => true);
 		$this->_total = $model->getTotal($options);
 
 		// do we have anything to export ?
@@ -158,7 +158,7 @@ class Sh404sefAdapterExportmetas extends JObject
 		if (empty($nextStart))
 		{
 			// this is first pass, starting from 0
-			$start = 0;
+			$start     = 0;
 			$nextStart = $start + self::MAX_PAGEIDS_PER_STEP;
 			if ($nextStart >= $this->_total)
 			{
@@ -168,7 +168,7 @@ class Sh404sefAdapterExportmetas extends JObject
 		}
 		else
 		{
-			$start = $nextStart;
+			$start     = $nextStart;
 			$nextStart = $start + self::MAX_PAGEIDS_PER_STEP;
 		}
 
@@ -194,13 +194,13 @@ class Sh404sefAdapterExportmetas extends JObject
 			$this->_export($start);
 
 			// continuing for another round
-			$result['mainText'] = JText::sprintf('COM_SH404SEF_EXPORT_EXPORTING', $start + 1, $this->_total);
+			$result['mainText']   = JText::sprintf('COM_SH404SEF_EXPORT_EXPORTING', $start + 1, $this->_total);
 			$result['hiddenText'] = '<input type="hidden" name="nextstart" value="' . $nextStart . '" />';
-			$result['nextStart'] = $nextStart;
+			$result['nextStart']  = $nextStart;
 		}
 
-		$result['continue'] = array('task' => 'next', 'nextstart' => $nextStart, 'filename' => base64_encode($this->_filename));
-		$result['continue'] = array_merge($result['continue'], $this->_steps);
+		$result['continue']   = array('task' => 'next', 'nextstart' => $nextStart, 'filename' => base64_encode($this->_filename));
+		$result['continue']   = array_merge($result['continue'], $this->_steps);
 		$result['hiddenText'] .= '<input type="hidden" name="filename" value="' . $this->_filename . '" />';
 
 		return $result;
@@ -231,16 +231,14 @@ class Sh404sefAdapterExportmetas extends JObject
 	public function doTerminate()
 	{
 		// are we set to purge temporary files ?
-		$purgeTempFiles = JFactory::getApplication()->input->getInt('purge_temp_files', 0);
+		$purgeTempFiles = Factory::getApplication()->input->getInt('purge_temp_files', 0);
 		if (!empty($purgeTempFiles))
 		{
 			Sh404sefHelperFiles::purgeTempFiles('sh404sef_export_' . $this->_context);
 		}
 
 		// now go back to main page
-		$result = array('redirectTo' => true);
-
-		return $result;
+		return array('redirectTo' => true);
 	}
 
 	/**
@@ -249,8 +247,8 @@ class Sh404sefAdapterExportmetas extends JObject
 	 */
 	public function doCancel()
 	{
-		$result = array();
-		$result['redirectTo'] = true;
+		$result                    = array();
+		$result['redirectTo']      = true;
 		$result['redirectOptions'] = array('sh404sefMsg' => 'COM_SH404SEF_WIZARD_CANCELLED');
 
 		return $result;
@@ -272,12 +270,12 @@ class Sh404sefAdapterExportmetas extends JObject
 		$records = $model->getList($options, $returnZeroElement = false, $start, $forcedLimit = self::MAX_PAGEIDS_PER_STEP);
 
 		// do we need a header written to the file, for first record
-		$header = $start == 0 ? Sh404sefHelperGeneral::getExportHeaders($this->_context) . "\n" : '';
+		$header = $start == 0 ? Sh404sefHelperGeneral::getExportHeaders($this->_context, true) . "\n" : '';
 
 		// format them for text file output
-		$data = '';
+		$data    = '';
 		$counter = $start;
-		$glue = Sh404sefHelperFiles::$stringDelimiter . Sh404sefHelperFiles::$fieldDelimiter . Sh404sefHelperFiles::$stringDelimiter;
+		$glue    = Sh404sefHelperFiles::$stringDelimiter . Sh404sefHelperFiles::$fieldDelimiter . Sh404sefHelperFiles::$stringDelimiter;
 		if (!empty($records))
 		{
 			foreach ($records as $record)
@@ -295,10 +293,7 @@ class Sh404sefAdapterExportmetas extends JObject
 		}
 
 		// store in file
-		$status = Sh404sefHelperFiles::appendToFile($this->_filename, $data);
-
-		// return any error
-		return $status;
+		return Sh404sefHelperFiles::appendToFile($this->_filename, $data);
 	}
 
 	protected function _exportHomePageData($start)
@@ -306,14 +301,14 @@ class Sh404sefAdapterExportmetas extends JObject
 		// get data from model
 		$model = ShlMvcModel_Base::getInstance('metas', 'Sh404sefModel');
 		$model->setContext('metas.default');
-		$options = (object) array('layout' => 'default', 'newurl' => sh404SEF_HOMEPAGE_CODE);
-		$this->_total += 1;
+		$options          = (object) array('layout' => 'default', 'newurl' => sh404SEF_HOMEPAGE_CODE);
+		$this->_total     += 1;
 		$homePageMetaData = $model->getList($options);
 
 		// format them for text file output
-		$data = '';
+		$data    = '';
 		$counter = $start;
-		$glue = Sh404sefHelperFiles::$stringDelimiter . Sh404sefHelperFiles::$fieldDelimiter . Sh404sefHelperFiles::$stringDelimiter;
+		$glue    = Sh404sefHelperFiles::$stringDelimiter . Sh404sefHelperFiles::$fieldDelimiter . Sh404sefHelperFiles::$stringDelimiter;
 		if (!empty($homePageMetaData))
 		{
 			foreach ($homePageMetaData as $record)
@@ -321,7 +316,7 @@ class Sh404sefAdapterExportmetas extends JObject
 				$counter++;
 				$record->oldurl = '';
 				$record->newurl = '__ Homepage __';
-				$data .= $this->_createLine($record, $counter, $glue);
+				$data           .= $this->_createLine($record, $counter, $glue);
 			}
 		}
 
@@ -341,7 +336,9 @@ class Sh404sefAdapterExportmetas extends JObject
 	 *
 	 * @param $record  the data coming from DB
 	 * @param $counter , running counter
-	 * @param $glue    , glue string between elements of records
+	 * @param $glue , glue string between elements of records
+	 *
+	 * @return string
 	 */
 	protected function _createLine($record, $counter, $glue)
 	{
@@ -357,7 +354,7 @@ class Sh404sefAdapterExportmetas extends JObject
 			. $glue . Sh404sefHelperFiles::csvQuote($record->metarobots)
 			. $glue . Sh404sefHelperFiles::csvQuote($record->canonical)
 			. Sh404sefHelperFiles::$stringDelimiter;
-		$line = Sh404sefHelperFiles::$stringDelimiter . $counter . $glue . $textRecord . "\n";
+		$line       = Sh404sefHelperFiles::$stringDelimiter . $counter . $glue . $textRecord . "\n";
 
 		return $line;
 	}
@@ -366,7 +363,7 @@ class Sh404sefAdapterExportmetas extends JObject
 	{
 		$options = '<br /><br />';
 		$options .= '<input type="checkbox" name="purge_temp_files" value="1" checked="checked" >';
-		$options .= JText::_('COM_SH404SEF_PURGE_TEMP_FILES');
+		$options .= Text::_('COM_SH404SEF_PURGE_TEMP_FILES');
 		$options .= '<br />';
 
 		return $options;

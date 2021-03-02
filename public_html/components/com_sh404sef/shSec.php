@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -30,7 +30,7 @@ function shDoSecurityChecks($query = '', $fullCheck = true)
 	$shQuery = empty($query) ? (empty($_SERVER['QUERY_STRING']) ? '' : $_SERVER['QUERY_STRING']) : $query;
 
 	// IP checks
-	$ip = ShlSystem_Http::getVisitorIpAddress();
+	$ip     = ShlSystem_Http::getVisitorIpAddress();
 	$uAgent = empty($_SERVER['HTTP_USER_AGENT']) ? '' : $_SERVER['HTTP_USER_AGENT'];
 
 	// ip White/Black listing
@@ -63,7 +63,7 @@ function shDoSecurityChecks($query = '', $fullCheck = true)
 	while (true)
 	{
 		// allow for multiple url decode
-		$last = $shQuery;
+		$last    = $shQuery;
 		$shQuery = urldecode($shQuery);
 
 		// do our tests
@@ -203,10 +203,12 @@ function shSendEmailToAdmin($logData)
 
 function shLogToSecFile($logData)
 {
-	$shNum = 12 * (intval(date('Y')) - 2000) + intval(date('m')); // number current month
+	$shNum    = 12 * (intval(date('Y')) - 2000) + intval(date('m')); // number current month
 	$fileName = 'sh404sef/sec/log_' . date('Y') . '-' . date('m') . '-' . 'sh404SEF_security_log' . '.' . $shNum . '.log.php';
-	$options = array('text_entry_format' => "{DATE}\t{TIME}\t{CAUSE}\t{C-IP}\t{USER}\t{USER_AGENT}\t{REQUEST_METHOD}\t{REQUEST_URI}\t{COMMENT}",
-	                 'text_file'         => $fileName);
+	$options  = array(
+		'text_entry_format' => "{DATE}\t{TIME}\t{CAUSE}\t{C-IP}\t{USER}\t{USER_AGENT}\t{REQUEST_METHOD}\t{REQUEST_URI}\t{COMMENT}",
+		'text_file'         => $fileName
+	);
 
 	jimport('joomla.error.log');
 	JLog::addLogger($options, JLog::INFO, array('sh404sef_sec'));
@@ -231,9 +233,10 @@ function shCleanUpSecLogFiles()
 	}
 	// probability = 1/SH404SEF_PAGES_TO_CLEAN_LOGS
 	$curMonth = 12 * (intval(date('Y')) - 2000) + intval(date('m'));
+	$logsPath = JFactory::getApplication()->get('log_path', JPATH_ADMINISTRATOR . '/logs');
 	if ($sefConfig->shSecLogAttacks)
 	{
-		if ($handle = @opendir(JPATH_ROOT . '/logs/sh404sef/sec'))
+		if ($handle = @opendir($logsPath . '/sh404sef/sec'))
 		{
 			while (false !== ($file = readdir($handle)))
 			{
@@ -243,8 +246,8 @@ function shCleanUpSecLogFiles()
 					$fileNum = JString::trim($matches[0], '.');
 					if ($curMonth - $fileNum > $sefConfig->monthsToKeepLogs)
 					{
-						@unlink(JPATH_ROOT . '/logs/sh404sef/sec/' . $file);
-						ShlSystem_Log::debug('sh404sef', 'Erasing security log file : ' . $file);
+						@unlink($logsPath . '/sh404sef/sec/' . $file);
+						ShlSystem_Log::debug('sh404sef', 'Erasing security log file : ' . $logsPath . '/sh404sef/sec/' . $file);
 					}
 				}
 			}
@@ -259,24 +262,25 @@ function shDoRestrictedAccess($causeText, $comment = '', $displayEntrance = fals
 
 	if ($sefConfig->shSecLogAttacks)
 	{ // log what's happening
-		$logData = array();
-		$logData['DATE'] = ShlSystem_Date::getSiteNow('Y-m-d');
-		$logData['TIME'] = ShlSystem_Date::getSiteNow('H:i:s');
+		$logData          = array();
+		$logData['DATE']  = ShlSystem_Date::getSiteNow('Y-m-d');
+		$logData['TIME']  = ShlSystem_Date::getSiteNow('H:i:s');
 		$logData['CAUSE'] = shSecOutput($causeText);
-		$logData['C-IP'] = empty($_SERVER['REMOTE_ADDR']) ? '-' : $_SERVER['REMOTE_ADDR'];
-		if ($_SERVER['REMOTE_ADDR'] != 'localhost' && $_SERVER['REMOTE_ADDR'] != '::1')
+		$logData['C-IP']  = empty($_SERVER['REMOTE_ADDR']) ? '-' : $_SERVER['REMOTE_ADDR'];
+		if (!empty($logData['C-IP']) && $logData['C-IP'] != 'localhost' && $logData['C-IP'] != '::1')
 		{
-			$name = getHostByAddr($_SERVER['REMOTE_ADDR']);
+			//$name = getHostByAddr($_SERVER['REMOTE_ADDR']);
+			$name = '-';
 		}
 		else
 		{
 			$name = '-';
 		}
-		$logData['NAME'] = $name;
-		$logData['USER_AGENT'] = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
+		$logData['NAME']           = $name;
+		$logData['USER_AGENT']     = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
 		$logData['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-		$logData['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
-		$logData['COMMENT'] = $comment;
+		$logData['REQUEST_URI']    = $_SERVER['REQUEST_URI'];
+		$logData['COMMENT']        = $comment;
 
 		shLogToSecFile($logData);
 
@@ -293,39 +297,40 @@ function shDoRestrictedAccess($causeText, $comment = '', $displayEntrance = fals
 	if ($displayEntrance)
 	{
 		?>
-		<script type="text/javascript">
-			function setcookie(name, value, expires, path, domain, secure) {
-				// set time in milliseconds
-				var today = new Date();
-				today.setTime(today.getTime());
+        <script type="text/javascript">
+            function setcookie(name, value, expires, path, domain, secure) {
+                // set time in milliseconds
+                var today = new Date();
+                today.setTime(today.getTime());
 
-				if (expires) {
-					expires = expires * 1000 * 60 * 60 * 24;
-				}
-				var expires_date = new Date(today.getTime() + (expires));
+                if (expires) {
+                    expires = expires * 1000 * 60 * 60 * 24;
+                }
+                var expires_date = new Date(today.getTime() + (expires));
 
-				document.cookie = name + "=" + escape(value) +
-					( ( expires ) ? ";expires=" + expires_date.toGMTString() : "" ) +
-					( ( path ) ? ";path=" + path : "" ) +
-					( ( domain ) ? ";domain=" + domain : "" ) +
-					( ( secure ) ? ";secure" : "" );
-			}
-			function letmein() {
-				setcookie('sh404SEF_user_click_notabot', 'true', 1, '/', '', '');
-				location.reload(true);
-			}
-		</script>
+                document.cookie = name + "=" + escape(value) +
+                    ((expires) ? ";expires=" + expires_date.toGMTString() : "") +
+                    ((path) ? ";path=" + path : "") +
+                    ((domain) ? ";domain=" + domain : "") +
+                    ((secure) ? ";secure" : "");
+            }
+
+            function letmein() {
+                setcookie('sh404SEF_user_click_notabot', 'true', 1, '/', '', '');
+                location.reload(true);
+            }
+        </script>
 		<?php echo $sefConfig->shSecEntranceText; ?>
-		<a href="javascript:letmein()">&gt;&gt;&gt;&gt;&gt;&gt;</a>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<br/>
-		<p>
-			<font size="2" color="grey"><?php echo $sefConfig->shSecSmellyPotText; ?><a
-					href="http://planetozh.com/smelly.php">&gt;&gt;</a> </font>
-		</p>
+        <a href="javascript:letmein()">&gt;&gt;&gt;&gt;&gt;&gt;</a>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <p>
+            <font size="2" color="grey"><?php echo $sefConfig->shSecSmellyPotText; ?><a
+                        href="http://planetozh.com/smelly.php">&gt;&gt;</a> </font>
+        </p>
 		<?php
 	}
 	else
@@ -490,24 +495,25 @@ function shDoHoneyPotCheck($ip)
 			&& !empty($_COOKIE['sh404SEF_user_click_notabot'])
 		)
 		{
-			$logData = array();
-			$logData['DATE'] = ShlSystem_Date::getSiteNow('Y-m-d');
-			$logData['TIME'] = ShlSystem_Date::getSiteNow('H:i:s');
+			$logData          = array();
+			$logData['DATE']  = ShlSystem_Date::getSiteNow('Y-m-d');
+			$logData['TIME']  = ShlSystem_Date::getSiteNow('H:i:s');
 			$logData['CAUSE'] = 'Honey Pot but user clicked';
-			$logData['C-IP'] = ShlSystem_Http::getVisitorIpAddress();
-			if ($_SERVER['REMOTE_ADDR'] != 'localhost' && $_SERVER['REMOTE_ADDR'] != '::1')
+			$logData['C-IP']  = ShlSystem_Http::getVisitorIpAddress();
+			if (!empty($logData['C-IP']) && $logData['C-IP'] != 'localhost' && $logData['C-IP'] != '::1')
 			{
-				$name = getHostByAddr($_SERVER['REMOTE_ADDR']) . '-';
+				//$name = getHostByAddr($logData['C-IP']);
+				$name = '-';
 			}
 			else
 			{
 				$name = '-';
 			}
-			$logData['NAME'] = $name;
-			$logData['USER_AGENT'] = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
+			$logData['NAME']           = $name;
+			$logData['USER_AGENT']     = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
 			$logData['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-			$logData['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
-			$logData['COMMENT'] = '';
+			$logData['REQUEST_URI']    = $_SERVER['REQUEST_URI'];
+			$logData['COMMENT']        = '';
 
 			shLogToSecFile($logData);
 		}
@@ -527,9 +533,9 @@ function sh_ozh_httpbl_check($ip)
 	if ($result[0] == 127)
 	{
 		// query successful !
-		$activity = $result[1];
-		$threat = $result[2];
-		$type = $result[3];
+		$activity    = $result[1];
+		$threat      = $result[2];
+		$type        = $result[3];
 		$typemeaning = '';
 		if ($type == 0)
 		{
@@ -562,8 +568,10 @@ function sh_ozh_httpbl_check($ip)
 
 		if ($block)
 		{
-			shDoRestrictedAccess('Caught by Honey Pot Project',
-				'Type = ' . $type . ' | Threat= ' . $threat . ' | Act.= ' . $activity . ' | ' . $typemeaning, true);
+			shDoRestrictedAccess(
+				'Caught by Honey Pot Project',
+				'Type = ' . $type . ' | Threat= ' . $threat . ' | Act.= ' . $activity . ' | ' . $typemeaning, true
+			);
 			JFactory::getApplication()->close(403);
 		}
 		else
@@ -574,24 +582,25 @@ function sh_ozh_httpbl_check($ip)
 	// debug info
 	if (sh404SEF_DEBUG_HONEY_POT)
 	{
-		$logData = array();
-		$logData['DATE'] = ShlSystem_Date::getSiteNow('Y-m-d');
-		$logData['TIME'] = ShlSystem_Date::getSiteNow('H:i:s');
+		$logData          = array();
+		$logData['DATE']  = ShlSystem_Date::getSiteNow('Y-m-d');
+		$logData['TIME']  = ShlSystem_Date::getSiteNow('H:i:s');
 		$logData['CAUSE'] = 'Debug: project Honey Pot response';
-		$logData['C-IP'] = ShlSystem_Http::getVisitorIpAddress();
-		if ($_SERVER['REMOTE_ADDR'] != 'localhost' && $_SERVER['REMOTE_ADDR'] != '::1')
+		$logData['C-IP']  = ShlSystem_Http::getVisitorIpAddress();
+		if (!empty($logData['C-IP']) && $logData['C-IP'] != 'localhost' && $logData['C-IP'] != '::1')
 		{
-			$name = getHostByAddr($_SERVER['REMOTE_ADDR']) . '-';
+			//$name = getHostByAddr($logData['C-IP']);
+			$name = '-';
 		}
 		else
 		{
 			$name = '-';
 		}
-		$logData['NAME'] = $name;
-		$logData['USER_AGENT'] = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
+		$logData['NAME']           = $name;
+		$logData['USER_AGENT']     = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
 		$logData['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-		$logData['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
-		$logData['COMMENT'] = 'PHP query result = ' . $result[0];;
+		$logData['REQUEST_URI']    = $_SERVER['REQUEST_URI'];
+		$logData['COMMENT']        = 'PHP query result = ' . $result[0];;
 
 		shLogToSecFile($logData);
 	}
@@ -625,14 +634,14 @@ function shDoAntiFloodCheck($ip)
 
 	// end of Jomsocial specific code
 
-	$nextId = 1;
-	$cTime = time();
-	$count = 0;
+	$nextId    = 1;
+	$cTime     = time();
+	$count     = 0;
 	$floodData = shReadFile(sh404SEF_ADMIN_ABS_PATH . 'security/sh404SEF_AntiFlood_Data.dat');
 	if (!empty($floodData))
 	{
 		// find next id
-		$lastRec = $floodData[count($floodData) - 1];
+		$lastRec   = $floodData[count($floodData) - 1];
 		$lastRecId = explode(',', $lastRec);
 		if (!empty($lastRecId))
 		{
@@ -671,8 +680,10 @@ function shDoAntiFloodCheck($ip)
 
 	if ($count >= $sefConfig->shSecAntiFloodCount)
 	{
-		shDoRestrictedAccess('Flooding',
-			$count . ' requests in less than ' . $sefConfig->shSecAntiFloodPeriod . ' seconds (max = ' . $sefConfig->shSecAntiFloodCount . ')');
+		shDoRestrictedAccess(
+			'Flooding',
+			$count . ' requests in less than ' . $sefConfig->shSecAntiFloodPeriod . ' seconds (max = ' . $sefConfig->shSecAntiFloodCount . ')'
+		);
 	}
 }
 

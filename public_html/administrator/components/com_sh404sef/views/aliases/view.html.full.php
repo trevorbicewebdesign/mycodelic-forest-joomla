@@ -3,32 +3,26 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-{
-	die('Direct Access to this location is not allowed.');
-}
-
-jimport('joomla.application.component.view');
+defined('_JEXEC') || die;
 
 class Sh404sefViewAliases extends ShlMvcView_Base
 {
-
-	// we are in 'urls' view
+	// we are in 'aliases' view
 	protected $_context = 'aliases';
 
 	public function display($tpl = null)
 	{
 		// version prefix
 		$this->joomlaVersionPrefix = Sh404sefHelperGeneral::getJoomlaVersionPrefix();
-		$this->footerText = JText::sprintf(
+		$this->footerText          = JText::sprintf(
 			'COM_SH404SEF_FOOTER_' . strtoupper(Sh404sefConfigurationEdition::$id),
 			Sh404sefFactory::getConfig()->version, Sh404sefConfigurationEdition::$name, date('Y')
 		);
@@ -41,11 +35,11 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$list = $model->getList((object) array('layout' => $this->getLayout()));
 
 		// and push it into the view for display
-		$this->items = $list;
-		$this->itemCount = count($this->items);
-		$this->pagination = $model->getPagination();
-		$options = $model->getDisplayOptions();
-		$this->options = $options;
+		$this->items       = $list;
+		$this->itemCount   = count($this->items);
+		$this->pagination  = $model->getPagination();
+		$options           = $model->getDisplayOptions();
+		$this->options     = $options;
 		$this->helpMessage = JText::_('COM_SH404SEF_ALIASES_HELP');
 
 		// add our own css
@@ -94,26 +88,25 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$bar->addButtonPath(SHLIB_ROOT_PATH . 'toolbarbutton');
 
 		// add new button
-		$params = array();
-		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
-		$params['buttonClass'] = 'btn btn-small';
-		$params['iconClass'] = 'icon-edit icon-white';
+		$params                       = array();
+		$params['size']               = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
+		$params['buttonClass']        = 'btn btn-small';
+		$params['iconClass']          = 'icon-edit icon-white';
 		$params['checkListSelection'] = false;
-		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editalias';
+		$url                          = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editalias';
 		$bar
 			->appendButton(
 				'J3popuptoolbarbutton', 'edit', JText::_('JTOOLBAR_NEW'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
 				$left = 0, $onClose = '', $title = '', $params
 			);
 
-
 		// add edit button
-		$params = array();
-		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
-		$params['buttonClass'] = 'btn btn-small btn-primary';
-		$params['iconClass'] = 'icon-edit icon-white';
+		$params                       = array();
+		$params['size']               = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
+		$params['buttonClass']        = 'btn btn-small btn-primary';
+		$params['iconClass']          = 'icon-edit icon-white';
 		$params['checkListSelection'] = true;
-		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editalias';
+		$url                          = 'index.php?option=com_sh404sef&c=editalias&task=edit&tmpl=component&view=editalias';
 		$bar
 			->appendButton(
 				'J3popuptoolbarbutton', 'edit', JText::_('JTOOLBAR_EDIT'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
@@ -121,12 +114,12 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 			);
 
 		// delete button
-		$params = array();
-		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['confirm'];
-		$params['buttonClass'] = 'btn btn-small';
-		$params['iconClass'] = 'icon-trash';
+		$params                       = array();
+		$params['size']               = Sh404sefFactory::getPConfig()->windowSizes['confirm'];
+		$params['buttonClass']        = 'btn btn-small';
+		$params['iconClass']          = 'icon-trash';
 		$params['checkListSelection'] = true;
-		$url = 'index.php?option=com_sh404sef&c=editalias&task=confirmdelete&tmpl=component';
+		$url                          = 'index.php?option=com_sh404sef&c=editalias&task=confirmdelete&tmpl=component';
 		$bar
 			->appendButton(
 				'J3popuptoolbarbutton', 'delete', JText::_('JTOOLBAR_DELETE'), $url, $params['size']['x'], $params['size']['y'], $top = 0,
@@ -137,12 +130,12 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		JToolBarHelper::spacer(20);
 
 		// add import button
-		$params = array();
-		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['import'];
-		$params['buttonClass'] = 'btn btn-small';
-		$params['iconClass'] = 'icon-upload';
+		$params                       = array();
+		$params['size']               = Sh404sefFactory::getPConfig()->windowSizes['import'];
+		$params['buttonClass']        = 'btn btn-small';
+		$params['iconClass']          = 'icon-upload';
 		$params['checkListSelection'] = false;
-		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=import&opsubject=aliases';
+		$url                          = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=import&opsubject=aliases';
 		$bar
 			->appendButton(
 				'J3popuptoolbarbutton', 'import', JText::_('COM_SH404SEF_IMPORT_BUTTON'), $url, $params['size']['x'],
@@ -150,12 +143,12 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 			);
 
 		// add export button
-		$params = array();
-		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['export'];
-		$params['buttonClass'] = 'btn btn-small';
-		$params['iconClass'] = 'icon-download';
+		$params                       = array();
+		$params['size']               = Sh404sefFactory::getPConfig()->windowSizes['export'];
+		$params['buttonClass']        = 'btn btn-small';
+		$params['iconClass']          = 'icon-download';
 		$params['checkListSelection'] = false;
-		$url = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=export&opsubject=aliases';
+		$url                          = 'index.php?option=com_sh404sef&c=wizard&task=start&tmpl=component&optype=export&opsubject=aliases';
 		$bar
 			->appendButton(
 				'J3popuptoolbarbutton', 'export', JText::_('COM_SH404SEF_EXPORT_BUTTON'), $url, $params['size']['x'],
@@ -166,12 +159,12 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		JToolBarHelper::spacer(20);
 
 		// edit home page button
-		$params = array();
-		$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
-		$params['buttonClass'] = 'btn btn-small';
-		$params['iconClass'] = 'icon-home';
+		$params                       = array();
+		$params['size']               = Sh404sefFactory::getPConfig()->windowSizes['editurl'];
+		$params['buttonClass']        = 'btn btn-small';
+		$params['iconClass']          = 'icon-home';
 		$params['checkListSelection'] = false;
-		$url = 'index.php?option=com_sh404sef&c=editalias&task=edit&view=editurl&home=1&tmpl=component&startOffset=1';
+		$url                          = 'index.php?option=com_sh404sef&c=editalias&task=edit&view=editurl&home=1&tmpl=component&startOffset=1';
 		$bar
 			->appendButton(
 				'J3popuptoolbarbutton', 'home', JText::_('COM_SH404SEF_HOME_PAGE_ICON'), $url, $params['size']['x'], $params['size']['y'],
@@ -184,12 +177,12 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 			JToolBarHelper::spacer(20);
 
 			// prepare configuration button
-			$params = array();
-			$params['class'] = 'modaltoolbar btn-success';
-			$params['size'] = Sh404sefFactory::getPConfig()->windowSizes['configuration'];
+			$params                = array();
+			$params['class']       = 'modaltoolbar btn-success';
+			$params['size']        = Sh404sefFactory::getPConfig()->windowSizes['configuration'];
 			$params['buttonClass'] = 'btn-success btn btn-small modal';
-			$params['iconClass'] = 'icon-options';
-			$url = 'index.php?option=com_sh404sef&tmpl=component&c=configuration&view=configuration&component=com_sh404sef&hidemainmenu=1';
+			$params['iconClass']   = 'icon-options';
+			$url                   = 'index.php?option=com_sh404sef&tmpl=component&c=configuration&view=configuration&component=com_sh404sef&hidemainmenu=1';
 			$bar
 				->appendButton(
 					'J3popuptoolbarbutton', 'configj3', JText::_('COM_SH404SEF_CONFIGURATION'), $url, $params['size']['x'],
@@ -219,7 +212,8 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 		$data = array(
 			array('value' => 'all', 'text' => JText::_('COM_SH404SEF_ALIASES_ALL_TARGET_TYPES')),
 			array('value' => Sh404sefModelRedirector::TARGET_TYPE_REDIRECT, 'text' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_REDIRECT_SHORT')),
-			array('value' => Sh404sefModelRedirector::TARGET_TYPE_CANONICAL, 'text' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_CANONICAL_SHORT'))
+			array('value' => Sh404sefModelRedirector::TARGET_TYPE_CANONICAL, 'text' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_CANONICAL_SHORT')),
+			array('value' => Sh404sefModelRedirector::TARGET_TYPE_INTERNAL_REWRITE, 'text' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_INTERNAL_REWRITE'))
 		);
 		JHtmlSidebar::addFilter(
 			JText::_('COM_SH404SEF_ALIASES_ALL_TARGET_TYPES'), 'filter_target_type',
@@ -236,7 +230,5 @@ class Sh404sefViewAliases extends ShlMvcView_Base
 			JText::_('COM_SH404SEF_SHOW_REQUESTED_OR_NOT'), 'filter_requested_urls',
 			JHtml::_('select.options', $data, 'value', 'text', $this->options->filter_requested_urls, true)
 		);
-
-
 	}
 }

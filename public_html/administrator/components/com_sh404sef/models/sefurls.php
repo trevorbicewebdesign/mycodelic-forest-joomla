@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -59,7 +59,7 @@ class Sh404sefModelSefurls extends Sh404sefClassBasemodel
 		{
 			$result = ShlDbHelper::selectObject($this->_getTableName(), array('oldurl', 'dateadd'), array('newurl' => $nonSefUrl));
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			return sh404SEF_URLTYPE_NONE;
 		}
@@ -102,7 +102,7 @@ class Sh404sefModelSefurls extends Sh404sefClassBasemodel
 		{
 			$rawResults = ShlDbHelper::selectObjectList($this->_getTableName(), array('oldurl', 'newurl', 'dateadd', 'id', 'cpt', 'rank'), array('oldurl' => $sefUrl), array(), $orderBy = array('rank'));
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			return array('status' => sh404SEF_URLTYPE_NONE, 'url' => null);
 		}

@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2018
+ * @copyright   (c) Yannick Gaultier 2020
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.4.0.685
- * @date                2019-04-25
+ * @version     0.4.0.711
+ * @date                2020-06-26
  */
 
 // no direct access
@@ -47,7 +47,7 @@ class ShlSystem_Http
 	public static function getHeader($code, $cause = '')
 	{
 
-		$code = intval($code);
+		$code   = intval($code);
 		$header = new stdClass();
 
 		switch ($code)
@@ -114,12 +114,12 @@ class ShlSystem_Http
 			if (strpos(php_sapi_name(), 'cgi') !== false)
 			{
 				$rawHeaders = $_SERVER;
-				$cgiPrefix = 'http_';
+				$cgiPrefix  = 'http_';
 			}
 			else
 			{
 				$rawHeaders = getallheaders();
-				$cgiPrefix = '';
+				$cgiPrefix  = '';
 			}
 
 			// loop, keep only relevant headers
@@ -261,6 +261,13 @@ class ShlSystem_Http
 		else
 		{
 			$ip = empty($_SERVER['REMOTE_ADDR']) ? '' : $_SERVER['REMOTE_ADDR'];
+		}
+
+		// HTTP_X_FORWARDED_FOR may report multiple addresses
+		if (strpos($ip, ',') !== false)
+		{
+			$bits = explode(',', $ip);
+			$ip   = isset($bits[0]) ? trim($bits[0]) : '';
 		}
 
 		if ($anonymize)

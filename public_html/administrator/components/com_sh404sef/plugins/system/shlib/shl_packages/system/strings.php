@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2018
+ * @copyright    (c) Yannick Gaultier 2020
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.685
- * @date                2019-04-25
+ * @version      0.4.0.711
+ * @date                2020-06-26
  */
 
 use Joomla\String\StringHelper;
@@ -104,7 +104,7 @@ class ShlSystem_Strings
 	public static function stringToCleanedArray($string, $delimiter = ',', $caseHandling = self::NONE)
 	{
 		$output = array();
-		$bits = explode($delimiter, $string);
+		$bits   = explode($delimiter, $string);
 		if (!empty($bits))
 		{
 			foreach ($bits as $bit)
@@ -132,5 +132,75 @@ class ShlSystem_Strings
 		}
 
 		return $output;
+	}
+
+	/**
+	 * Escape a string for HTML display.
+	 *
+	 * @param string $string
+	 * @param int    $flags
+	 * @param string $charset
+	 *
+	 * @return string
+	 */
+	public static function escape($string, $flags = ENT_COMPAT, $charset = 'UTF-8')
+	{
+		return htmlspecialchars($string, $flags, $charset);
+	}
+
+	/**
+	 * Escape a string and make sure it's usable inside of an HTML element attribute
+	 * by processing any double-quotes with one of 3 methods.
+	 *
+	 * @param string  $string
+	 * @param string $method encode_double_quotes | replace_with_single | remove
+	 *
+	 * @return string|string[]
+	 */
+	public static function escapeAttr($string, $method = 'encode_double_quotes', $flags = ENT_COMPAT, $charset = 'UTF-8')
+	{
+		$string = self::escape($string, $flags, $charset);
+
+		switch ($method)
+		{
+			case 'replace_with_single':
+				$output = str_replace(
+					'"',
+					'\'',
+					$string
+				);
+				break;
+			case 'remove':
+				$output = str_replace(
+					'"',
+					'',
+					$string
+				);
+				break;
+			default:
+				$output = str_replace(
+					'"',
+					'&quot;',
+					$string
+				);
+				break;
+		}
+
+		return $output;
+	}
+
+	/**
+	 * Make a string safe to use as an HTML id attribute
+	 *
+	 * @param string $id
+	 *
+	 * @return string
+	 */
+	public static function asHtmlId($id)
+	{
+		$id = str_replace(array('[', ']'), '', self::escapeAttr($id, 'remove'));
+		$id = str_replace(array('/', '\\', '.'), '_', $id);
+
+		return $id;
 	}
 }

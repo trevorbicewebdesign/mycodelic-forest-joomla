@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2018
+ * @copyright   (c) Yannick Gaultier 2020
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.4.0.685
- * @date        2019-04-25
+ * @version     0.4.0.711
+ * @date        2020-06-26
  */
 
 /** ensure this file is being included by a parent file */
@@ -30,7 +30,7 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	/**
 	 * Method to render the layout.
 	 *
-	 * @param   object $displayData Object which properties are used inside the layout file to build displayed output
+	 * @param object $displayData Object which properties are used inside the layout file to build displayed output
 	 *
 	 * @return  string  The necessary HTML to display the layout
 	 *
@@ -46,7 +46,7 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	/**
 	 * Method to escape output.
 	 *
-	 * @param   string $output The output to escape.
+	 * @param string $output The output to escape.
 	 *
 	 * @return  string  The escaped output.
 	 *
@@ -54,7 +54,7 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	 */
 	protected function escape($output, $flags = ENT_COMPAT, $charset = 'UTF-8')
 	{
-		return htmlspecialchars($output, $flags, $charset);
+		return \ShlSystem_Strings::escape($output, $flags, $charset);
 	}
 
 	/**
@@ -93,6 +93,25 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	}
 
 	/**
+	 * Same as @see ShlMvcLayout_Base::get, but returned output is escaped
+	 * through the @see ShlMvcLayout_Base::escape method.
+	 *
+	 * @param string $key
+	 * @param mixed  $default
+	 *
+	 * @return string
+	 */
+	protected function getEscaped($key, $default = null)
+	{
+		return \ShlSystem_Strings::escape(
+			$this->get(
+				$key,
+				$default
+			)
+		);
+	}
+
+	/**
 	 * Same as @see \ShlMvcLayout_Base::get, but returned output cast to an integer.
 	 *
 	 * @param string $key
@@ -102,7 +121,6 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	 */
 	protected function getAsInt($key, $default = 0)
 	{
-
 		return (int) $this->get($key, $default);
 	}
 
@@ -122,7 +140,6 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	 */
 	protected function getAsFormattedInt($key, $default = 0)
 	{
-
 		return \ShlSystem_Strings::formatIntForTitle($this->get($key, $default));
 	}
 
@@ -177,7 +194,7 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 		if ($this->hasDisplayData($key))
 		{
 			$object = $this->getAsArray($key);
-			$value = empty($object[$keyInObject]) ? $default : $object[$keyInObject];
+			$value  = empty($object[$keyInObject]) ? $default : $object[$keyInObject];
 		}
 
 		return $value;
@@ -222,7 +239,7 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	}
 
 	/**
-	 * Same as @see \ShlMvcLayout_Base::get, but returned output is json encoded
+	 * Same as @see \ShlMvcLayout_Base::get, but returned output is json encoded.
 	 *
 	 * @param string $key
 	 * @param string $default
@@ -232,6 +249,58 @@ class ShlMvcLayout_Base implements \ShlMvcLayout
 	protected function getAsJson($key, $default = '')
 	{
 		return json_encode($this->get($key, $default));
+	}
+
+	/**
+	 * Same as @see \ShlMvcLayout_Base::get, but returned output is considered a URL
+	 * and is output as XHTMl compatible.
+	 *
+	 * @param string $key
+	 * @param string $default
+	 *
+	 * @return string
+	 */
+	protected function getAsUrl($key, $default = '', $xhtml = true)
+	{
+		$url = $this->get(
+			$key,
+			$default
+		);
+
+		if ($xhtml)
+		{
+			$url = htmlspecialchars($url, ENT_COMPAT, 'UTF-8');
+		}
+
+		return $url;
+	}
+
+	/**
+	 * Same as @see \ShlMvcLayout_Base::getAsUrl, but returned url is made absolute.
+	 *
+	 * @param string $key
+	 * @param string $default
+	 * @param bool   $forceDomain
+	 * @param bool   $xhtml
+	 *
+	 * @return string
+	 */
+	protected function getAsAbsoluteUrl($key, $default = '', $forceDomain = false, $xhtml = true)
+	{
+		$url = ShlSystem_Route::absolutify(
+			$this->get(
+				$key,
+				$default
+			),
+			$forceDomain
+		);
+
+		if ($xhtml)
+		{
+			$url = htmlspecialchars($url, ENT_COMPAT, 'UTF-8');
+		}
+
+		return $url;
 	}
 
 }

@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -129,7 +129,7 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 				);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$shURL = '';
@@ -162,7 +162,7 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 				{
 					$numberOfPageids = ShlDbHelper::count($this->_getTableName(), '*');
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 				}
 				break;
@@ -229,7 +229,7 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 
 			ShlDbHelper::deleteIn($this->_getTableName(), 'id', $ids, ShlDbHelper::INTEGER);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$this->setError('Internal database error # ' . $e->getMessage());
 			return false;
@@ -270,7 +270,7 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 			{
 				ShlDbHelper::query($deleteQuery);
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$this->setError('Internal database error # ' . $e->getMessage());
 			}
@@ -397,8 +397,8 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 			$nextId = base_convert(18 + $nextId, 10, 18);
 			for ($c = 0; $c < strlen($nextId); ++$c)
 			{
-				$char = base_convert($nextId{$c}, 18, 10);
-				$shURL .= self::$_regular{$char};
+				$char = base_convert($nextId[$c], 18, 10);
+				$shURL .= self::$_regular[$char];
 			}
 		}
 
@@ -612,7 +612,7 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 				}
 			} while ((!$doneSef || !$doneAlias || !$doneShurl || !$doneClean || !$doneBlackList || !$doneLangCode) && ($attempts < $maxAttempts));
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 		}
 
@@ -651,7 +651,7 @@ class Sh404sefModelPageids extends Sh404sefClassBaselistModel
 			$this->_db->setQuery($query);
 			$status = $this->_db->loadAssoc();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 		}

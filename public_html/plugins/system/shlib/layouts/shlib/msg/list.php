@@ -3,10 +3,10 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2018
+ * @copyright    (c) Yannick Gaultier 2020
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.685
+ * @version      0.4.0.711
  */
 
 /**

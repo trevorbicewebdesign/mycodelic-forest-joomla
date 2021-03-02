@@ -2,12 +2,12 @@
 <extension version="1.6" type="plugin" group="sh404sefcore" method="upgrade">
     <name>PLG_SH404SEFCORE_SH404SEFSOCIAL</name>
     <author>Yannick Gaultier</author>
-    <creationDate>2019-09-30</creationDate>
-    <copyright>(c) Yannick Gaultier - Weeblr llc - 2019</copyright>
+    <creationDate>2020-06-26</creationDate>
+    <copyright>(c) Yannick Gaultier - Weeblr llc - 2020</copyright>
     <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
     <authorEmail>contact@weeblr.com</authorEmail>
     <authorUrl>https://weeblr.com</authorUrl>
-    <version>4.17.0.3932</version>
+    <version>4.21.0.4206</version>
     <description>PLG_SH404SEFCORE_SH404SEFSOCIAL_XML_DESCRIPTION</description>
     <files>
         <filename plugin="sh404sefsocial">sh404sefsocial.php</filename>
@@ -17,6 +17,22 @@
     <config>
         <fields name="params">
             <fieldset name="basic">
+
+                <field name="buttonsType" type="list" default="static"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_TYPE"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_TYPE_DESC">
+                    <option value="static">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_TYPE_STATIC</option>
+                    <option value="native">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_TYPE_NATIVE</option>
+                </field>
+
+                <field name="buttonsContentLocation" type="list" default="onlytags"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_DESC">
+                    <option value="onlyTags">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_ONLY_TAGS</option>
+                    <option value="before">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_BEFORE_CONTENT</option>
+                    <option value="after">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_AFTER_CONTENT</option>
+                </field>
+                <field type="spacer" name="spacer_1" hr="true"/>
                 <field name="enableSocialAnalyticsIntegration" type="radio" class="btn-group"
                        default="1" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_SOCIAL_ANALYTICS"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_SOCIAL_ANALYTICS_DESC">
@@ -39,14 +55,6 @@
                     <option value="1">JYES</option>
                 </field>
 
-                <field name="buttonsContentLocation" type="list" default="onlytags"
-                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION"
-                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_DESC">
-                    <option value="onlyTags">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_ONLY_TAGS</option>
-                    <option value="before">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_BEFORE_CONTENT</option>
-                    <option value="after">PLG_SH404SEFCORE_SH404SEFSOCIAL_BUTTONS_LOCATION_AFTER_CONTENT</option>
-                </field>
-
                 <field name="useShurl" type="radio" default="1" class="btn-group"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_USE_SHURL"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_USE_SHURL_DESC">
@@ -62,7 +70,61 @@
                 </field>
             </fieldset>
 
+            <fieldset name="static" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_SETTINGS">
+                <field type="spacer" name="spacer_1_1" label=" "/>
+                <field name="staticSocialNetworksTheme" type="list" default="colors"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_THEME"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_THEME_DESC">
+                    <option value="colors">Colors</option>
+                    <option value="white">White</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </field>
+                <field name="staticSocialNetworksStyle" type="list" default="square"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_STYLES"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_STYLES_DESC">
+                    <option value="squared">Square</option>
+                    <option value="rounded">Rounded</option>
+                </field>
+                <field name="staticSocialNetworksButtonsSize" type="list" default="medium"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_SIZE"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_SIZE_DESC">
+                    <option value="small">PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_SIZE_SMALL</option>
+                    <option value="medium">PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_SIZE_MEDIUM</option>
+                    <option value="large">PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_SIZE_LARGE</option>
+                    <option value="xlarge">PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTONS_SIZE_XLARGE</option>
+                </field>
+                <field name="staticSocialNetworksEnhancedUx" type="radio" default="1" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_ENHANCED_UX"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_ENHANCED_UX_DESC">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field name="staticSocialNetworksUseShareApi" type="radio" default="1" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_USE_SHARE_API"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_USE_SHARE_API_DESC">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+
             <fieldset name="facebook" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_FACEBOOK">
+                <field type="spacer" name="spacer_2_1" label=" "/>
+                <field name="enableFacebook" type="radio" default="1" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_FB"
+                       description="">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
+                </field>
+                <field type="spacer" name="spacer_2_2" label="&lt;h2&gt;Static buttons&lt;/h2&gt;&lt;hr/&gt;"/>
+                <field name="static_text_facebookshare" type="radio" default="0" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT_DESC">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
+                </field>
+
+                <field type="spacer" name="spacer_2_3" label="&lt;h2&gt;Native buttons&lt;/h2&gt;&lt;hr/&gt;"/>
                 <field name="enableFbLike" type="radio" default="1" class="btn-group"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_FB_LIKE"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_FB_LIKE_DESC">
@@ -126,7 +188,7 @@
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_FB_WIDTH"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_FB_WIDTH_DESC"/>
 
-                <field name="fbUseHtml5" type="radio" default="0"
+                <field name="fbUseHtml5" type="radio" default="0" class="btn-group"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_FB_USE_HTML5"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_FB_USE_HTML5_DESC">
                     <option value="0">JNO</option>
@@ -136,6 +198,7 @@
             </fieldset>
 
             <fieldset name="tweeter" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_TWEETER">
+                <field type="spacer" name="spacer_3_1" label=" "/>
                 <field name="enableTweet" type="radio" default="1" class="btn-group"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_TWEET"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_TWEET_DESC">
@@ -145,15 +208,33 @@
                 <field name="viaAccount" type="text" default="" size="20"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_TWEET_VIA_ACCOUNT"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_TWEET_VIA_ACCOUNT_DESC"/>
+                <field type="spacer" name="spacer_2_2" label="&lt;h2&gt;Static buttons&lt;/h2&gt;&lt;hr/&gt;"/>
+                <field name="static_text_twitter" type="radio" default="0" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT_DESC">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
+                </field>
             </fieldset>
 
             <fieldset name="pinterest" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_PINTEREST">
-                <field name="enablePinterestPinIt" type="radio" default="1"
+                <field type="spacer" name="spacer_4_1" label=" "/>
+                <field name="enablePinterestPinIt" type="radio" default="1" class="btn-group"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_PINTEREST"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_PINTEREST_DESC">
                     <option value="0">JHIDE</option>
                     <option value="1">JSHOW</option>
                 </field>
+
+                <field type="spacer" name="spacer_4_2" label="&lt;h2&gt;Static buttons&lt;/h2&gt;&lt;hr/&gt;"/>
+                <field name="static_text_pinterest" type="radio" default="0" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT_DESC">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
+                </field>
+
+                <field type="spacer" name="spacer_4_3" label="&lt;h2&gt;Native buttons&lt;/h2&gt;&lt;hr/&gt;"/>
                 <field name="pinItCountLayout" type="list" default="none"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_PINTEREST_LAYOUT"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_PINTEREST_LAYOUT_DESC">
@@ -166,19 +247,47 @@
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_PINTEREST_BUTTON_TEXT_DESC"/>
             </fieldset>
 
-            <fieldset name="linked" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_LINKED">
+            <fieldset name="linkedin" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_LINKED">
+                <field type="spacer" name="spacer_5_1" label=" "/>
                 <field name="enableLinkedIn" type="radio" default="1" class="btn-group"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_LINKEDIN"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_LINKED_DESC">
                     <option value="0">JHIDE</option>
                     <option value="1">JSHOW</option>
                 </field>
+
+                <field type="spacer" name="spacer_5_2" label="&lt;h2&gt;Static buttons&lt;/h2&gt;&lt;hr/&gt;"/>
+                <field name="static_text_linkedin" type="radio" default="0" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT_DESC">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
+                </field>
+
+                <field type="spacer" name="spacer_5_3" label="&lt;h2&gt;Native buttons&lt;/h2&gt;&lt;hr/&gt;"/>
                 <field name="linkedinlayout" type="list" default="none"
                        label="PLG_SH404SEFCORE_SH404SEFSOCIAL_LINKEDIN_LAYOUT"
                        description="PLG_SH404SEFCORE_SH404SEFSOCIAL_LINKEDIN_LAYOUT_DESC">
                     <option value="top">PLG_SH404SEFCORE_SH404SEFSOCIAL_LINKEDIN_LAYOUT_VERTICAL</option>
                     <option value="right">PLG_SH404SEFCORE_SH404SEFSOCIAL_LINKEDIN_LAYOUT_HORIZONTAL</option>
                     <option value="none">PLG_SH404SEFCORE_SH404SEFSOCIAL_LINKEDIN_LAYOUT_NONE</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="whatsapp" label="PLG_SH404SEFCORE_SH404SEFSOCIAL_WHATSAPP">
+                <field type="spacer" name="spacer_6_1" label=" "/>
+                <field name="enableWhatsapp" type="radio" default="1" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_WHATSAPP"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_ENABLE_WHATSAPP_DESC">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
+                </field>
+                <field type="spacer" name="spacer_6_2" label="&lt;h2&gt;Static buttons&lt;/h2&gt;&lt;hr/&gt;"/>
+                <field name="static_text_whatsapp" type="radio" default="0" class="btn-group"
+                       label="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT"
+                       description="PLG_SH404SEFCORE_SH404SEFSOCIAL_STATIC_BUTTON_TEXT_DESC">
+                    <option value="0">JHIDE</option>
+                    <option value="1">JSHOW</option>
                 </field>
             </fieldset>
 

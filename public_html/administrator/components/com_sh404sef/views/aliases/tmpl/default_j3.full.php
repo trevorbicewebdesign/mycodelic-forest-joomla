@@ -3,20 +3,16 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-{
-	die('Direct Access to this location is not allowed.');
-}
+defined('_JEXEC') || die;
 
-jimport('joomla.html.html.bootstrap');
 JHtml::_('formbehavior.chosen', 'select');
 $saveOrderingUrl = 'index.php?option=com_sh404sef&c=aliases&task=saveOrderAjax&tmpl=component';
 JHtml::_('sortablelist.sortable', 'aliasList', 'adminForm', strtolower($this->options->filter_order_Dir), $saveOrderingUrl);
@@ -53,7 +49,8 @@ if ($sticky) :?>
                     </div>
 				<?php endif; ?>
 
-                <div class="shl-main-list-wrapper span12 shl-no-margin-left <?php if ($sticky) {
+                <div class="shl-main-list-wrapper span12 shl-no-margin-left <?php if ($sticky)
+				{
 					echo ' shl-main-list-wrapper-padding';
 				} ?>">
 
@@ -106,14 +103,14 @@ if ($sticky) :?>
                             </tfoot>
                             <tbody>
 							<?php
-							$k = 0;
+							$k     = 0;
 							$sizes = Sh404sefFactory::getPConfig()->windowSizes;
 							if ($this->itemCount > 0)
 							{
 								for ($i = 0; $i < $this->itemCount; $i++)
 								{
 
-									$alias = &$this->items[$i];
+									$alias   = &$this->items[$i];
 									$checked = JHtml::_('grid.id', $i, $alias->id);
 									?>
 
@@ -141,20 +138,35 @@ if ($sticky) :?>
                                         </td>
 
                                         <td class="shl-list-check">
-											<?php echo Sh404sefModelRedirector::TARGET_TYPE_REDIRECT == $alias->target_type ? JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_REDIRECT_SHORT') : JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_CANONICAL_SHORT'); ?>
+											<?php
+											$aliasType = '-';
+											switch ($alias->target_type)
+											{
+												case Sh404sefModelRedirector::TARGET_TYPE_REDIRECT:
+													$aliasType = JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_REDIRECT_SHORT');
+													break;
+												case Sh404sefModelRedirector::TARGET_TYPE_CANONICAL:
+													$aliasType = JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_CANONICAL_SHORT');
+													break;
+												case Sh404sefModelRedirector::TARGET_TYPE_INTERNAL_REWRITE:
+													$aliasType = JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_INTERNAL_REWRITE_SHORT');
+													break;
+											}
+											echo $aliasType;
+											?>
                                         </td>
 
                                         <td class="shl-list-sef">
 											<?php
-											$params = array();
-											$linkData = array('c' => 'editalias', 'task' => 'edit', 'view' => 'editalias', 'cid[]' => $alias->id, 'tmpl' => 'component');
-											$targetUrl = Sh404sefHelperUrl::buildUrl($linkData);
+											$params              = array();
+											$linkData            = array('c' => 'editalias', 'task' => 'edit', 'view' => 'editalias', 'cid[]' => $alias->id, 'tmpl' => 'component');
+											$targetUrl           = Sh404sefHelperUrl::buildUrl($linkData);
 											$params['linkTitle'] = JText::_('COM_SH404SEF_MODIFY_ALIAS_TITLE') . ' ' . $this->escape($alias->oldurl);
 											$params['linkTitle'] = Sh404sefHelperHtml::abridge($params['linkTitle'], 'editurl');
-											$modalTitle = '';
-											$name = '-editalias-' . $alias->id;
+											$modalTitle          = '';
+											$name                = '-editalias-' . $alias->id;
 											$params['linkClass'] = 'shl-list-sef';
-											$params['linkType'] = 'a';
+											$params['linkType']  = 'a';
 											echo ShlHtmlModal_helper::modalLink($name, $alias->alias, $targetUrl, $sizes['editurl']['x'], Sh404sefFactory::getPConfig()->windowSizes['editurl']['y'], $top = 0, $left = 0, $onClose = '', $modalTitle, $params);
 											if (
 												Sh404sefModelRedirector::TARGET_TYPE_CANONICAL == $alias->target_type
@@ -167,7 +179,7 @@ if ($sticky) :?>
 											)
 											{
 												$sefConfig = Sh404sefFactory::getConfig();
-												$link = ShlSystem_Route::absolutify($alias->alias);
+												$link      = ShlSystem_Route::absolutify($alias->alias);
 												// small preview icon
 												echo '&nbsp;<a href="' . $this->escape($link) . '" target="_blank" title="' . JText::_('COM_SH404SEF_PREVIEW') . ' ' . $this->escape($alias->alias) . '">';
 												echo '<img src=\'components/com_sh404sef/assets/images/external-black.png\' border=\'0\' alt=\'' . JText::_('COM_SH404SEF_PREVIEW') . '\' />';
@@ -178,13 +190,13 @@ if ($sticky) :?>
 
                                         <td class="center">
 											<?php
-											$params = array();
-											$linkData = array('c' => 'hitdetails', 'url_id' => $alias->id, 'tmpl' => 'component', 'request_type' => 'aliases');
-											$targetUrl = Sh404sefHelperUrl::buildUrl($linkData);
-											$modalTitle = '';
+											$params              = array();
+											$linkData            = array('c' => 'hitdetails', 'url_id' => $alias->id, 'tmpl' => 'component', 'request_type' => 'aliases');
+											$targetUrl           = Sh404sefHelperUrl::buildUrl($linkData);
+											$modalTitle          = '';
 											$params['linkTitle'] = JText::_('COM_SH404SEF_HIT_VIEW_DETAILS_TITLE');
 											$params['linkClass'] = 'btn';
-											$name = '-viewhitdetails-' . $alias->id;
+											$name                = '-viewhitdetails-' . $alias->id;
 											echo ShlHtmlModal_helper::modalLink($name, '+', $targetUrl, $sizes['selectredirect']['x'], $sizes['selectredirect']['y'], $top = 0, $left = 0, $onClose = '', $modalTitle, $params);
 											?>
                                         </td>

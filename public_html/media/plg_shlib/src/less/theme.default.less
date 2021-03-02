@@ -2,11 +2,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2018
+ * @copyright   (c) Yannick Gaultier 2020
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.4.0.685
- * @date        2019-04-25
+ * @version     0.4.0.711
+ * @date        2020-06-26
  */
 /*! Copyright Weeblr llc @_YEAR_@ - Licence: http://www.gnu.org/copyleft/gpl.html GNU/GPL */
 @import 'shared.less';
@@ -72,6 +72,7 @@
 .wbl-theme-default {
 
   /** Buttons shapes and backgrounds **/
+
   & .btn {
     .wbl-fn-no-border();
     background: @wbl-btn-background;
@@ -147,7 +148,8 @@
     .wbl-fn-no-border(0 0.2em 0.2em 0);
   }
 
-  & .btn-primary {
+  & .btn-primary, & .btn-primary:focus,
+  & .btn-primary:active a, & .btn-primary:focus a {
     .wbl-fn-no-border();
     background: @wbl-btn-primary-background;
   }
@@ -173,6 +175,7 @@
   }
 
   /** Buttons colors **/
+
   & .btn {
     text-shadow: none;
   }
@@ -182,6 +185,7 @@
   }
 
   /** Dropdowns **/
+
   & .chzn-container:active,
   & .chzn-container:focus {
     outline: 0;
@@ -206,6 +210,7 @@
     border-radius: 0;
     box-shadow: none;
   }
+
   & .chzn-container-active.chzn-with-drop .chzn-drop {
     background: @wbl-select-drop-background;
     border-bottom: 1em solid @wbl-select-drop-bottom-border;
@@ -255,6 +260,7 @@
   }
 
   /* Labels and badges */
+
   & .label, & .badge {
     .wbl-fn-no-border();
     padding: 0.5em 1em;
@@ -263,33 +269,41 @@
     font-size: 1em;
     font-weight: normal;
   }
+
   & .label-info, & .badge-info {
     background: @wbl-badge-background-success;
   }
+
   /* & .label-info:hover, & .badge-info:hover {
      background: @wbl-badge-background-hover;
    }
    */
+
   & .label-success, & .badge-success {
     background: @wbl-badge-background-success;
   }
+
   & .label-important, & .badge-important {
     background: @wbl-badge-background-important;
   }
+
   & .label-danger, & .badge-danger {
     background: @wbl-badge-background-danger;
   }
+
   /*& .label-danger:hover, & .badge-danger:hover {
     background: @wbl-badge-background-danger-hover;
   }
 */
   /** Tabs **/
+
   & .nav.nav-pills li.active a {
     .wbl-fn-no-border();
     background: @wbl-nav-nav-pills-background-active;
   }
 
   /** Forms **/
+
   & .form-horizontal .control-label {
     max-width: 200px;
     width: 200px;
@@ -306,16 +320,19 @@
   }
 
   /** Alerts **/
+
   & .alert, & .alert.alert-success {
     .wbl-fn-no-border();
     background: @wbl-alert-background-success;
     color: @wbl-alert-color-success;
     text-shadow: none;
   }
+
   & .alert a, & .alert.alert-success a {
     color: @wbl-alert-color-success;
     text-decoration: underline;
   }
+
   & .alert a:hover, & .alert.alert-success a:hover {
     color: @wbl-alert-color-success-link;
   }
@@ -331,6 +348,7 @@
 body.com_sh404sef .btn-wrapper {
 
   /** Buttons shapes and backgrounds **/
+
   & .btn {
     .wbl-fn-no-border();
     background: @wbl-btn-toolbar-background;
@@ -392,6 +410,7 @@ body.com_sh404sef .btn-wrapper {
   }
 
   /** Buttons colors **/
+
   & .btn {
     text-shadow: none;
   }

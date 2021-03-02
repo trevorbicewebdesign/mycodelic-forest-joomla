@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date		2019-09-30
+ * @version     4.21.0.4206
+ * @date		2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -56,6 +56,14 @@ $data->name = 'og_enable_description';
 $data->label = JText::_('COM_SH404SEF_OG_INSERT_DESCRIPTION');
 $data->input = $this->ogData['og_enable_description'];
 $data->tip = JText::_('COM_SH404SEF_TT_OG_INSERT_DESCRIPTION');
+echo $this->layoutRenderer['custom']->render($data);
+
+// custom OGP description
+$data = new stdClass();
+$data->name = 'og_custom_description';
+$data->label = JText::_('COM_SH404SEF_OG_CUSTOM_DESCRIPTION');
+$data->input = '<textarea name="og_custom_description" id="og_custom_description" cols="60" rows="5">' . $this->ogData['og_custom_description'] . '</textarea>';
+$data->tip = JText::_('COM_SH404SEF_TT_OG_CUSTOM_DESCRIPTION');
 echo $this->layoutRenderer['custom']->render($data);
 
 // og_enable_site_name

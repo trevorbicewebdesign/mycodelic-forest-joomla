@@ -3,25 +3,29 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC')) die('');
+if (!defined('_JEXEC'))
+{
+	die('');
+}
 
 class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 {
-	protected $_context = 'sh404sef.metas';
+	protected $_context      = 'sh404sef.metas';
 	protected $_defaultTable = 'metas';
 
 	/**
 	 * Reads stored meta data for a given non-sef URL
 	 *
 	 * @param $nonSef
+	 *
 	 * @return JTable
 	 */
 	public function getCustomMetaData($nonSef)
@@ -30,14 +34,14 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 		{
 			// using a table object ensure we do get an object
 			// and it has all required properties defined, even if empty
-			$tags = JTable::getInstance('metas', 'Sh404sefTable');
+			$tags     = JTable::getInstance('metas', 'Sh404sefTable');
 			$tagsData = ShlDbHelper::selectObject('#__sh404sef_metas', '*', array('newurl' => $nonSef));
 			if (!empty($tagsData))
 			{
 				$tags->bind($tagsData);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, $e->getMessage());
 		}
@@ -49,19 +53,20 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 	 * Save a list of meta data as entered by user in backend to the database
 	 *
 	 * @param string $metaData an array of meta key/meta value from user. Also include nonsef url
+	 *
 	 * @return boolean true on success
 	 */
 	public function save($dataArray = null)
 	{
 		$this->_db = ShlDbHelper::getDb();
-		$row = JTable::getInstance($this->_defaultTable, 'Sh404sefTable');
+		$row       = JTable::getInstance($this->_defaultTable, 'Sh404sefTable');
 
 		// only save if there is actually some metas data
 		// at least on new records
 		$metas = '';
 		foreach ($dataArray as $key => $value)
 		{
-			if ($key != 'meta_id' && (substr($key, 0, 4) == 'meta' || substr($key, 0, 3) == 'fb_' || substr($key, 0, 3) == 'og_' || substr($key, 0, 13) == 'twittercards_' || $key == 'canonical'))
+			if ($key != 'meta_id' && (substr($key, 0, 4) == 'meta' || substr($key, 0, 3) == 'fb_' || substr($key, 0, 3) == 'og_' || substr($key, 0, 13) == 'twittercards_' || $key == 'canonical' || substr($key, 0, 12) == 'raw_content_'))
 			{
 				$metas .= $value;
 			}
@@ -78,7 +83,7 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 					ShlDbHelper::delete('#__sh404sef_metas', array('id' => $dataArray['meta_id']));
 					return true;
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 					$this->setError($e->getMessage());
 					return false;
@@ -115,7 +120,6 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 		{
 			// no lang string, let's add default
 			$row->newurl .= '&lang=' . Sh404sefHelperLanguage::getDefaultLanguageSef();
-
 		}
 
 		// sort url params, except on home page
@@ -182,7 +186,7 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 				{
 					$numberOfMetaRecords = ShlDbHelper::count($this->_getTableName(), '*');
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 					$numberOfMetaRecords = 0;
 					ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
@@ -255,7 +259,7 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 				$this->_db->setQuery($deleteQuery);
 				$this->_db->execute();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 				$this->setError('Internal database error ' . $e->getMessage());
@@ -264,7 +268,6 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 			// issue when displaying again results
 			$this->_setState('limitstart', 0);
 			$this->_setState('limit', 0);
-
 		}
 		else
 		{
@@ -275,6 +278,7 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 	/**
 	 * Construct select statement, for use
 	 * by getList() controller method
+	 *
 	 * @param unknown_type $options
 	 */
 	protected function _buildListWhere($options)
@@ -306,7 +310,6 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 
 		return $orderBy;
 	}
-
 
 	/**
 	 * Delete all automatically generated url records
@@ -367,7 +370,6 @@ class Sh404sefModelMetas extends Sh404sefClassBaselistModel
 	{
 
 		return '#__sh404sef_metas';
-
 	}
 
 }

@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -71,12 +71,12 @@ class Sh404sefHelperOgp
 	{
 		$tags = array(
 			'openGraphData' => '',
-			'ogNameSpace' => '',
-			'fbNameSpace' => ''
+			'ogNameSpace'   => '',
+			'fbNameSpace'   => ''
 		);
 
 		// get sh404sef config
-		$config = Sh404sefFactory::getConfig();
+		$config   = Sh404sefFactory::getConfig();
 		$pageInfo = Sh404sefFactory::getPageInfo();
 		$document = JFactory::getDocument();
 
@@ -106,11 +106,21 @@ class Sh404sefHelperOgp
 		$displayData['page_title'] = empty($pageInfo->pageTitle) ? $document->getTitle() : $pageInfo->pageTitle;
 
 		// insert description
-		if ((($config->ogEnableDescription && $customData->og_enable_description == SH404SEF_OPTION_VALUE_USE_DEFAULT)
-				|| $customData->og_enable_description == SH404SEF_OPTION_VALUE_YES)
+		if (
+			(
+				$config->ogEnableDescription
+				&&
+				$customData->og_enable_description == SH404SEF_OPTION_VALUE_USE_DEFAULT
+			)
+			||
+			$customData->og_enable_description == SH404SEF_OPTION_VALUE_YES
 		)
 		{
-			$displayData['description'] = empty($pageInfo->pageDescription) ? $document->getDescription() : $pageInfo->pageDescription;
+			$description                = empty($customData->og_custom_description) ?
+				$pageInfo->pageDescription
+				:
+				$customData->og_custom_description;
+			$displayData['description'] = empty($description) ? $document->getDescription() : $description;
 		}
 
 		// insert type
@@ -121,8 +131,8 @@ class Sh404sefHelperOgp
 		}
 
 		// insert url. If any, we insert the canonical url rather than current, to consolidate
-		$content = empty($pageInfo->pageCanonicalUrl) ? $pageInfo->currentSefUrl : $pageInfo->pageCanonicalUrl;
-		$content = Sh404sefHelperUrl::stripTrackingVarsFromSef($content);
+		$content            = empty($pageInfo->pageCanonicalUrl) ? $pageInfo->currentSefUrl : $pageInfo->pageCanonicalUrl;
+		$content            = Sh404sefHelperUrl::stripTrackingVarsFromSef($content);
 		$displayData['url'] = htmlspecialchars($content, ENT_COMPAT, 'UTF-8');
 
 		// insert image
@@ -130,7 +140,7 @@ class Sh404sefHelperOgp
 		if (!empty($content))
 		{
 			$displayData['image'] = ShlSystem_Route::absolutify($content, true);
-			$secure = JUri::getInstance()->isSSL();
+			$secure               = JUri::getInstance()->isSSL();
 			if ($secure)
 			{
 				$displayData['image_secure_url'] = ShlSystem_Route::absolutify($content, true);
@@ -155,7 +165,7 @@ class Sh404sefHelperOgp
 			$content = empty($content) ? JFactory::getApplication()->getCfg('sitename') : $content;
 			if (!empty($content))
 			{
-				$content = Sh404sefHelperMetadata::cleanUpDesc($content);
+				$content                  = Sh404sefHelperMetadata::cleanUpDesc($content);
 				$displayData['site_name'] = $content;
 			}
 		}
@@ -172,7 +182,7 @@ class Sh404sefHelperOgp
 		}
 
 		// application id
-		$appId = empty($config->fbAppId) ? Sh404sefFactory::getPConfig()->facebookDefaultAppId : $config->fbAppId;
+		$appId                 = empty($config->fbAppId) ? Sh404sefFactory::getPConfig()->facebookDefaultAppId : $config->fbAppId;
 		$displayData['app_id'] = $appId;
 
 		/**
@@ -208,7 +218,7 @@ class Sh404sefHelperOgp
 	{
 		if (!empty($contentObject) && !empty($contentObject->images))
 		{
-			$imageDef = new JRegistry($contentObject->images);
+			$imageDef       = new JRegistry($contentObject->images);
 			$possibleImages = array('image_fulltext', 'image_intro');
 			foreach ($possibleImages as $possibleImage)
 			{
@@ -216,7 +226,7 @@ class Sh404sefHelperOgp
 				if (!empty($image))
 				{
 					$fakeContent = '<img src="' . $image . '">';
-					$bestImage = ShlHtmlContent_Image::getBestImage($fakeContent, $firstImage = 1, Sh404sefFactory::getPConfig()->facebookImageSize);
+					$bestImage   = ShlHtmlContent_Image::getBestImage($fakeContent, $firstImage = 1, Sh404sefFactory::getPConfig()->facebookImageSize);
 					if (!empty($bestImage))
 					{
 						return $bestImage;
@@ -258,7 +268,7 @@ class Sh404sefHelperOgp
 			{
 
 				$fakeContent = '<img src="' . $contentObject->{$imageName} . '">';
-				$bestImage = ShlHtmlContent_Image::getBestImage($fakeContent, $firstImage = 1, Sh404sefFactory::getPConfig()->facebookImageSize);
+				$bestImage   = ShlHtmlContent_Image::getBestImage($fakeContent, $firstImage = 1, Sh404sefFactory::getPConfig()->facebookImageSize);
 				if (!empty($bestImage))
 				{
 					return $bestImage;

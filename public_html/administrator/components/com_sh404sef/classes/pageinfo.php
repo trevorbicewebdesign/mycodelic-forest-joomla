@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 /** ensure this file is being included by a parent file */
@@ -50,6 +50,7 @@ class Sh404sefClassPageinfo
 	public $joomlaSuffixSetting     = 0;
 	public $pageTitle               = '';
 	public $pageTitlePr             = '';
+	public $pageDescription         = '';
 
 	// pagination management
 	public $paginationPrevLink = '';
@@ -80,7 +81,7 @@ class Sh404sefClassPageinfo
 
 	public function setCurrentLanguage($languageTag)
 	{
-		$this->currentLanguageTag = $languageTag;
+		$this->currentLanguageTag      = $languageTag;
 		$this->currentLanguageShortTag = Sh404sefHelperLanguage::getUrlCodeFromTag($languageTag);
 	}
 
@@ -91,11 +92,11 @@ class Sh404sefClassPageinfo
 		if (!$_initialized)
 		{
 			$this->joomlaSuffixSetting = JFactory::$config->get('sef_suffix');
-			$this->originalUri = $this->getURI();
-			$uri = JURI::getInstance();
-			$this->currentSefUrl = $uri->toString();
-			$site = $uri->toString(array('scheme', 'host', 'port'));
-			$this->basePath = JString::rtrim(wbLTrim($uri->base(), $site), '/');
+			$this->originalUri         = $this->getURI();
+			$uri                       = JURI::getInstance();
+			$this->currentSefUrl       = $uri->toString();
+			$site                      = $uri->toString(array('scheme', 'host', 'port'));
+			$this->basePath            = JString::rtrim(wbLTrim($uri->base(), $site), '/');
 			$this->detectMultilingual();
 			$this->setCurrentLanguage(Sh404sefHelperLanguage::getDefaultLanguageTag());
 			$this->_defaultLiveSite = JString::rtrim($uri->base(), '/');
@@ -124,10 +125,10 @@ class Sh404sefClassPageinfo
 		// store default links in each language
 		jimport('joomla.language.helper');
 		$defaultLanguage = Sh404sefHelperLanguage::getDefaultLanguageTag();
-		$languages = Sh404sefHelperLanguage::getActiveLanguages();
+		$languages       = Sh404sefHelperLanguage::getActiveLanguages();
 		if ($this->isMultilingual === false || $this->isMultilingual == 'joomla')
 		{
-			$menu = JFactory::getApplication()->getMenu();
+			$menu = JFactory::getApplication()->getMenu('site');
 			foreach ($languages as $language)
 			{
 				$menuItem = $menu->getDefault($language->lang_code);
@@ -136,7 +137,7 @@ class Sh404sefClassPageinfo
 					$this->homeLinks[$language->lang_code] = $this->_prepareLink($menuItem);
 					if ($language->lang_code == $defaultLanguage)
 					{
-						$this->homeLink = $this->homeLinks[$language->lang_code];
+						$this->homeLink   = $this->homeLinks[$language->lang_code];
 						$this->homeItemid = $menuItem->id;
 					}
 				}
@@ -152,7 +153,7 @@ class Sh404sefClassPageinfo
 		else
 		{
 			// trouble starts
-			$db = ShlDbHelper::getDb();
+			$db    = ShlDbHelper::getDb();
 			$query = $db->getQuery(true);
 			$query->select('id,language,link');
 			$query->from('#__menu');
@@ -162,7 +163,7 @@ class Sh404sefClassPageinfo
 				$db->setQuery($query);
 				$items = $db->loadObjectList('language');
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			}
@@ -170,7 +171,7 @@ class Sh404sefClassPageinfo
 			{
 				if (count($items) == 1)
 				{
-					$tmp = array_values($items);
+					$tmp         = array_values($items);
 					$defaultItem = $tmp[0];
 				}
 				if (empty($defaultItem))
@@ -197,8 +198,8 @@ class Sh404sefClassPageinfo
 
 					if ($language->lang_code == $defaultLanguage)
 					{
-						$this->homeLink = $this->homeLinks[$language->lang_code];
-						$this->homeItemid = $defaultItem->id;
+						$this->homeLink        = $this->homeLinks[$language->lang_code];
+						$this->homeItemid      = $defaultItem->id;
 						$this->allLangHomeLink = shCleanUpLang($this->homeLinks[$language->lang_code]);
 					}
 				}
@@ -210,7 +211,7 @@ class Sh404sefClassPageinfo
 
 	protected function _prepareLink($menuItem, $forceLanguage = null)
 	{
-		$link = Sh404sefHelperUrl::setUrlVar($menuItem->link, 'Itemid', $menuItem->id);
+		$link     = Sh404sefHelperUrl::setUrlVar($menuItem->link, 'Itemid', $menuItem->id);
 		$linkLang = Sh404sefHelperUrl::getUrlLang($link);
 		if (empty($linkLang))
 		{

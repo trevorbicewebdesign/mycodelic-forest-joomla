@@ -2,12 +2,12 @@
 /**
  * sh404SEF - SEO extension for Joomla!
  *
- * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
  * @package      sh404SEF
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
+ * @author       Yannick Gaultier
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -19,8 +19,11 @@ defined('_JEXEC') or die;
  */
 class Com_Sh404sefInstallerScript
 {
-	const MIN_JOOMLA_VERSION = '3.4.2';
-	const MAX_JOOMLA_VERSION = '4';
+	const MIN_JOOMLA_VERSION = '3.9.0';
+	const MAX_JOOMLA_VERSION = '4.0';
+
+	const MIN_PHP_VERSION = '5.6.0';
+	const MAX_PHP_VERSION = '';
 
 	const MIN_SHLIB_VERSION = '0.4.0';
 	const MAX_SHLIB_VERSION = '';
@@ -53,6 +56,29 @@ class Com_Sh404sefInstallerScript
 				return false;
 			}
 
+			if (
+				version_compare(phpversion(), self::MIN_PHP_VERSION, '<')
+				||
+				(
+					!empty(self::MAX_PHP_VERSION)
+					&&
+					version_compare(
+						phpversion(), self::MAX_PHP_VERSION, 'ge'
+					)
+				)
+			)
+			{
+				JFactory::getApplication()
+				        ->enqueueMessage(
+					        sprintf(
+						        'sh404SEF requires PHP version between %s and %s (you are using %s). Aborting installation',
+						        self::MIN_PHP_VERSION, self::MAX_PHP_VERSION, phpversion()
+					        ), 'error'
+				        );
+
+				return false;
+			}
+
 			// make sure resource manager is available, we'll need it during plugins installs
 			if (!class_exists('ShlSystem_Resourcemanager'))
 			{
@@ -60,9 +86,9 @@ class Com_Sh404sefInstallerScript
 			}
 
 			// check authorization to install for shared resources
-			$newVersionFile = $installer->getParent()->getPath('source') . '/admin/plugins/system/shlib/shlib.xml';
+			$newVersionFile      = $installer->getParent()->getPath('source') . '/admin/plugins/system/shlib/shlib.xml';
 			$this->_shlibVersion = ShlSystem_Resourcemanager::getXmlFileVersion($newVersionFile);
-			$installCheckResult = ShlSystem_Resourcemanager::canInstall('shlib', $this->_shlibVersion, $allowDowngrade = false, self::MIN_SHLIB_VERSION, self::MAX_SHLIB_VERSION);
+			$installCheckResult  = ShlSystem_Resourcemanager::canInstall('shlib', $this->_shlibVersion, $allowDowngrade = false, self::MIN_SHLIB_VERSION, self::MAX_SHLIB_VERSION);
 
 			if ($installCheckResult->canInstall == 'no')
 			{
@@ -74,7 +100,7 @@ class Com_Sh404sefInstallerScript
 			}
 			if ($installCheckResult->canInstall == 'skip')
 			{
-				$this->_shlibVersion = '';
+				$this->_shlibVersion  = '';
 				$this->_skipInstall[] = 'shlib';
 				JFactory::getApplication()
 				        ->enqueueMessage('shLib: skipping install of shLib version ' . $this->_shlibVersion . ': ' . $installCheckResult->reason);
@@ -141,7 +167,7 @@ class Com_Sh404sefInstallerScript
 		{
 			$this->_definePaths();
 
-			$db = JFactory::getDbo();
+			$db    = JFactory::getDbo();
 			$query = $db->getQuery(true);
 			$query->select('params')
 			      ->from('#__extensions')
@@ -156,7 +182,7 @@ class Com_Sh404sefInstallerScript
 				JFactory::getApplication()->enqueueMessage('Error saving sh404SEF configuration to disk, configuration may be lost upon reinstallation');
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			JFactory::getApplication()->enqueueMessage('Error saving sh404SEF configuration to disk, configuration may be lost upon reinstallation');
 		}
@@ -170,8 +196,8 @@ class Com_Sh404sefInstallerScript
 
 	private function _definePaths()
 	{
-		$this->_siteId = rtrim(str_replace('/administrator', '', JURI::base()), '/');
-		$this->_siteId = str_replace('/', '_', str_replace('http://', '', $this->_siteId));
+		$this->_siteId               = rtrim(str_replace('/administrator', '', JURI::base()), '/');
+		$this->_siteId               = str_replace('/', '_', str_replace('http://', '', $this->_siteId));
 		$this->_preserveConfigFolder = JPATH_ROOT . '/media/sh404sef/';
 	}
 
@@ -182,8 +208,7 @@ class Com_Sh404sefInstallerScript
 	 * in the /media directory
 	 *
 	 * @param string $extName the extension name
-	 * @param array  $shConfig associative array of parameters of the extension, to be written to disk
-	 * @param array  $pub , optional, only if module, an array of the menu item id where the module is published
+	 * @param        $params
 	 *
 	 * @return boolean, true if no error
 	 */
@@ -208,7 +233,7 @@ class Com_Sh404sefInstallerScript
 		if (!JFile::exists($target))
 		{
 			// copy one Joomla's index.html file to the backup directory
-			$source = JPath::clean(JPATH_ROOT . '/plugins/index.html');
+			$source  = JPath::clean(JPATH_ROOT . '/plugins/index.html');
 			$success = JFile::copy($source, $target);
 		}
 
@@ -424,7 +449,7 @@ class Com_Sh404sefInstallerScript
 
 		// we use require instead of require_once so that the NEW, just installed, version of the file is
 		// reloaded. If any new define has been added in the new version, they will thus become available
-		// This requires that defines in defines.php are protected again redifining the same constant
+		// This requires that defines in defines.php are protected again redefining the same constant
 		require JPATH_ROOT . '/administrator/components/com_sh404sef/defines.php';
 		// if these files have been included already, we will use the old version of the file
 		require_once JPATH_ROOT . '/administrator/components/com_sh404sef/exceptions/default.php';
@@ -435,11 +460,11 @@ class Com_Sh404sefInstallerScript
 	{
 		try
 		{
-			$db = JFactory::getDbo();
+			$db    = JFactory::getDbo();
 			$query = 'DROP TABLE IF EXISTS ' . $db->qn('#__' . $tableName);
 			$db->setQuery($query)->query();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			JFactory::getApplication()->enqueuemessage($e->getMessage(), 'error');
 		}
@@ -462,7 +487,7 @@ class Com_Sh404sefInstallerScript
 			$db->setQuery('DELETE FROM ' . $db->qn('#__sh404sef_urls') . ' ' . $where);
 			$db->query();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			JFactory::getApplication()->enqueuemessage($e->getMessage(), 'error');
 		}
@@ -476,6 +501,7 @@ class Com_Sh404sefInstallerScript
 	 * @param string $client (ie : site or administrator
 	 *
 	 * @return bool
+	 * @throws Exception
 	 */
 	private function _saveDeleteModuleParams($moduleName, $client)
 	{
@@ -567,7 +593,7 @@ class Com_Sh404sefInstallerScript
 			      ->where($db->qn('moduleid') . '=' . $db->q($moduleId));
 			$db->setQuery($query)->query();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			JFactory::getApplication()->enqueuemessage($e->getMessage(), 'error');
 		}
@@ -585,6 +611,10 @@ class Com_Sh404sefInstallerScript
 	 *
 	 * @param string $pluginName , the plugin name, mathcing 'element' column in plugins table
 	 * @param string $folder , the plugin folder (ie : 'content', 'search', 'system',...
+	 * @param null   $folders
+	 *
+	 * @return bool
+	 * @throws Exception
 	 */
 	private function _saveDeletePluginParams($pluginName, $folder, $folders = null)
 	{
@@ -617,9 +647,9 @@ class Com_Sh404sefInstallerScript
 
 			// now uninstall
 			$installer = new JInstaller;
-			$result = $installer->uninstall('plugin', $pluginId);
+			$result    = $installer->uninstall('plugin', $pluginId);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			JFactory::getApplication()->enqueuemessage($e->getMessage(), 'error');
 		}
@@ -631,7 +661,8 @@ class Com_Sh404sefInstallerScript
 	 *
 	 * @param $group the group to be deleted
 	 *
-	 * @return none
+	 * @return bool
+	 * @throws Exception
 	 */
 	private function _saveDeletePluginGroup($group)
 	{
@@ -680,7 +711,7 @@ class Com_Sh404sefInstallerScript
 				$db->setQuery($query)->query();
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			JFactory::getApplication()->enqueuemessage($e->getMessage(), 'error');
 		}
@@ -697,6 +728,20 @@ class Com_Sh404sefInstallerScript
 		$this->_definePaths();
 		$this->_includeLibs();
 		$db = JFactory::getDbo();
+
+		// include default functions file
+		$path = JPATH_ROOT . '/libraries/weeblr';
+		if (!JFolder::exists($path))
+		{
+			JFolder::create($path);
+		}
+		if (!JFile::exists($path . '/sh404sef_functions.php'))
+		{
+			JFile::copy(
+				JPATH_ADMINISTRATOR . '/components/com_sh404sef/sh404sef_functions.php',
+				$path . '/sh404sef_functions.php'
+			);
+		}
 
 		// Copy existing config file from /media to current component. Used to recover configuration when upgrading
 		// check if old file exists before deleting stub config file
@@ -791,7 +836,7 @@ class Com_Sh404sefInstallerScript
 							. $db->qn('element') . ' = ' . $db->q('com_sh404sef');
 						$db->setQuery($query)->query();
 					}
-					catch (Exception $e)
+					catch (\Exception $e)
 					{
 						JFactory::getApplication()
 						        ->enqueuemessage('Database error while restoring saved configuration. Config may be lost: ' . $e->getMessage());
@@ -810,7 +855,7 @@ class Com_Sh404sefInstallerScript
 			// As there was interface changes betwen shLib 0.1.x and 0.2.x, this prevents
 			// "method not existing" errors when installing a newer version over an old one
 			// make sure resource manager is available, we'll need it during plugins installs
-			$shlDb = ShlDbHelper::getInstance();
+			$shlDb  = ShlDbHelper::getInstance();
 			$status = $this->_installPluginGroup('system');
 		}
 		else
@@ -946,7 +991,7 @@ class Com_Sh404sefInstallerScript
 		// message
 		// decide on help file language
 		$languageCode = Sh404sefHelperLanguage::getFamily();
-		$basePath = JPATH_ROOT . '/administrator/components/com_sh404sef/language/%s.postinstall.php';
+		$basePath     = JPATH_ROOT . '/administrator/components/com_sh404sef/language/%s.postinstall.php';
 		// fall back to english if language readme does not exist
 		jimport('joomla.filesystem.file');
 		if (!JFile::exists(sprintf($basePath, $languageCode)))
@@ -968,8 +1013,8 @@ class Com_Sh404sefInstallerScript
 			if ($db->hasUTF8mb4Support())
 			{
 				$this->hasUtf8mb4Support = true;
-				$this->charset = 'utf8mb4';
-				$this->collation = 'utf8mb4_unicode_ci';
+				$this->charset           = 'utf8mb4';
+				$this->collation         = 'utf8mb4_unicode_ci';
 			}
 		}
 		if (!$this->hasUtf8mb4Support)
@@ -984,7 +1029,7 @@ class Com_Sh404sefInstallerScript
 	private function updateSettings()
 	{
 		$app = JFactory::getApplication();
-		$j3 = version_compare(JVERSION, '3.0', 'ge');
+		$j3  = version_compare(JVERSION, '3.0', 'ge');
 
 		// get current (installed) sh404SEF settings
 		try
@@ -1004,7 +1049,7 @@ class Com_Sh404sefInstallerScript
 			}
 
 			// installed and running, check/update Joomla config accordingly
-			$joomlaUrlRewriting = (bool) ($j3 ? $app->get('sef_rewrite') : $app->getCfg('sef_rewrite'));
+			$joomlaUrlRewriting   = (bool) ($j3 ? $app->get('sef_rewrite') : $app->getCfg('sef_rewrite'));
 			$sh404SEFUrlRewriting = (bool) $sh404SEFConfig->shRewriteMode;
 
 			// opposite storage convention between Joomla and sh404SEF
@@ -1013,8 +1058,8 @@ class Com_Sh404sefInstallerScript
 			{
 				// different settings. sh404SEF is running and enabled, so sh404SEF setting
 				// must replace the Joomla one
-				$jConfig = new JConfig();
-				$jConfig = JArrayHelper::fromObject($jConfig);
+				$jConfig     = new JConfig();
+				$jConfig     = JArrayHelper::fromObject($jConfig);
 				$writeConfig = new JRegistry();
 				$writeConfig->loadArray($jConfig);
 
@@ -1042,7 +1087,7 @@ class Com_Sh404sefInstallerScript
 				}
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$app->enqueueMessage($e->getMessage());
 			return false;
@@ -1084,6 +1129,7 @@ class Com_Sh404sefInstallerScript
 	 * @param string $group name of group
 	 *
 	 * @return boolean, true if success
+	 * @throws Exception
 	 */
 	private function _installPluginGroup($group)
 	{
@@ -1134,7 +1180,10 @@ class Com_Sh404sefInstallerScript
 	 *
 	 * @param string $pluginFolder
 	 * @param string $pluginElement
-	 * @param string $basePath
+	 * @param        $sourcePath
+	 *
+	 * @return bool
+	 * @throws Exception
 	 */
 	private function _installPlugin($pluginFolder, $pluginElement, $sourcePath)
 	{
@@ -1147,12 +1196,12 @@ class Com_Sh404sefInstallerScript
 		}
 
 		$status = true;
-		$app = JFactory::getApplication();
+		$app    = JFactory::getApplication();
 
 		// in case of upgrade, don't touch settings by user
 		try
 		{
-			$db = JFactory::getDbo();
+			$db    = JFactory::getDbo();
 			$query = $db->getQuery(true);
 			$query->select('extension_id')->from('#__extensions')->where($db->qn('type') . '=' . $db->q('plugin'))
 			      ->where($db->qn('element') . '=' . $db->q($pluginElement))
@@ -1160,7 +1209,7 @@ class Com_Sh404sefInstallerScript
 			$db->setQuery($query);
 			$pluginId = $db->loadResult();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$status = false;
 			$app->enqueueMessage('Error reading pre-existing plugin record from db: ' . $pluginFolder . ' / ' . $pluginElement);
@@ -1176,9 +1225,38 @@ class Com_Sh404sefInstallerScript
 			$overrides['ordering'] = -100;
 		}
 
+		// 4.19.0: new default option for sharing buttons plugin: use static buttons
+		// must not change buttons type if already installed and setup
+		if (!empty($pluginId) && $pluginElement == 'sh404sefsocial' && $pluginFolder == 'sh404sefcore')
+		{
+			$extension = JTable::getInstance('Extension');
+			$extension->load($pluginId);
+			$paramsJson = $extension->params;
+			// create params object
+			$paramsObject = new JRegistry();
+			$paramsObject->loadString($paramsJson);
+			// set buttonTypes param to "native"
+			$currentButtonTypes = $paramsObject->get('buttonsType');
+			if (empty($currentButtonTypes))
+			{
+				$paramsObject->set('buttonsType', 'native');
+				// write back
+				$extension->bind(
+					array(
+						'params' => $paramsObject->toString()
+					)
+				);
+				$status = $extension->store();
+				if (!$status)
+				{
+					$app->enqueueMessage('Error updating social sharing buttons options: ' . $extension->getError() . ' for ' . $pluginFolder . ' / ' . $pluginElement);
+				}
+			}
+		}
+
 		// use J! installer to fully install the plugin
 		$installer = new JInstaller;
-		$result = $installer->install($sourcePath . '/' . $pluginElement);
+		$result    = $installer->install($sourcePath . '/' . $pluginElement);
 
 		if ($result)
 		{
@@ -1204,7 +1282,7 @@ class Com_Sh404sefInstallerScript
 					      ->where($db->qn('folder') . '=' . $db->q($pluginFolder));
 					$db->setQuery($query);
 					$pluginId = $db->loadResult();
-					$error = $db->getErrorNum();
+					$error    = $db->getErrorNum();
 					if (!empty($error))
 					{
 						throw new Exception($db->getErrorMsg());
@@ -1227,7 +1305,7 @@ class Com_Sh404sefInstallerScript
 						$app->enqueueMessage('Error updating plugin DB record: ' . $pluginFolder . ' / ' . $pluginElement);
 					}
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 					$status = false;
 					$app->enqueueMessage('Error: ' . $e->getMessage());
@@ -1255,7 +1333,7 @@ class Com_Sh404sefInstallerScript
 			$this->ensurePluginsOrder('languagefilter', 'sh404sef')
 			     ->ensurePluginsOrder('shlib', 'sh404sef');
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$app = JFactory::getApplication();
 			$app->enqueueMessage('Error fixing plugin order in database: ' . $e->getMessage() . '. Please ensure the Language filter plugin is located before the sh404SEF system plugin.');
@@ -1270,7 +1348,7 @@ class Com_Sh404sefInstallerScript
 		$order = $plugin1 . $plugin2;
 
 		// Read current ordering
-		$db = JFactory::getDbo();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('*')->from('#__extensions')->where($db->qn('type') . '=' . $db->q('plugin'))
 		      ->where($db->qn('folder') . '=' . $db->q('system'))
@@ -1338,7 +1416,7 @@ class Com_Sh404sefInstallerScript
 		$baseFolder = $this->_preserveConfigFolder . 'sh404_upgrade_conf';
 		if (JFolder::exists($baseFolder) && (empty($fileList) || !isset($fileList[$extName])))
 		{
-			$baseName = $extName . ($useId ? '_[0-9]{1,10}' : '') . '_' . $this->_siteId . '.php';
+			$baseName           = $extName . ($useId ? '_[0-9]{1,10}' : '') . '_' . $this->_siteId . '.php';
 			$fileList[$extName] = JFolder::files($baseFolder, $baseName);
 		}
 
@@ -1369,9 +1447,9 @@ class Com_Sh404sefInstallerScript
 	{
 		$app = JFactory::getApplication();
 
-		$path = $source . '/admin/modules/' . $module;
+		$path      = $source . '/admin/modules/' . $module;
 		$installer = new JInstaller;
-		$result = $installer->install($path);
+		$result    = $installer->install($path);
 
 		if ($result)
 		{
@@ -1414,7 +1492,7 @@ class Com_Sh404sefInstallerScript
 					$db->setQuery($query)->query();
 				}
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$app->enqueueMessage('Error: ' . $e->getMessage());
 			}
@@ -1449,7 +1527,7 @@ class Com_Sh404sefInstallerScript
 				}
 				$db->setQuery($query)->query();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$app->enqueueMessage('Error: ' . $e->getMessage());
 			}
@@ -1494,7 +1572,7 @@ class Com_Sh404sefInstallerScript
 				}
 				$db->setQuery($query)->query();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$app->enqueueMessage('Error: ' . $e->getMessage());
 			}
@@ -1526,7 +1604,7 @@ class Com_Sh404sefInstallerScript
 		try
 		{
 			$updated = false;
-			$params = Sh404sefHelperGeneral::getComponentParams();
+			$params  = Sh404sefHelperGeneral::getComponentParams();
 			// select Universal if classic (or bot) was selected
 			if (!empty($config->analyticsEdition) && ($config->analyticsEdition == 'ga' || $config->analyticsEdition == 'ga_and_uga'))
 			{
@@ -1548,7 +1626,7 @@ class Com_Sh404sefInstallerScript
 				Sh404sefHelperGeneral::saveComponentParams($params);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$app = JFactory::getApplication();
 			$app->enqueueMessage('Error: ' . $e->getMessage());
@@ -1595,7 +1673,7 @@ class Com_Sh404sefInstallerScript
 				ShlDbHelper::deleteIn('#__sh404sef_pageids', 'pageid', $langCodes);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$app = JFactory::getApplication();
 			$app->enqueueMessage('Error: ' . $e->getMessage());
@@ -1607,10 +1685,11 @@ class Com_Sh404sefInstallerScript
 	}
 
 	/**
-	 * In 4.12.0, canoical are now a type of aliases, instead of being managed as meta data. We must transfer existing
+	 * In 4.12.0, canonical are now a type of aliases, instead of being managed as meta data. We must transfer existing
 	 * canonical.
 	 *
 	 * @return bool
+	 * @throws Exception
 	 */
 	private function _transferCanonical()
 	{
@@ -1645,16 +1724,16 @@ class Com_Sh404sefInstallerScript
 				$alias = array(
 					'target_type' => 1
 				);
-				$root = JUri::root();
+				$root  = JUri::root();
 				foreach ($canonicals as $canonical)
 				{
 					// insert in aliases table
-					$alias['newurl'] = $canonical->canonical;
-					$alias['alias'] = Sh404sefHelperGeneral::getSefFromNonSef($canonical->newurl);
-					$alias['alias'] = wbLTrim($alias['alias'], $root);
-					$alias['alias'] = wbLTrim($alias['alias'], 'administrator/');
+					$alias['newurl']      = $canonical->canonical;
+					$alias['alias']       = Sh404sefHelperGeneral::getSefFromNonSef($canonical->newurl);
+					$alias['alias']       = wbLTrim($alias['alias'], $root);
+					$alias['alias']       = wbLTrim($alias['alias'], 'administrator/');
 					$alias['target_type'] = 1;
-					$aliasObject = new Sh404sefTableAliases($db);
+					$aliasObject          = new Sh404sefTableAliases($db);
 					$aliasObject->bind(
 						$alias
 					);
@@ -1673,7 +1752,7 @@ class Com_Sh404sefInstallerScript
 				}
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$app = JFactory::getApplication();
 			$app->enqueueMessage('Error: ' . $e->getMessage());
@@ -1708,7 +1787,7 @@ class Com_Sh404sefInstallerScript
 				$aliasesTable->reorder();
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$app = JFactory::getApplication();
 			$app->enqueueMessage('Error: ' . $e->getMessage());
@@ -1723,7 +1802,10 @@ class Com_Sh404sefInstallerScript
 	 * Transfer to our keystore customized pages created by user, if any.
 	 * Prior to 4.7.0, error pages were stored in regular Joomla articles.
 	 *
-	 * @return unknown_type
+	 * @param string $pageTitle
+	 *
+	 * @return bool|void
+	 * @throws Exception
 	 */
 	private function _updateErrorPage($pageTitle = '__404__')
 	{
@@ -1740,7 +1822,7 @@ class Com_Sh404sefInstallerScript
 		$config = Sh404sefFactory::getConfig();
 		try
 		{
-			$db = JFactory::getDbo();
+			$db    = JFactory::getDbo();
 			$catid = $this->_getErrorPageCatId();
 			$pages = array();
 			if (!empty($this->_errorPageCatId))
@@ -1771,7 +1853,7 @@ class Com_Sh404sefInstallerScript
 			{
 				// "All" language page goes to default language record
 				$currentLanguageTag = $page->language == '*' ? $defaultLanguageTag : $page->language;
-				$storageKey = 'com_sh404sef.errors.404.' . $currentLanguageTag;
+				$storageKey         = 'com_sh404sef.errors.404.' . $currentLanguageTag;
 
 				// is there already such an item?
 				$query = $db->getQuery(true);
@@ -1805,7 +1887,7 @@ class Com_Sh404sefInstallerScript
 				// was there a specific Itemid set?
 				if (!empty($config->shPageNotFoundItemid))
 				{
-					$params = Sh404sefHelperGeneral::getComponentParams();
+					$params    = Sh404sefHelperGeneral::getComponentParams();
 					$fieldName = 'languages_' . $currentLanguageTag . '_notFoundItemid';
 					$params->set($fieldName, $config->shPageNotFoundItemid);
 					Sh404sefHelperGeneral::saveComponentParams($params);
@@ -1821,7 +1903,7 @@ class Com_Sh404sefInstallerScript
 
 			return true;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$app = JFactory::getApplication();
 			$app->enqueueMessage('Error: ' . $e->getMessage());
@@ -1832,7 +1914,7 @@ class Com_Sh404sefInstallerScript
 
 	private function _getErrorPageCatId()
 	{
-		$db = JFactory::getDbo();
+		$db    = JFactory::getDbo();
 		$query = $db->getQuery(true);
 		$query->select('id')
 		      ->from('#__categories')
@@ -1873,7 +1955,7 @@ class Com_Sh404sefInstallerScript
         ) DEFAULT CHARSET=utf8;",
 
 			"CREATE TABLE IF NOT EXISTS `#__sh404sef_metas` (
-	`id` INT(11) NOT NULL AUTO_INCREMENT,
+		`id` INT(11) NOT NULL AUTO_INCREMENT,
         `newurl` VARCHAR(2048) NOT NULL DEFAULT '',
         `metadesc` VARCHAR(512) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
         `metakey` VARCHAR(255) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT  '',
@@ -1901,6 +1983,19 @@ class Com_Sh404sefInstallerScript
         `og_phone_number` VARCHAR(255) DEFAULT '',
         `og_fax_number` VARCHAR(255) DEFAULT '',
         `og_enable_fb_admin_ids` TINYINT(3) NOT NULL DEFAULT '2',
+        `twittercards_enable` TINYINT(3) NOT NULL DEFAULT '2',
+		`twittercards_site_account` VARCHAR(100) DEFAULT '',
+		`twittercards_creator_account` VARCHAR(100) DEFAULT '',
+		`google_authorship_enable` TINYINT(3) NOT NULL DEFAULT '2',
+		`google_authorship_author_profile` VARCHAR(255) DEFAULT '',
+		`google_authorship_author_name` VARCHAR(255) DEFAULT '',
+		`google_publisher_enable` TINYINT(3) NOT NULL DEFAULT '2',
+		`google_publisher_url` VARCHAR(255) DEFAULT '',
+		`og_custom_description` VARCHAR(512) CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
+        `raw_content_head_top` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
+        `raw_content_head_bottom` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
+        `raw_content_body_top` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
+        `raw_content_body_bottom` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT '',
         PRIMARY KEY (`id`),
         KEY `newurl` (`newurl` (190))
         ) DEFAULT CHARSET=utf8;",
@@ -2031,7 +2126,7 @@ class Com_Sh404sefInstallerScript
 					throw new Exception($db->getErrorMsg());
 				}
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$app = JFactory::getApplication();
 				$app
@@ -2105,7 +2200,7 @@ class Com_Sh404sefInstallerScript
 					throw new Exception($db->getErrorMsg());
 				}
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				JFactory::getApplication()
 				        ->enqueueMessage(
@@ -2274,8 +2369,8 @@ class Com_Sh404sefInstallerScript
 		if ($this->hasUtf8mb4Support && class_exists('Sh404sefFactory') && version_compare(Sh404sefFactory::getConfig()->version, '4.10.1', 'lt'))
 		{
 			// updating
-			$subQueries['#__sh404sef_metas'][] = 'modify `metatitle` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
-			$subQueries['#__sh404sef_metas'][] = 'modify `metakey` varchar(255) CHARACTER SET utf8mb4 collate utf8mb4_unicode_ci';
+			$subQueries['#__sh404sef_metas'][] = 'modify `metatitle` varchar(255) CHARACTER SET ' . $this->charset . ' collate ' . $this->collation . '';
+			$subQueries['#__sh404sef_metas'][] = 'modify `metakey` varchar(255) CHARACTER SET ' . $this->charset . ' collate ' . $this->collation . '';
 		}
 
 		// 4.13.0: expanded max meta description length from 255 to 512 chars
@@ -2286,6 +2381,30 @@ class Com_Sh404sefInstallerScript
 		$subQueries['#__sh404sef_metas'][] = 'DROP INDEX `newurl`';
 		$subQueries['#__sh404sef_metas'][] = 'add index `newurl` (`newurl`(190))';
 
+		// 4.17.1 - add custom OGP description
+		if (empty($columns['og_custom_description']))
+		{
+			$subQueries['#__sh404sef_metas'][] = "add `og_custom_description` varchar(512) CHARACTER SET " . $this->charset . " collate " . $this->collation . " default ''";
+		}
+		else
+		{
+			$subQueries['#__sh404sef_metas'][] = "modify `og_custom_description` varchar(512) CHARACTER SET " . $this->charset . " collate " . $this->collation;
+		}
+		// add custom head/body raw content per URL
+		if (empty($columns['raw_content_head_top']))
+		{
+			$subQueries['#__sh404sef_metas'][] = "add `raw_content_head_top` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+			$subQueries['#__sh404sef_metas'][] = "add `raw_content_head_bottom` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+			$subQueries['#__sh404sef_metas'][] = "add `raw_content_body_top` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+			$subQueries['#__sh404sef_metas'][] = "add `raw_content_body_bottom` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+		}
+		else
+		{
+			$subQueries['#__sh404sef_metas'][] = "modify `raw_content_head_top` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+			$subQueries['#__sh404sef_metas'][] = "modify `raw_content_head_bottom` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+			$subQueries['#__sh404sef_metas'][] = "modify `raw_content_body_top` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+			$subQueries['#__sh404sef_metas'][] = "modify `raw_content_body_bottom` MEDIUMTEXT CHARACTER SET " . $this->charset . " COLLATE " . $this->collation . " DEFAULT ''";
+		}
 		// ------------------------------------------------------------------------------
 		// #__sh404sef_aliases
 		// ------------------------------------------------------------------------------
@@ -2362,7 +2481,7 @@ class Com_Sh404sefInstallerScript
 		$subQueries['#__sh404sef_hits_shurls'] = array();
 
 		// 4.13.3 -  extend all URL fields to 2048 chars
-		$subQueries['#__sh404sef_hits_shurls'] = array();
+		$subQueries['#__sh404sef_hits_shurls']   = array();
 		$subQueries['#__sh404sef_hits_shurls'][] = 'modify `url` varchar(2048)';
 		$subQueries['#__sh404sef_hits_shurls'][] = 'DROP INDEX `url`';
 		$subQueries['#__sh404sef_hits_shurls'][] = 'add index `url` (`url`(190))';
@@ -2377,7 +2496,7 @@ class Com_Sh404sefInstallerScript
 		$subQueries['#__sh404sef_hits_aliases'] = array();
 
 		// 4.13.3 -  extend all URL fields to 2048 chars
-		$subQueries['#__sh404sef_hits_aliases'] = array();
+		$subQueries['#__sh404sef_hits_aliases']   = array();
 		$subQueries['#__sh404sef_hits_aliases'][] = 'modify `url` varchar(2048)';
 		$subQueries['#__sh404sef_hits_aliases'][] = 'DROP INDEX `url`';
 		$subQueries['#__sh404sef_hits_aliases'][] = 'add index `url` (`url`(190))';
@@ -2392,7 +2511,7 @@ class Com_Sh404sefInstallerScript
 		$subQueries['#__sh404sef_hits_404s'] = array();
 
 		// 4.13.3 -  extend all URL fields to 2048 chars
-		$subQueries['#__sh404sef_hits_404s'] = array();
+		$subQueries['#__sh404sef_hits_404s']   = array();
 		$subQueries['#__sh404sef_hits_404s'][] = 'modify `url` varchar(2048)';
 		$subQueries['#__sh404sef_hits_404s'][] = 'DROP INDEX `url`';
 		$subQueries['#__sh404sef_hits_404s'][] = 'add index `url` (`url`(190))';
@@ -2461,7 +2580,7 @@ class Com_Sh404sefInstallerScript
 					}
 				}
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				JFactory::getApplication()
 				        ->enqueueMessage(
@@ -2491,7 +2610,7 @@ class Com_Sh404sefInstallerScript
 		{
 			//$extensionId = (int) ShlDbHelper::selectResult('#__extensions', array('extension_id'),
 			//	array('type' => 'component', 'element' => 'com_sh404sef'));
-			$db = JFactory::getDbo();
+			$db    = JFactory::getDbo();
 			$query = $db->getQuery(true);
 			$query->select('extension_id')
 			      ->from('#__extensions')
@@ -2500,7 +2619,7 @@ class Com_Sh404sefInstallerScript
 			$db->setQuery($query);
 			$extensionId = $db->loadResult();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$extensionId = 0;
 		}

@@ -3,16 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date		2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
 if (!defined('_JEXEC'))
+{
 	die('Direct Access to this location is not allowed.');
+}
 
 class Sh404sefHelperHtmlBase
 {
@@ -20,15 +22,17 @@ class Sh404sefHelperHtmlBase
 	 * Method to create a select list of the installed components
 	 *
 	 * @access  public
+	 *
 	 * @param int ID of current item
 	 * @param string name of select list
 	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
 	 * @param boolean, if true, a line 'Select all' is inserted at the start of the list
 	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildComponentsSelectList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '',
-		$customSubmit = '')
+	                                                 $customSubmit = '')
 	{
 		// load components from DB
 		$components = Sh404sefHelperGeneral::getComponentsList();
@@ -60,11 +64,15 @@ class Sh404sefHelperHtmlBase
 	 * @param $autoSubmit
 	 * @param $addSelectAll
 	 * @param $selectAllTitle
+	 *
+	 * @return array
 	 */
 	public static function buildUserLevelsList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '', $customSubmit = '')
 	{
-		ShlSystem_Log::debug('sh404sef',
-			'Sh404sefHelperHtml::buildUserLevelsList has been removed, not needed as there is no user levels anymore but groups instead');
+		ShlSystem_Log::debug(
+			'sh404sef',
+			'Sh404sefHelperHtml::buildUserLevelsList has been removed, not needed as there is no user levels anymore but groups instead'
+		);
 		return array();
 	}
 
@@ -72,15 +80,17 @@ class Sh404sefHelperHtmlBase
 	 * Method to create a select list of the installed components
 	 *
 	 * @access  public
+	 *
 	 * @param int ID of current item
 	 * @param string name of select list
 	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
 	 * @param boolean, if true, a line 'Select all' is inserted at the start of the list
 	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildLanguagesSelectList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '',
-		$customSubmit = '')
+	                                                $customSubmit = '')
 	{
 		// load languages from DB
 		$languages = Sh404sefHelperLanguage::getInstalledLanguagesList();
@@ -106,18 +116,20 @@ class Sh404sefHelperHtmlBase
 	 * Method to create a select list of possible date ranges of the analytics dashboard
 	 *
 	 * @access  public
+	 *
 	 * @param int ID of current item
 	 * @param string name of select list
 	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
 	 * @param boolean, if true, a line 'Select all' is inserted at the start of the list
 	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildDashboardDateRangeList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '',
-		$customSubmit = '')
+	                                                   $customSubmit = '')
 	{
 		// build up list from scratch
-		$data = array();
+		$data   = array();
 		$data[] = array('id' => 'week', 'title' => JText::_('COM_SH404SEF_WEEK'));
 		$data[] = array('id' => 'month', 'title' => JText::_('COM_SH404SEF_MONTH'));
 		$data[] = array('id' => 'year', 'title' => JText::_('COM_SH404SEF_YEAR'));
@@ -133,18 +145,21 @@ class Sh404sefHelperHtmlBase
 	 * Method to create a select list of possible data types of the analytics dashboard
 	 *
 	 * @access  public
-	 * @param int ID of current item
-	 * @param string name of select list
-	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
-	 * @param boolean, if true, a line 'Select all' is inserted at the start of the list
-	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
+	 * @param        $current
+	 * @param        $name
+	 * @param bool   $autoSubmit
+	 * @param bool   $addSelectAll
+	 * @param string $selectAllTitle
+	 * @param string $customSubmit
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildDashboardDataTypeList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '',
-		$customSubmit = '')
+	                                                  $customSubmit = '')
 	{
 		// build up list from scratch
-		$data = array();
+		$data   = array();
 		$data[] = array('id' => 'ga:pageviews', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_PAGEVIEWS'));
 		$data[] = array('id' => 'ga:sessions', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_VISITS'));
 		$data[] = array('id' => 'ga:users', 'title' => JText::_('COM_SH404SEF_ANALYTICS_DATA_VISITORS'));
@@ -160,20 +175,23 @@ class Sh404sefHelperHtmlBase
 	 * Method to create a select list
 	 *
 	 * @access  public
-	 * @param array $data elements of the select list. An array of (id, title) arrays
-	 * @param int ID of current item
-	 * @param string name of select list
-	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
-	 * @param boolean, if true, a line 'Select all' is inserted at the start of the list
-	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
+	 * @param array  $data elements of the select list. An array of (id, title) arrays
+	 * @param        $current
+	 * @param        $name
+	 * @param bool   $autoSubmit
+	 * @param bool   $addSelectAll
+	 * @param string $selectAllTitle
+	 * @param string $customSubmit
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildSelectList($data, $current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '',
-		$customSubmit = '')
+	                                       $customSubmit = '')
 	{
 		// should we autosubmit ?
 		$customSubmit = empty($customSubmit) ? ' onchange="document.adminForm.limitstart.value=0;document.adminForm.submit();"' : $customSubmit;
-		$extra = $autoSubmit ? $customSubmit : '';
+		$extra        = $autoSubmit ? $customSubmit : '';
 
 		// add select all option
 		if ($addSelectAll)
@@ -188,20 +206,23 @@ class Sh404sefHelperHtmlBase
 	 * Method to create a select list
 	 *
 	 * @access  public
-	 * @param array $data elements of the select list. An array of (id, title) arrays
-	 * @param int ID of current item
-	 * @param string name of select list
-	 * @param boolean if true, changing selected item will submit the form (assume is an "adminForm")
-	 * @param boolean, if true, a line 'Select all' is inserted at the start of the list
-	 * @param string the "Select all" to be displayed, if $addSelectAll is true
+	 *
+	 * @param array  $data elements of the select list. An array of (id, title) arrays
+	 * @param        $current
+	 * @param        $name
+	 * @param bool   $autoSubmit
+	 * @param bool   $addSelectAll
+	 * @param string $selectAllTitle
+	 * @param string $customSubmit
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildGroupedSelectList($data, $current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '',
-		$customSubmit = '')
+	                                              $customSubmit = '')
 	{
 		// should we autosubmit ?
 		$customSubmit = empty($customSubmit) ? ' onchange="document.adminForm.limitstart.value=0;document.adminForm.submit();"' : $customSubmit;
-		$extra = $autoSubmit ? $customSubmit : '';
+		$extra        = $autoSubmit ? $customSubmit : '';
 
 		// add select all option
 		if ($addSelectAll)
@@ -216,15 +237,19 @@ class Sh404sefHelperHtmlBase
 	 * Method to create a select list
 	 *
 	 * @access  public
+	 *
 	 * @param int ID of current item
 	 * @param string name of select list
+	 *
 	 * @return  string HTML output
 	 */
 	public static function buildBooleanAndDefaultSelectList($selected, $name)
 	{
-		$arr = array(JHtml::_('select.option', SH404SEF_OPTION_VALUE_NO, JText::_('JNO')),
+		$arr = array(
+			JHtml::_('select.option', SH404SEF_OPTION_VALUE_NO, JText::_('JNO')),
 			JHtml::_('select.option', SH404SEF_OPTION_VALUE_YES, JText::_('JYES')),
-			JHtml::_('select.option', SH404SEF_OPTION_VALUE_USE_DEFAULT, JText::_('JOPTION_USE_DEFAULT')));
+			JHtml::_('select.option', SH404SEF_OPTION_VALUE_USE_DEFAULT, JText::_('JOPTION_USE_DEFAULT'))
+		);
 		return JHtml::_('select.genericlist', $arr, $name, '', 'value', 'text', (int) $selected);
 	}
 
@@ -232,21 +257,14 @@ class Sh404sefHelperHtmlBase
 	 * Add an admin sub menu entry, accounting for J2/J3
 	 * syntax differences
 	 *
-	 * @param string $name display name of menu entry
-	 * @param string $link link associated to menu entry
+	 * @param string  $name display name of menu entry
+	 * @param string  $link link associated to menu entry
 	 * @param boolean $enabled if false, menu entry is displayed but disabled
 	 */
 	protected static function _addMenuEntry($name, $link, $enabled)
 	{
-		if (version_compare(JVERSION, '3.0', 'ge'))
-		{
-			$enabled = $enabled === -1 ? $enabled : !$enabled;
-			JHtmlSidebar::addEntry($name, $link, $enabled);
-		}
-		else
-		{
-			JSubMenuHelper::addEntry($name, $link, $enabled);
-		}
+		$enabled = $enabled === -1 ? $enabled : !$enabled;
+		JHtmlSidebar::addEntry($name, $link, $enabled);
 	}
 
 	/**
@@ -254,22 +272,22 @@ class Sh404sefHelperHtmlBase
 	 *
 	 * @return  string  The necessary HTML to display the sidebar
 	 *
+	 * @throws Exception
 	 * @since   3.0
 	 */
 	public static function renderSubmenu()
 	{
 		// Collect display data
-		$data = new stdClass;
-		$data->list = JHtml::_('sidebar.getEntries');
-		$data->filters = JHtml::_('sidebar.getFilters');
-		$data->action = JHtml::_('sidebar.getAction');
-		$data->displayMenu = count($data->list);
+		$data                 = new stdClass;
+		$data->list           = JHtml::_('sidebar.getEntries');
+		$data->filters        = JHtml::_('sidebar.getFilters');
+		$data->action         = JHtml::_('sidebar.getAction');
+		$data->displayMenu    = count($data->list);
 		$data->displayFilters = count($data->filters);
-		$data->hide = JFactory::getApplication()->input->getBool('hidemainmenu');
+		$data->hide           = JFactory::getApplication()->input->getBool('hidemainmenu');
 
 		// Create a layout object and ask it to render the sidebar
-		$sidebarHtml = ShlMvcLayout_Helper::render('com_sh404sef.submenus.submenu', $data);
-		return $sidebarHtml;
+		return ShlMvcLayout_Helper::render('com_sh404sef.submenus.submenu', $data);;
 	}
 
 	/**
@@ -278,6 +296,8 @@ class Sh404sefHelperHtmlBase
 	 *
 	 * @param string $text text to be displayed
 	 * @param string $title title if any
+	 *
+	 * @return string
 	 */
 	public static function wrapTitle($text, $title = '')
 	{
@@ -292,22 +312,26 @@ class Sh404sefHelperHtmlBase
 	 * @param string $text text to be displayed
 	 * @param string $title title if any
 	 * @param string $tip tip, if any
+	 *
+	 * @return string
 	 */
 	public static function wrapTip($text, $title = '', $tip = '', $class = 'hasTip')
 	{
 		$html = empty($title) ? $text
 			: '<div ' . (empty($tip) ? '' : ' class="' . $class . '"') . ' title="' . $title . (empty($tip) ? '' : '::' . $tip) . '">' . $text
-				. '</div>';
+			. '</div>';
 		return $html;
 	}
 
 	/**
 	 *
 	 * Enclose a tip title and a tip text in a tag, for usage in a bootstrap tooltip
+	 *
 	 * @param string $title
 	 * @param string $tip
 	 * @param string $openingTitleTag
 	 * @param string $closingTitleTag
+	 *
 	 * @return string wrapped title
 	 */
 	public static function wrapBootstrapTipTitle($title = '', $tip = '', $openingTitleTag = '<h4>', $closingTitleTag = '</h4>')
@@ -322,20 +346,23 @@ class Sh404sefHelperHtmlBase
 	 *
 	 * @param string $text the text to be shorteb
 	 * @param string $type index of shortening dimensions in modalTitleSizes program config array
+	 *
 	 * @return string
 	 */
 	public static function abridge($text, $type)
 	{
-		return JHtml::_('string.abridge', $text, Sh404sefFactory::getPConfig()->modalTitleSizes[$type]['l'],
-			Sh404sefFactory::getPConfig()->modalTitleSizes[$type]['i']);
+		return JHtml::_(
+			'string.abridge', $text, Sh404sefFactory::getPConfig()->modalTitleSizes[$type]['l'],
+			Sh404sefFactory::getPConfig()->modalTitleSizes[$type]['i']
+		);
 	}
 
 	/**
 	 * A copy of Joomla own modal helper function,
 	 * giving access to more params
 	 *
-	 * @param $selector selector class to stitch modal javascript on
-	 * @param $params an array of key/values pairs to be passed as options to SqueezeBox
+	 * @param string $selector selector class to stitch modal javascript on
+	 * @param array  $params an array of key/values pairs to be passed as options to SqueezeBox
 	 */
 	public static function modal($selector = 'a.modal', $params = array())
 	{
@@ -387,7 +414,7 @@ class Sh404sefHelperHtmlBase
       SqueezeBox.initialize({" . $options . "});
 
       $$('" . $selector
-					. "').each(function(el) {
+				. "').each(function(el) {
         el.addEvent('click', function(e) {
           new Event(e).stop();
           if (!window.parent.shAlreadySqueezed) {
@@ -396,7 +423,8 @@ class Sh404sefHelperHtmlBase
           }
         });
       });
-    });");
+    });"
+			);
 
 		// Set static array
 		$modals[$sig] = true;
@@ -409,26 +437,26 @@ class Sh404sefHelperHtmlBase
 		$opt = array();
 
 		$opt['ajaxOptions'] = (isset($params['ajaxOptions']) && (is_array($params['ajaxOptions']))) ? $params['ajaxOptions'] : null;
-		$opt['size'] = (isset($params['size']) && (is_array($params['size']))) ? $params['size'] : null;
+		$opt['size']        = (isset($params['size']) && (is_array($params['size']))) ? $params['size'] : null;
 		$opt['sizeLoading'] = (isset($params['sizeLoading']) && (is_array($params['sizeLoading']))) ? $params['sizeLoading'] : null;
 		$opt['marginInner'] = (isset($params['marginInner']) && (is_array($params['marginInner']))) ? $params['marginInner'] : null;
 		$opt['marginImage'] = (isset($params['marginImage']) && (is_array($params['marginImage']))) ? $params['marginImage'] : null;
 
 		$opt['overlayOpacity'] = (isset($params['overlayOpacity'])) ? $params['overlayOpacity'] : null;
-		$opt['classWindow'] = (isset($params['classWindow'])) ? $params['classWindow'] : null;
-		$opt['classOverlay'] = (isset($params['classOverlay'])) ? $params['classOverlay'] : null;
-		$opt['disableFx'] = (isset($params['disableFx'])) ? $params['disableFx'] : null;
+		$opt['classWindow']    = (isset($params['classWindow'])) ? $params['classWindow'] : null;
+		$opt['classOverlay']   = (isset($params['classOverlay'])) ? $params['classOverlay'] : null;
+		$opt['disableFx']      = (isset($params['disableFx'])) ? $params['disableFx'] : null;
 
-		$opt['onOpen'] = (isset($params['onOpen'])) ? $params['onOpen'] : null;
-		$opt['onClose'] = (isset($params['onClose'])) ? $params['onClose'] : null;
+		$opt['onOpen']   = (isset($params['onOpen'])) ? $params['onOpen'] : null;
+		$opt['onClose']  = (isset($params['onClose'])) ? $params['onClose'] : null;
 		$opt['onUpdate'] = (isset($params['onUpdate'])) ? $params['onUpdate'] : null;
 		$opt['onResize'] = (isset($params['onResize'])) ? $params['onResize'] : null;
-		$opt['onMove'] = (isset($params['onMove'])) ? $params['onMove'] : null;
-		$opt['onShow'] = (isset($params['onShow'])) ? $params['onShow'] : null;
-		$opt['onHide'] = (isset($params['onHide'])) ? $params['onHide'] : null;
+		$opt['onMove']   = (isset($params['onMove'])) ? $params['onMove'] : null;
+		$opt['onShow']   = (isset($params['onShow'])) ? $params['onShow'] : null;
+		$opt['onHide']   = (isset($params['onHide'])) ? $params['onHide'] : null;
 
 		$opt['fxOverlayDuration'] = (isset($params['fxOverlayDuration'])) ? $params['fxOverlayDuration'] : null;
-		$opt['fxResizeDuration'] = (isset($params['fxResizeDuration'])) ? $params['fxResizeDuration'] : null;
+		$opt['fxResizeDuration']  = (isset($params['fxResizeDuration'])) ? $params['fxResizeDuration'] : null;
 		$opt['fxContentDuration'] = (isset($params['fxContentDuration'])) ? $params['fxContentDuration'] : null;
 
 		$options = self::JGetJSObject($opt);
@@ -443,7 +471,8 @@ class Sh404sefHelperHtmlBase
 	 * Internal method to get a JavaScript object notation string from an array
 	 * Copied over from Joomla lib, for access reasons
 	 *
-	 * @param array $array  The array to convert to JavaScript object notation
+	 * @param array $array The array to convert to JavaScript object notation
+	 *
 	 * @return  string  JavaScript object notation representation of the array
 	 * @since 1.5
 	 */
@@ -488,6 +517,8 @@ class Sh404sefHelperHtmlBase
 	 * @param $modal boolean, if true, required stuff to make the link open in modal box is added
 	 * @param $hasTip boolean, if true, required stuff to turn elementData['title'] into a tooltip is added
 	 * @param $extra an array holding key/value pairs, will be added as raw attributes to the link
+	 *
+	 * @return string
 	 */
 	public static function makeLink($view, $linkData, $elementData, $modal = false, $modalOptions = array(), $hasTip = false, $extra = array())
 	{
@@ -529,7 +560,7 @@ class Sh404sefHelperHtmlBase
 		if ($modal)
 		{
 			$modalOptionsString = self::makeSqueezeboxOptions($modalOptions);
-			$rel .= ' {handler: \'iframe\'' . (empty($modalOptionsString) ? '' : ', ' . $modalOptionsString) . '}';
+			$rel                .= ' {handler: \'iframe\'' . (empty($modalOptionsString) ? '' : ', ' . $modalOptionsString) . '}';
 		}
 
 		// store in attributes array
@@ -551,7 +582,6 @@ class Sh404sefHelperHtmlBase
 		$anchor = empty($elementData['anchor']) ? $title : $elementData['anchor'];
 
 		return JHTML::link($url, $anchor, $attribs);
-
 	}
 
 	public static function gridMainUrl(&$url, $i)
@@ -559,16 +589,16 @@ class Sh404sefHelperHtmlBase
 		$isMain = $url->rank == 0;
 
 		$imgPrefix = $isMain ? '' : '-non';
-		$img = 'components/com_sh404sef/assets/images/icon-16' . $imgPrefix . '-default.png';
+		$img       = 'components/com_sh404sef/assets/images/icon-16' . $imgPrefix . '-default.png';
 
 		if ($isMain)
 		{
-			$alt = JText::_('COM_SH404SEF_DUPLICATE_IS_MAIN');
+			$alt  = JText::_('COM_SH404SEF_DUPLICATE_IS_MAIN');
 			$href = '<img src="' . $img . '" border="0" alt="' . $alt . '" title="' . $alt . '" />';
 		}
 		else
 		{
-			$alt = JText::sprintf('COM_SH404SEF_DUPLICATE_MAKE_MAIN', $url->oldurl);
+			$alt  = JText::sprintf('COM_SH404SEF_DUPLICATE_MAKE_MAIN', $url->oldurl);
 			$href = '
     <a href="javascript:void(0);" onclick="return listItemTask(\'cb' . $i . '\',\'makemainurl\')" title="' . $alt . '">
     <img src="' . $img . '" border="0" alt="' . $alt . '" /></a>';
@@ -580,121 +610,136 @@ class Sh404sefHelperHtmlBase
 	 * Returns html to display a main control panel icon
 	 *
 	 * @param string $function name of function performed by icon
+	 *
+	 * @return string
 	 */
 	public static function getCPImage($function)
 	{
 		switch ($function)
 		{
 			case 'config_base':
-				$img = ' <img src=\'components/com_sh404sef/assets/images/icon-48-cpanel.png\'/>';
-				$linkData = array('c' => 'config', 'tmpl' => 'component');
-				$urlData = array('title' => JText::_('COM_SH404SEF_CONFIG_DESC'), 'class' => 'modalediturl',
-					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG') . '</span>');
+				$img          = ' <img src=\'components/com_sh404sef/assets/images/icon-48-cpanel.png\'/>';
+				$linkData     = array('c' => 'config', 'tmpl' => 'component');
+				$urlData      = array(
+					'title'  => JText::_('COM_SH404SEF_CONFIG_DESC'), 'class' => 'modalediturl',
+					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG') . '</span>'
+				);
 				$modalOptions = array('size' => array('x' => '\\window.getScrollSize().x*.9', 'y' => '\\window.getSize().y*.9'));
-				$link = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
+				$link         = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
 				break;
 			case 'config_ext':
-				$img = ' <img src=\'components/com_sh404sef/assets/images/icon-48-ext.png\'/>';
-				$linkData = array('c' => 'config', 'layout' => 'ext', 'tmpl' => 'component');
-				$urlData = array('title' => JText::_('COM_SH404SEF_CONFIG_EXT_DESC'), 'class' => 'modalediturl',
-					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_EXT') . '</span>');
+				$img          = ' <img src=\'components/com_sh404sef/assets/images/icon-48-ext.png\'/>';
+				$linkData     = array('c' => 'config', 'layout' => 'ext', 'tmpl' => 'component');
+				$urlData      = array(
+					'title'  => JText::_('COM_SH404SEF_CONFIG_EXT_DESC'), 'class' => 'modalediturl',
+					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_EXT') . '</span>'
+				);
 				$modalOptions = array('size' => array('x' => '\\window.getScrollSize().x*.9', 'y' => '\\window.getSize().y*.9'));
-				$link = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
+				$link         = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
 				break;
 			case 'config_error_page':
-				$img = ' <img src=\'components/com_sh404sef/assets/images/icon-48-errorpage.png\'/>';
-				$linkData = array('c' => 'config', 'layout' => 'errordocs', 'tmpl' => 'component');
-				$urlData = array('title' => JText::_('COM_SH404SEF_CONFIG_ERROR_PAGE_DESC'), 'class' => 'modalediturl',
-					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_ERROR_PAGE') . '</span>');
+				$img          = ' <img src=\'components/com_sh404sef/assets/images/icon-48-errorpage.png\'/>';
+				$linkData     = array('c' => 'config', 'layout' => 'errordocs', 'tmpl' => 'component');
+				$urlData      = array(
+					'title'  => JText::_('COM_SH404SEF_CONFIG_ERROR_PAGE_DESC'), 'class' => 'modalediturl',
+					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_ERROR_PAGE') . '</span>'
+				);
 				$modalOptions = array('size' => array('x' => '\\window.getScrollSize().x*.9', 'y' => '\\window.getSize().y*.9'));
-				$link = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
+				$link         = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
 				break;
 			case 'config_seo':
-				$img = ' <img src=\'components/com_sh404sef/assets/images/icon-48-seo.png\'/>';
-				$linkData = array('c' => 'config', 'layout' => 'seo', 'tmpl' => 'component');
-				$urlData = array('title' => JText::_('COM_SH404SEF_CONFIG_SEO_DESC'), 'class' => 'modalediturl',
-					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_SEO') . '</span>');
+				$img          = ' <img src=\'components/com_sh404sef/assets/images/icon-48-seo.png\'/>';
+				$linkData     = array('c' => 'config', 'layout' => 'seo', 'tmpl' => 'component');
+				$urlData      = array(
+					'title'  => JText::_('COM_SH404SEF_CONFIG_SEO_DESC'), 'class' => 'modalediturl',
+					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_SEO') . '</span>'
+				);
 				$modalOptions = array('size' => array('x' => 700, 'y' => '\\window.getSize().y*.7'));
-				$link = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
+				$link         = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
 				break;
 			case 'config_social_seo':
-				$img = ' <img src=\'components/com_sh404sef/assets/images/icon-48-facebook.png\'/>';
-				$linkData = array('c' => 'config', 'layout' => 'social_seo', 'tmpl' => 'component');
-				$urlData = array('title' => JText::_('COM_SH404SEF_CONFIG_SOCIAL_SEO_DESC'), 'class' => 'modalediturl',
-					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_SOCIAL_SEO') . '</span>');
+				$img          = ' <img src=\'components/com_sh404sef/assets/images/icon-48-facebook.png\'/>';
+				$linkData     = array('c' => 'config', 'layout' => 'social_seo', 'tmpl' => 'component');
+				$urlData      = array(
+					'title'  => JText::_('COM_SH404SEF_CONFIG_SOCIAL_SEO_DESC'), 'class' => 'modalediturl',
+					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_SOCIAL_SEO') . '</span>'
+				);
 				$modalOptions = array('size' => array('x' => 700, 'y' => '\\window.getSize().y*.7'));
-				$link = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
+				$link         = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
 				break;
 			case 'config_sec':
-				$img = ' <img src=\'components/com_sh404sef/assets/images/icon-48-sec.png\'/>';
-				$linkData = array('c' => 'config', 'layout' => 'sec', 'tmpl' => 'component');
-				$urlData = array('title' => JText::_('COM_SH404SEF_CONFIG_SEC_DESC'), 'class' => 'modalediturl',
-					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_SEC') . '</span>');
+				$img          = ' <img src=\'components/com_sh404sef/assets/images/icon-48-sec.png\'/>';
+				$linkData     = array('c' => 'config', 'layout' => 'sec', 'tmpl' => 'component');
+				$urlData      = array(
+					'title'  => JText::_('COM_SH404SEF_CONFIG_SEC_DESC'), 'class' => 'modalediturl',
+					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_SEC') . '</span>'
+				);
 				$modalOptions = array('size' => array('x' => 700, 'y' => '\\window.getSize().y*.9'));
-				$link = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
+				$link         = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
 				break;
 			case 'config_analytics':
-				$img = ' <img src=\'components/com_sh404sef/assets/images/icon-48-analytics.png\'/>';
-				$linkData = array('c' => 'config', 'layout' => 'analytics', 'tmpl' => 'component');
-				$urlData = array('title' => JText::_('COM_SH404SEF_CONFIG_ANALYTICS_DESC'), 'class' => 'modalediturl',
-					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_ANALYTICS') . '</span>');
+				$img          = ' <img src=\'components/com_sh404sef/assets/images/icon-48-analytics.png\'/>';
+				$linkData     = array('c' => 'config', 'layout' => 'analytics', 'tmpl' => 'component');
+				$urlData      = array(
+					'title'  => JText::_('COM_SH404SEF_CONFIG_ANALYTICS_DESC'), 'class' => 'modalediturl',
+					'anchor' => $img . '<span>' . JText::_('COM_SH404SEF_CONFIG_ANALYTICS') . '</span>'
+				);
 				$modalOptions = array('size' => array('x' => 700, 'y' => '\\window.getSize().y*.9'));
-				$link = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
+				$link         = self::makeLink(null, $linkData, $urlData, $modal = true, $modalOptions, $hasTip = false, $extra = '');
 				break;
 
 			case 'urlmanager':
-				$img = 'icon-48-sefmanager.png';
-				$title = JText::_('COM_SH404SEF_VIEWURLDESC');
+				$img    = 'icon-48-sefmanager.png';
+				$title  = JText::_('COM_SH404SEF_VIEWURLDESC');
 				$anchor = JText::_('COM_SH404SEF_VIEWURL');
-				$link = 'index.php?option=com_sh404sef&c=urls&layout=default&view=urls';
-				$link = self::_doLinkCPImage($img, $title, $anchor, $link);
+				$link   = 'index.php?option=com_sh404sef&c=urls&layout=default&view=urls';
+				$link   = self::_doLinkCPImage($img, $title, $anchor, $link);
 				break;
 			case '404manager':
-				$img = 'icon-48-404log.png';
-				$title = JText::_('COM_SH404SEF_VIEW404DESC');
+				$img    = 'icon-48-404log.png';
+				$title  = JText::_('COM_SH404SEF_VIEW404DESC');
 				$anchor = JText::_('COM_SH404SEF_404_MANAGER');
-				$link = 'index.php?option=com_sh404sef&c=urls&layout=view404&view=urls';
-				$link = self::_doLinkCPImage($img, $title, $anchor, $link);
+				$link   = 'index.php?option=com_sh404sef&c=urls&layout=view404&view=urls';
+				$link   = self::_doLinkCPImage($img, $title, $anchor, $link);
 				break;
 			case 'aliasesmanager':
-				$img = 'icon-48-aliases.png';
-				$title = JText::_('COM_SH404SEF_ALIASES_HELP');
+				$img    = 'icon-48-aliases.png';
+				$title  = JText::_('COM_SH404SEF_ALIASES_HELP');
 				$anchor = JText::_('COM_SH404SEF_ALIASES_MANAGER');
-				$link = 'index.php?option=com_sh404sef&c=aliases&layout=default&view=aliases';
-				$link = self::_doLinkCPImage($img, $title, $anchor, $link);
+				$link   = 'index.php?option=com_sh404sef&c=aliases&layout=default&view=aliases';
+				$link   = self::_doLinkCPImage($img, $title, $anchor, $link);
 				break;
 			case 'pageidmanager':
-				$img = 'icon-48-pageid.png';
-				$title = JText::_('COM_SH404SEF_CP_PAGEID_HELP');
+				$img    = 'icon-48-pageid.png';
+				$title  = JText::_('COM_SH404SEF_CP_PAGEID_HELP');
 				$anchor = JText::_('COM_SH404SEF_PAGEID_MANAGER');
-				$link = 'index.php?option=com_sh404sef&c=pageids&layout=default&view=pageids';
-				$link = self::_doLinkCPImage($img, $title, $anchor, $link);
+				$link   = 'index.php?option=com_sh404sef&c=pageids&layout=default&view=pageids';
+				$link   = self::_doLinkCPImage($img, $title, $anchor, $link);
 				break;
 			case 'metamanager':
-				$img = 'icon-48-metas.png';
-				$title = JText::_('COM_SH404SEF_META_TAGS_DESC');
+				$img    = 'icon-48-metas.png';
+				$title  = JText::_('COM_SH404SEF_META_TAGS_DESC');
 				$anchor = JText::_('COM_SH404SEF_META_TAGS');
-				$link = 'index.php?option=com_sh404sef&c=metas&layout=default&view=metas';
-				$link = self::_doLinkCPImage($img, $title, $anchor, $link);
+				$link   = 'index.php?option=com_sh404sef&c=metas&layout=default&view=metas';
+				$link   = self::_doLinkCPImage($img, $title, $anchor, $link);
 				break;
 			case 'analytics':
-				$img = 'icon-48-analytics.png';
-				$title = JText::_('COM_SH404SEF_ANALYTICSDESC');
+				$img    = 'icon-48-analytics.png';
+				$title  = JText::_('COM_SH404SEF_ANALYTICSDESC');
 				$anchor = JText::_('COM_SH404SEF_ANALYTICS_MANAGER');
-				$link = 'index.php?option=com_sh404sef&c=analytics&layout=default&view=analytics';
-				$link = self::_doLinkCPImage($img, $title, $anchor, $link);
+				$link   = 'index.php?option=com_sh404sef&c=analytics&layout=default&view=analytics';
+				$link   = self::_doLinkCPImage($img, $title, $anchor, $link);
 				break;
 			case 'doc':
-				$img = 'icon-48-doc.png';
-				$title = JText::_('COM_SH404SEF_INFODESC');
+				$img    = 'icon-48-doc.png';
+				$title  = JText::_('COM_SH404SEF_INFODESC');
 				$anchor = JText::_('COM_SH404SEF_INFO');
-				$link = 'index.php?option=com_sh404sef&layout=info&view=default&task=info';
-				$link = self::_doLinkCPImage($img, $title, $anchor, $link);
+				$link   = 'index.php?option=com_sh404sef&layout=info&view=default&task=info';
+				$link   = self::_doLinkCPImage($img, $title, $anchor, $link);
 				break;
 		}
 
 		return $link;
-
 	}
 
 	private static function _doLinkCPImage($img, $title, $anchor, $link)
@@ -708,7 +753,7 @@ class Sh404sefHelperHtmlBase
 
 	public static function getFixedHeaderClass()
 	{
-		if(version_compare(JVERSION, '3.4', 'ge'))
+		if (version_compare(JVERSION, '3.4', 'ge'))
 		{
 			return '-j34';
 		}
@@ -719,11 +764,11 @@ class Sh404sefHelperHtmlBase
 	{
 		static $sticky = null;
 
-		if(is_null($sticky))
+		if (is_null($sticky))
 		{
 			// hacking again
-			$template = JFactory::getApplication()->getTemplate($params = true);
-			$sticky = $template->params->get('stickyToolbar', 1);
+			$template    = JFactory::getApplication()->getTemplate($params = true);
+			$sticky      = $template->params->get('stickyToolbar', 1);
 			$statusFixed = $template->params->get('statusFixed', 1);
 			if ($template->template == 'isis' && $sticky && $statusFixed)
 			{

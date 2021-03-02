@@ -3,22 +3,20 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date		2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-	die('Direct Access to this location is not allowed.');
+defined('_JEXEC') || die;
 
 class Sh404sefModelSlugs
 {
-
-	private static $_instance = null;
-	private static $_articles = array();
+	private static $_instance   = null;
+	private static $_articles   = array();
 	private static $_categories = array();
 
 	/**
@@ -29,7 +27,6 @@ class Sh404sefModelSlugs
 	 */
 	public static function getInstance()
 	{
-
 		if (is_null(self::$_instance))
 		{
 			self::$_instance = new Sh404sefModelSlugs();
@@ -40,7 +37,6 @@ class Sh404sefModelSlugs
 
 	public function getArticle($id)
 	{
-
 		// sanitize input
 		$id = intval($id);
 		if (empty($id))
@@ -69,7 +65,6 @@ class Sh404sefModelSlugs
 
 	public function getArticleSlug($id, $useAlias, $insertId, $insertIdCatList, $requestedLanguage = '*', $separator = '')
 	{
-
 		$rawArticle = $this->getArticle($id);
 
 		// select language
@@ -82,7 +77,7 @@ class Sh404sefModelSlugs
 		if (empty($rawArticle[$language]))
 		{
 			$languages = array_keys($rawArticle);
-			$language = array_shift($languages);
+			$language  = array_shift($languages);
 		}
 
 		// must insert id ?
@@ -93,7 +88,7 @@ class Sh404sefModelSlugs
 		if (!empty($insertId))
 		{
 			$separator = empty($separator) ? Sh404sefFactory::getConfig()->replacement : $separator;
-			if($insertId == 1)
+			if ($insertId == 1)
 			{
 				// prepend to title
 				$slug = $id . $separator;
@@ -102,7 +97,7 @@ class Sh404sefModelSlugs
 
 		$slug .= $useAlias ? $rawArticle[$language]->alias : $rawArticle[$language]->title;
 
-		if($insertId == 2)
+		if ($insertId == 2)
 		{
 			$slug .= $separator . $id;
 		}
@@ -112,7 +107,6 @@ class Sh404sefModelSlugs
 
 	protected function _shouldInsertArticleId($insertId, $insertIdCatList, $catId)
 	{
-
 		if (empty($insertId) || empty($catId))
 		{
 			return false;
@@ -129,13 +123,14 @@ class Sh404sefModelSlugs
 	 * Get an object describing a category, for the
 	 * purpose of sh404SEF usage, for a Joomla! category
 	 *
-	 * @param string $extension extension for which category is searched
+	 * @param string  $extension extension for which category is searched
 	 * @param integer $id id of requested category
+	 *
+	 * @return mixed
 	 * @throws Sh404sefExceptionDefault if invalid id
 	 */
 	public function getCategory($extension, $id)
 	{
-
 		// sanitize input
 		$extension = strtolower($extension);
 		if (empty($extension) || substr($extension, 0, 4) !== 'com_')
@@ -151,10 +146,8 @@ class Sh404sefModelSlugs
 		// check if cached, create if not
 		if (empty(self::$_categories[$extension]) || empty(self::$_categories[$extension][$id]))
 		{
-
 			// get the Joomla! built category node
-			jimport('joomla.application.categories');
-			$options = array('access' => false, 'published' => 0);
+			$options    = array('access' => false, 'published' => 0);
 			$categories = JCategories::getInstance(str_replace('com_', '', $extension), $options);
 
 			// and ask for the category Joomla! object
@@ -167,16 +160,16 @@ class Sh404sefModelSlugs
 			}
 
 			// we have an object, build our record
-			$cat = new StdClass();
-			$cat->id = $node->id;
+			$cat            = new StdClass();
+			$cat->id        = $node->id;
 			$cat->extension = $node->extension;
-			$cat->title = $node->title;
-			$cat->alias = $node->alias;
-			$cat->language = $node->language;
-			$cat->params = $node->params;
-			$cat->metadesc = $node->metadesc;
-			$cat->metakey = $node->metakey;
-			$cat->metadata = $node->metadata;
+			$cat->title     = $node->title;
+			$cat->alias     = $node->alias;
+			$cat->language  = $node->language;
+			$cat->params    = $node->params;
+			$cat->metadesc  = $node->metadesc;
+			$cat->metakey   = $node->metakey;
+			$cat->metadata  = $node->metadata;
 			$cat->pathArray = $this->_buildCategoryRawNodePathArray($node);
 
 			self::$_categories[$extension][$id][$node->language] = $cat;
@@ -189,12 +182,10 @@ class Sh404sefModelSlugs
 		}
 
 		return self::$_categories[$extension][$id];
-
 	}
 
 	public function getCategoryPathArray($extension, $id, $whichCat, $useAlias, $insertId, $requestedLanguage = '*', $separator = '')
 	{
-
 		// get full category data
 		$rawCat = $this->getCategory($extension, $id);
 
@@ -209,18 +200,20 @@ class Sh404sefModelSlugs
 		if (empty($rawCat[$language]))
 		{
 			$languages = array_keys($rawCat);
-			$language = array_shift($languages);
+			$language  = array_shift($languages);
 		}
 
 		// break reference
 		if (!empty($rawCat[$language]))
 		{
-			$copyCat = clone ($rawCat[$language]);
+			$copyCat = clone($rawCat[$language]);
 		}
 		else
 		{
-			throw new Sh404sefExceptionDefault('Language (' . $requestedLanguage . ') not found in categories list, ' . __METHOD__ . ' in '
-					. __CLASS__, 500);
+			throw new Sh404sefExceptionDefault(
+				'Language (' . $requestedLanguage . ') not found in categories list, ' . __METHOD__ . ' in '
+				. __CLASS__, 500
+			);
 		}
 
 		// only keep appropriate parts, according to request
@@ -253,9 +246,10 @@ class Sh404sefModelSlugs
 				}
 				break;
 			default:
-				throw new Sh404sefExceptionDefault('Invalid configuration option (' . print_r($id) . ') passed to ' . __METHOD__ . ' in ' . __CLASS__,
-					500);
-				;
+				throw new Sh404sefExceptionDefault(
+					'Invalid configuration option (' . print_r($id) . ') passed to ' . __METHOD__ . ' in ' . __CLASS__,
+					500
+				);;
 				break;
 		}
 		// build slug, according to request
@@ -264,7 +258,7 @@ class Sh404sefModelSlugs
 			$pathArray[$key]->slug = $useAlias ? $pathArray[$key]->alias : $pathArray[$key]->title;
 			if ($insertId)
 			{
-				$separator = empty($separator) ? Sh404sefFactory::getConfig()->replacement : $separator;
+				$separator             = empty($separator) ? Sh404sefFactory::getConfig()->replacement : $separator;
 				$pathArray[$key]->slug = $pathArray[$key]->id . $separator . $pathArray[$key]->slug;
 			}
 		}
@@ -274,13 +268,13 @@ class Sh404sefModelSlugs
 	}
 
 	public function getCategorySlugArray($extension, $id, $whichCat, $useAlias, $insertId, $uncategorizedPath = '', $requestedLanguage = '*',
-		$separator = '')
+	                                     $separator = '')
 	{
 		// special case for the "uncategorised" category
 		$unCat = Sh404sefHelperCategories::getUncategorizedCat($extension);
 		if (!empty($unCat) && $id == $unCat->id)
 		{
-			$slug = $useAlias ? $unCat->title : $unCat->alias;
+			$slug      = $useAlias ? $unCat->title : $unCat->alias;
 			$slugArray = empty($uncategorizedPath) ? array($slug) : array($uncategorizedPath, $slug);
 			return $slugArray;
 		}
@@ -305,6 +299,8 @@ class Sh404sefModelSlugs
 	 * complying with general SEF url generation parameters
 	 *
 	 * @param JCategoryNode object $node the category node
+	 *
+	 * @return array
 	 */
 	private function _buildCategoryRawNodePathArray($node)
 	{
@@ -315,17 +311,16 @@ class Sh404sefModelSlugs
 		$safer = 0;
 		do
 		{
-			$tmp = new stdClass();
-			$tmp->id = $node->id;
-			$tmp->title = $node->title;
-			$tmp->alias = $node->alias;
-			$tmp->slug = '';
+			$tmp         = new stdClass();
+			$tmp->id     = $node->id;
+			$tmp->title  = $node->title;
+			$tmp->alias  = $node->alias;
+			$tmp->slug   = '';
 			$pathArray[] = $tmp;
-			$node = $node->getParent();
-			$isRoot = empty($node) || $node->id == 'root';
+			$node        = $node->getParent();
+			$isRoot      = empty($node) || $node->id == 'root';
 			$safer++;
-		}
-		while (!$isRoot && $safer < 20);
+		} while (!$isRoot && $safer < 20);
 
 		// get first things first
 		$pathArray = array_reverse($pathArray);

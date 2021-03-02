@@ -3,15 +3,17 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
+use Weeblr\Wblib\V_SH4_4206\Factory;
+
 // no direct access
-defined('_JEXEC') or die('Restricted access');
+defined('_JEXEC') || die;
 
 /**
  * sh404SEF system plugin
@@ -21,6 +23,19 @@ defined('_JEXEC') or die('Restricted access');
 class plgSystemSh404sef extends JPlugin
 {
 	static $_template = '';
+
+	public function __construct($subject, array $config = array())
+	{
+		parent::__construct($subject, $config);
+
+		// init wbLib
+		defined('WBLIB_EXEC') or define('WBLIB_EXEC', true);
+		if (file_exists(__DIR__ . '/bootstrap.php'))
+		{
+			include_once __DIR__ . '/bootstrap.php';
+		}
+		// @TODO log this error
+	}
 
 	public function onAfterInitialise()
 	{
@@ -58,6 +73,31 @@ class plgSystemSh404sef extends JPlugin
 		// init hooks
 		ShlHook::load('', 'sh404sef_functions.php');
 
+		// init the sh404SEF wbalib app - post sh404SEF version 4.20
+		if (defined('SH404SEF_APP_PATH'))
+		{
+			try
+			{
+				$this->sh4App = Factory::get()->getThis(
+					'app',
+					'sh404sef',
+					array(
+						'id'        => 'sh404sef',
+						'namespace' => '\Weeblr\Sh404sef',
+						'rootpath'  => SH404SEF_APP_PATH
+					)
+				);
+			}
+			catch (\Exception $e)
+			{
+				ShlSystem_Log::error('sh404sef', 'Error loading wbLib sh404SEF app: ' . $e->getMessage());
+			}
+		}
+		else
+		{
+			ShlSystem_Log::error('sh404sef', 'Unable to load wbLib sh404SEF app, SH404SEF_APP_PATH is not defined.');
+		}
+
 		// create the unique page info object, and initialize it
 		$pageInfo = Sh404sefFactory::getPageInfo();
 		$pageInfo->init();
@@ -83,7 +123,7 @@ class plgSystemSh404sef extends JPlugin
 		ShlMvcLayout_Helper::$defaultBasePath = sh404SEF_LAYOUTS;
 
 		// get our configuration
-		$sefConfig = &Sh404sefFactory::getConfig();
+		$sefConfig = Sh404sefFactory::getConfig();
 
 		// hook for a few SEO hacks
 		if ($sefConfig->Enabled && $app->isSite())
@@ -146,6 +186,19 @@ class plgSystemSh404sef extends JPlugin
 			DEFINE('SH404SEF_IS_RUNNING', 1);
 		}
 
+		/**
+		 * Hook to run the registered API handlers.
+		 *
+		 * @api
+		 * @package wbLib\action\api
+		 * @var wblib_api_process_request
+		 * @since   0.0.1
+		 *
+		 */
+		Factory::get()->getThe('hook')->run(
+			'wblib_api_process_request'
+		);
+
 		if (!$app->isAdmin())
 		{
 			// setup our JPagination replacement, so as to bring
@@ -168,6 +221,17 @@ class plgSystemSh404sef extends JPlugin
 			$pageInfo->router = new Sh404sefClassRouter();
 			if (version_compare(JVERSION, '3.4', 'ge'))
 			{
+				$joomlaRouter->attachParseRule(
+					function (&$router, &$uri) {
+						if (Sh404sefHelperAnalytics::shouldDisplayFrontend($uri, $router))
+						{
+							Factory::get()
+							       ->getA('Weeblr\Sh404sef\Helper\Analytics')
+							       ->displayFrontend();
+						}
+					},
+					JRouter::PROCESS_BEFORE
+				);
 				$joomlaRouter->attachParseRule(array($pageInfo->router, 'preprocessParseRule'), JRouter::PROCESS_BEFORE);
 			}
 			$joomlaRouter->attachParseRule(array($pageInfo->router, 'parseRule'));
@@ -187,14 +251,16 @@ class plgSystemSh404sef extends JPlugin
 
 	public function onAfterRoute()
 	{
-		if (defined('SH404SEF_IS_RUNNING'))
+		if (!defined('SH404SEF_IS_RUNNING'))
 		{
-			// set template, to perform alternate template output, if set to
-			$app = JFactory::getApplication();
-			if (!$app->isAdmin())
-			{
-				$this->_setAlternateTemplate();
-			}
+			return;
+		}
+
+		// set template, to perform alternate template output, if set to
+		$app = JFactory::getApplication();
+		if (!$app->isAdmin())
+		{
+			$this->_setAlternateTemplate();
 		}
 	}
 
@@ -250,6 +316,7 @@ class plgSystemSh404sef extends JPlugin
 	 * @param integer  $page Optional page number. Unused. Defaults to zero.
 	 *
 	 * @return  boolean    True on success.
+	 * @throws Exception
 	 */
 	public function onContentPrepare($context, &$row, &$params, $page = 0)
 	{
@@ -506,7 +573,12 @@ class plgSystemSh404sef extends JPlugin
 				$content,
 				'sh404sef_tag_ogp_image',
 				$customData->og_image,
-				'before'
+				'split',
+				array(
+					'split_on'         => '{K2Splitter}',
+					'split_position'   => 'after',
+					'if_no_split_text' => 'before'
+				)
 			);
 			return $content;
 		}

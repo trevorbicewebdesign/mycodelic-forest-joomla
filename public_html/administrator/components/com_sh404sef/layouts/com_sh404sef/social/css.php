@@ -3,56 +3,58 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date		2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
-/**
- * Input:
- * 
- * None
- * 
- */
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-	die('Direct Access to this location is not allowed.');
+defined('_JEXEC') || die;
 
 ?>
 
 <!-- sh404SEF social buttons css -->
 <style type="text/css">
-/* Top padding for buttons set */
-div.sh404sef-social-buttons {
-	padding-top: 0.5em;
-}
-.sh404sef-social-buttons span {
-   	display: inline-block;
- 	vertical-align: top;
- 	margin-bottom: 0.3em;
-}
-/* fix for Linkedin, not full fix as Linkedin has some inline style with !important, which can't be overriden */
-.sh404sef-social-buttons span.IN-widget[style] {
-/*  	vertical-align: bottom !important; */
-}
-/* vertical adjustment for Linkedin */
-.sh404sef-social-buttons span.linkedin {
-/*     position: relative; */
-/*     top: 3px; */
-}
+    /* Top padding for buttons set */
+    div.sh404sef-social-buttons {
+        padding-top: 0.5em;
+        line-height: 1;
+    }
 
-/* Facebook flyout cut-off fix */
-.fb-like span{overflow:visible !important; } 
-.fb-send span{overflow:visible !important;}
-.fb-like iframe{max-width: none !important; } 
-.fb-send iframe{max-width: none !important; }
+    .sh404sef-social-buttons span {
+        display: inline-block;
+        vertical-align: top;
+        margin-bottom: 0.3em;
+    }
 
-/* Joomla default templates css fix */
-/* parent elements needs to have overflow visible */
-.items-row.cols-2, .items-leading {overflow:visible !important;}
-#contentarea {overflow:visible !important;}
+    /* Facebook flyout cut-off fix */
+    .fb-like span {
+        overflow: visible !important;
+    }
+
+    .fb-send span {
+        overflow: visible !important;
+    }
+
+    .fb-like iframe {
+        max-width: none !important;
+    }
+
+    .fb-send iframe {
+        max-width: none !important;
+    }
+
+    /* Joomla default templates css fix */
+    /* parent elements needs to have overflow visible */
+    .items-row.cols-2, .items-leading {
+        overflow: visible !important;
+    }
+
+    #contentarea {
+        overflow: visible !important;
+    }
 
 </style>
 <!-- End of sh404SEF social buttons css -->

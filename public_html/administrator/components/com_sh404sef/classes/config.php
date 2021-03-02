@@ -3,18 +3,15 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date  2019-09-30
+ * @version      4.21.0.4206
+ * @date  2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-{
-	die('Direct Access to this location is not allowed.');
-}
+defined('_JEXEC') || die;
 
 class Sh404sefClassConfig
 {
@@ -37,7 +34,7 @@ class Sh404sefClassConfig
 	const COM_SH404SEF_ROBOTS_META_DEFAULT = 'max-snippet:-1, max-image-preview:large, max-video-preview:-1';
 
 	/* string,  version number */
-	public $version = '4.17.0.3932';
+	public $version = '4.21.0.4206';
 	/* boolean, is 404 SEF enabled  */
 	public $Enabled = false;
 	/* char,  Character to use for url replacement */
@@ -637,6 +634,17 @@ class Sh404sefClassConfig
 	// 4.16
 	public $metaRobotsDefault = self::COM_SH404SEF_ROBOTS_META_DEFAULT;
 
+	// 4.17.1
+	public $rawContentHeadTop    = '';
+	public $rawContentHeadBottom = '';
+	public $rawContentBodyTop    = '';
+	public $rawContentBodyBottom = '';
+
+	// 4.20.0
+	public $analyticsEnableFrontendAccess        = 0;
+	public $analyticsEnableFrontendAccessWithKey = 0;
+	public $analyticsFrontendReportsAccessKey    = '';
+
 	// End of parameters
 
 	/**
@@ -649,10 +657,11 @@ class Sh404sefClassConfig
 	 * If found, transfers data in new object and save to #__extensions table
 	 *
 	 * @param boolean $reset if true, params are read again from db
+	 *
+	 * @throws Exception
 	 */
 	public function __construct($reset = false)
 	{
-
 		$app = JFactory::getApplication();
 
 		// try to read from params column of com_sh404sef record in #__extensions table
@@ -679,21 +688,21 @@ class Sh404sefClassConfig
 			);
 
 			//if we have values that mean we have a json object and we can clear the values for the arrays that contain parameters related to components
-			$this->nocache = array();
-			$this->skip = array();
-			$this->useJoomlaRouter = array();
-			$this->notTranslateURLList = array();
-			$this->notInsertIsoCodeList = array();
-			$this->shDoNotOverrideOwnSef = array();
+			$this->nocache                      = array();
+			$this->skip                         = array();
+			$this->useJoomlaRouter              = array();
+			$this->notTranslateURLList          = array();
+			$this->notInsertIsoCodeList         = array();
+			$this->shDoNotOverrideOwnSef        = array();
 			$this->useJoomlaRouterPhpWithItemid = array();
-			$this->useJoomsefRouter = array();
-			$this->useAcesefRouter = array();
-			$this->compEnablePageId = array();
-			$this->shLangTranslateList = array();
-			$this->shLangInsertCodeList = array();
-			$this->defaultComponentStringList = array();
-			$this->itemidOverridesIfMissing = array();
-			$this->itemidOverridesAlways = array();
+			$this->useJoomsefRouter             = array();
+			$this->useAcesefRouter              = array();
+			$this->compEnablePageId             = array();
+			$this->shLangTranslateList          = array();
+			$this->shLangInsertCodeList         = array();
+			$this->defaultComponentStringList   = array();
+			$this->itemidOverridesIfMissing     = array();
+			$this->itemidOverridesAlways        = array();
 
 			foreach ($values as $key => $value)
 			{
@@ -704,9 +713,9 @@ class Sh404sefClassConfig
 				}
 				elseif (substr_count($key, "___") && substr_count($key, "com_"))
 				{
-					$key_arr = explode("___", $key);
-					$com_str = $key_arr[0];
-					$field = $key_arr[1];
+					$key_arr  = explode("___", $key);
+					$com_str  = $key_arr[0];
+					$field    = $key_arr[1];
 					$com_name = substr($com_str, 4);
 
 					switch ($field)
@@ -790,7 +799,7 @@ class Sh404sefClassConfig
 				elseif (substr_count($key, "languages_"))
 				{
 					$lang_array = explode("_", $key);
-					$lang = $lang_array[1];
+					$lang       = $lang_array[1];
 					$lang_param = ($lang_array[2]);
 					switch ($lang_param)
 					{
@@ -817,10 +826,10 @@ class Sh404sefClassConfig
 
 			$this->shLangInsertCodeList = $this->shInitLanguageList(empty($this->shLangInsertCodeList) ? null : $this->shLangInsertCodeList, 0, 0);
 
-			$paramCurrentList = empty($this->pageTexts) ? null : $this->pageTexts;
-			$paramDefaultValue = isset($pagetext) ? $pagetext : 'Page-%s';
+			$paramCurrentList             = empty($this->pageTexts) ? null : $this->pageTexts;
+			$paramDefaultValue            = isset($pagetext) ? $pagetext : 'Page-%s';
 			$paramDefaultLangDefaultValue = isset($pagetext) ? $pagetext : 'Page-%s';
-			$this->pageTexts = $this
+			$this->pageTexts              = $this
 				->shInitLanguageList(
 					$paramCurrentList,
 					$paramDefaultValue, $paramDefaultLangDefaultValue
@@ -1313,8 +1322,8 @@ class Sh404sefClassConfig
 				{
 					$this->shSecNoProtocolVars = $shSecNoProtocolVars;
 				}
-				$this->ipWhiteList = shReadFile(sh404SEF_ADMIN_ABS_PATH . 'security/sh404SEF_IP_white_list.dat');
-				$this->ipBlackList = shReadFile(sh404SEF_ADMIN_ABS_PATH . 'security/sh404SEF_IP_black_list.dat');
+				$this->ipWhiteList     = shReadFile(sh404SEF_ADMIN_ABS_PATH . 'security/sh404SEF_IP_white_list.dat');
+				$this->ipBlackList     = shReadFile(sh404SEF_ADMIN_ABS_PATH . 'security/sh404SEF_IP_black_list.dat');
 				$this->uAgentWhiteList = shReadFile(sh404SEF_ADMIN_ABS_PATH . 'security/sh404SEF_uAgent_white_list.dat');
 				$this->uAgentBlackList = shReadFile(sh404SEF_ADMIN_ABS_PATH . 'security/sh404SEF_uAgent_black_list.dat');
 
@@ -1361,7 +1370,7 @@ class Sh404sefClassConfig
 				//  if (isset($insertSectionInBlogTableLinks))  // V 1.2.4.x
 				//    $this->insertSectionInBlogTableLinks = $insertSectionInBlogTableLinks;
 
-				$this->shLangTranslateList = $this->shInitLanguageList(isset($shLangTranslateList) ? $shLangTranslateList : null, 0, 0);
+				$this->shLangTranslateList  = $this->shInitLanguageList(isset($shLangTranslateList) ? $shLangTranslateList : null, 0, 0);
 				$this->shLangInsertCodeList = $this->shInitLanguageList(isset($shLangInsertCodeList) ? $shLangInsertCodeList : null, 0, 0);
 
 				if (isset($defaultComponentStringList)) // V 1.2.4.x
@@ -2016,7 +2025,7 @@ class Sh404sefClassConfig
 								// to JFactory::getDocument() from a onAfterInitiliaze handler
 								// At this time, SEF urls are not decoded and thus the document type is set to html instead of pdf or feed
 								// resulting in the home page being displayed instead of the correct document';
-			$shDefaultParams['sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR'] = 0;
+			$shDefaultParams['sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR']     = 0;
 
 			/*
 			 $shDefaultParamsHelp['sh404SEF_PROTECT_AGAINST_BAD_NON_DEFAULT_LANGUAGE_MENU_HOMELINK'] =
@@ -2033,42 +2042,42 @@ class Sh404sefClassConfig
 								// this may not work on some web servers, which transform yoursite.com into
 								// yoursite.com/index.php, thus creating and endless loop. If your server does
 								// that, set this param to 0';
-			$shDefaultParams['sh404SEF_REDIRECT_IF_INDEX_PHP'] = 1;
+			$shDefaultParams['sh404SEF_REDIRECT_IF_INDEX_PHP']     = 1;
 
 			$shDefaultParamsHelp['sh404SEF_NON_SEF_IF_SUPERADMIN'] = '// if superadmin logged in, force non-sef, for testing and setting up purpose';
-			$shDefaultParams['sh404SEF_NON_SEF_IF_SUPERADMIN'] = 0;
+			$shDefaultParams['sh404SEF_NON_SEF_IF_SUPERADMIN']     = 0;
 
 			$shDefaultParamsHelp['sh404SEF_DE_ACTIVATE_LANG_AUTO_REDIRECT'] = '// set to 1 to prevent 303 auto redirect based on user language
 								// use with care, will prevent language switch to work for users without javascript';
-			$shDefaultParams['sh404SEF_DE_ACTIVATE_LANG_AUTO_REDIRECT'] = 1;
+			$shDefaultParams['sh404SEF_DE_ACTIVATE_LANG_AUTO_REDIRECT']     = 1;
 
 			$shDefaultParamsHelp['sh404SEF_CHECK_COMP_IS_INSTALLED'] = '// if 1, SEF URLs will only be built for installed components.';
-			$shDefaultParams['sh404SEF_CHECK_COMP_IS_INSTALLED'] = 1;
+			$shDefaultParams['sh404SEF_CHECK_COMP_IS_INSTALLED']     = 1;
 
 			$shDefaultParamsHelp['sh404SEF_REDIRECT_OUTBOUND_LINKS'] = '// if 1, all outbound links on page will be reached through a redirect
 								// to avoid page rank leakage';
-			$shDefaultParams['sh404SEF_REDIRECT_OUTBOUND_LINKS'] = 0;
+			$shDefaultParams['sh404SEF_REDIRECT_OUTBOUND_LINKS']     = 0;
 
 			$shDefaultParamsHelp['sh404SEF_PDF_DIR'] = '// if not empty, urls to pdf produced by Joomla will be prefixed with this
 								// path. Can be : \'pdf\' or \'pdf/something\' (ie: don\'t put leading or trailing slashes)
 								// Allows you to store some pre-built PDF in a directory called /pdf, with the same name
 								// as a page. Such a pdf will be served directly by the web server instead of being built on
 								// the fly by Joomla. This will save CPU and RAM. (only works this way if using htaccess';
-			$shDefaultParams['sh404SEF_PDF_DIR'] = 'pdf';
+			$shDefaultParams['sh404SEF_PDF_DIR']     = 'pdf';
 
 			$shDefaultParamsHelp['SH404SEF_URL_CACHE_TTL'] = '// time to live for url cache in hours : default = 168h = 1 week
 								// Set to 0 to keep cache forever';
-			$shDefaultParams['SH404SEF_URL_CACHE_TTL'] = 168;
+			$shDefaultParams['SH404SEF_URL_CACHE_TTL']     = 168;
 
 			$shDefaultParamsHelp['SH404SEF_URL_CACHE_WRITES_TO_CHECK_TTL'] = '// number of cache write before checking cache TTL.';
-			$shDefaultParams['SH404SEF_URL_CACHE_WRITES_TO_CHECK_TTL'] = 1000;
+			$shDefaultParams['SH404SEF_URL_CACHE_WRITES_TO_CHECK_TTL']     = 1000;
 
 			$shDefaultParamsHelp['sh404SEF_SEC_MAIL_ATTACKS_TO_ADMIN'] = '// if set to 1, an email will be send to site admin when an attack is logged
 								// if the site is live, you could be drowning in email rapidly !!!';
-			$shDefaultParams['sh404SEF_SEC_MAIL_ATTACKS_TO_ADMIN'] = 0;
+			$shDefaultParams['sh404SEF_SEC_MAIL_ATTACKS_TO_ADMIN']     = 0;
 
 			$shDefaultParams['sh404SEF_SEC_EMAIL_TO_ADMIN_SUBJECT'] = 'Your site %sh404SEF_404_SITE_NAME% was subject to an attack';
-			$shDefaultParams['sh404SEF_SEC_EMAIL_TO_ADMIN_BODY'] = 'Hello !' . "\n\n"
+			$shDefaultParams['sh404SEF_SEC_EMAIL_TO_ADMIN_BODY']    = 'Hello !' . "\n\n"
 				. 'This is sh404SEF security component, running at your site (%sh404SEF_404_SITE_URL%).' . "\n\n"
 				. 'I have just blocked an attack on your site. Please check details below : ' . "\n"
 				. '------------------------------------------------------------------------' . "\n" . '%sh404SEF_404_ATTACK_DETAILS%' . "\n"
@@ -2076,7 +2085,7 @@ class Sh404sefClassConfig
 
 			$shDefaultParamsHelp['SH404SEF_PAGES_TO_CLEAN_LOGS'] = '// number of pages between checks to remove old log files
 								// if 1, we check at every page request';
-			$shDefaultParams['SH404SEF_PAGES_TO_CLEAN_LOGS'] = 10000;
+			$shDefaultParams['SH404SEF_PAGES_TO_CLEAN_LOGS']     = 10000;
 
 			$shDefaultParamsHelp['SH_VM_ALLOW_PRODUCTS_IN_MULTIPLE_CATS'] = '// SECTION : Virtuemart plugin parameters ----------------------------------------------------------------------------
 
@@ -2091,19 +2100,19 @@ class Sh404sefClassConfig
 
 								// set to 1 to always include categories in SOBI2 entries
 								// details pages url';
-			$shDefaultParams['sh404SEF_SOBI2_PARAMS_ALWAYS_INCLUDE_CATS'] = 0;
+			$shDefaultParams['sh404SEF_SOBI2_PARAMS_ALWAYS_INCLUDE_CATS']     = 0;
 
 			$shDefaultParamsHelp['sh404SEF_SOBI2_PARAMS_INCLUDE_ENTRY_ID'] = '// set to 1 so that entry id is prepended to url';
-			$shDefaultParams['sh404SEF_SOBI2_PARAMS_INCLUDE_ENTRY_ID'] = 0;
+			$shDefaultParams['sh404SEF_SOBI2_PARAMS_INCLUDE_ENTRY_ID']     = 0;
 
 			$shDefaultParamsHelp['sh404SEF_SOBI2_PARAMS_INCLUDE_CAT_ID'] = '// set to 1 so that category id is prepended to category name';
-			$shDefaultParams['sh404SEF_SOBI2_PARAMS_INCLUDE_CAT_ID'] = 0;
+			$shDefaultParams['sh404SEF_SOBI2_PARAMS_INCLUDE_CAT_ID']     = 0;
 
 			$shDefaultParamsHelp['SH404SEF_OTHER_DO_NOT_OVERRIDE_EXISTING_META_DATA'] = '// SECTION : Other parameters ----------------------------------------------------------------------------
 
 								// set to 1 to stop overriding meta data with those defined
 								// with sh404SEF';
-			$shDefaultParams['SH404SEF_OTHER_DO_NOT_OVERRIDE_EXISTING_META_DATA'] = 0;
+			$shDefaultParams['SH404SEF_OTHER_DO_NOT_OVERRIDE_EXISTING_META_DATA']     = 0;
 		}
 
 		// b/c : try to read "very. advanced" values from disk file
@@ -2122,7 +2131,7 @@ class Sh404sefClassConfig
 			{ // only need to modify custom params in back-end
 				$this->defaultParamList = '<?php
 			    // custom.sef.php : custom.configuration file for sh404SEF
-			    // 4.17.0.3932 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
+			    // 4.21.0.4206 - https://weeblr.com/joomla-seo-analytics-security/sh404sef
 
 			    // DO NOT REMOVE THIS LINE :
 			    if (!defined(\'_JEXEC\')) die(\'Direct Access to this location is not allowed.\');
@@ -2143,8 +2152,7 @@ class Sh404sefClassConfig
 				}
 
 				// write to disk
-				$quoteGPC = get_magic_quotes_gpc();
-				$paramsList = $quoteGPC ? stripslashes($this->defaultParamList) : $this->defaultParamList;
+				$paramsList = ShlSystem_Compat::getMagicQuotesGpc() ? stripslashes($this->defaultParamList) : $this->defaultParamList;
 				JFile::write($sefCustomConfigFile, $paramsList);
 			}
 		}
@@ -2165,18 +2173,18 @@ class Sh404sefClassConfig
 		unset($shDefaultParamsHelp);
 
 		// compatiblity variables, for sef_ext files usage from OpenSef/SEf Advance V 1.2.4.p
-		$this->encode_page_suffix = '';// if using an opensef sef_ext, we don't let  them manage suffix
-		$this->encode_space_char = $this->replacement;
-		$this->encode_lowercase = $this->LowerCase;
-		$this->encode_strip_chars = $this->stripthese;
-		$this->content_page_name = empty($this->pageTexts[Sh404sefFactory::getPageInfo()->currentLanguageTag]) ? 'Page'
+		$this->encode_page_suffix  = '';// if using an opensef sef_ext, we don't let  them manage suffix
+		$this->encode_space_char   = $this->replacement;
+		$this->encode_lowercase    = $this->LowerCase;
+		$this->encode_strip_chars  = $this->stripthese;
+		$this->content_page_name   = empty($this->pageTexts[Sh404sefFactory::getPageInfo()->currentLanguageTag]) ? 'Page'
 			: str_replace('%s', '', $this->pageTexts[Sh404sefFactory::getPageInfo()->currentLanguageTag]); // V 1.2.4.r
 		$this->content_page_format = '%s' . $this->replacement . '%d'; // V 1.2.4.r
-		$shTemp = $this->shGetReplacements();
+		$shTemp                    = $this->shGetReplacements();
 		foreach ($shTemp as $dest => $source)
 		{
 			$this->spec_chars_d .= $dest . ',';
-			$this->spec_chars .= $source . ',';
+			$this->spec_chars   .= $source . ',';
 		}
 		JString::rtrim($this->spec_chars_d, ',');
 		JString::rtrim($this->spec_chars, ',');
@@ -2194,7 +2202,7 @@ class Sh404sefClassConfig
 		{
 			$this->analyticsEnabled = '0';
 			$this->analyticsEdition = 'ga';
-			$this->analyticsUgaId = '';
+			$this->analyticsUgaId   = '';
 
 			// save to db
 			$rawParams = Sh404sefHelperGeneral::getComponentParams($reset);
@@ -2208,16 +2216,16 @@ class Sh404sefClassConfig
 		include 'config.' . Sh404sefConfigurationEdition::$id . '.php';
 
 		// from 4.7.0, we use Joomla URL Rewriting setting
-		$j3 = version_compare(JVERSION, '3.0', 'ge');
-		$joomlaUrlRewriting = (bool) ($j3 ? $app->get('sef_rewrite') : $app->getCfg('sef_rewrite'));
+		$j3                  = version_compare(JVERSION, '3.0', 'ge');
+		$joomlaUrlRewriting  = (bool) ($j3 ? $app->get('sef_rewrite') : $app->getCfg('sef_rewrite'));
 		$this->shRewriteMode = $joomlaUrlRewriting ? 0 : 1;
 	}
 
 	protected function shInitLanguageList($currentList, $default, $defaultLangDefault)
 	{
 
-		$ret = array();
-		$app = JFactory::getApplication();
+		$ret      = array();
+		$app      = JFactory::getApplication();
 		$pageInfo = Sh404sefFactory::getPageInfo();
 		if (!empty($pageInfo->isMultilingual) && !$app->isAdmin())
 		{
@@ -2413,7 +2421,7 @@ class Sh404sefClassConfig
 			$params = new JRegistry();
 			$params->loadString($plugin->params);
 			$newParams['mobile_switch_enabled'] = $params->get('mobile_switch_enabled', 0);
-			$newParams['mobile_template'] = $params->get('mobile_template', '');
+			$newParams['mobile_template']       = $params->get('mobile_template', '');
 		}
 
 		//merging the new parameters into the datas array that will become the json object;
@@ -2422,7 +2430,7 @@ class Sh404sefClassConfig
 		//-->this code is running also on the site part, not only to the admin, so we need to check out if the JPATH_BASE is going to administrator side
 
 		$comConfigModel = Sh404sefHelperGeneral::getComConfigComponentModel();
-		$component = $comConfigModel->getComponent();
+		$component      = $comConfigModel->getComponent();
 		if (empty($component->id))
 		{
 			return false;
@@ -2451,7 +2459,7 @@ class Sh404sefClassConfig
 			return $shReplacements;
 		}
 		$shReplacements = array();
-		$items = explode(',', $this->shReplacements);
+		$items          = explode(',', $this->shReplacements);
 		foreach ($items as $item)
 		{
 			if (!empty($item))
@@ -2467,7 +2475,7 @@ class Sh404sefClassConfig
 	public function shCheckFilesAccess()
 	{
 
-		$files = array(
+		$files      = array(
 			'administrator/components/com_sh404sef'                => 'administrator/components/com_sh404sef',
 			'administrator/components/com_sh404sef/custom.sef.php' => 'administrator/components/com_sh404sef/index.html',
 			'administrator/components/com_sh404sef/security'       => 'administrator/components/com_sh404sef/security/index.html',

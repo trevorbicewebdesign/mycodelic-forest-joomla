@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -80,9 +80,12 @@ JHtml::_('formbehavior.chosen', 'select');
 					<li<?php echo $this->activePanel == 'aliases' ? ' class="active"' : ''; ?>><a data-toggle="tab"
 					                                                                              href="#panelaliases"><?php echo JText::_('COM_SH404SEF_ALIASES'); ?></a>
 					</li>
-					<li<?php echo $this->activePanel == 'social_seo' ? ' class="active"' : ''; ?>><a data-toggle="tab"
-					                                                                                 href="#panelsocial_seo"><?php echo JText::_('COM_SH404SEF_OG_CONFIG'); ?></a>
-					</li>
+                    <li<?php echo $this->activePanel == 'social_seo' ? ' class="active"' : ''; ?>><a data-toggle="tab"
+                                                                                                     href="#panelsocial_seo"><?php echo JText::_('COM_SH404SEF_OG_CONFIG'); ?></a>
+                    </li>
+                    <li<?php echo $this->activePanel == 'raw_content' ? ' class="active"' : ''; ?>><a data-toggle="tab"
+                                                                                                     href="#panelraw_content"><?php echo JText::_('COM_SH404SEF_CONF_TAB_RAW_CONTENT'); ?></a>
+                    </li>
 				</ul>
 
 				<?php
@@ -107,6 +110,10 @@ JHtml::_('formbehavior.chosen', 'select');
 
 				echo JHtml::_('bootstrap.addPanel', 'sh404SEFEditurl', 'panelsocial_seo');
 				echo $this->loadTemplate($this->joomlaVersionPrefix . '_social_seo');
+				echo JHtml::_('bootstrap.endPanel');
+
+				echo JHtml::_('bootstrap.addPanel', 'sh404SEFEditurl', 'panelraw_content');
+				echo $this->loadTemplate($this->joomlaVersionPrefix . '_raw_content');
 				echo JHtml::_('bootstrap.endPanel');
 
 				echo JHtml::_('bootstrap.endPane');

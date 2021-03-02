@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  *
  */
 
@@ -31,7 +31,7 @@ if (!Sh404sefHelperAcl::userCan('core.manage'))
 }
 
 // find about specific controller requested
-$app = JFactory::getApplication();
+$app   = JFactory::getApplication();
 $cName = $app->input->getCmd('c');
 
 // per view access check
@@ -63,20 +63,9 @@ if (!defined('SH404SEF_BASE_CLASS_LOADED'))
 }
 
 // languagefilter system plugin warning (for Joomla! 2)
-if (version_compare(JVERSION, '3', '<'))
+if ($app->input->get('tmpl') != 'component')
 {
-	$shouldWarn = Sh404sefHelperLanguage::getLanguageFilterWarning();
-	if (!empty($shouldWarn))
-	{
-		$app->enqueueMessage(JText::_('COM_SH404SEF_LANGUAGEFILTER_PLUGIN_WARNING'), 'warning');
-	}
-}
-else
-{
-	if ($app->input->get('tmpl') != 'component')
-	{
-		Sh404sefHelperMsg::updateSystemMessages();
-	}
+	Sh404sefHelperMsg::updateSystemMessages();
 }
 
 // Ensure the behavior is loaded

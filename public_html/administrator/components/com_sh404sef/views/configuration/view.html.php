@@ -3,21 +3,21 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date  2019-09-30
+ * @version      4.21.0.4206
+ * @date  2020-06-26
  */
 
-// Security check to ensure this file is being included by a parent file.
-defined('_JEXEC') or die('Direct Access to this location is not allowed.');
+use Joomla\CMS\Factory;
+use Weeblr\Wblib\V_SH4_4206\Factory as wblFactory;
 
-jimport('joomla.application.component.view');
+// Security check to ensure this file is being included by a parent file.
+defined('_JEXEC') or die;
 
 class Sh404sefViewConfiguration extends ShlMvcView_Base
 {
-
 	public function display($tpl = null)
 	{
 		// version prefix
@@ -48,7 +48,7 @@ class Sh404sefViewConfiguration extends ShlMvcView_Base
 			$this->layoutRenderer['shlegend'] = new ShlMvcLayout_File('com_sh404sef.configuration.fields.legend', sh404SEF_LAYOUTS);
 			$this->layoutRenderer['Rules']    = new ShlMvcLayout_File('com_sh404sef.configuration.fields.rules', sh404SEF_LAYOUTS);
 
-			$document = JFactory::getDocument();
+			$document = Factory::getDocument();
 
 			// insert custom stylesheet
 			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/configuration.css');
@@ -59,15 +59,29 @@ class Sh404sefViewConfiguration extends ShlMvcView_Base
 			JHtml::styleSheet(Sh404sefHelperGeneral::getComponentUrl() . '/assets/css/j3_list.css');
 
 			// insert bootstrap theme
-			ShlHtml_Manager::getInstance()->addAssets(JFactory::getDocument());
+			ShlHtml_Manager::getInstance()->addAssets($document);
 
 			ShlHtml_Manager::getInstance($document)
 			               ->addAssets($document)
 			               ->addSpinnerAssets($document);
 
 			// add ga_auth js and css, in case we open configuration
-			$document->addStyleSheet(JUri::root(true) . '/media/com_sh404sef/assets/css/wb_gaauth.css');
-			$document->addScript(JUri::root(true) . '/media/com_sh404sef/assets/js/wb_gaauth_' . $this->joomlaVersionPrefix . '.js');
+			$analyticsCss = wblFactory::get()->getThe('sh404sef.assetsManager')->getHashedMediaLink(
+				'wb_gaauth.min.css',
+				array(
+					'pathFromRoot' => 'css',
+				)
+			);
+			Factory::getDocument()->addStyleSheet($analyticsCss);
+
+			$analyticsScript = wblFactory::get()->getThe('sh404sef.assetsManager')->getHashedMediaLink(
+				'wb_gaauth_' . $this->joomlaVersionPrefix . '.js',
+				array(
+					'pathFromRoot' => 'js',
+				)
+			);
+			Factory::getDocument()->addScript($analyticsScript);
+
 			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/permissions.js');
 			JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/purge.js');
 		}

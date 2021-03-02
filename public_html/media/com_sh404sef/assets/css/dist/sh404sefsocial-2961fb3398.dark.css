@@ -1,0 +1,29 @@
+/**
+ * @build_title_build@
+ *
+ * @author       @build_author_build@
+ * @copyright    @build_copyright_build@
+ * @package      @build_package_build@
+ * @license      @build_license_build@
+ * @version      @build_version_full_build@
+ *
+ * @build_current_date_build@
+ */
+.wbl-social-dark a,
+.wbl-social-dark a:active,
+.wbl-social-dark a:visited,
+.wbl-social-dark a:focus {
+  fill: #ffffff;
+}
+.wbl-social-dark a .wbl-social-static-text,
+.wbl-social-dark a:active .wbl-social-static-text,
+.wbl-social-dark a:visited .wbl-social-static-text,
+.wbl-social-dark a:focus .wbl-social-static-text {
+  color: #ffffff;
+}
+.wbl-social-dark .wbl-social-button {
+  background: #333333;
+}
+.wbl-social-dark .wbl-social-button:hover {
+  background: #777777;
+}

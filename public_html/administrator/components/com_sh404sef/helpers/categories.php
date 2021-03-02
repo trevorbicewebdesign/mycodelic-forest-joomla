@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -39,7 +39,7 @@ class Sh404sefHelperCategories
 				// read details from database
 				self::$uncategorizedCat[$extension] = ShlDbHelper::selectObject('#__categories', '*', 'parent_id > 0 and extension = ? and path = ? and level = ?', array($extension, 'uncategorised', 1));
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 
 				self::$uncategorizedCat[$extension] = null;

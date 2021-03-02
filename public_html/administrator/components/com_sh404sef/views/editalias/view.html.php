@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -18,7 +18,7 @@ if (!defined('_JEXEC'))
 
 class Sh404sefViewEditalias extends ShlMvcView_Base
 {
-	// we are in 'pageids' view
+	// we are in 'editalias' view
 	protected $_context = 'editalias';
 
 	public function display($tpl = null)
@@ -43,8 +43,8 @@ class Sh404sefViewEditalias extends ShlMvcView_Base
 
 		JHtml::script(Sh404sefHelperGeneral::getComponentUrl() . '/assets/js/shajax_modal_form.js');
 
-		$this->layoutRenderer = array();
-		$this->layoutRenderer['custom'] = new ShlMvcLayout_File('com_sh404sef.form.fields.custom', sh404SEF_LAYOUTS);
+		$this->layoutRenderer             = array();
+		$this->layoutRenderer['custom']   = new ShlMvcLayout_File('com_sh404sef.form.fields.custom', sh404SEF_LAYOUTS);
 		$this->layoutRenderer['shlegend'] = new ShlMvcLayout_File('com_sh404sef.configuration.fields.legend', sh404SEF_LAYOUTS);
 
 		// get model and update context with current
@@ -61,16 +61,19 @@ class Sh404sefViewEditalias extends ShlMvcView_Base
 
 		// read alias data from model
 		$this->alias = $model->getById($cid);
-		$aliasModel = ShlMvcModel_Base::getInstance('aliases', 'Sh404sefModel');
-		$this->url = $aliasModel->getUrlByAliasId($cid);
+		$aliasModel  = ShlMvcModel_Base::getInstance('aliases', 'Sh404sefModel');
+		$this->url   = $aliasModel->getUrlByAliasId($cid);
 
 		// build target type selector
-		$options = array(
+		$options                  = array(
 			array(
 				'id' => Sh404sefModelRedirector::TARGET_TYPE_REDIRECT, 'title' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_REDIRECT')
 			),
 			array(
 				'id' => Sh404sefModelRedirector::TARGET_TYPE_CANONICAL, 'title' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_CANONICAL')
+			),
+			array(
+				'id' => Sh404sefModelRedirector::TARGET_TYPE_INTERNAL_REWRITE, 'title' => JText::_('COM_SH404SEF_ALIAS_TARGET_TYPE_INTERNAL_REWRITE')
 			),
 		);
 		$this->targetTypeSelector = Sh404sefHelperHtml::buildSelectList(

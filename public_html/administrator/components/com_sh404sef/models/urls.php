@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -56,7 +56,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 			$this->_db->setQuery($deleteQuery);
 			$this->_db->execute();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->setError($e->getMessage());
@@ -98,7 +98,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 				$this->_db->setQUery($query)->query();
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 			$this->setError('Internal database error # ' . $e->getMessage());
@@ -131,7 +131,7 @@ class Sh404sefModelUrls extends Sh404sefClassBaselistmodel
 					$this->_db->setQuery($query);
 					$numberOfUrls = $this->_db->loadResult();
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 					ShlSystem_Log::error('sh404sef', '%s::%s::%d: %s', __CLASS__, __METHOD__, __LINE__, $e->getMessage());
 					$numberOfUrls = 0;

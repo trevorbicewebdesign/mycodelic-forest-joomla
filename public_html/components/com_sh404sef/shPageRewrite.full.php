@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 defined('_JEXEC') or die('Restricted access');
@@ -206,7 +206,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		$sefConfig  = &Sh404sefFactory::getConfig();
 
 		if (substr($link, 0, strlen($shPageInfo->getDefaultFrontLiveSite())) != $shPageInfo->getDefaultFrontLiveSite()
-			&& (substr($link, 0, 7) == 'http://' || substr($link, 0, 7) == 'https://')
+			&& wbStartsWith($link, array('http://', 'https://'))
 			&& (empty($shPageInfo->basePath) || substr($link, 0, strlen($shPageInfo->basePath)) != $shPageInfo->basePath)
 			&& strpos($link, 'pinterest.com') === false
 		)
@@ -223,7 +223,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 			$result = str_replace('%%shM3%%', $m3, $result);
 
 			array_shift($bits2); // remove first bit
-			$m4     = implode($bits2, '>');
+			$m4     = implode('>', $bits2);
 			$result = str_replace('%%shM4%%', $m4, $result);
 
 			$m5     = strip_tags($m4);
@@ -273,9 +273,28 @@ if (defined('SH404SEF_IS_RUNNING'))
 				$headData = $document->getHeadData();
 
 				// if document title is != from the one we have in store, override
-				if (!empty($metadata->pageTitle) && $document->getTitle() != $metadata->pageTitle)
+				$customTitle = empty($metadata->pageTitle) ? $document->getTitle() : $metadata->pageTitle;
+				/**
+				 * Filter the page title just before it's inserted into the page.
+				 *
+				 * @api
+				 * @package sh404SEF\filter\output
+				 * @var sh404sef_meta_page_title
+				 * @since 4.20.4
+				 *
+				 * @param string                $title The page title to be inserted
+				 * @param Sh404sefClassPageinfo $pageInfo An object describing the current page.
+				 *
+				 * @return string
+				 */
+				$customTitle = shlHook::filter(
+					'sh404sef_meta_page_title',
+					$customTitle,
+					$shPageInfo
+				);
+				if (!empty($customTitle) && $document->getTitle() != $customTitle)
 				{
-					$shPageInfo->pageTitle   = $metadata->pageTitle;
+					$shPageInfo->pageTitle   = $customTitle;
 					$shPageInfo->pageTitlePr = Sh404sefHelperMetadata::protectPageTitle($shPageInfo->pageTitle);
 					$buffer                  = ShlSystem_Strings::pr('/\<\s*title\s*\>.*\<\s*\/title\s*\>/isuU', '<title>' . $shPageInfo->pageTitlePr . '</title>', $buffer);
 					$buffer                  = ShlSystem_Strings::pr('/\<\s*meta\s+name\s*=\s*"title.*\/\>/isuU', '', $buffer); // remove any title meta
@@ -284,6 +303,24 @@ if (defined('SH404SEF_IS_RUNNING'))
 				// Priorities: 1/ custom meta in sh404SEF 2/ Meta entered in Joomla 3/ auto-generated
 				$metadata->pageDescription = empty($metadata->pageDescription) ? $document->getDescription() : $metadata->pageDescription;
 				$metadata->pageDescription = empty($metadata->pageDescription) ? Sh404sefHelperMetadata::getAutoDescription($buffer) : $metadata->pageDescription;
+				/**
+				 * Filter the meta description just before it's inserted into the page.
+				 *
+				 * @api
+				 * @package sh404SEF\filter\output
+				 * @var sh404sef_meta_description
+				 * @since 4.20.4
+				 *
+				 * @param string                $description The meta description to be inserted
+				 * @param Sh404sefClassPageinfo $pageInfo An object describing the current page.
+				 *
+				 * @return string
+				 */
+				$metadata->pageDescription = shlHook::filter(
+					'sh404sef_meta_description',
+					$metadata->pageDescription,
+					$shPageInfo
+				);
 				if (!empty($metadata->pageDescription) && $document->getDescription() != $metadata->pageDescription)
 				{
 					$shPageInfo->pageDescription = $metadata->pageDescription;
@@ -318,8 +355,33 @@ if (defined('SH404SEF_IS_RUNNING'))
 					}
 				}
 
-				if (!empty($metadata->pageRobotsTag) && !empty($headData['metaTags']['standard']['robots'])
-					&& $headData['metaTags']['standard']['robots'] != $metadata->pageRobotsTag
+				/**
+				 * Filter the meta robots just before it's inserted into the page.
+				 *
+				 * @api
+				 * @package sh404SEF\filter\output
+				 * @var sh404sef_meta_robots
+				 * @since 4.20.4
+				 *
+				 * @param string                $robots The meta robots to be inserted
+				 * @param Sh404sefClassPageinfo $pageInfo An object describing the current page.
+				 *
+				 * @return string
+				 */
+				$metadata->pageRobotsTag = shlHook::filter(
+					'sh404sef_meta_robots',
+					$metadata->pageRobotsTag,
+					$shPageInfo
+				);
+				if (!empty($metadata->pageRobotsTag) &&
+					(
+						empty($headData['metaTags']['standard']['robots'])
+						||
+						(
+							!empty($headData['metaTags']['standard']['robots'])
+							&& $headData['metaTags']['standard']['robots'] != $metadata->pageRobotsTag
+						)
+					)
 				)
 				{
 					$shPageInfo->pageRobotsTag = $metadata->pageRobotsTag;
@@ -613,7 +675,7 @@ if (defined('SH404SEF_IS_RUNNING'))
 		}
 	}
 
-	function insertStructuredData(& $buffer)
+	function insertStructuredData(&$buffer)
 	{
 		$markup = Sh404sefHelperStructureddata::buildStructuredData();
 		if (!empty($markup))
@@ -726,6 +788,122 @@ if (defined('SH404SEF_IS_RUNNING'))
 		}
 	}
 
+	function shInsertCustomRawContent(&$buffer)
+	{
+		$config = Sh404sefFactory::getConfig();
+		if (!$config->shMetaManagementActivated)
+		{
+			return;
+		}
+
+		$metadata = Sh404sefHelperMetadata::getFinalizedCustomMetaData();
+		$pageInfo = Sh404sefFactory::getPageInfo();
+
+		// top of head
+		$snippet = empty($metadata->raw_content_head_top) ? $config->rawContentHeadTop : $metadata->raw_content_head_top;
+		/**
+		 * Filter the raw content to be inserted just after the <head> tag.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\output
+		 * @var sh404sef_raw_content_head_top
+		 * @since 4.17.1
+		 *
+		 * @param string                $snippet The snippet to be inserted.
+		 * @param Sh404sefClassPageinfo $pageInfo An object describing the current page.
+		 *
+		 * @return string
+		 */
+		$snippet = shlHook::filter(
+			'sh404sef_raw_content_head_top',
+			$snippet,
+			$pageInfo
+		);
+		if (!empty($snippet))
+		{
+			$snippet = "\n<!-- sh404SEF: Top of head custom raw content -->\n" . $snippet . "\n<!-- /sh404SEF -->\n";
+			$buffer  = shPregInsertCustomTagInBuffer($buffer, '<\s*head[^>]*>', 'after', "\n" . $snippet, $firstOnly = 'first');
+		}
+
+		// bottom of head
+		$snippet = empty($metadata->raw_content_head_bottom) ? $config->rawContentHeadBottom : $metadata->raw_content_head_bottom;
+		/**
+		 * Filter the raw content to be inserted just before the closing </head> tag.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\output
+		 * @var sh404sef_raw_content_head_bottom
+		 * @since 4.17.1
+		 *
+		 * @param string                $snippet The snippet to be inserted.
+		 * @param Sh404sefClassPageinfo $pageInfo An object describing the current page.
+		 *
+		 * @return string
+		 */
+		$snippet = shlHook::filter(
+			'sh404sef_raw_content_head_bottom',
+			$snippet,
+			$pageInfo
+		);
+		if (!empty($snippet))
+		{
+			$snippet = "\n<!-- sh404SEF: Bottom of head custom raw content -->\n" . $snippet . "\n<!-- /sh404SEF -->\n";
+			$buffer  = shInsertCustomTagInBuffer($buffer, '</head>', 'before', "\n" . $snippet . "\n", $firstOnly = 'first');
+		}
+
+		// top of body
+		$snippet = empty($metadata->raw_content_body_top) ? $config->rawContentBodyTop : $metadata->raw_content_body_top;
+		/**
+		 * Filter the raw content to be inserted just after the <body> tag.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\output
+		 * @var sh404sef_raw_content_body_top
+		 * @since 4.17.1
+		 *
+		 * @param string                $snippet The snippet to be inserted.
+		 * @param Sh404sefClassPageinfo $pageInfo An object describing the current page.
+		 *
+		 * @return string
+		 */
+		$snippet = shlHook::filter(
+			'sh404sef_raw_content_body_top',
+			$snippet,
+			$pageInfo
+		);
+		if (!empty($snippet))
+		{
+			$snippet = "\n<!-- sh404SEF: Top of body custom raw content -->\n" . $snippet . "\n<!-- /sh404SEF -->\n";
+			$buffer  = shPregInsertCustomTagInBuffer($buffer, '<\s*body[^>]*>', 'after', "\n" . $snippet, $firstOnly = 'first');
+		}
+
+		// bottom of body
+		$snippet = empty($metadata->raw_content_body_bottom) ? $config->rawContentBodyBottom : $metadata->raw_content_body_bottom;
+		/**
+		 * Filter the raw content to be inserted just before the closing </body> tag.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\output
+		 * @var sh404sef_raw_content_body_bottom
+		 * @since 4.17.1
+		 *
+		 * @param string                $snippet The snippet to be inserted.
+		 * @param Sh404sefClassPageinfo $pageInfo An object describing the current page.
+		 *
+		 * @return string
+		 */
+		$snippet = shlHook::filter(
+			'sh404sef_raw_content_body_bottom',
+			$snippet,
+			$pageInfo
+		);
+		if (!empty($snippet))
+		{
+			$snippet = "\n<!-- sh404SEF: Bottom of body custom raw content -->\n" . $snippet . "\n<!-- /sh404SEF -->\n";
+			$buffer  = shInsertCustomTagInBuffer($buffer, '</body>', 'before', "\n" . $snippet . "\n", $firstOnly = 'first');
+		}
+	}
+
 	function shRemoveContentTags(&$buffer)
 	{
 		$tags = array(
@@ -786,6 +964,9 @@ if (defined('SH404SEF_IS_RUNNING'))
 
 		// pagination links for lists
 		shAddPaginationHeaderLinks($shPage);
+
+		// insert custom content tags
+		shInsertCustomRawContent($shPage);
 
 		// remove content put in tags
 		shRemoveContentTags($shPage);

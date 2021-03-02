@@ -2,14 +2,13 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date    2019-09-30
+ * @version     4.21.0.4206
+ * @date    2020-06-26
  */
 
-var shQuickControlNeedsUpdate = false;
 var shAnalyticsCompletedRequestsList = {};
 var shAnalyticsOptions = null;
 
@@ -87,6 +86,8 @@ function shAnalyticsRequestCompleted(req) {
 
 function shSetupAnalytics(options) {
 
+    return;
+
     shAnalyticsOptions = options || {};
 
     weeblrApp.spinner.start('toolbar-sh404sef-spinner');
@@ -106,7 +107,8 @@ function shSetupAnalytics(options) {
     forced = "forced=" + (shAnalyticsOptions.forced ? shAnalyticsOptions.forced : defaultOptions.forced);
     showFilters = "&showFilters=" + shAnalyticsOptions.showFilters;
 
-    accountId = defaultOptions.accountId;
+    var accountIdEl = jQuery('#accountId');
+    accountId = accountIdEl && accountIdEl.val() ? "&accountId=" + accountIdEl.val() : defaultOptions.accountId;
     var startDateEl = jQuery('#startDate');
     startDate = startDateEl && startDateEl.val() ? "&startDate=" + startDateEl.val() : defaultOptions.startDate;
     var endDateEl = jQuery('#endDate');
@@ -126,8 +128,8 @@ function shSetupAnalytics(options) {
             visits: false,
             sources: false,
             global: false,
-            top5urls: false,
-            top5referrers: false,
+            topurls: false,
+            topreferrers: false,
             perf: true,
             topsocialfb: true,
             topsocialtweeter: true,
@@ -182,31 +184,35 @@ function shContinueAnalytics3() {
 
 function shContinueAnalytics4() {
 
-    _shPerformAnalyticsSubRequest('top5urls');
+    _shPerformAnalyticsSubRequest('topurls');
 
 }
 
 function shContinueAnalytics5() {
 
-    _shPerformAnalyticsSubRequest('top5referrers');
+    _shPerformAnalyticsSubRequest('topreferrers');
 }
 
 function shContinueAnalytics6() {
 
     //_shPerformAnalyticsSubRequest('topsocialfb');
 }
+
 function shContinueAnalytics7() {
 
     //_shPerformAnalyticsSubRequest('topsocialtweeter');
 }
+
 function shContinueAnalytics8() {
 
     //_shPerformAnalyticsSubRequest('topsocialpinterest');
 }
+
 function shContinueAnalytics9() {
 
     //_shPerformAnalyticsSubRequest('topsocialplusone');
 }
+
 function shContinueAnalytics10() {
 
     //_shPerformAnalyticsSubRequest('topsocialplusonepage');
@@ -297,12 +303,10 @@ function updateMsgCenter() {
                                 window.weeblrApp.shlib.msgCenter.refreshActions();
                             });
                         }
-                    }
-                    else {
+                    } else {
                         console.log('sh404SEF: Ajax error: ' + data.message);
                     }
-                }
-                else {
+                } else {
                     console.log('sh404SEF: ajax error: no object in return');
                 }
             } catch (e) {

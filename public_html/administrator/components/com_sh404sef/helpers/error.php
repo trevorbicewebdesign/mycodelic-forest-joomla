@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -144,6 +144,7 @@ class Sh404sefHelperError
 	 * @param string $languageTag
 	 *
 	 * @return mixed
+	 * @throws Exception
 	 */
 	public static function getNotFoundItemid($languageTag = '*')
 	{
@@ -157,7 +158,7 @@ class Sh404sefHelperError
 		$config = Sh404sefFactory::getConfig();
 		if (empty($config->pageNotFoundItemids) || empty($config->pageNotFoundItemids[$languageTag]))
 		{
-			$itemid = JFactory::getApplication()->getMenu()->getDefault($languageTag)->id;
+			$itemid = JFactory::getApplication()->getMenu('site')->getDefault($languageTag)->id;
 		}
 		else
 		{
@@ -175,7 +176,7 @@ class Sh404sefHelperError
 	public static function setItemid($Itemid)
 	{
 		$app = JFactory::getApplication();
-		$menus = $app->getMenu();
+		$menus = $app->getMenu('site');
 		$menuItem = $menus->getItem($Itemid);
 		if (!empty($menuItem))
 		{
@@ -226,7 +227,7 @@ class Sh404sefHelperError
 		$template = $app->getTemplate(true);
 
 		// which menu item to use
-		$menu = $app->getMenu();
+		$menu = $app->getMenu('site');
 		$item = $menu->getActive();
 		if (!empty($item))
 		{

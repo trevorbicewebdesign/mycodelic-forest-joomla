@@ -3,22 +3,25 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
+use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Language;
+use Joomla\CMS\Language\Text;
+
+use Joomla\String\StringHelper;
+
 // Security check to ensure this file is being included by a parent file.
-if (!defined('_JEXEC'))
-{
-	die('Direct Access to this location is not allowed.');
-}
+defined('_JEXEC') || die;
 
 class Sh404sefHelperAnalytics
 {
-
 	// store whether doing a forced update. Reason to store it
 	// is to keep _doCheck() method w/o any parameters
 	// as this would otherwise prevent caching from operating
@@ -36,301 +39,302 @@ class Sh404sefHelperAnalytics
 	}
 
 	/**
-	 * Obtain analytics information, as stored in cache
-	 * by checkAnalytics
+	 * Build the full URL to the front end analytics stats
+	 * page, including the secret access key if any is available.
 	 *
+	 * @return string
 	 */
-	public static function getData($options)
+	public static function getFrontendStatsUrl()
 	{
+		$accessKey = Sh404sefFactory::getConfig()->analyticsFrontendReportsAccessKey;
+		$statsLink = StringHelper::rtrim(Uri::root(), '/')
+			. '/'
+			. self::getFrontendStatsSlug()
+			. (empty($accessKey) ? '' : '?' . $accessKey);
 
-		// main option: are we forcing update, or only using the cached data ?
-		$options['forced'] = empty($options['forced']) ? 0 : $options['forced'];
-
-		$sefConfig      = Sh404sefFactory::getConfig();
-		$dataTypeString = str_replace('ga:', '', $sefConfig->analyticsDashboardDataType);
-
-		// store options
-		self::$_options = $options;
-
-		// create cache Id and get cache object
-		$cacheId = md5($dataTypeString . $options['accountId'] . $options['showFilters'] . $options['groupBy'] . $options['startDate'] . $options['endDate'] . $options['cpWidth'] . $options['report'] . $options['subrequest']);
-
-		$cache = JFactory::getCache('sh404sef_analytics');
-		$cache->setLifetime(60); // cache result for 1 hours
-		$cache->setCaching(1); // force caching on
-
-		// empty cache if we are going to look for updates or if reports are disabled (so that next time
-		// they enabled, we start wih fresh data
-		if (self::$_options['forced'] || !$sefConfig->analyticsReportsEnabled)
-		{
-			// clean our cache
-			$cache->remove($cacheId);
-		}
-
-		$response = $cache->get(array('Sh404sefHelperAnalytics', '_doCheck'), $args = array(), $cacheId);
-
-		// return response, either dummy or from cache
-		return $response;
+		return $statsLink;
 	}
 
-	public static function _doCheck()
+	/**
+	 * Filter and return the frontend analytics URL slug.
+	 * Default to "stats".
+	 *
+	 * @return string
+	 */
+	public static function getFrontendStatsSlug()
 	{
+		/**
+		 * Filter the URL slug used to access frontend analytics reports.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\output
+		 * @var sh404sef_frontend_analytics_slug
+		 * @since   4.20.0
+		 *
+		 * @param string $slug
+		 *
+		 * @return string
+		 */
+		$analyticsSlug = ShlHook::filter(
+			'sh404sef_frontend_analytics_slug',
+			'stats'
+		);
 
-		jimport('joomla.error.profiler');
-		// creating the profiler object will start the counter
-		$profiler = JProfiler::getInstance('sh404sef_analytics_profiler');
-
-		// if not set to auto check and not forced to do so
-		// when user click on "check updates" button
-		// we don't actually try to get updates info
-		$sefConfig = Sh404sefFactory::getConfig();
-
-		// check if allowed to auto check, w/o user clicking on button
-		if (!$sefConfig->autoCheckNewAnalytics && !self::$_options['forced'])
-		{
-			// prepare a default response object
-			$response                = new stdClass();
-			$response->status        = true;
-			$response->statusMessage = JText::_('COM_SH404SEF_CLICK_TO_CHECK_ANALYTICS');
-			$response->note          = '';
-			return $response;
-		}
-
-		// calculate adapted class name
-		$className = 'Sh404sefAdapterAnalytics' . strtolower($sefConfig->analyticsType);
-		$handler   = new $className();
-
-		// ask specialized class to fetch analytics data
-		$response = $handler->fetchAnalytics($sefConfig, self::$_options);
-
-		// done; send response back
-		return $response;
+		return StringHelper::trim($analyticsSlug, '/');
 	}
 
-	public static function getHttpClient($new = false)
+	/**
+	 * Decides whether current request should trigger the display of
+	 * the analytics reports frontend version.
+	 *
+	 * @param $uri
+	 * @param $jRouter
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public static function shouldDisplayFrontend(&$uri, $jRouter)
 	{
-
-		static $_instance = null;
-
-		if (is_null($_instance) || $new)
+		$shouldDisplayFrontend = false;
+		$app                   = Factory::getApplication();
+		if (
+			!$app->isClient('site')
+			||
+			!self::isEnabled()
+			||
+			// @TODO: use wbLib config access
+			empty(Sh404sefFactory::getConfig()->analyticsReportsEnabled)
+			||
+			empty(Sh404sefFactory::getConfig()->analyticsEnableFrontendAccess)
+		)
 		{
-			// get an http client
-			$tmp = new Zendshl_Http_Client;
+			return $shouldDisplayFrontend;
+		}
 
-			// set params
-			$tmp->setConfig(
-				array(
-					'maxredirects' => 5,
-					'timeout'      => 10
-				)
+		$analyticsSlug = self::getFrontendStatsSlug();
+		if (empty($analyticsSlug))
+		{
+			return $shouldDisplayFrontend;
+		}
+
+		// detect stats slug, possibly on different languages
+		$contentLanguages = JLanguageHelper::getLanguages('lang_code');
+		$possibleSlugs    = array();
+		foreach ($contentLanguages as $langCode => $langDef)
+		{
+			$possibleSlugs[$langDef->sef . '/' . $analyticsSlug] = $langDef;
+		}
+		// add default slug
+		$possibleSlugs[$analyticsSlug] = null;
+
+		// check current request path against slug(s)
+		$currentSlug = wbLTrim($uri->getPath(), Uri::base(true));
+		$currentSlug = ltrim($currentSlug, '/');
+		if (!array_key_exists($currentSlug, $possibleSlugs))
+		{
+			return $shouldDisplayFrontend;
+		}
+
+		// set language if found
+		if (!empty($possibleSlugs[$currentSlug]))
+		{
+			$newLanguageDef = $contentLanguages[$possibleSlugs[$currentSlug]->lang_code];
+			$uri->setVar(
+				'lang',
+				$newLanguageDef->sef
 			);
 
-			if ($new)
+			$app->input->set('language', $newLanguageDef->lang_code);
+			$app->set('language', $newLanguageDef->lang_code);
+			$language = Factory::getLanguage();
+
+			if ($language->getTag() !== $newLanguageDef->lang_code)
 			{
-				return $tmp;
-			}
-			else
-			{
-				$_instance = $tmp;
+				$newLanguageObject = Language::getInstance(
+					$newLanguageDef->lang_code
+				);
+				Factory::$language = $newLanguageObject;
+				$app->loadLanguage($newLanguageObject);
 			}
 		}
 
-		return $_instance;
+		// authentification: either Joomla ACL based on user or direct access through a secret key passed in
+		// URL: example.com/stats?dfd213245sdf
+		$config           = Sh404sefFactory::getConfig();
+		$keyAccessAllowed = !empty($config->analyticsEnableFrontendAccessWithKey);
+		$keyName          = $config->analyticsFrontendReportsAccessKey;
+		if (
+			$keyAccessAllowed
+			&&
+			!empty($keyName)
+		)
+		{
+			// access per key is allowed, do we have a key?
+			$urlKey = null;
+			if (!empty($keyName))
+			{
+				$urlKey = $uri->getVar($keyName, null);
+			}
+			// is that key the one we expect?
+			$keyAccessAllowed = !is_null($urlKey);
+		}
+
+		if (!$keyAccessAllowed)
+		{
+			$user = Factory::getUser();
+			// authorization
+			if (!$user->authorise('sh404sef.view.analytics', 'com_sh404sef'))
+			{
+				if ($user->guest)
+				{
+					// guests need to login first
+					$return   = base64_encode(Uri::getInstance());
+					$loginUrl = JRoute::_('index.php?option=com_users&view=login&return=' . $return);
+					Factory::getApplication()->enqueueMessage(Text::_('JERROR_ALERTNOAUTHOR'), 'notice');
+					Factory::getApplication()->redirect($loginUrl, 403);
+				}
+				throw new \Exception(Text::_('JERROR_ALERTNOAUTHOR'), 403);
+			}
+		}
+
+		// all clear, display
+		return true;
 	}
 
 	/**
-	 * Not used from 4.16.2.
+	 * Check the http status code of a response from analytics servers.
 	 *
-	 * @param $hClient
-	 *
-	 * @return null
-	 * @throws Sh404sefExceptionDefault
-	 */
-	public static function request($hClient)
-	{
-		// establish connection with available methods
-		$adapters    = array('Zendshl_Http_Client_Adapter_Curl', 'Zendshl_Http_Client_Adapter_Socket');
-		$rawResponse = null;
-
-		// perform connect request
-		foreach ($adapters as $adapter)
-		{
-			try
-			{
-				$hClient->setAdapter($adapter);
-				$rawResponse = $hClient->request();
-				break;
-			}
-			catch (Exception $e)
-			{
-				// we failed, let's try another method
-				ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'HTTP client exception: ' . $e->getMessage());
-			}
-		}
-		self::handleConnectResponseErrors($rawResponse);
-
-		return $rawResponse;
-	}
-
-	/**
-	 * Not used from 4.16.2.
-	 *
-	 * @param $response
+	 * @param stdClass $response
 	 *
 	 * @throws Sh404sefExceptionDefault
 	 */
-	public static function handleConnectResponseErrors($response)
-	{
-		if (empty($response))
-		{
-			$msg = sprintf('%s::%d: %s', __METHOD__, __LINE__, 'Empty response connecting to remote server');
-			ShlSystem_Log::debug('sh404sef', $msg);
-			throw new Sh404sefExceptionDefault($msg);
-		}
-		if (!is_object($response) || empty($response->code))
-		{
-			ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'HTTP client: raw response from server: ' . print_r($response, true));
-			throw new Sh404sefExceptionDefault(JTEXT::sprintf('COM_SH404SEF_ANALYTICS_RESPONSE_DUMP', print_r($response, true)));
-		}
-	}
-
 	public static function verifyAuthResponse($response)
 	{
 		// check if valid response http code
 		$status = $response->code;
 		if ($status != 200)
 		{
-			ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: fetching account list error: error status response ' . $status);
-			throw new Sh404sefExceptionDefault(JText::_('COM_SH404SEF_ERROR_AUTH_ANALYTICS') . '(' . $status . ')');
-		}
-	}
-
-	public static function getRequestOptions($context = '')
-	{
-		$options = array();
-
-		// if showing filter, we're on the main analytics manager view
-		$options['showFilters'] = JFactory::getApplication()->input->getCmd('showFilters', 'yes');
-
-		// use that in the context where display options are stored, to differentiate
-		// dashboard from analytics manager
-		$context = empty($context) ? 'sh404sef_analytics_' : $context;
-		$context .= '_' . ($options['showFilters'] == 'yes' ? 'manager' : 'dashboard');
-
-		$options['forced']     = JFactory::getApplication()->input->getInt('forced', 0);
-		$options['startDate']  = JFactory::getApplication()->input->getString('startDate', '');
-		$options['endDate']    = JFactory::getApplication()->input->getString('endDate', '');
-		$options['groupBy']    = JFactory::getApplication()->input->getString('groupBy', '');
-		$options['cpWidth']    = JFactory::getApplication()->input->getInt('cpWidth');
-		$options['report']     = JFactory::getApplication()->input->getCmd('report', 'dashboard');
-		$options['subrequest'] = JFactory::getApplication()->input->getCmd('subrequest', '');
-
-		// default max number of results
-		$options['max-results'] = '100';
-
-		// max out width for dashboard
-		if ($options['report'] == 'dashboard' && $options['cpWidth'] > 800)
-		{
-			$options['cpWidth'] = 800;
-		}
-
-		// start and end dates
-		$app = JFactory::getApplication();
-
-		// which web site to look at ?
-		$options['accountId'] = '';
-
-		// if on dashboard, we use dates calculated from backend settings
-		// else we use user set values (using calendar input boxes displayed
-		// the Filters area
-		if ($options['showFilters'] == 'yes')
-		{
-			// user selected dates, read user input
-			$options['startDate'] = $app->getUserstateFromRequest($context . 'startDate', 'startDate', '', 'string');
-			$options['endDate']   = $app->getUserstateFromRequest($context . 'endDate', 'endDate', '', 'string');
-			$options['groupBy']   = $app->getUserstateFromRequest($context . 'groupBy', 'groupBy', '', 'string');
-			if (empty($options['groupBy']))
+			$decodedResponse = json_decode($response->body);
+			$msg             = Text::_('COM_SH404SEF_ERROR_AUTH_ANALYTICS');
+			$code            = 404;
+			if (!empty($decodedResponse->error))
 			{
-				// default to grouping by day
-				$options['groupBy'] = self::_getDefaultGroupBy();
+				$msg  = $decodedResponse->error->message . ' (' . $decodedResponse->error->code . ')';
+				$code = (int) $decodedResponse->error->code;
 			}
-			$options['max-top-referrers'] = 15;
-			$options['max-top-urls']      = 15;
+			ShlSystem_Log::debug('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, 'Analytics: HTTP error in analytics endpoint comm, response:' . print_r($response, true));
+			throw new Sh404sefExceptionDefault($msg, $code);
 		}
-		else
-		{
-			$options['max-top-referrers'] = 5;
-			$options['max-top-urls']      = 5;
-		}
-
-		if (empty($options['startDate']) || empty($options['endDate']) || $options['showFilters'] != 'yes')
-		{
-			// dashboard: calculate dates based on backend settings
-			// end date is always yesterday
-			$date               = new DateTime('yesterday');
-			$options['endDate'] = $date->format('Y-m-d');
-
-			// use config to find what date range we should display : week, month or year
-			$sefConfig = Sh404sefFactory::getConfig();
-			$date->modify('-1 ' . $sefConfig->analyticsDashboardDateRange);
-			$options['startDate'] = $date->format('Y-m-d');
-
-			// calculate groupBy options
-			$options['groupBy'] = self::_getDefaultGroupBy();
-		}
-
-		return $options;
-	}
-
-	protected static function _getDefaultGroupBy()
-	{
-
-		$sefConfig = Sh404sefFactory::getConfig();
-		switch ($sefConfig->analyticsDashboardDateRange)
-		{
-			default:
-			case 'week':
-				$groupBy = 'ga:year,ga:month,ga:week,ga:day';
-				break;
-			case 'month':
-				$groupBy = 'ga:year,ga:month,ga:week';
-				break;
-			case 'year':
-				$groupBy = 'ga:year,ga:month';
-				break;
-		}
-
-		return $groupBy;
 	}
 
 	/**
-	 * Search for current site in account list, in order
-	 * to find its Google id. If not found, defaults to
-	 * first site in list
+	 * prepare html filters to allow user to select the way she likes
+	 * to view reports
 	 *
-	 * @param array of object $accounts
+	 * @param $options
+	 * @param $viewList
+	 * @param $position
+	 *
+	 * @return array
 	 */
-	public static function getDefaultAccountId($accounts)
+	public static function prepareReportsFilters($options, $viewList, $position)
 	{
+		// array to hold various filters
+		$filters = array();
 
-		$id = 0;
-		if (!empty($accounts))
+		// find if we must display all filters. On dashboard, only a reduced set
+		$allFilters            = wbArrayGet($options, 'showFilters', 'yes') == 'yes';
+		$customSelectSubmit    = ' onchange="window.weeblrApp.analytics.update({' . ($allFilters ? '' : 'showFilters:\'no\'') . '});"';
+		$dateRangeSelectSubmit = ' onchange="window.weeblrApp.analytics.updateDateRange();"';
+
+		if ('bottom' == $position)
 		{
-			// search for current site
-			$current = Sh404sefHelperAnalytics::getWebsiteName();
-			foreach ($accounts as $account)
-			{
-				if (strpos($current, $account->title) !== false or strpos(str_replace('www.', '', $current), $account->title) !== false)
-				{
-					$id = $account->id;
-					break;
-				}
-			}
-			// default to first account if no match found
-			$id = empty($id) ? $accounts[0]->id : $id;
+			$select    = '<div class="sh404sef-analytics-filters-element">';
+			$select    .= '<label for="viewId">' . Text::_('COM_SH404SEF_ANALYTICS_REPORT') . '</label>';
+			$select    .= Sh404sefHelperHtml::buildSelectList(
+				$viewList, $options['viewId'], 'viewId', $autoSubmit = false,
+				$addSelectAll = false, $selectAllTitle = '', ''
+			);
+			$select    .= '</div>';
+			$filters[] = $select;
+
+			// select groupBy (day, week, month)
+			$select    = '<div class="sh404sef-analytics-filters-element">';
+			$select    .= '<label for="groupBy">' . Text::_('COM_SH404SEF_ANALYTICS_GROUP_BY') . '</label>';
+			$select    .= Sh404sefHelperAnalytics::buildAnalyticsGroupBySelectList(
+				$options['groupBy'], 'groupBy', $autoSubmit = false,
+				$addSelectAll = false, $selectAllTitle = '', $customSelectSubmit
+			);
+			$select    .= '</div>';
+			$filters[] = $select;
+
+			// add a click to update link
+			$filters[] = '<div class="sh404sef-analytics-filters-element sh404sef-analytics-filters-update-button">' . ShlHtmlBs_Helper::button(
+					Text::_('COM_SH404SEF_CHECK_ANALYTICS'), 'primary', '', 'javascript: window.weeblrApp.analytics.update({forced:1'
+					                                       . ($allFilters ? '' : ',showFilters:\'no\'') . '});'
+				) . '</div>';
 		}
 
-		return $id;
+		// dashboard only has view selection, no room for anything else
+		// only shows main selection drop downs on analytics view
+		if ('top' == $position)
+		{
+			$select    = '<div class="sh404sef-analytics-filters-element">';
+			$select    .= '<label for="dateRange">' . Text::_('COM_SH404SEF_ANALYTICS_DASHBOARD_DATE_RANGE') . '</label>';
+			$select    .= Sh404sefHelperHtml::buildSelectList(
+				array(
+					array('id' => 'last_7_days', 'title' => 'Last 7 days'),
+					array('id' => 'last_30_days', 'title' => 'Last 30 days'),
+					array('id' => 'last_90_days', 'title' => 'Last 90 days'),
+					array('id' => 'this_year', 'title' => 'This year'),
+					array('id' => 'custom', 'title' => 'Custom...'),
+				),
+				wbArrayGet($options, 'dateRange', 'last_30_days'),
+				'dateRange',
+				$autoSubmit = true,
+				$addSelectAll = false,
+				$selectAllTitle = '',
+				$dateRangeSelectSubmit
+			);
+			$select    .= '</div>';
+			$filters[] = $select;
+
+			$select    = '<div class="sh404sef-analytics-filters-element">';
+			$select    .= '<label for="startDate">' . Text::_('COM_SH404SEF_ANALYTICS_START_DATE') . '</label>';
+			$select    .= JHTML::_('calendar', $options['startDate'], 'startDate', 'startDate', '%Y-%m-%d');
+			$select    .= '</div>';
+			$filters[] = $select;
+
+			$select    = '<div class="sh404sef-analytics-filters-element">';
+			$select    .= '<label for="endDate">' . Text::_('COM_SH404SEF_ANALYTICS_END_DATE') . '</label>';
+			$select    .= JHTML::_('calendar', $options['endDate'], 'endDate', 'endDate', '%Y-%m-%d');
+			$select    .= '</div>';
+			$filters[] = $select;
+
+			// add a click to update link
+			$filters[] = self::updateButton($allFilters);
+		}
+
+		// use layout to render
+		return $filters;
+	}
+
+	/**
+	 * @param $allFilters
+	 *
+	 * @return string
+	 */
+	public static function updateButton($allFilters)
+	{
+		return '<div class="sh404sef-analytics-filters-element sh404sef-analytics-filters-update-button">'
+			. ShlHtmlBs_Helper::button(
+				Text::_('COM_SH404SEF_CHECK_ANALYTICS'),
+				'primary',
+				'',
+				'javascript: window.weeblrApp.analytics.update({forced:1'
+				. ($allFilters ? '' : ',showFilters:\'no\'') . '});'
+			)
+			. '</div>';
 	}
 
 	/**
@@ -339,7 +343,6 @@ class Sh404sefHelperAnalytics
 	 */
 	public static function getWebsiteName()
 	{
-
 		static $site;
 
 		// Get the scheme
@@ -358,6 +361,8 @@ class Sh404sefHelperAnalytics
 	 *
 	 * @param array of object $entries
 	 * @param array $options
+	 *
+	 * @return array
 	 */
 	public static function formatAbciseDates($entries, $options)
 	{
@@ -398,40 +403,40 @@ class Sh404sefHelperAnalytics
 		switch ($month)
 		{
 			case 1:
-				$m = JText::_('JANUARY_SHORT');
+				$m = Text::_('JANUARY_SHORT');
 				break;
 			case 2:
-				$m = JText::_('FEBRUARY_SHORT');
+				$m = Text::_('FEBRUARY_SHORT');
 				break;
 			case 3:
-				$m = JText::_('MARCH_SHORT');
+				$m = Text::_('MARCH_SHORT');
 				break;
 			case 4:
-				$m = JText::_('APRIL_SHORT');
+				$m = Text::_('APRIL_SHORT');
 				break;
 			case 5:
-				$m = JText::_('MAY_SHORT');
+				$m = Text::_('MAY_SHORT');
 				break;
 			case 6:
-				$m = JText::_('JUNE_SHORT');
+				$m = Text::_('JUNE_SHORT');
 				break;
 			case 7:
-				$m = JText::_('JULY_SHORT');
+				$m = Text::_('JULY_SHORT');
 				break;
 			case 8:
-				$m = JText::_('AUGUST_SHORT');
+				$m = Text::_('AUGUST_SHORT');
 				break;
 			case 9:
-				$m = JText::_('SEPTEMBER_SHORT');
+				$m = Text::_('SEPTEMBER_SHORT');
 				break;
 			case 10:
-				$m = JText::_('OCTOBER_SHORT');
+				$m = Text::_('OCTOBER_SHORT');
 				break;
 			case 11:
-				$m = JText::_('NOVEMBER_SHORT');
+				$m = Text::_('NOVEMBER_SHORT');
 				break;
 			case 12:
-				$m = JText::_('DECEMBER_SHORT');
+				$m = Text::_('DECEMBER_SHORT');
 				break;
 		}
 
@@ -485,13 +490,13 @@ class Sh404sefHelperAnalytics
 		{
 
 			case '(none)':
-				$label = JText::_('COM_SH404SEF_ANALYTICS_REF_LABEL_DIRECT');
+				$label = Text::_('COM_SH404SEF_ANALYTICS_REF_LABEL_DIRECT');
 				break;
 			case 'organic':
-				$label = JText::_('COM_SH404SEF_ANALYTICS_REF_LABEL_ORGANIC');
+				$label = Text::_('COM_SH404SEF_ANALYTICS_REF_LABEL_ORGANIC');
 				break;
 			case 'referral':
-				$label = JText::_('COM_SH404SEF_ANALYTICS_REF_LABEL_REFERRAL');
+				$label = Text::_('COM_SH404SEF_ANALYTICS_REF_LABEL_REFERRAL');
 				break;
 			default:
 				$label = $rawReferralType;
@@ -499,36 +504,6 @@ class Sh404sefHelperAnalytics
 		}
 
 		return $label;
-	}
-
-	public static function getDataTypeTitle()
-	{
-
-		// need config, to know which data user wants to display : visits, unique visitors, pageviews
-		$sefConfig      = Sh404sefFactory::getConfig();
-		$dataType       = $sefConfig->analyticsDashboardDataType;
-		$dataTypeString = str_replace('ga:', '', $dataType);
-
-		$label = self::getDataTypeTitleLabel($dataTypeString);
-
-		return $label;
-	}
-
-	public static function getDataTypeTitleLabel($dataType)
-	{
-		switch ($dataType)
-		{
-			case 'sessions':
-				$dataType = 'visits';
-				break;
-			case 'users':
-				$dataType = 'visitors';
-				break;
-		}
-
-		$title = JText::_('COM_SH404SEF_ANALYTICS_DATA_' . strtoupper($dataType));
-
-		return $title;
 	}
 
 	/**
@@ -546,22 +521,18 @@ class Sh404sefHelperAnalytics
 	 */
 	public static function buildAnalyticsReportSelectList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '', $customSubmit = '')
 	{
-
 		// available reports, should not be hardcoded though !
 		$data = array(
-			array('id' => 'dashboard', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_DASHBOARD'))
-			, array('id' => 'visits', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_VISITS'))
-			, array('id' => 'sources', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_SOURCES'))
-			, array('id' => 'keywords', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_KEYWORDS'))
-			, array('id' => 'urls', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_URLS'))
-			, array('id' => 'equipment', 'title' => JText::_('COM_SH404SEF_ANALYTICS_REPORT_VISITORS_EQUIPMENT'))
+			array('id' => 'dashboard', 'title' => Text::_('COM_SH404SEF_ANALYTICS_REPORT_DASHBOARD'))
+			, array('id' => 'visits', 'title' => Text::_('COM_SH404SEF_ANALYTICS_REPORT_VISITS'))
+			, array('id' => 'sources', 'title' => Text::_('COM_SH404SEF_ANALYTICS_REPORT_SOURCES'))
+			, array('id' => 'keywords', 'title' => Text::_('COM_SH404SEF_ANALYTICS_REPORT_KEYWORDS'))
+			, array('id' => 'urls', 'title' => Text::_('COM_SH404SEF_ANALYTICS_REPORT_URLS'))
+			, array('id' => 'equipment', 'title' => Text::_('COM_SH404SEF_ANALYTICS_REPORT_VISITORS_EQUIPMENT'))
 		);
 
 		// use helper to build html
-		$list = Sh404sefHelperHtml::buildSelectList($data, $current, $name, $autoSubmit, $addSelectAll, $selectAllTitle, $customSubmit);
-
-		// return list
-		return $list;
+		return Sh404sefHelperHtml::buildSelectList($data, $current, $name, $autoSubmit, $addSelectAll, $selectAllTitle, $customSubmit);
 	}
 
 	/**
@@ -579,75 +550,15 @@ class Sh404sefHelperAnalytics
 	 */
 	public static function buildAnalyticsGroupBySelectList($current, $name, $autoSubmit = false, $addSelectAll = false, $selectAllTitle = '', $customSubmit = '')
 	{
-
 		// available reports, should not be hardcoded though !
 		$data = array(
-			array('id' => 'ga:year,ga:month,ga:week,ga:day', 'title' => JText::_('Day'))
-			, array('id' => 'ga:year,ga:month,ga:week', 'title' => JText::_('Week'))
-			, array('id' => 'ga:year,ga:month', 'title' => JText::_('Month'))
+			array('id' => 'ga:year,ga:month,ga:week,ga:day', 'title' => Text::_('Day'))
+			, array('id' => 'ga:year,ga:month,ga:week', 'title' => Text::_('Week'))
+			, array('id' => 'ga:year,ga:month', 'title' => Text::_('Month'))
 		);
 
 		// use helper to build html
-		$list = Sh404sefHelperHtml::buildSelectList($data, $current, $name, $autoSubmit, $addSelectAll, $selectAllTitle, $customSubmit);
-
-		// return list
-		return $list;
-	}
-
-	public static function createTempFile($basePath, $report)
-	{
-
-		// we use a temporary png file to display graphic
-
-		// make sure we also have on in the base cache directory
-		// compute filename, using current time, up to 1/100 of a sec
-		$timestamp     = floor(microtime(true) * 100);
-		$timestamp     = str_replace('.', '', $timestamp);
-		$imageFileName = str_replace(DIRECTORY_SEPARATOR, '/', $basePath) . $timestamp . '.' . strtolower($report) . '.png';
-
-		return $imageFileName;
-	}
-
-	/**
-	 * Remove all png files older than a set time in provided directory
-	 *
-	 * @param $basePath
-	 * @param $age en secondes
-	 */
-	public static function cleanReportsImageFiles($basePath, $age = 300)
-	{
-
-		// collect all png files in that directory
-		$fileList = JFolder::files($basePath, '.png');
-
-		// if any file, check them against age
-		if (!empty($fileList))
-		{
-			// heure courante
-			$timestamp = floor(microtime(true) * 100);
-			$timestamp = str_replace('.', '', $timestamp);
-
-			// ajuster l'age en centième de secondes
-			$age = $age * 100;
-
-			// calculate oldest file we can accept
-			$oldestAllowed = $timestamp - $age;
-
-			// iterate over files and delete the old ones
-			foreach ($fileList as $file)
-			{
-
-				// file name format : timestamp.type.png, ie: "123456789.visits.datatype.png"
-				$bits = explode('.', $file);
-				$ts   = $bits[0];
-				if ($ts < $oldestAllowed)
-				{
-					// remove that file
-					jimport('joomla.filesystem.file');
-					$deleted = JFile::delete($basePath . $file);
-				}
-			}
-		}
+		return Sh404sefHelperHtml::buildSelectList($data, $current, $name, $autoSubmit, $addSelectAll, $selectAllTitle, $customSubmit);
 	}
 
 	/**
@@ -656,10 +567,11 @@ class Sh404sefHelperAnalytics
 	 * using 6 bits (64 values)
 	 *
 	 * @param float $time
+	 *
+	 * @return false|float|int
 	 */
 	public static function classifyTime($time)
 	{
-
 		// default
 		$time = floatval($time);
 
@@ -735,11 +647,11 @@ class Sh404sefHelperAnalytics
 	 * encoded in analytics data
 	 *
 	 * @param integer $time code as per classification function
+	 *
+	 * @return float|int
 	 */
-
 	public static function declassifyTime($time)
 	{
-
 		// break it down to classes
 		if ($time < 50)
 		{  // actual time in 1/10th of sec
@@ -811,10 +723,11 @@ class Sh404sefHelperAnalytics
 	 * value ranges, to encode it into only 16 values
 	 *
 	 * @param float $ram ram used up by page creation
+	 *
+	 * @return float|int
 	 */
 	public static function classifyMemory($ram)
 	{
-
 		// default
 		$ram = floatval($ram);
 
@@ -893,10 +806,11 @@ class Sh404sefHelperAnalytics
 	 * encoded in analytics data
 	 *
 	 * @param integer $ram code as per classification function
+	 *
+	 * @return int|mixed
 	 */
 	public static function declassifyMemory($ram)
 	{
-
 		$ramValues = array(3, 7, 9, 11, 13, 15, 17, 19, 21, 23, 26, 30, 40, 56, 96, 128);
 
 		if (isset($ramValues[$ram]))

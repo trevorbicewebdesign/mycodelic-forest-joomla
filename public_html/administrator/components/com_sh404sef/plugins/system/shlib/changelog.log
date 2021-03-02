@@ -1,6 +1,6 @@
                                 shLib change log                                
 
-                        (2019-04-25 14:47 - build #685)                         
+                        (2020-06-26 12:22 - build #711)                         
 
 
     [new]    Added rule-based URL blocking, comes with default common
@@ -33,6 +33,9 @@
              pluralized or not
     [new]    Added MVC compatibility layer, handling J! 2 & J! 3
 
+    [chg]    Strict minimal Joomla version is now 3.9.0
+    [chg]    Also cache dimensions check for external remote images when the
+             images do not exists - closes #517
     [chg]    Added protection against invalid characters in file_exists see
              ticket 5655
     [chg]    Analytics IP exclusion now operates on servers behind proxies
@@ -110,6 +113,9 @@
     [chg]    Now clearing output buffer before aborting HTTP request
     [chg]    Changed error handling for Joomla! 2/3 compatiblity
 
+    [bug]    When adding aliases to a URL, we may sometimes create a duplicate
+             record if it already exists
+    [bug]    Deprecated usage of ternary op under php 7.4
     [bug]    Analytics reports authorization procedure may fail depending on
              which protocol Google uses in its response
     [bug]    Structured data phone numbers may loose their required leading +

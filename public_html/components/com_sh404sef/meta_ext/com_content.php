@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 defined('_JEXEC') or die('Direct Access to this location is not allowed.');
@@ -16,32 +16,32 @@ global $Itemid;
 
 global $sh_LANG;
 
-$app = JFactory::getApplication();
+$app      = JFactory::getApplication();
 $document = JFactory::getDocument();
 
-$joomlaTitle = Sh404sefHelperMetadata::getMenuItemTitle($Itemid);
+$joomlaTitle       = Sh404sefHelperMetadata::getMenuItemTitle($Itemid);
 $joomlaDescription = $document->getDescription();
 
 $shPageInfo = Sh404sefFactory::getPageInfo(); // get page details gathered by system plugin
-$sefConfig = Sh404sefFactory::getConfig();
+$sefConfig  = Sh404sefFactory::getConfig();
 
 $database = ShlDbHelper::getDb();
 
-$view = $app->input->getCmd('view', null);
-$catid = $app->input->getInt('catid', null);
-$id = $app->input->getInt('id', null);
-$limit = $app->input->getInt('limit', null);
+$view       = $app->input->getCmd('view', null);
+$catid      = $app->input->getInt('catid', null);
+$id         = $app->input->getInt('id', null);
+$limit      = $app->input->getInt('limit', null);
 $limitstart = $app->input->getInt('limitstart', null);
-$layout = $app->input->getCmd('layout', null);
-$showall = $app->input->getInt('showall', null);
-$format = $app->input->getCmd('format', null);
-$print = $app->input->getInt('print', null);
-$tmpl = $app->input->getCmd('tmpl', null);
-$lang = $app->input->getString('lang', null);
+$layout     = $app->input->getCmd('layout', null);
+$showall    = $app->input->getInt('showall', null);
+$format     = $app->input->getCmd('format', null);
+$print      = $app->input->getInt('print', null);
+$tmpl       = $app->input->getCmd('tmpl', null);
+$lang       = $app->input->getString('lang', null);
 
 $shLangName = empty($lang) ? $shPageInfo->currentLanguageTag : Sh404sefHelperLanguage::getLangTagFromUrlCode($lang);
-$shLangIso = isset($lang) ? $lang : Sh404sefHelperLanguage::getUrlCodeFromTag($shPageInfo->currentLanguageTag);
-$shLangIso = shLoadPluginLanguage('com_content', $shLangIso, 'COM_SH404SEF_CREATE_NEW');
+$shLangIso  = isset($lang) ? $lang : Sh404sefHelperLanguage::getUrlCodeFromTag($shPageInfo->currentLanguageTag);
+$shLangIso  = shLoadPluginLanguage('com_content', $shLangIso, 'COM_SH404SEF_CREATE_NEW');
 //-------------------------------------------------------------
 
 global $shCustomTitleTag, $shCustomDescriptionTag, $shCustomKeywordsTag, $shCustomLangTag, $shCustomRobotsTag, $shCanonicalTag;
@@ -78,71 +78,95 @@ switch ($view)
 
 		$shCustomKeywordsTag = $app->getCfg('MetaKeys');
 
-			if (empty($joomlaTitle))
+		if (empty($joomlaTitle))
+		{
+			$config  = JFactory::getConfig();
+			$title[] = $config->get('config.sitename');
+		}
+		else
+		{
+			$title[] = $joomlaTitle;
+		}
+
+		// handle second, third,... pages on home page
+		// TODO same code used in function shAddPaginationInfo, should regroup
+		if (!empty($limitstart))
+		{
+			$shLimit = shGetDefaultDisplayNumFromConfig($shPageInfo->currentNonSefUrl, $includeBlogLinks = false);
+			$pagenum = empty($shLimit) ? (int) $limitstart : (int) ($limitstart / $shLimit) + 1;
+			if ($sefConfig->alwaysAppendItemsPerPage)
 			{
-				$config = JFactory::getConfig();
-				$title[] = $config->get('config.sitename');
+				$shMultPageLength = $sefConfig->pagerep . $shLimit;
 			}
 			else
 			{
-				$title[] = $joomlaTitle;
+				$shMultPageLength = '';
 			}
 
-			// handle second, third,... pages on home page
-			// TODO same code used in function shAddPaginationInfo, should regroup
-			if (!empty($limitstart))
+			if (!empty($sefConfig->pageTexts[$shPageInfo->currentLanguageTag])
+				&& (false !== strpos($sefConfig->pageTexts[$shPageInfo->currentLanguageTag], '%s'))
+			)
 			{
-				$shLimit = shGetDefaultDisplayNumFromConfig($shPageInfo->currentNonSefUrl, $includeBlogLinks = false);
-				$pagenum = empty($shLimit) ? (int) $limitstart : (int) ($limitstart / $shLimit) + 1;
-				if ($sefConfig->alwaysAppendItemsPerPage)
-				{
-					$shMultPageLength = $sefConfig->pagerep . $shLimit;
-				}
-				else
-					$shMultPageLength = '';
-
-				if (!empty($sefConfig->pageTexts[$shPageInfo->currentLanguageTag])
-					&& (false !== strpos($sefConfig->pageTexts[$shPageInfo->currentLanguageTag], '%s'))
-				)
-				{
-					$pattern = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
-					$title[] = str_replace('%s', $pagenum, $pattern) . $shMultPageLength;
-				}
-				else
-				{
-					$title[] = ' ' . $pagenum . $shMultPageLength;
-				}
+				$pattern = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
+				$title[] = str_replace('%s', $pagenum, $pattern) . $shMultPageLength;
 			}
+			else
+			{
+				$title[] = ' ' . $pagenum . $shMultPageLength;
+			}
+		}
 
-			$shCustomTitleTag = JString::ltrim(implode(' | ', $title), '/ | ');
+		$shCustomTitleTag = JString::ltrim(implode(' | ', $title), '/ | ');
 		break;
 
 	default:
 		// calculate canonical
 		if ($view == 'article' && !Sh404sefHelperUrl::isNonSefHomepage())
 		{
-			$current = JUri::getInstance()->getPath();
+			$current        = JUri::getInstance()->getPath();
 			$shCanonicalTag = Sh404sefHelperUrl::canonicalRoutedToAbs($current);
 		}
 
-		if (empty($joomlaTitle))
+		// should we use Joomla menu item "Browser title"?
+		$shouldUseJoomlaMenuItemTitle = false;
+		if (!empty($joomlaTitle))
+		{
+			// we can use it only if the menu item actually matches the page being displayed
+			// ie if showing an article, don't show the custom title for the category
+			$menuItem = JFactory::getApplication()->getMenu('site')->getActive();
+			$query    = $menuItem->query;
+			if (
+				wbArrayGet($query, 'option') == 'com_content'
+				&&
+				wbArrayGet($query, 'view') == $view
+				&&
+				wbArrayGet($query, 'id') == $id
+				&&
+				wbArrayGet($query, 'layout') == $layout
+			)
+			{
+				$shouldUseJoomlaMenuItemTitle = true;
+			}
+		}
+
+		if (!$shouldUseJoomlaMenuItemTitle)
 		{
 			// use regular function to get content titles, as per out specific settings
-			$customConfig = clone ($sefConfig);
+			$customConfig = clone($sefConfig);
 
-			$customConfig->includeContentCat = $sefConfig->contentTitleIncludeCat;
-			$customConfig->UseAlias = $sefConfig->ContentTitleUseAlias;
-			$customConfig->useCatAlias = $sefConfig->ContentTitleUseCatAlias;
-			$customConfig->LowerCase = false;
+			$customConfig->includeContentCat           = $sefConfig->contentTitleIncludeCat;
+			$customConfig->UseAlias                    = $sefConfig->ContentTitleUseAlias;
+			$customConfig->useCatAlias                 = $sefConfig->ContentTitleUseCatAlias;
+			$customConfig->LowerCase                   = false;
 			$customConfig->ContentTitleInsertArticleId = false;
 			// V 1.2.4.t protect against sef_ext.php not being included
 			if (!class_exists('sef_404'))
 			{
 				require_once(sh404SEF_ABS_PATH . 'components/com_sh404sef/sef_ext.php');
 			}
-			$layout = isset($layout) ? $layout : null;
+			$layout    = isset($layout) ? $layout : null;
 			$articleId = shGetArticleIdString($id, $view, $option, $shLangName);
-			$title = sef_404::getContentSlugsArray($view, $id, $layout, $Itemid, $shLangName, $customConfig);
+			$title     = sef_404::getContentSlugsArray($view, $id, $layout, $Itemid, $shLangName, $customConfig);
 			if (!empty($articleId))
 			{
 				if (!empty($sefConfig->ContentTitleInsertArticleId))
@@ -205,7 +229,7 @@ switch ($view)
 							}
 							else
 							{ // there is a page break, but no title. Use a page number
-								$pattern = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
+								$pattern     = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
 								$shPageTitle = str_replace('%s', $limitstart + 1, $pattern);
 							}
 						}
@@ -230,8 +254,10 @@ switch ($view)
 						$shMultPageLength = $sefConfig->pagerep . $shLimit;
 					}
 					else
+					{
 						$shMultPageLength = '';
-					$pattern = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
+					}
+					$pattern    = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
 					$pageNumber = str_replace('%s', $pagenum, $pattern) . $shMultPageLength;
 				}
 				else
@@ -248,7 +274,7 @@ switch ($view)
 						}
 						if (!empty($pagenum))
 						{
-							$pattern = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
+							$pattern    = str_replace($sefConfig->pagerep, ' ', $sefConfig->pageTexts[$shPageInfo->currentLanguageTag]);
 							$pageNumber = str_replace('%s', $pagenum, $pattern)/*.$shMultPageLength*/
 							;
 						}
@@ -273,7 +299,7 @@ switch ($view)
 						$foundCat = array_search(@$contentElement->catid, $sefConfig->shInsertNumericalIdCatList);
 						if (($foundCat !== null && $foundCat !== false) || ($sefConfig->shInsertNumericalIdCatList[0] == ''))
 						{ // test both in case PHP < 4.2.0
-							$shTemp = explode(' ', $contentElement->created);
+							$shTemp  = explode(' ', $contentElement->created);
 							$title[] = str_replace('-', '', $shTemp[0]) . $contentElement->id;
 						}
 					}

@@ -3,12 +3,12 @@
 <extension type="component" version="1.6" method="upgrade">
 	<name>sh404SEF</name>
 	<author>Yannick Gaultier</author>
-	<creationDate>2019-09-30</creationDate>
-	<copyright>(c) Yannick Gaultier - Weeblr llc - 2019</copyright>
+	<creationDate>2020-06-26</creationDate>
+	<copyright>(c) Yannick Gaultier - Weeblr llc - 2020</copyright>
 	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<authorEmail>contact@weeblr.com</authorEmail>
 	<authorUrl>https://weeblr.com</authorUrl>
-	<version>4.17.0.3932</version>
+	<version>4.21.0.4206</version>
 	<description></description>
 
 	<scriptfile>installation.script.php</scriptfile>
@@ -58,9 +58,7 @@
     <languages folder="languages/site">
         <language tag="bg-BG">bg-BG.com_sh404sef.ini</language>
         <language tag="zh-CN">zh-CN.com_sh404sef.ini</language>
-        <language tag="zh-CN">zh-CN.com_sh404sef.sys.ini</language>
         <language tag="zh-TW">zh-TW.com_sh404sef.ini</language>
-        <language tag="zh-TW">zh-TW.com_sh404sef.sys.ini</language>
         <language tag="de-DE">de-DE.com_sh404sef.ini</language>
         <language tag="en-GB">en-GB.com_sh404sef.ini</language>
         <language tag="fr-FR">fr-FR.com_sh404sef.ini</language>
@@ -92,9 +90,9 @@
 			<filename>defines.php</filename>
 			<filename>index.html</filename>
 			<filename>pagination.php</filename>
-			<filename>pagination_j2.php</filename>
 			<filename>pagination_j3.php</filename>
 			<filename>sh404sef.php</filename>
+            <filename>sh404sef_functions.php</filename>
 			<filename>shSEFConfig.class.php</filename>
 			<filename>sh_Net_URL.class.php</filename>
 			<filename>sh404sef.class.php</filename>
@@ -133,20 +131,6 @@
 			<filename>security/sh404SEF_IP_white_list.dat</filename>
 			<filename>security/sh404SEF_uAgent_black_list.dat</filename>
 			<filename>security/sh404SEF_uAgent_white_list.dat</filename>
-			<filename>images/config.png</filename>
-			<filename>images/cut-logs.png</filename>
-			<filename>images/cut-redirect.png</filename>
-			<filename>images/cut-url.png</filename>
-			<filename>images/down.png</filename>
-			<filename>images/help.png</filename>
-			<filename>images/info.png</filename>
-			<filename>images/sh404SEF-logo.png</filename>
-			<filename>images/sh404SEF-logo-big.png</filename>
-			<filename>images/logs.png</filename>
-			<filename>images/redirect.png</filename>
-			<filename>images/up.png</filename>
-			<filename>images/url.png</filename>
-			<filename>images/index.html</filename>
 
 			<folder>adapters</folder>
 			<folder>assets</folder>
@@ -157,9 +141,9 @@
 			<folder>helpers</folder>
 			<folder>layouts</folder>
 			<folder>lib</folder>
-            <folder>liveupdate</folder>
 			<folder>models</folder>
 			<folder>tables</folder>
+            <folder>vendor</folder>
 			<folder>views</folder>
 			<folder>plugins</folder>
 
@@ -258,6 +242,8 @@
     <updateservers>
         <server type="extension" priority="2" name="sh404SEF updates">https://u1.weeblr.com/public/direct/sh404sef/update/com_sh404sef_j3_full.xml</server>
     </updateservers>
+
+    <dlid prefix="wblr_k=" suffix="&amp;weeblr=sh404sef.zip"/>
 
 	<!-- Tables -->
 	<tables>

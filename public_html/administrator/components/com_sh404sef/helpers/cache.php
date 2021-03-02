@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date		2019-09-30
+ * @version     4.21.0.4206
+ * @date		2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -42,7 +42,7 @@ class Sh404sefHelperCache {
     try {
       $cache = &self::_getInstance();
       return $cache->getSefUrlFromCache( $nonSefUrl, $sefUrl);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       // TODO: should decouple this result from sh404SEF constants
       return sh404SEF_URLTYPE_NONE;
     }
@@ -53,7 +53,7 @@ class Sh404sefHelperCache {
     try {
       $cache = &self::_getInstance();
       return $cache->getNonSefUrlFromCache( $sefUrl, $nonSefUrl);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       // TODO: should decouple this result from sh404SEF constants
       return sh404SEF_URLTYPE_NONE;
     }
@@ -65,7 +65,7 @@ class Sh404sefHelperCache {
     try {
       $cache = &self::_getInstance();
       return $cache->addSefUrlToCache( $nonSefUrl, $sefUrl, $UrlType);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       return null;
     }
 
@@ -76,7 +76,7 @@ class Sh404sefHelperCache {
     try {
       $cache = &self::_getInstance();
       return $cache->removeUrlFromCache( $nonSefUrlList);
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       return null;
     }
 
@@ -87,7 +87,7 @@ class Sh404sefHelperCache {
     try {
       $cache = &self::_getInstance();
       return $cache->purge();
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       return null;
     }
 
@@ -101,7 +101,7 @@ class Sh404sefHelperCache {
 
       return $cache->getCacheStats();
 
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       return '';
     }
   }

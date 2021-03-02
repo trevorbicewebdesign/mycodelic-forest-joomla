@@ -3,15 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
+use Weeblr\Wblib\V_SH4_4206\Factory;
+use Joomla\CMS\Router;
+
 // no direct access
-defined('_JEXEC') or die('Restricted access');
+defined('_JEXEC') or die;
 
 /**
  * Class to create and parse routes for the site application
@@ -34,7 +37,8 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	protected $_shId             = 'sh404SEF for Joomla 1.6';
 	protected $_originalBuildUri = null;
 
-	protected $_guessedLanguageCode = '';
+	protected $_guessedLanguageCode  = '';
+	protected $bypassSh404sefRouting = false;
 
 	/**
 	 * Perform startup operations such as detecting environment
@@ -96,8 +100,10 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * Does NOT check configuration settings, only look
 	 * at the passed uri and method parameters
 	 *
-	 * @param        JURI    object $uri object describing the current request, from which we want to redirect
+	 * @param JURI    object $uri object describing the current request, from which we want to redirect
 	 * @param string $method current request method
+	 *
+	 * @return bool
 	 */
 	protected function _canRedirectFrom($uri, $method = '', $url = '')
 	{
@@ -132,6 +138,8 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * uri to parserule
 	 *
 	 * @param JURI $uri
+	 *
+	 * @return string
 	 */
 	protected function getFullUrl($uri)
 	{
@@ -159,9 +167,17 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * domain or sub domain
 	 *
 	 * @param JURI object $uri
+	 *
+	 * @throws Exception
 	 */
 	protected function _checkDomain($originalUri)
 	{
+		$app = JFactory::getApplication();
+		if ($app->isAdmin())
+		{
+			return;
+		}
+
 		// break reference
 		$uri = clone $originalUri;
 
@@ -173,7 +189,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		$rootUrl     = $pageInfo->getDefaultFrontLiveSite();
 		$host        = $uri->getHost();
 		$canRedirect =
-			JFactory::getApplication()->isSite()
+			$app->isSite()
 			&&
 			$this->_canRedirectFrom($uri)
 			&&
@@ -190,33 +206,42 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		{
 			if (!empty($langRootUrl) && $langRootUrl == $rootUrl)
 			{
-
 				// TODO: switch to that language
-
 				// stop
 				break;
 			}
 		}
 
 		// if we have not already
+		$shouldRedirect = false;
 		if (empty($targetUrl) && $canRedirect && $sefConfig->shAutoRedirectWww != shSEFConfig::DONT_ENFORCE_WWW)
 		{
 			if (substr($host, 0, 4) != 'www.' && $sefConfig->shAutoRedirectWww == shSEFConfig::ENFORCE_WWW)
 			{
 				ShlSystem_Log::debug('sh404sef', 'Redirecting from non www to wwww');
 				$uri->setHost('www.' . $host);
-				$targetUrl = $uri->toString();
+				$shouldRedirect = true;
 			}
 			if (substr($host, 0, 4) == 'www.' && $sefConfig->shAutoRedirectWww == shSEFConfig::ENFORCE_NO_WWW)
 			{
 				ShlSystem_Log::debug('sh404sef', 'Redirecting from www to non wwww');
 				$uri->setHost(wbLTrim($host, 'www.'));
-				$targetUrl = $uri->toString();
+				$shouldRedirect = true;
 			}
 		}
 
+		if ($shouldRedirect)
+		{
+			// redirect to SSL in one hop
+			if ($app->get('force_ssl') == 2)
+			{
+				$uri->setScheme('https');
+			}
+			$targetUrl = $uri->toString();
+		}
+
 		// Redirect if needed
-		if (!empty($targetUrl))
+		if ($shouldRedirect && !empty($targetUrl))
 		{
 			shRedirect($targetUrl);
 		}
@@ -246,9 +271,16 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 *
 	 * @param $router
 	 * @param $uri
+	 *
+	 * @throws Exception
 	 */
 	public function preprocessParseRule(&$router, &$uri)
 	{
+		if ($this->bypassSh404sefRouting)
+		{
+			return;
+		}
+
 		$originalUrl  = Sh404sefHelperUrl::getOriginalUrlFromUri($uri);
 		$originalPath = trim(Sh404sefHelperUrl::getOriginalPathFromUri($uri, JUri::base()), '/');
 		$originalUri  = new JUri($originalUrl);
@@ -269,14 +301,20 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * and processed as a parseRule
 	 *
 	 * @param JRouter $jRouter object router object reference
-	 * @param JUri    $uri     object provided by Joomla. Will represent request upon
+	 * @param JUri    $uri object provided by Joomla. Will represent request upon
 	 *                         first call of this method, but any uri upon subsequent calls
 	 *
 	 * @return array $vars list of query variables as decoded by us, if any
+	 * @throws Exception
 	 */
 	public function parseRule(&$jRouter, &$uri)
 	{
 		static $_vars = array();
+
+		if ($this->bypassSh404sefRouting)
+		{
+			return;
+		}
 
 		/**
 		 * Filter the incoming URI just before the sh404SEF parsing starts.
@@ -286,8 +324,8 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		 * @var sh404sef_before_parse_rule
 		 * @since   4.15.3
 		 *
-		 * @param JRouter $jRouter    The Joomla router instance.
-		 * @param JUri    $uri        The incoming URI.
+		 * @param JRouter $jRouter The Joomla router instance.
+		 * @param JUri    $uri The incoming URI.
 		 *
 		 * @return array
 		 */
@@ -540,8 +578,8 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		 * @since   4.8
 		 *
 		 * @param array   $parsedVars Associative array of query vars.
-		 * @param JRouter $jRouter    The Joomla router instance.
-		 * @param JUri    $uri        The incoming URI.
+		 * @param JRouter $jRouter The Joomla router instance.
+		 * @param JUri    $uri The incoming URI.
 		 *
 		 * @return array
 		 */
@@ -561,10 +599,10 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		 * @var sh404sef_after_router_parse_vars_set_itemid
 		 * @since   4.12.0
 		 *
-		 * @param int     $Itemid     The current Itemid if any.
+		 * @param int     $Itemid The current Itemid if any.
 		 * @param array   $parsedVars Associative array of query vars.
-		 * @param JRouter $jRouter    The Joomla router instance.
-		 * @param JUri    $uri        The incoming URI.
+		 * @param JRouter $jRouter The Joomla router instance.
+		 * @param JUri    $uri The incoming URI.
 		 *
 		 * @return int | null
 		 */
@@ -597,6 +635,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * @param string $originalPath
 	 *
 	 * @return bool
+	 * @throws Exception
 	 */
 	private function _relativeUrlBypass($originalPath)
 	{
@@ -809,6 +848,8 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * Will also check configuration settings
 	 *
 	 * @param object $uri
+	 *
+	 * @return bool
 	 */
 	protected function _canRedirectFromNonSef($uri, $method = '')
 	{
@@ -900,6 +941,8 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * This hack makes sure link is passed as a GET var
 	 *
 	 * @param array $vars
+	 *
+	 * @throws Exception
 	 */
 	private function _mailtoHack($vars)
 	{
@@ -919,6 +962,8 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * @param JRouter $jRouter
 	 * @param JURI    $uri
 	 * @param array   $vars
+	 *
+	 * @throws Exception
 	 */
 	private function _extensionsParseHacks(&$jRouter, &$uri, &$vars)
 	{
@@ -1002,12 +1047,17 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * and processed as a buildRule
 	 *
 	 * @param JRouter $jrouter router object reference
-	 * @param JUri    $uri     object provided by Joomla. We must set the path of this
+	 * @param JUri    $uri object provided by Joomla. We must set the path of this
 	 *                         object, and adjust its query vars list, removing those that are represented
 	 *                         in the path and thus don't need anymore to be specified as query vars
 	 */
 	public function buildRule(&$jRouter, &$uri)
 	{
+		if ($this->bypassSh404sefRouting)
+		{
+			return;
+		}
+
 		// if superadmin, display non-sef URL, for testing/setting up purposes
 		if (sh404SEF_NON_SEF_IF_SUPERADMIN)
 		{
@@ -1024,7 +1074,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		$uri = ShlHook::filter('sh404sef_before_plugin_build', $uri);
 
 		// keep a copy of  Joomla original URI, which has article names in it (ie: 43:article-title)
-		$this->_originalBuildUri = clone ($uri);
+		$this->_originalBuildUri = clone($uri);
 
 		// build the path
 		$this->_buildSefRoute($uri);
@@ -1090,7 +1140,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		$pageInfo  = Sh404sefFactory::getPageInfo();
 		$sefConfig = Sh404sefFactory::getConfig();
 		$app       = JFactory::getApplication();
-		$menu      = $app->getMenu();
+		$menu      = $app->getMenu('site');
 
 		// Store Itemid, as Joomla may have updated it - change in J! 3.7.x
 		$originalItemid = (int) $uri->getvar('Itemid', 0);
@@ -1128,7 +1178,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		}
 
 		// keep a copy of almost-original uri
-		$originalUri = clone ($uri);
+		$originalUri = clone($uri);
 
 		// put non-sef in a standard form, includes restoring full url
 		// from menu item, when only an Itemid is specified
@@ -1185,9 +1235,18 @@ class Sh404sefClassRouterInternal extends JRouterSite
 			$route = $forcedHomePage . '?sh404sef_splash=1';
 		}
 
+		$this->protectAgainstDocumentTypeError(
+			$uri,
+			$originalUri
+		);
+
 		// find path
 		$nonSefVars = $uri->getQuery($asArray = true);
-		if (strpos($route, '?') !== false && !empty($nonSefVars))
+		if (
+			!empty($nonSefVars)
+			&&
+			wbContains($route, '?')
+		)
 		{
 			$parts = explode('?', $route);
 			// there are some query vars, just use the path
@@ -1199,6 +1258,64 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		}
 		$uri->setPath($path);
 		Sh404sefHelperUrl::$buildingSef = $path;
+	}
+
+	/**
+	 * Optional protection against rogue plugins (system usually) that
+	 * make a call to Factory::getDocument() BEFORE the onAfterRoute
+	 * event, thus forcing the document type to be HTML, as the incoming
+	 * URL has not been decoded yet and the actual document type is unknown.
+	 *
+	 * @param \Joomla\CMS\Uri\Uri $uri
+	 * @param \Joomla\CMS\Uri\Uri $originalUri
+	 */
+	private function protectAgainstDocumentTypeError(&$uri, $originalUri)
+	{
+		$protectAgainstBadPlugins = false;
+
+		// legacy setting
+		if (
+			defined('sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR')
+			&&
+			sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR != 0
+		)
+		{
+			$protectAgainstBadPlugins = true;
+		}
+
+		/**
+		 * Whether to enable protection against rogue plugins that force
+		 * document type to be HTML by calling Factory::getDocument() too early.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\router
+		 * @var sh404sef_should_protect_against_document_type_error
+		 * @since   4.20.0
+		 *
+		 * @param bool $protectAgainstBadPlugins If true, leave document format as query var
+		 * @param Uri  $originalUri Uri object we are building a SEF URL for.
+		 *
+		 * @return array
+		 */
+		$protectAgainstBadPlugins = Factory::get()->getThe('hook')->filter(
+			'sh404sef_should_protect_against_document_type_error',
+			$protectAgainstBadPlugins,
+			$originalUri
+		);
+
+		if (!$protectAgainstBadPlugins)
+		{
+			return;
+		}
+
+		$format = $originalUri->getVar('format', '');
+		if (!empty($format) && $format != 'html')
+		{
+			$uri->setVar(
+				'format',
+				$format
+			);
+		}
 	}
 
 	/**
@@ -1355,53 +1472,15 @@ class Sh404sefClassRouterInternal extends JRouterSite
 
 					// try using J! router
 					// if at least one extension uses Joomla! router, we must first try to use that
-					if (!empty(Sh404sefFactory::getConfig()->useJoomlaRouter) || Sh404sefFactory::getConfig()->shRedirectJoomlaSefToSef)
+					// also handles optional automatic redirect from Joomla SEF to sh404SEF URLs.
+					$joomlaRouterVars = $this->parseWithJoomlaRouterAndMaybeRedirect(
+						$uri,
+						$path
+					);
+					if (self::$parsedWithJoomlaRouter)
 					{
-						// on ML sites, JOomla router doesn't expect the language code in the path,
-						// we have to remove it
-						if (!empty($this->_guessedLanguageCode) && JString::substr($path, 0, Jstring::strlen($this->_guessedLanguageCode) + 1) == $this->_guessedLanguageCode . '/')
-						{
-							$uri->setPath(JString::substr($path, Jstring::strlen($this->_guessedLanguageCode) + 1));
-						}
-
-						// Joomla always strip a trailing slash in URLs. Let's do that too, to reduce chances of
-						// hitting routing bugs in some extensions (DOCMan comes to mind)
-						$uri->setPath(
-							JString::rtrim(
-								$uri->getPath(),
-								'/'
-							)
-						);
-
-						// use parent parser
-						$vars       = parent::_parseSefRoute($uri);
-						$routerVars = Sh404sefFactory::getPageInfo()->router->getVars();
-						if (
-							!empty($vars['Itemid'])
-							||
-							!empty($vars['option'])
-							||
-							!empty($routerVars['Itemid'])
-							||
-							!empty($routerVars['option'])
-						)
-						{
-							// if we found something, raise a flag
-							self::$parsedWithJoomlaRouter = true;
-
-							// collect vars that may have been stored by J! such as Itemid
-							$vars = array_merge($routerVars, $vars);
-							$this->setVars(array());
-
-							if (Sh404sefFactory::getConfig()->shRedirectJoomlaSefToSef)
-							{
-								// check more redirects: from Joomla SEF to our SEF, and perform a redirect if suitable
-								$this->_checkJoomlaSefToSefRedirects($uri, $vars);
-							}
-
-							// and cut through the rest of the processing
-							break;
-						}
+						$vars = $joomlaRouterVars;
+						break;
 					}
 
 					// try to auto redirect to similar URL
@@ -1423,7 +1502,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		{
 			if (!empty($vars['Itemid']))
 			{
-				$app->getMenu()->setActive($vars['Itemid']);
+				$app->getMenu('site')->setActive($vars['Itemid']);
 			}
 		}
 
@@ -1435,6 +1514,185 @@ class Sh404sefClassRouterInternal extends JRouterSite
 			// do security checks
 			shDoSecurityChecks($this->getFullUrl($uri), false); // check this newly created URL
 		}
+
+		return $vars;
+	}
+
+	/**
+	 * Use the Joomla router to parse an incoming request and optionally redirect to its sh404SEF counterpart.
+	 *
+	 * @param \Joomla\Uri\Uri $uri
+	 * @param string          $path
+	 *
+	 * @return array
+	 */
+	private function parseWithJoomlaRouterAndMaybeRedirect($uri, $path)
+	{
+		$vars   = array();
+		$config = Sh404sefFactory::getConfig();
+
+		if (
+			empty($config->useJoomlaRouter)
+			&&
+			empty($config->shRedirectJoomlaSefToSef)
+		)
+		{
+			return $vars;
+		}
+
+		// on ML sites, Joomla router doesn't expect the language code in the path,
+		// we have to remove it
+		if (
+			!empty($this->_guessedLanguageCode)
+			&&
+			wbStartsWith(
+				$path,
+				$this->_guessedLanguageCode . '/'
+			)
+		)
+		{
+			$path = wbLTrim(
+				$path,
+				$this->_guessedLanguageCode . '/'
+			);
+			$uri->setPath(
+				$path
+			);
+		}
+
+		// Joomla always strip a trailing slash in URLs. Let's do that too, to reduce chances of
+		// hitting routing bugs in some extensions (DOCMan comes to mind)
+		$uri->setPath(
+			JString::rtrim(
+				$uri->getPath(),
+				'/'
+			)
+		);
+
+		// use parent parser
+		$this->bypassSh404sefRouting = true;
+		$parsedVars                  = $this->parseSefRoute($uri);
+		$this->bypassSh404sefRouting = false;
+
+		// collect vars that may have been stored by J! such as Itemid
+		$routerVars = Sh404sefFactory::getPageInfo()->router->getVars();
+
+		// Joomla component router may not find an Itemid but it still sets the
+		// Itemid var in the $vars array. That causes a mismatch when trying to rebuild
+		// the SEF based on those parsed vars.
+		if (array_key_exists('Itemid', $routerVars) && empty($routerVars['Itemid']))
+		{
+			unset($routerVars['Itemid']);
+		}
+
+		// merge both
+		$parsedVars = array_merge(
+			$routerVars,
+			$parsedVars
+		);
+
+		if (
+			empty($parsedVars['Itemid'])
+			&&
+			empty($parsedVars['option'])
+		)
+		{
+			// cannot do without at least either a component or a menu item
+			return $vars;
+		}
+		$option = wbArrayGet($parsedVars, 'option');
+
+		// Joomla router will return incoherent data when the URL does not exist (ie: site.com/xxxx/yyyy when parsed
+		// will return some variables, Itemid and option) as long as xxx is the alias of a menu item or a category
+		// or something.
+		// Try to catch some of that non-sense, version 2 :
+		// we ask the J! router to re-build the SEF URL based on what it parsed. The rebuild URL should match the
+		// just parsed SEF or else the parsing is garbage
+		$joomlaRouterStrictMode = in_array(
+			$option,
+			array(
+				'com_banners',
+				'com_content',
+				'com_newsfeeds',
+				//'com_tags', // nope either
+				//'com_users', // nope
+			)
+		);
+		/**
+		 * Whether sh404SEF should try to match parsed vars when using Joomla router
+		 * to the rebuilt URL.
+		 *
+		 * @api
+		 * @package sh404SEF\filter\router
+		 * @var sh404sef_match_rebuilt_sef_when_using_joomla_router
+		 * @since   4.20.3
+		 *
+		 * @param bool                $isOnExclusionList If false, do not check rebuilt URL
+		 * @param string              $option
+		 * @param \Joomla\CMS\Uri\Uri $uri The requested uri
+		 * @param array               $parsedVars the non-sef vars parsed by Joomla router
+		 *
+		 * @return array
+		 */
+		$joomlaRouterStrictMode = ShlHook::filter(
+			'sh404sef_joomla_router_use_strict_mode',
+			$joomlaRouterStrictMode,
+			$option,
+			$uri,
+			$parsedVars
+		);
+
+		if ($joomlaRouterStrictMode)
+		{
+			$this->bypassSh404sefRouting = true;
+			$this->setMode(JROUTER_MODE_SEF);
+			$rebuiltUri                  = $this->build(
+				Sh404sefHelperUrl::buildUrl(
+					$parsedVars,
+					$option
+				)
+			);
+			$this->bypassSh404sefRouting = false;
+			$this->setMode(JROUTER_MODE_RAW);
+
+			$rebuiltSef = $rebuiltUri->getPath();
+			$rebuiltSef = wbLTrim(
+				$rebuiltSef,
+				$rebuiltUri->base(true)
+			);
+			$rebuiltSef = wbLTrim(
+				$rebuiltSef,
+				'/'
+			);
+
+			if (!empty($config->shRewriteMode))
+			{
+				$rebuiltSef = wbLTrim(
+					$rebuiltSef,
+					'index.php/'
+				);
+			}
+
+			if ($rebuiltSef != $path)
+			{
+				return array();
+			}
+		}
+
+		// is this component using Joomla router?
+		if (in_array(
+			wbLTrim($option, 'com_'),
+			$config->useJoomlaRouter
+		))
+		{
+			// if URL was properly decoded with Joomla router
+			// raise a flag and return the parsed query vars.
+			self::$parsedWithJoomlaRouter = true;
+			$vars                         = $parsedVars;
+		}
+
+		// check if redirect Joomla SEF to our SEF, and perform a redirect if suitable
+		$this->_checkJoomlaSefToSefRedirects($uri, $parsedVars);
 
 		return $vars;
 	}
@@ -1456,7 +1714,33 @@ class Sh404sefClassRouterInternal extends JRouterSite
 			$pluginParams->loadString($plugin->params);
 
 			// search for similar URLs
-			$path    = $uri->getPath();
+			$path = $uri->getPath();
+
+			/**
+			 * Whether 404 auto-redirect should be attempted for the current request.
+			 *
+			 * @api
+			 * @package sh404SEF\filter\router
+			 * @var sh404sef_should_try_404_auto_redirect
+			 * @since   4.17.1
+			 *
+			 * @param bool   $shouldAutoredirect If false, do not attempt to find similar URLs.
+			 * @param string $path The requested path.
+			 * @param JUri   $uri The incoming URI.
+			 *
+			 * @return array
+			 */
+			$shouldAutoredirect = ShlHook::filter(
+				'sh404sef_should_try_404_auto_redirect',
+				true,
+				$path,
+				$uri
+			);
+			if (!$shouldAutoredirect)
+			{
+				return;
+			}
+
 			$urlList = shFindSimilarUrls($path, $pluginParams);
 			if (!empty($urlList))
 			{
@@ -1488,13 +1772,45 @@ class Sh404sefClassRouterInternal extends JRouterSite
 					$targetUrl = JUri::base() . ltrim($config->shRewriteStrings[$config->shRewriteMode], '/')
 						. JString::ltrim($target->oldurl, '/');
 					ShlSystem_Log::debug('sh404sef', 'Redirecting 404 to similar URL : ' . $targetUrl . ' from ' . $path);
+
+					$target = array(
+						'url'     => $targetUrl,
+						'message' => $message
+					);
+
+					/**
+					 * Filter the target URL and message before performing a
+					 * 404 autoredirect.
+					 *
+					 * @api
+					 * @package sh404SEF\filter\router
+					 * @var sh404sef_404_auto_redirect_target
+					 * @since   4.17.1
+					 *
+					 * @param array  $target An array with 'url' and 'message' items.
+					 * @param string $path The requested path.
+					 * @param JUri   $uri The incoming URI.
+					 *
+					 * @return array
+					 */
+					$filteredTarget = ShlHook::filter(
+						'sh404sef_404_auto_redirect_target',
+						$target,
+						$path,
+						$uri
+					);
+					$message        = wbArrayGet(
+						$filteredTarget,
+						'message',
+						''
+					);
 					if (!empty($message))
 					{
 						JFactory::getSession()->set(
 							'wb_sh404sef_404_redirect_message',
 							array(
 								'content'          => $message,
-								'title'            => Jtext::_('COM_SH404SEF_404_AUTO_REDIRECT_TITLE'),
+								'title'            => JText::_('COM_SH404SEF_404_AUTO_REDIRECT_TITLE'),
 								'rawUrlList'       => $urlList,
 								'color'            => $config->error404MsgColor,
 								'background_color' => $config->error404MsgBackgroundColor, // #7FBA00
@@ -1502,7 +1818,15 @@ class Sh404sefClassRouterInternal extends JRouterSite
 							)
 						);
 					}
-					shRedirect($targetUrl);
+					$targetUrl = wbArrayGet(
+						$filteredTarget,
+						'url',
+						''
+					);
+					if (!empty($targetUrl))
+					{
+						shRedirect($targetUrl);
+					}
 				}
 			}
 		}
@@ -1630,9 +1954,12 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * If a non-sef is found, a query var array is built, merged with incoming vars
 	 * and returned instead of the incoming one
 	 *
-	 * @param        JURI    object full request details
-	 * @param array  $vars   key/value pairs of query vars, usually empty
+	 * @param        $uri
+	 * @param array  $vars key/value pairs of query vars, usually empty
 	 * @param string $sefUrl the sef url to search for
+	 *
+	 * @return stdClass
+	 * @throws Exception
 	 */
 	protected function _lookupSef($uri, $vars, $sefUrl)
 	{
@@ -1691,6 +2018,9 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * Such urls start with component/com_ or lang_code/component/com_
 	 *
 	 * @param string $url
+	 *
+	 * @return bool
+	 * @throws Exception
 	 */
 	protected function _isSimpleEncodingSef($url)
 	{
@@ -1714,6 +2044,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 *
 	 * @return string|boolean false if not simple-scheme SEF, empty string if default language or sef lang code
 	 *     otherwise
+	 * @throws Exception
 	 */
 	protected function _getSimpleSefLanguageSefCode($url)
 	{
@@ -1768,7 +2099,10 @@ class Sh404sefClassRouterInternal extends JRouterSite
 	 * Parse sef urls built using the TYPE_SIMPLE method
 	 * ie: simply combining each argument, comma separated
 	 *
-	 * @param string $nonSefUrl starting with /component/com_xxxxx/...
+	 * @param string $sefUrl
+	 *
+	 * @return array
+	 * @throws Exception
 	 */
 	protected function _parseSimpleUrls($sefUrl)
 	{
@@ -1880,9 +2214,26 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		}
 	}
 
+	/**
+	 * Called in case of failure to parse an incoming URL but the Joomla
+	 * router was able to parse it. Builds and redirects to the corresponding
+	 * sh404SEF URL.
+	 * Start by asking the Joomla router to build the Joomla SEF URL based on the vars
+	 * it just parsed. Needed as Joomla router will basically always parsed something out
+	 * of any URL so we check that the URL built using the parsed vars is the same
+	 * as the parsed URL.
+	 *
+	 * @param \Joomla\CMS\Uri\Uri $uri Incoming request URI object
+	 * @param array               $vars
+	 */
 	protected function _checkJoomlaSefToSefRedirects($uri, $vars)
 	{
-		if (self::$requestParsed || !Sh404sefFactory::getConfig()->shRedirectJoomlaSefToSef)
+		$config = Sh404sefFactory::getConfig();
+		if (
+			self::$requestParsed
+			||
+			!$config->shRedirectJoomlaSefToSef
+		)
 		{
 			return;
 		}
@@ -1894,9 +2245,9 @@ class Sh404sefClassRouterInternal extends JRouterSite
 			return;
 		}
 
-		// only redirect if not alreadya "use Joomla router" type of component
+		// only redirect if not already "use Joomla router" type of component
 		if (
-			!empty(Sh404sefFactory::getConfig()->useJoomlaRouter)
+			!empty($config->useJoomlaRouter)
 			&&
 			in_array(
 				wbLTrim($option, 'com_'),
@@ -1905,29 +2256,6 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		)
 		{
 			return;
-		}
-
-		// Joomla router will return incoherent data when the URL does not exist (ie: site.com/xxxx when parsed will return some variables, Itemid and option)
-		// try to catch some of that non-sense
-		if (
-			'com_content' == wbArrayGet($vars, 'option')
-			&&
-			'article' == wbArrayGet($vars, 'view')
-		)
-		{
-			// is this an actual article id?
-			$articleId = wbArrayGet($vars, 'id');
-			if (empty($articleId))
-			{
-				return;
-			}
-			// does this article exist and is published?
-			$article = JTable::getInstance('content');
-			$loaded  = $article->load($articleId);
-			if (empty($loaded))
-			{
-				return;
-			}
 		}
 
 		$dest   = Sh404sefHelperUrl::buildUrl($vars, $option);
@@ -1954,13 +2282,13 @@ class Sh404sefClassRouterInternal extends JRouterSite
 		$path = $uri->getPath();
 
 		// if path ends with current suffix, stop here
-		if (JString::substr($path, -JString::strlen($sefConfig->suffix)) == $sefConfig->suffix)
+		if (wbEndsWith($path, $sefConfig->suffix))
 		{
 			return;
 		}
 
 		// same with optional index file
-		if (JString::substr($path, -JString::strlen($sefConfig->addFile)) == $sefConfig->addFile)
+		if (wbEndsWith($path, $sefConfig->addFile))
 		{
 			return;
 		}
@@ -2080,7 +2408,7 @@ class Sh404sefClassRouterInternal extends JRouterSite
 			else
 			{
 				$shUri         = new JURI($dest);
-				$shOriginalUri = clone ($shUri);
+				$shOriginalUri = clone($shUri);
 				$dest          = shSefRelToAbs($dest, '', $shUri, $shOriginalUri) . $shUri->toString(array('query'));
 			}
 
@@ -2297,14 +2625,19 @@ if (version_compare(JVERSION, '3.2', 'ge'))
 	{
 		protected function _parseSefRoute(&$uri)
 		{
-
 			return $this->_parseSefRouteInternal($uri);
 		}
 
 		protected function _buildSefRoute(&$uri)
 		{
-
-			$this->_buildSefRouteInternal($uri);
+			if ($this->bypassSh404sefRouting)
+			{
+				parent::_buildSefRoute($uri);
+			}
+			else
+			{
+				$this->_buildSefRouteInternal($uri);
+			}
 		}
 	}
 }
@@ -2314,13 +2647,11 @@ else if (version_compare(JVERSION, '3.0', 'ge'))
 	{
 		protected function _parseSefRoute($uri)
 		{
-
 			return $this->_parseSefRouteInternal($uri);
 		}
 
 		protected function _buildSefRoute($uri)
 		{
-
 			$this->_buildSefRouteInternal($uri);
 		}
 	}
@@ -2331,13 +2662,11 @@ else
 	{
 		protected function _parseSefRoute(&$uri)
 		{
-
 			return $this->_parseSefRouteInternal($uri);
 		}
 
 		protected function _buildSefRoute(&$uri)
 		{
-
 			$this->_buildSefRouteInternal($uri);
 		}
 	}

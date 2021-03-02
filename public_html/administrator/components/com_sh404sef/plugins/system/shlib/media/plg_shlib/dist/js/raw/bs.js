@@ -2,14 +2,14 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2018
+ * @copyright    (c) Yannick Gaultier 2020
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.685
- * @date         2019-04-25
+ * @version      0.4.0.711
+ * @date         2020-06-26
  */
 
-/*! Copyright Weeblr llc 2018 - Licence: http://www.gnu.org/copyleft/gpl.html GNU/GPL */
+/*! Copyright Weeblr llc 2020 - Licence: http://www.gnu.org/copyleft/gpl.html GNU/GPL */
 
 var shlBootstrap = shlBootstrap || function ($) {
     var tmp = {
@@ -98,12 +98,12 @@ var shlBootstrap = shlBootstrap || function ($) {
                 var bodyContent;
                 if (modalDef.content) {
                     bodyContent = modalDef.content;
-                }
-                else {
+                } else {
                     bodyContent = '<iframe class="iframe" src="' + url + '" height="' + height + '" width="' + width + '" ></iframe>'
                 }
                 jQuery("#" + modalDef.selector + "-container").html('<div class="shmodal-body" style="height:' + height + "px; width:" + width + 'px;">' + bodyContent + '</div>' + modalDef.footer);
-                var l = $modal.height(), s = $modal.width(), i = jQuery(window).height(), d = jQuery(window).width(), c = (d - s) / 2, h = (i - l) / 2;
+                var l = $modal.height(), s = $modal.width(), i = jQuery(window).height(), d = jQuery(window).width(),
+                    c = (d - s) / 2, h = (i - l) / 2;
                 jQuery("#" + modalDef.selector).css({
                     "margin-top": h,
                     top: "0"
@@ -117,7 +117,11 @@ var shlBootstrap = shlBootstrap || function ($) {
                 var modal = shlBootstrap.modals[this.id];
                 modal.onclose && modal.onclose(), jQuery("#" + this.id + "-container").innerHTML = ""
             });
-            $("#" + modalDefinition.selector).modal({keyboard: modalDefinition.keyboard, backdrop: modalDefinition.backdrop, show: !1});
+            $("#" + modalDefinition.selector).modal({
+                keyboard: modalDefinition.keyboard,
+                backdrop: modalDefinition.backdrop,
+                show: !1
+            });
 
         },
         renderModals: function () {
@@ -143,7 +147,12 @@ var shlBootstrap = shlBootstrap || function ($) {
             $.each(shlBootstrap.inputCounters, shlBootstrap.renderInputCounter)
         },
         renderInputCounter: function (index, counterDef) {
-            $("#" + counterDef.selector).textareaCount(counterDef)
+            try {
+                var field = $("#" + counterDef.selector)
+                field.length && field.textareaCount(counterDef)
+            } catch (e) {
+                console.error(e)
+            }
         },
         onReady: function () {
             $("<div id='shl-modals-container'></div>").appendTo("body"), shlBootstrap.renderModals(), shlBootstrap.renderInputCounters()
@@ -196,12 +205,13 @@ var shlBootstrap = shlBootstrap || function ($) {
         }
 
         function d(e) {
-            for (var t = 0, r = 0; r < e.length; r++)"\n" == e.charAt(r) && t++;
+            for (var t = 0, r = 0; r < e.length; r++) "\n" == e.charAt(r) && t++;
             return t
         }
 
         function c(e) {
-            var t = e + " ", r = /^[^A-Za-z0-9]+/gi, a = t.replace(r, ""), o = rExp = /[^A-Za-z0-9]+/gi, n = a.replace(o, " "), l = n.split(" ");
+            var t = e + " ", r = /^[^A-Za-z0-9]+/gi, a = t.replace(r, ""), o = rExp = /[^A-Za-z0-9]+/gi,
+                n = a.replace(o, " "), l = n.split(" ");
             return l
         }
 

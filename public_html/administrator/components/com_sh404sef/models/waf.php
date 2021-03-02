@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -31,8 +31,8 @@ class Sh404sefModelWaf
 	 */
 	public function __construct($uri, $config, $jconfig)
 	{
-		$this->uri = $uri;
-		$this->config = $config;
+		$this->uri     = $uri;
+		$this->config  = $config;
 		$this->jconfig = $jconfig;
 
 		$this->parseCurrentRequest();
@@ -58,9 +58,9 @@ class Sh404sefModelWaf
 		}
 		$this->url = $requestPathAndQuery;
 
-		$parts = explode('?', $requestPathAndQuery, 2);
-		$path = empty($parts) ? '' : array_shift($parts);
-		$this->path = rawurldecode($path);
+		$parts       = explode('?', $requestPathAndQuery, 2);
+		$path        = empty($parts) ? '' : array_shift($parts);
+		$this->path  = rawurldecode($path);
 		$this->query = empty($parts) ? '' : array_shift($parts);
 
 		return $this;
@@ -123,7 +123,7 @@ class Sh404sefModelWaf
 				}
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			// if error, just log
 			ShlSystem_Log::error(
@@ -162,24 +162,25 @@ class Sh404sefModelWaf
 	{
 		if ($this->config->shSecLogAttacks)
 		{
-			$logData = array();
-			$logData['DATE'] = ShlSystem_Date::getSiteNow('Y-m-d');
-			$logData['TIME'] = ShlSystem_Date::getSiteNow('H:i:s');
+			$logData          = array();
+			$logData['DATE']  = ShlSystem_Date::getSiteNow('Y-m-d');
+			$logData['TIME']  = ShlSystem_Date::getSiteNow('H:i:s');
 			$logData['CAUSE'] = $causeText;
-			$logData['C-IP'] = ShlSystem_Http::getVisitorIpAddress();
-			if ($logData['C-IP'] != 'localhost' && $logData['C-IP'] != '::1')
+			$logData['C-IP']  = ShlSystem_Http::getVisitorIpAddress();
+			if (!empty($logData['C-IP']) && $logData['C-IP'] != 'localhost' && $logData['C-IP'] != '::1')
 			{
-				$name = getHostByAddr($logData['C-IP']);
+				//$name = getHostByAddr($logData['C-IP']);
+				$name = '-';
 			}
 			else
 			{
 				$name = '-';
 			}
-			$logData['NAME'] = $name;
-			$logData['USER_AGENT'] = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
+			$logData['NAME']           = $name;
+			$logData['USER_AGENT']     = empty($_SERVER['HTTP_USER_AGENT']) ? '-' : $_SERVER['HTTP_USER_AGENT'];
 			$logData['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-			$logData['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
-			$logData['COMMENT'] = $comment;
+			$logData['REQUEST_URI']    = $_SERVER['REQUEST_URI'];
+			$logData['COMMENT']        = $comment;
 
 			ShlSystem_Log::logSec(
 				$logData

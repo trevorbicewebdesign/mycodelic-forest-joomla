@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  *
  */
 
@@ -47,6 +47,7 @@ class Sh404sefHelperAnalytics_auth
 	 * @param $data
 	 *
 	 * @return array
+	 * @throws Exception
 	 */
 	public static function exchangeTokens(&$data)
 	{
@@ -121,21 +122,10 @@ class Sh404sefHelperAnalytics_auth
 				throw new Sh404sefExceptionDefault($msg);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			self::_failExchangeTokens($data, $e->getMessage());
 		}
-	}
-
-	private static function _failExchangeTokens(&$data, $msg)
-	{
-		ShlSystem_Log::error('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, $msg);
-		// nuke GA auth elements, so as not to override current data
-		unset($data['wbgaauth_access_token']);
-		unset($data['wbgaauth_refresh_token']);
-		unset($data['wbgaauth_expires_on']);
-		unset($data['wbgaauth_token_type']);
-		throw new Exception($msg);
 	}
 
 	/**
@@ -143,6 +133,7 @@ class Sh404sefHelperAnalytics_auth
 	 * If expired, use refresh token to renew
 	 *
 	 * @return string
+	 * @throws Exception
 	 */
 	public static function getAccessToken()
 	{
@@ -258,9 +249,20 @@ class Sh404sefHelperAnalytics_auth
 				throw new Sh404sefExceptionDefault($msg);
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			self::_failExchangeTokens($data, $e->getMessage());
 		}
+	}
+
+	private static function _failExchangeTokens(&$data, $msg)
+	{
+		ShlSystem_Log::error('sh404sef', '%s::%d: %s', __METHOD__, __LINE__, $msg);
+		// nuke GA auth elements, so as not to override current data
+		unset($data['wbgaauth_access_token']);
+		unset($data['wbgaauth_refresh_token']);
+		unset($data['wbgaauth_expires_on']);
+		unset($data['wbgaauth_token_type']);
+		throw new Exception($msg);
 	}
 }

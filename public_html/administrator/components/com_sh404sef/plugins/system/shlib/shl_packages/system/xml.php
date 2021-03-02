@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier 2018
+ * @copyright   (c) Yannick Gaultier 2020
  * @package     shlib
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     0.4.0.685
- * @date                2019-04-25
+ * @version     0.4.0.711
+ * @date                2020-06-26
  */
 
 // no direct access
@@ -73,7 +73,7 @@ class ShlSystem_Xml
 			$length = strlen($string);
 			for ($i = 0; $i < $length; $i++)
 			{
-				$current = ord($string{$i});
+				$current = ord($string[$i]);
 				if (($current == 0x9) ||
 					($current == 0xA) ||
 					($current == 0xD) ||

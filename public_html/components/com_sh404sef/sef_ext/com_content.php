@@ -3,23 +3,23 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 defined('_JEXEC') or die('Direct Access to this location is not allowed.');
 
 // ------------------ standard plugin initialize function - don't change
 // ---------------------------
 global $sh_LANG;
-$sefConfig = &Sh404sefFactory::getConfig();
-$shLangName = '';
-$shLangIso = '';
-$title = array();
+$sefConfig      = &Sh404sefFactory::getConfig();
+$shLangName     = '';
+$shLangIso      = '';
+$title          = array();
 $shItemidString = '';
-$dosef = shInitializePlugin($lang, $shLangName, $shLangIso, $option);
+$dosef          = shInitializePlugin($lang, $shLangName, $shLangIso, $option);
 if ($dosef == false)
 {
 	return;
@@ -88,9 +88,9 @@ if (!$shHomePageFlag)
 		}
 	}
 
-	$view = isset($view) ? $view : null;
+	$view   = isset($view) ? $view : null;
 	$layout = isset($layout) ? $layout : null;
-	$task = isset($task) ? $task : null;
+	$task   = isset($task) ? $task : null;
 
 	// V 1.2.4.m
 	shRemoveFromGETVarsList('option');
@@ -164,7 +164,7 @@ if (!$shHomePageFlag)
 					$foundCat = array_search($contentElement->catid, $sefConfig->shInsertNumericalIdCatList);
 					if (($foundCat !== null && $foundCat !== false) || ($sefConfig->shInsertNumericalIdCatList[0] == ''))
 					{ // test both in case PHP < 4.2.0
-						$shTemp = explode(' ', $contentElement->created);
+						$shTemp  = explode(' ', $contentElement->created);
 						$title[] = str_replace('-', '', $shTemp[0]) . $contentElement->id;
 					}
 				}
@@ -188,9 +188,9 @@ if (!$shHomePageFlag)
 						if (($foundCat !== null && $foundCat !== false) || ($sefConfig->insertDateCatList[0] == ''))
 						{
 							$creationDate = new JDate($contentElement->created);
-							$title[] = $creationDate->year;
-							$title[] = $creationDate->month;
-							$title[] = $creationDate->day;
+							$title[]      = $creationDate->year;
+							$title[]      = $creationDate->month;
+							$title[]      = $creationDate->day;
 						}
 					}
 				}
@@ -281,12 +281,8 @@ if (!$shHomePageFlag)
 	{
 		shRemoveFromGETVarsList('layout');
 	}
-	// only remove format variable if forma tis html. In all other
-	// situations, leave it there as some
-	// system plugins may cause pdf and rss to break if they call
-	// JFactory::getDocument() in the onAfterInitialize event handler
-	// because at this time SEF url are not decoded yet.
-	if (isset($format) && (!sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR || (sh404SEF_PROTECT_AGAINST_DOCUMENT_TYPE_ERROR && $format == 'html')))
+
+	if (isset($format))
 	{
 		shRemoveFromGETVarsList('format');
 	}
@@ -328,7 +324,7 @@ if (!$shHomePageFlag)
 else
 { // this is multipage homepage
 	$title[] = '/';
-	$string = sef_404::sefGetLocation(
+	$string  = sef_404::sefGetLocation(
 		$string, $title, null, (isset($limit) ? $limit : null), (isset($limitstart) ? $limitstart : null),
 		(isset($shLangName) ? $shLangName : null), (isset($showall) ? $showall : null)
 	);

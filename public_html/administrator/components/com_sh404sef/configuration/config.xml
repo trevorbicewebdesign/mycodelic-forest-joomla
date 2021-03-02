@@ -231,6 +231,33 @@
         </field>
     </fieldset>
 
+    <!--Raw custom content-->
+
+    <fieldset
+            name="raw_content"
+            label="COM_SH404SEF_CONF_TAB_RAW_CONTENT"
+            description=""
+            groupname="COM_SH404SEF_CONFIG"
+            minJoomlaVersion="3.0"
+            maxJoomlaVersion=""
+    >
+
+        <field type="shlegend" shlrenderer="shlegend" class="text" label="COM_SH404SEF_RAW_CONTENT_HEAD"/>
+        <field name="rawContentHeadTop" type="textarea" default="" cols="60" rows="5"
+               label="COM_SH404SEF_RAW_CONTENT_HEAD_TOP" description="COM_SH404SEF_TT_RAW_CONTENT_HEAD_TOP">
+        </field>
+        <field name="rawContentHeadBottom" type="textarea" default="" cols="60" rows="5"
+               label="COM_SH404SEF_RAW_CONTENT_HEAD_BOTTOM" description="COM_SH404SEF_TT_RAW_CONTENT_HEAD_BOTTOM">
+        </field>
+        <field type="shlegend" shlrenderer="shlegend" class="text" label="COM_SH404SEF_RAW_CONTENT_BODY"/>
+        <field name="rawContentBodyTop" type="textarea" default="" cols="60" rows="5"
+               label="COM_SH404SEF_RAW_CONTENT_BODY_TOP" description="COM_SH404SEF_TT_RAW_CONTENT_BODY_TOP">
+        </field>
+        <field name="rawContentBodyBottom" type="textarea" default="" cols="60" rows="5"
+               label="COM_SH404SEF_RAW_CONTENT_BODY_BOTTOM" description="COM_SH404SEF_TT_RAW_CONTENT_BODY_BOTTOM">
+        </field>
+    </fieldset>
+
     <!--Logging-->
 
     <fieldset
@@ -848,7 +875,9 @@
             <option value="1">COM_SH404SEF_YES</option>
         </field>
 
-        <field menu="hide" type="text" name="metaRobotsDefault" default="max-snippet:-1, max-image-preview:large, max-video-preview:-1" label="COM_SH404SEF_META_ROBOTS_DEFAULT"
+        <field menu="hide" type="text" name="metaRobotsDefault"
+               default="max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+               label="COM_SH404SEF_META_ROBOTS_DEFAULT"
                description="COM_SH404SEF_TT_META_ROBOTS_DEFAULT" size="50" maxlength="255"/>
 
         <field menu="hide" name="removeOtherCanonicals" type="radio" class="btn-group" default="1"
@@ -1047,8 +1076,8 @@
             description=""
             groupname="COM_SH404SEF_CONFIG_SOCIAL_SEO">
 
-        <field menu="hide" name="enableOpenGraphData" type="radio" class="btn-group" default="0"
-               label="COM_SH404SEF_OG_DATA_ENABLED" description="COM_SH404SEF_TT_OG_DATA_ENABLED">
+        <field menu="hide" name="enableOpenGraphData" type="Shradio" class="btn-group" default="0"
+               label="COM_SH404SEF_OG_DATA_ENABLED" description="COM_SH404SEF_TT_OG_DATA_ENABLED" additionaltext="">
             <option value="0">COM_SH404SEF_NO</option>
             <option value="1">COM_SH404SEF_YES</option>
         </field>
@@ -1232,6 +1261,23 @@
             <option value="1">COM_SH404SEF_YES</option>
         </field>
 
+        <field menu="hide" name="analyticsEnableFrontendAccess" type="radio" class="btn-group" default="0"
+               label="COM_SH404SEF_ANALYTICS_ENABLE_FRONTEND_ACCESS"
+               description="COM_SH404SEF_TT_ANALYTICS_ENABLE_FRONTEND_ACCESS">
+            <option value="0">COM_SH404SEF_NO</option>
+            <option value="1">COM_SH404SEF_YES</option>
+        </field>
+
+        <field menu="hide" name="analyticsEnableFrontendAccessWithKey" type="Shradio" class="btn-group" default="0"
+               label="COM_SH404SEF_ANALYTICS_ENABLE_FRONTEND_ACCESS_WITH_KEY"
+               description="COM_SH404SEF_TT_ANALYTICS_ENABLE_FRONTEND_ACCESS_WITH_KEY"
+               additionaltext="">
+            <option value="0">COM_SH404SEF_NO</option>
+            <option value="1">COM_SH404SEF_YES</option>
+        </field>
+
+        <field name="analyticsFrontendReportsAccessKey" type="hidden" default=""/>
+
         <field menu="hide" type="wbgaauth" name="wbgaauth" default="" label="COM_SH404SEF_ANALYTICS_AUTHORIZATION"
                description="COM_SH404SEF_ANALYTICS_AUTHORIZATION_DESC"/>
 
@@ -1248,14 +1294,6 @@
             <option value="week">COM_SH404SEF_WEEK</option>
             <option value="month">COM_SH404SEF_MONTH</option>
             <option value="year">COM_SH404SEF_YEAR</option>
-        </field>
-
-        <field menu="hide" name="analyticsDashboardDataType" type="list" default="ga:pageviews"
-               label="COM_SH404SEF_ANALYTICS_DASHBOARD_DATA_TYPE"
-               description="COM_SH404SEF_TT_ANALYTICS_DASHBOARD_DATA_TYPE">
-            <option value="ga:pageviews">COM_SH404SEF_ANALYTICS_DATA_PAGEVIEWS</option>
-            <option value="ga:sessions">COM_SH404SEF_ANALYTICS_REPORT_VISITS_ONLY</option>
-            <option value="ga:users">COM_SH404SEF_ANALYTICS_DATA_VISITORS</option>
         </field>
 
         <field name="wbgaauth_auth_required" type="hidden" default="1"/>
@@ -1467,8 +1505,6 @@
     >
         <field menu="hide" name="update_credentials_access" type="text" default="" size="50" maxlength="50"
                label="COM_SH404SEF_UPDATE_ACCESS_KEY" description="COM_SH404SEF_TT_UPDATE_ACCESS_KEY"/>
-        <field menu="hide" name="update_credentials_secret" type="text" default="" size="50" maxlength="50"
-               label="COM_SH404SEF_UPDATE_SECRET_KEY" description="COM_SH404SEF_TT_UPDATE_SECRET_KEY"/>
     </fieldset>
 
 </config>

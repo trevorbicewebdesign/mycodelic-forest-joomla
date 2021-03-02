@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2018
+ * @copyright    (c) Yannick Gaultier 2020
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.685
- * @date                2019-04-25
+ * @version      0.4.0.711
+ * @date                2020-06-26
  */
 
 // Security check to ensure this file is being included by a parent file.
@@ -20,8 +20,8 @@ defined('_JEXEC') or die;
 class plgSystemShlibInstallerScript
 {
 
-	const MIN_JOOMLA_VERSION = '3.2.4';
-	const MAX_JOOMLA_VERSION = '5';
+	const MIN_JOOMLA_VERSION = '3.9.0';
+	const MAX_JOOMLA_VERSION = '4';
 
 	public function install($parent)
 	{

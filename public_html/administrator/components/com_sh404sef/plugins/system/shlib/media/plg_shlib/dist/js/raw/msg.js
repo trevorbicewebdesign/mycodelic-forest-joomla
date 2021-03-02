@@ -2,14 +2,14 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2018
+ * @copyright    (c) Yannick Gaultier 2020
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.685
- * @date         2019-04-25
+ * @version      0.4.0.711
+ * @date         2020-06-26
  */
 
-/*! Copyright Weeblr llc 2018 - Licence: http://www.gnu.org/copyleft/gpl.html GNU/GPL */
+/*! Copyright Weeblr llc 2020 - Licence: http://www.gnu.org/copyleft/gpl.html GNU/GPL */
 
 ;
 (function (_app, window, document, $) {

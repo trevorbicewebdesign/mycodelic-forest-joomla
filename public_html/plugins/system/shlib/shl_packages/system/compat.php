@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2018
+ * @copyright    (c) Yannick Gaultier 2020
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.685
- * @date                2019-04-25
+ * @version      0.4.0.711
+ * @date                2020-06-26
  */
 
 // no direct access
@@ -41,6 +41,20 @@ class ShlSystem_Compat
 		}
 
 		return $prefix;
+	}
+
+	/**
+	 * Wrapper handling get_magic_quotes_gpc based on
+	 * running php version.
+	 * Used until we raise min PHP version to 7+.
+	 */
+	public static function getMagicQuotesGpc()
+	{
+		if (version_compare(PHP_VERSION, '5.4', '<='))
+		{
+			return get_magic_quotes_gpc();
+		}
+		return false;
 	}
 }
 

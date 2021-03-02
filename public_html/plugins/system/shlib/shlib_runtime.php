@@ -3,11 +3,11 @@
  * Shlib - programming library
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier 2018
+ * @copyright    (c) Yannick Gaultier 2020
  * @package      shlib
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      0.4.0.685
- * @date        2019-04-25
+ * @version      0.4.0.711
+ * @date        2020-06-26
  *
  * build 370
  */
@@ -43,7 +43,7 @@ class  plgSystemShlib extends \JPlugin
 		// initialize path lib
 		$this->_initLibrary();
 
-		defined('SHLIB_VERSION') or define('SHLIB_VERSION', '0.4.0.685');
+		defined('SHLIB_VERSION') or define('SHLIB_VERSION', '0.4.0.711');
 	}
 
 	public function onAfterInitialise()
@@ -65,7 +65,7 @@ class  plgSystemShlib extends \JPlugin
 				}
 
 				// enable API
-				if (true || $this->params->get('enable_api'))
+				if ($this->params->get('enable_api'))
 				{
 					$joomlaRouter = \JFactory::getApplication()->getRouter();
 					$joomlaRouter->attachParseRule(

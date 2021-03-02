@@ -3,15 +3,18 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author       Yannick Gaultier
- * @copyright    (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright    (c) Yannick Gaultier - Weeblr llc - 2020
  * @package      sh404SEF
  * @license      http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version      4.17.0.3932
- * @date        2019-09-30
+ * @version      4.21.0.4206
+ * @date        2020-06-26
  */
 
+use Weeblr\Wblib\V_SH4_4206\System;
+use Weeblr\Wblib\V_SH4_4206\Mvc;
+
 // Security check to ensure this file is being included by a parent file.
-defined('_JEXEC') or die('Direct Access to this location is not allowed.');
+defined('_JEXEC') or die;
 
 /**
  * Model to read and save sh404SEF configuration from
@@ -23,7 +26,6 @@ defined('_JEXEC') or die('Direct Access to this location is not allowed.');
  */
 class Sh404sefModelConfiguration extends ShlMvcModel_Base
 {
-
 	protected $_context = 'sh404sef.configuration';
 
 	/**
@@ -34,7 +36,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	 * model will be removed and basemodel should handle everything
 	 *
 	 * @param array $data an array holding data to save
-	 * @param       integer id the com_sh404sef component id in extension table
+	 * @param integer id the com_sh404sef component id in extension table
 	 *
 	 * @return integer id of created or updated record
 	 */
@@ -99,7 +101,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 						array('element' => 'shmobile', 'folder' => 'system', 'type' => 'plugin')
 					);
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 				}
 			}
@@ -109,6 +111,28 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 		if (!isset($data['analyticsViewLevel']))
 		{
 			$data['analyticsViewLevel'] = array(1);
+		}
+
+		// handle frontend access with key generation
+		if (empty($data['analyticsEnableFrontendAccessWithKey']))
+		{
+			// if reports not displayed or not displayed on frontend
+			// kill the key
+			$data['analyticsFrontendReportsAccessKey'] = '';
+		}
+
+		if (
+			!empty($data['analyticsReportsEnabled'])
+			&&
+			!empty($data['analyticsEnableFrontendAccess'])
+			&&
+			!empty($data['analyticsEnableFrontendAccessWithKey'])
+			&&
+			empty($data['analyticsFrontendReportsAccessKey'])
+		)
+		{
+			// if reports are enabled and can be accessed on frontend with key
+			$data['analyticsFrontendReportsAccessKey'] = System\Auth::shortId();
 		}
 
 		// Google analytics oAuth handling
@@ -125,7 +149,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 				$cache = JFactory::getCache('sh404sef_analytics');
 				$cache->clean();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				$this->setError($e->getMessage());
 			}
@@ -202,11 +226,11 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	{
 		try
 		{
-			$content = get_magic_quotes_gpc() ? stripslashes($errorPagecontent) : $errorPagecontent;
+			$content = ShlSystem_Compat::getMagicQuotesGpc() ? stripslashes($errorPagecontent) : $errorPagecontent;
 			ShlDb_Keystore::getInstance(Sh404sefClassConfig::COM_SH404SEF_KEYSTORE_TABLE_NAME)
 			              ->put(Sh404sefClassConfig::COM_SH404SEF_KEYSTORE_KEY_404_ERROR_PAGE . '.' . $languageTag, $content);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$this->setError($e->getMessage());
 		}
@@ -272,6 +296,26 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 		$form->setField($field);
 		$field = $this->_getAnalyticsDisabledGroupsField();
 		$form->setField($field);
+
+		// nuke analytics front end display access key in case it's not correct right after an update
+		$form->setValue('analyticsFrontendReportsAccessKey', null, '');
+
+		// inject a link to sthe front end analytics access page
+		$config = Sh404sefFactory::getConfig();
+		if (!empty($config->analyticsFrontendReportsAccessKey))
+		{
+			$form
+				->setFieldAttribute(
+					'analyticsEnableFrontendAccessWithKey', 'additionaltext',
+					Mvc\LayoutHelper::render(
+						'com_sh404sef.configuration.analytics_front_end_url',
+						array(
+							'url' => Sh404sefHelperAnalytics::getFrontendStatsUrl()
+						),
+						sh404SEF_LAYOUTS
+					)
+				);
+		}
 
 		// merge categories in jooomla tab
 		$field = $this->_getCategoriesField();
@@ -342,6 +386,14 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 				. JText::_('COM_SH404SEF_CONFIGURE_SHLIB_PLUGIN') . '</a></span>'
 			);
 
+		// inject a link to social buttons plugin params for display
+		$form
+			->setFieldAttribute(
+				'enableOpenGraphData', 'additionaltext',
+				'<span class = "btn sh404sef-textinput"><a href="' . Sh404sefHelperGeneral::getPluginLink('sh404sefcore', 'sh404sefsocial') . '" target="_blank">'
+				. JText::_('COM_SH404SEF_CONFIGURE_SHARING_BUTTONS_PLUGIN') . '</a></span>'
+			);
+
 		// inject links to allow clearing Data recordings
 		$form
 			->setFieldAttribute(
@@ -379,7 +431,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 	}
 
 	/*
-	 * Creates the By component dynamic form field
+	 * Creates the By component dynamic form field,
 	 */
 
 	/**
@@ -534,7 +586,7 @@ class Sh404sefModelConfiguration extends ShlMvcModel_Base
 			}
 			$status = true;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$status = false;
 		}

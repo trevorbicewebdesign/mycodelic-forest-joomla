@@ -1,0 +1,44 @@
+/**
+ * @build_title_build@
+ *
+ * @author       @build_author_build@
+ * @copyright    @build_copyright_build@
+ * @package      @build_package_build@
+ * @license      @build_license_build@
+ * @version      @build_version_full_build@
+ *
+ * @build_current_date_build@
+ */
+.wbl-social-colors a,
+.wbl-social-colors a:active,
+.wbl-social-colors a:visited,
+.wbl-social-colors a:focus {
+  fill: #ffffff;
+}
+.wbl-social-colors a .wbl-social-static-text,
+.wbl-social-colors a:active .wbl-social-static-text,
+.wbl-social-colors a:visited .wbl-social-static-text,
+.wbl-social-colors a:focus .wbl-social-static-text {
+  color: #ffffff;
+}
+.wbl-social-colors .wbl-social-button:hover {
+  background: #777777;
+}
+.wbl-social-colors .wbl-social-facebook {
+  background: #3067a3;
+}
+.wbl-social-colors .wbl-social-twitter {
+  background: #03B3EE;
+}
+.wbl-social-colors .wbl-social-linkedin {
+  background: #0071a1;
+}
+.wbl-social-colors .wbl-social-pinterest {
+  background: #BD081C;
+}
+.wbl-social-colors .wbl-social-whatsapp {
+  background: #25D366;
+}
+.wbl-social-colors .wbl-social-share-api {
+  background: #777777;
+}

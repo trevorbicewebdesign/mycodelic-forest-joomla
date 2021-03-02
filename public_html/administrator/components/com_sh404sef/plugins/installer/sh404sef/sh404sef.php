@@ -3,11 +3,11 @@
  * sh404SEF - SEO extension for Joomla!
  *
  * @author      Yannick Gaultier
- * @copyright   (c) Yannick Gaultier - Weeblr llc - 2019
+ * @copyright   (c) Yannick Gaultier - Weeblr llc - 2020
  * @package     sh404SEF
  * @license     http://www.gnu.org/copyleft/gpl.html GNU/GPL
- * @version     4.17.0.3932
- * @date        2019-09-30
+ * @version     4.21.0.4206
+ * @date        2020-06-26
  */
 
 defined('_JEXEC') or die;
@@ -24,7 +24,7 @@ class PlgInstallerSh404sef extends JPlugin
 	 * @since  2.5
 	 */
 	private $baseUrl = array(
-		'https://u1.weeblr.com/dist/sh404sef/full' => 'sh404sef',
+		'https://u1.weeblr.com/dist/sh404sef/full'          => 'sh404sef',
 		'https://u1.weeblr.com/dist/sh404sef-importer/full' => 'sh404sef-importer'
 	);
 
@@ -51,8 +51,8 @@ class PlgInstallerSh404sef extends JPlugin
 	/**
 	 * Handle adding credentials to package download request
 	 *
-	 * @param   string $url url from which package is going to be downloaded
-	 * @param   array  $headers headers to be sent along the download request (key => value format)
+	 * @param string $url url from which package is going to be downloaded
+	 * @param array  $headers headers to be sent along the download request (key => value format)
 	 *
 	 * @return  boolean    true        always true
 	 *
@@ -88,10 +88,12 @@ class PlgInstallerSh404sef extends JPlugin
 
 	/**
 	 * Bind credentials to the download request.
+	 * In Joomla 4, update key is manager by Joomla and added to the URL.
+	 * Prior to J4, we are using a header. Better but not how it was done in J4.
 	 *
-	 * @param    array $credentials whatever credentials were retrieved for the current user/website
-	 * @param   string $url url from which package is going to be downloaded
-	 * @param   array  $headers headers to be sent along the download request (key => value format)
+	 * @param array  $credentials whatever credentials were retrieved for the current user/website
+	 * @param string $url url from which package is going to be downloaded
+	 * @param array  $headers headers to be sent along the download request (key => value format)
 	 *
 	 * @return void
 	 */
@@ -99,11 +101,6 @@ class PlgInstallerSh404sef extends JPlugin
 	{
 		$headers['X-download-auth-ts'] = time();
 		$headers['X-download-auth-id'] = $credentials['id'];
-		$headers['X-download-auth-token'] = sha1($headers['X-download-auth-ts'] . mt_rand() . $credentials['secret'] . $url);
-		$headers['X-download-auth-sig'] = sha1(
-			$credentials['id'] . $headers['X-download-auth-token'] . $credentials['secret'] . $headers['X-download-auth-ts'] . $this->productId
-			. $this->productEdition
-		);
 	}
 
 	/**
@@ -116,19 +113,34 @@ class PlgInstallerSh404sef extends JPlugin
 	 */
 	private function fetchCredentials($url, $headers)
 	{
+		if (version_compare(JVERSION, '4', 'ge'))
+		{
+			// j4 adds credentials itself, from update keys manager
+			return array('id' => '');
+		}
 
-		$credentials = null;
+		// maybe the key was put in URL already by something like Watchful?
+		$parsedUrl = parse_url( $url, PHP_URL_QUERY );
+		if ( ! empty( $parsedUrl ) ) {
+			$parsedQueryVars = array();
+			parse_str( $parsedUrl, $parsedQueryVars );
+			$urlKey = wbArrayGet( $parsedQueryVars, 'wblr_k', '' );
+			if ( ! empty( $urlKey ) ) {
+				$credentials = array( 'id' => $urlKey );
+			}
+		}
 
-		// fetch credentials from extension parameters
-		// Get the component information from the #__extensions table
-		JLoader::import('joomla.application.component.helper');
-		$component = JComponentHelper::getComponent($this->extension);
+		if (empty($credentials['id']))
+		{
+			// fetch credentials from extension parameters
+			// Get the component information from the #__extensions table
+			JLoader::import('joomla.application.component.helper');
+			$component   = JComponentHelper::getComponent($this->extension);
+			$credentials = array('id' => trim($component->params->get('update_credentials_access', '')));
+		}
 
-		$credentials = array('id' => trim($component->params->get('update_credentials_access', '')),
-		                     'secret' => trim($component->params->get('update_credentials_secret', '')));
-
-		if (empty($credentials['id']) || empty($credentials['secret'])
-		)
+		// no update id found, display error
+		if (empty($credentials['id']))
 		{
 			JPlugin::loadLanguage('com_sh404sef', JPATH_ADMINISTRATOR);
 			$app = JFactory::getApplication();
@@ -139,3 +151,4 @@ class PlgInstallerSh404sef extends JPlugin
 		return $credentials;
 	}
 }
+

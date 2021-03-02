@@ -230,3 +230,10 @@ div.tip-wrap {
     webkit-animation: wbl-spinner 0.6s infinite linear;
     animation: wbl-spinner-kf 0.6s infinite linear;
 }
+
+#copy_analytics_frontend_access_url svg {
+    display: inline;
+    vertical-align: middle;
+    width: 1em;
+    height: 1em;
+}
