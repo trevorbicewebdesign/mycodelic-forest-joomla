@@ -67,6 +67,7 @@ if (!defined('CIVICRM_UF')) {
 $basepath = dirname(__FILE__, 5);  
 $basepath .= "/public_html/";
 
+
 // Bootstrap the CMS libraries.
 $config = new JConfig;
 /**
@@ -79,7 +80,7 @@ $config = new JConfig;
  *      define( 'CIVICRM_UF_DSN', 'mysql://cms_db_username:cms_db_password@db_server/cms_database?new_link=true');
  */
 if (!defined('CIVICRM_UF_DSN') && CIVICRM_UF !== 'UnitTests') {
-  define( 'CIVICRM_UF_DSN'           , "mysql://{$config->user}:{$config->password}@{$config->host}/{$config->db}?new_link=true");
+  define( 'CIVICRM_UF_DSN' , "mysql://{$config->user}:{$config->password}@{$config->host}/{$config->db}?new_link=true");
 }
 
 // %%extraSettings%%
@@ -184,9 +185,9 @@ if (!defined('CIVICRM_LOGGING_DSN')) {
 
 global $civicrm_root;
 
-$civicrm_root = $basepath.'/administrator/components/com_civicrm/civicrm';
+$civicrm_root = $basepath.'administrator/components/com_civicrm/civicrm';
 if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
-  define( 'CIVICRM_TEMPLATE_COMPILEDIR', $basepath.'/media/civicrm/templates_c');
+  define( 'CIVICRM_TEMPLATE_COMPILEDIR', $basepath.'media/civicrm/templates_c');
 }
 
 /**
