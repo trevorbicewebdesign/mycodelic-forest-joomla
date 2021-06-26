@@ -4,10 +4,14 @@ require_once(JPATH_ROOT.'/administrator/components/com_civicrm/civicrm/api/class
 
 $api = new civicrm_api3(array('conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/'));  
 $group_id = $params->get('civi_crm_groupid');
-
+$contacts = [];
 
 // Need to refactor this to get a single specific group
-$groups = civicrm_api3('Group', 'get', array());
+$groups = civicrm_api3('Group', 'get', array(
+    'options'         => array(
+        'limit'           => 100
+    )
+));
 
 $result = civicrm_api3('Contact', 'get', array(   
     'return'          => "id",   
@@ -32,6 +36,7 @@ $contributions = civicrm_api3('Contribution', 'get', array(
         'limit'           => 100
     )
 ));
+
 foreach($contributions['values'] as $index=>$contribution){
     $contact_id = $contribution['contact_id'];
     preg_match("#[0-9][0-9][0-9][0-9]#", $groups['values'][$group_id]['title'], $tmp);
@@ -39,10 +44,11 @@ foreach($contributions['values'] as $index=>$contribution){
     if(
            strtotime($contribution['receive_date']) <= strtotime("01/01/".(date("Y", mktime(1,1,1,1,1,$year))+1))
         && strtotime($contribution['receive_date']) > strtotime("01/01/".(date("Y",mktime(1,1,1,1,1,$year))))
+        && isset($contacts[$contact_id])
         && $contacts[$contact_id]
     ) {
         $contacts[$contact_id]->contributions = $contribution;
-        if(is_array($contribution['soft_credit']) && count($contribution['soft_credit'])>0) {
+        if( isset($contribution['soft_credit']) && is_array($contribution['soft_credit']) && count($contribution['soft_credit'])>0) {
             foreach($contribution['soft_credit'] as $index2=>$contribution2){
                 $contacts[$contribution2['contact_id']]->contributions = $contribution2;
             }
@@ -56,7 +62,6 @@ foreach($contributions['values'] as $index=>$contribution){
 <?php 
 if(is_array($contacts) && count($contacts)>0):
     foreach($contacts as $index=>$contact): 
-   // print_r($contact);
         if(empty($contact->nick_name)){
             $name = $contact->display_name;
         }
@@ -64,7 +69,7 @@ if(is_array($contacts) && count($contacts)>0):
             $name = "{$contact->nick_name} ({$contact->display_name})";
         }
     
-        $camp_dues_paid = (is_array($contact->contributions) && count($contact->contributions))?'<i class="fa fa-heart" aria-hidden="true" style="color:green;"></i> ':"";
+        $camp_dues_paid = ( isset($contact->contributions) && is_array($contact->contributions) && count($contact->contributions))?'<i class="fa fa-heart" aria-hidden="true" style="color:green;"></i> ':"";
         ?>
         <div class='col-lg-3'><?php echo $camp_dues_paid; ?><?php echo $name; ?></div>
     <?php endforeach; ?>   

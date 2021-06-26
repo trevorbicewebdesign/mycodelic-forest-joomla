@@ -36,6 +36,7 @@ public_html/administrator/logs/rsfirewall.log
 /cache/
 /logs/
 /tmp/
+*.zip
 
 public_html/media/civicrm/templates_c/en_US/
 public_html/media/civicrm/persist/contribute/dyn/

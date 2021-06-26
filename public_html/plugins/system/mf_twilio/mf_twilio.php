@@ -27,15 +27,16 @@ class plgSystemMf_twilio extends JPlugin {
                 // Specify location of "civicrm.settings.php".
                 'conf_path' => JPATH_ROOT . "/administrator/components/com_civicrm/",
             ) );
-            echo $from;
-
+            // print_r($_POST);
+            // echo $from;
+            /*
             $formatted = sprintf( "(%s) %s-%s",
                 substr( $from, 2, 3 ),
                 substr( $from, 5, 3 ),
                 substr( $from, 8 ) );
-
+            */
             $apiParams = array(
-                'phone' => $formatted
+                'phone' => $from
 
             );
             if ( $api->Contact->Get( $apiParams ) ) {
@@ -55,7 +56,7 @@ class plgSystemMf_twilio extends JPlugin {
                 if ( !empty( $data[ "event" ][ 'thread_ts' ] ) ) {
 
 
-                    $message = json_decode( $this->slack_message( "G9J7R2ZLG", $data[ "event" ][ 'thread_ts' ] ) );
+                    $message = json_decode( $this->slack_message( "G01C6C8K4AJ", $data[ "event" ][ 'thread_ts' ] ) );
 
                     if ( $message->messages[ 0 ]->subtype == 'bot_message' ) {
                         $username = explode( ":", $message->messages[ 0 ]->username );
