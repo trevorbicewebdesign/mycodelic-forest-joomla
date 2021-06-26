@@ -3,10 +3,14 @@
 
   angular.module('crmSearchDisplayTable').component('crmSearchDisplayTable', {
     bindings: {
-      apiEntity: '<',
-      apiParams: '<',
+      apiEntity: '@',
+      search: '<',
+      display: '<',
       settings: '<',
       filters: '<'
+    },
+    require: {
+      afFieldset: '?^^afFieldset'
     },
     templateUrl: '~/crmSearchDisplayTable/crmSearchDisplayTable.html',
     controller: function($scope, crmApi4, searchDisplayUtils) {
@@ -14,34 +18,39 @@
         ctrl = this;
 
       this.page = 1;
+      this.rowCount = null;
       this.selectedRows = [];
       this.allRowsSelected = false;
 
       this.$onInit = function() {
-        this.apiParams = _.cloneDeep(this.apiParams);
-        this.apiParams.limit = parseInt(this.settings.limit || 0, 10);
-        this.columns = searchDisplayUtils.prepareColumns(this.settings.columns, this.apiParams);
+        this.sort = this.settings.sort ? _.cloneDeep(this.settings.sort) : [];
         $scope.displayUtils = searchDisplayUtils;
+
+        if (this.afFieldset) {
+          $scope.$watch(this.afFieldset.getFieldData, refresh, true);
+        }
+        $scope.$watch('$ctrl.filters', refresh, true);
       };
 
-      this.getResults = function() {
-        var params = searchDisplayUtils.prepareParams(ctrl.apiParams, ctrl.filters, ctrl.settings.pager ? ctrl.page : null);
+      this.getResults = _.debounce(function() {
+        searchDisplayUtils.getResults(ctrl);
+      }, 100);
 
-        crmApi4(ctrl.apiEntity, 'get', params).then(function(results) {
-          ctrl.results = results;
-          ctrl.rowCount = results.count;
-        });
-      };
-
-      $scope.$watch('$ctrl.filters', ctrl.getResults, true);
+      function refresh() {
+        ctrl.page = 1;
+        ctrl.rowCount = null;
+        ctrl.getResults();
+      }
 
       /**
        * Returns crm-i icon class for a sortable column
        * @param col
        * @returns {string}
        */
-      $scope.getOrderBy = function(col) {
-        var dir = ctrl.apiParams.orderBy && ctrl.apiParams.orderBy[col.key];
+      $scope.getSort = function(col) {
+        var dir = _.reduce(ctrl.sort, function(dir, item) {
+          return item[0] === col.key ? item[1] : dir;
+        }, null);
         if (dir) {
           return 'fa-sort-' + dir.toLowerCase();
         }
@@ -53,18 +62,25 @@
        * @param col
        * @param $event
        */
-      $scope.setOrderBy = function(col, $event) {
-        var dir = $scope.getOrderBy(col) === 'fa-sort-asc' ? 'DESC' : 'ASC';
-        if (!$event.shiftKey || !ctrl.apiParams.orderBy) {
-          ctrl.apiParams.orderBy = {};
+      $scope.setSort = function(col, $event) {
+        if (col.type !== 'field') {
+          return;
         }
-        ctrl.apiParams.orderBy[col.key] = dir;
+        var dir = $scope.getSort(col) === 'fa-sort-asc' ? 'DESC' : 'ASC';
+        if (!$event.shiftKey || !ctrl.sort) {
+          ctrl.sort = [];
+        }
+        var index = _.findIndex(ctrl.sort, [col.key]);
+        if (index > -1) {
+          ctrl.sort[index][1] = dir;
+        } else {
+          ctrl.sort.push([col.key, dir]);
+        }
         ctrl.getResults();
       };
 
-      $scope.formatResult = function(row, col) {
-        var value = row[col.key];
-        return searchDisplayUtils.formatSearchValue(row, col, value);
+      this.formatFieldValue = function(rowData, col) {
+        return searchDisplayUtils.formatDisplayValue(rowData, col.key, ctrl.settings.columns);
       };
 
       $scope.selectAllRows = function() {
@@ -76,15 +92,14 @@
         }
         // Select all
         ctrl.allRowsSelected = true;
-        if (ctrl.page === 1 && ctrl.results[1].length < ctrl.apiParams.limit) {
-          ctrl.selectedRows = _.pluck(ctrl.results[1], 'id');
+        if (ctrl.page === 1 && ctrl.results.length < ctrl.settings.limit) {
+          ctrl.selectedRows = _.pluck(ctrl.results, 'id');
           return;
         }
         // If more than one page of results, use ajax to fetch all ids
         $scope.loadingAllRows = true;
-        var params = _.cloneDeep(ctrl.apiParams);
-        params.select = ['id'];
-        crmApi4(ctrl.apiEntity, 'get', params, ['id']).then(function(ids) {
+        var params = searchDisplayUtils.getApiParams(ctrl, 'id');
+        crmApi4('SearchDisplay', 'run', params, ['id']).then(function(ids) {
           $scope.loadingAllRows = false;
           ctrl.selectedRows = _.toArray(ids);
         });

@@ -43,14 +43,12 @@ class CRM_Utils_Money {
    * @param string $format
    *   The desired currency format.
    * @param bool $onlyNumber
-   * @param string $valueFormat
-   *   The desired monetary value display format (e.g. '%!i').
    *
    * @return string
    *   formatted monetary string
    *
    */
-  public static function format($amount, $currency = NULL, $format = NULL, $onlyNumber = FALSE, $valueFormat = NULL) {
+  public static function format($amount, $currency = NULL, $format = NULL, $onlyNumber = FALSE) {
 
     if (CRM_Utils_System::isNull($amount)) {
       return '';
@@ -60,14 +58,6 @@ class CRM_Utils_Money {
 
     if (!$format) {
       $format = $config->moneyformat;
-    }
-
-    if (!$valueFormat) {
-      $valueFormat = $config->moneyvalueformat;
-    }
-
-    if (!empty($valueFormat) && $valueFormat !== '%!i') {
-      CRM_Core_Error::deprecatedWarning('Having a Money Value format other than %!i is deprecated, please report this on the GitLab Issue https://lab.civicrm.org/dev/core/-/issues/1494 with the relevant moneyValueFormat you use.');
     }
 
     if (!$currency) {
@@ -96,7 +86,7 @@ class CRM_Utils_Money {
       CRM_Core_Error::deprecatedWarning('Passing empty currency to CRM_Utils_Money::format is deprecated if you need it for display without currency call CRM_Utils_Money::formatLocaleNumericRounded');
     }
 
-    $amount = self::formatNumericByFormat($amount, $valueFormat);
+    $amount = self::formatNumericByFormat($amount);
     // If it contains tags, means that HTML was passed and the
     // amount is already converted properly,
     // so don't mess with it again.
@@ -181,10 +171,7 @@ class CRM_Utils_Money {
    * @return string
    */
   protected static function formatLocaleNumeric($amount) {
-    if (CRM_Core_Config::singleton()->moneyvalueformat !== '%!i') {
-      CRM_Core_Error::deprecatedWarning('Having a Money Value format other than !%i is deprecated, please report this on GitLab with the relevant moneyValueFormat you use.');
-    }
-    return self::formatNumericByFormat($amount, CRM_Core_Config::singleton()->moneyvalueformat);
+    return self::formatNumericByFormat($amount);
   }
 
   /**
@@ -208,8 +195,14 @@ class CRM_Utils_Money {
       return self::formatNumericByFormat($amount, '%!.' . $numberOfPlaces . 'i');
     }
     $money = Money::of($amount, CRM_Core_Config::singleton()->defaultCurrency, new CustomContext($numberOfPlaces), RoundingMode::CEILING);
-    $formatter = new \NumberFormatter(CRM_Core_I18n::getLocale(), NumberFormatter::CURRENCY);
-    $formatter->setSymbol(\NumberFormatter::CURRENCY_SYMBOL, '');
+    // @todo - we specify en_US here because we don't want this function to do
+    // currency replacement at the moment because
+    // formatLocaleNumericRoundedByPrecision is doing it and if it
+    // is done there then it is swapped back in there.. This is a short term
+    // fix to allow us to resolve formatLocaleNumericRoundedByPrecision
+    // and to make the function comments correct - but, we need to reconsider this
+    // in master as it is probably better to use locale than our currency separator fields.
+    $formatter = new \NumberFormatter('en_US', NumberFormatter::DECIMAL);
     $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, $numberOfPlaces);
     return $money->formatWith($formatter);
   }
@@ -304,7 +297,7 @@ class CRM_Utils_Money {
    *
    * @return string
    */
-  protected static function formatNumericByFormat($amount, $valueFormat) {
+  protected static function formatNumericByFormat($amount, $valueFormat = '%!i') {
     // money_format() exists only in certain PHP install (CRM-650)
     // setlocale() affects native gettext (CRM-11054, CRM-9976)
     if (is_numeric($amount) && function_exists('money_format')) {

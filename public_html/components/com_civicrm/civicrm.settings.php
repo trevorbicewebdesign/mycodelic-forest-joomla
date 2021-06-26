@@ -73,7 +73,7 @@ if (!defined('CIVICRM_UF')) {
  *      define( 'CIVICRM_UF_DSN', 'mysql://cms_db_username:cms_db_password@db_server/cms_database?new_link=true');
  */
 if (!defined('CIVICRM_UF_DSN') && CIVICRM_UF !== 'UnitTests') {
-  define( 'CIVICRM_UF_DSN'           , 'mysql://root:root@localhost/trevorbi_mycodelic?new_link=true%%CMSdbSSL%%');
+  define( 'CIVICRM_UF_DSN'           , 'mysql://root:DRC6vFkH&3@127.0.0.1:3307/trevorbi_mycodelic?new_link=true%%CMSdbSSL%%');
 }
 
 // %%extraSettings%%
@@ -106,7 +106,7 @@ if (!defined('CIVICRM_DSN')) {
     define('CIVICRM_DSN', $GLOBALS['_CV']['TEST_DB_DSN']);
   }
   else {
-    define('CIVICRM_DSN', 'mysql://root:root@localhost/trevorbi_mycodelic?new_link=true%%dbSSL%%');
+    define('CIVICRM_DSN', 'mysql://root:DRC6vFkH&3@127.0.0.1:3307/trevorbi_mycodelic?new_link=true%%dbSSL%%');
   }
 }
 
@@ -178,9 +178,9 @@ if (!defined('CIVICRM_LOGGING_DSN')) {
 
 global $civicrm_root;
 
-$civicrm_root = 'C:\MAMP\htdocs\mycodelic-forest-joomla\public_html\administrator\components\com_civicrm\civicrm';
+$civicrm_root = '/volume1/tbwebdesign/www/mycodelicforest.org/public_html/administrator/components/com_civicrm/civicrm';
 if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
-  define( 'CIVICRM_TEMPLATE_COMPILEDIR', 'C:\MAMP\htdocs\mycodelic-forest-joomla\public_html\media\civicrm\templates_c');
+  define( 'CIVICRM_TEMPLATE_COMPILEDIR', '/volume1/tbwebdesign/www/mycodelicforest.org/public_html/media/civicrm/templates_c');
 }
 
 /**
@@ -231,7 +231,7 @@ if (!defined('CIVICRM_TEMPLATE_COMPILEDIR')) {
  *
  */
 if (!defined('CIVICRM_UF_BASEURL')) {
-  define( 'CIVICRM_UF_BASEURL'      , 'https://local.mycodelicforest.org/');
+  define( 'CIVICRM_UF_BASEURL'      , 'https://mycodelicforest.org/');
 }
 
 /**
@@ -318,8 +318,29 @@ if (!defined('CIVICRM_SITE_KEY')) {
  * More info at https://docs.civicrm.org/sysadmin/en/latest/setup/cred-key/
  */
 if (!defined('CIVICRM_CRED_KEYS') ) {
-  define( '_CIVICRM_CRED_KEYS', 'aes-cbc:hkdf-sha256:66215AQYmrLLnhkObFgYdaDHnlG4hKHuDZxjKDAw');
+  define( '_CIVICRM_CRED_KEYS', 'aes-cbc:hkdf-sha256:xH11EeT5A9hhheAIw8G083pcq6ROfWiX6ZpyeMElBQ');
   define( 'CIVICRM_CRED_KEYS', _CIVICRM_CRED_KEYS === '%%' . 'credKeys' . '%%' ? '' : _CIVICRM_CRED_KEYS );
+  // Some old installers may not set a decent value, and this extra complexity is a failsafe.
+  // Feel free to simplify post-install.
+}
+
+/**
+ * The signing key is used to generate and verify shareable tokens.
+ *
+ * This is a space-delimited list of keys (ordered by priority). Put the preferred
+ * key first. Any old/deprecated keys may be listed after.
+ *
+ * Each key is in format "<cipher-suite>:<key-encoding>:<key-content>", as in:
+ *
+ * Ex: define('CIVICRM_SIGN_KEYS', 'jwt-hs256:hkdf-sha256:RANDOM_1')
+ * Ex: define('CIVICRM_SIGN_KEYS', 'jwt-hs256::RANDOM_2 jwt-hs256::RANDOM_3')
+ * Ex: define('CIVICRM_SIGN_KEYS', 'jwt-hs256:b64:RANDOM_4 jwt-hs256:b64:RANDOM_5')
+ *
+ * If key-encoding is blank, it will default to "hkdf-sha256".
+ */
+if (!defined('CIVICRM_SIGN_KEYS') ) {
+  define( '_CIVICRM_SIGN_KEYS', 'jwt-hs256:hkdf-sha256:2bviMlDJvNHlYY1o3gIRUbKcnRaxrzc6l9D67mB9lCP9PA');
+  define( 'CIVICRM_SIGN_KEYS', _CIVICRM_SIGN_KEYS === '%%' . 'signKeys' . '%%' ? '' : _CIVICRM_SIGN_KEYS );
   // Some old installers may not set a decent value, and this extra complexity is a failsafe.
   // Feel free to simplify post-install.
 }
@@ -340,7 +361,7 @@ if (!defined('CIVICRM_MAIL_SMARTY')) {
  * You must disable CIVICRM_MAIL_LOG before CiviCRM will talk to your MTA.
  */
 // if (!defined('CIVICRM_MAIL_LOG')) {
-// define( 'CIVICRM_MAIL_LOG', 'C:\MAMP\htdocs\mycodelic-forest-joomla\public_html\media\civicrm\templates_c/mail.log');
+// define( 'CIVICRM_MAIL_LOG', '/volume1/tbwebdesign/www/mycodelicforest.org/public_html/media/civicrm/templates_c/mail.log');
 // }
 
 /**
@@ -526,15 +547,17 @@ if (CIVICRM_UF === 'UnitTests') {
  * the absolute path. Remember to use your system's DIRECTORY_SEPARATOR the
  * examples below assume /
  *
- * Example: This excludes node_modules (can be huge), various CiviCRM dirs that
+ * The default excludes node_modules (can be huge), various CiviCRM dirs that
  * are unlikely to have anything we need to scan inside, and (what could be
- * your) Drupal's private file storage area.
+ * your) Drupal's private file storage area. It does not exclude
+ * vendor but you are likely to see an improvement by adding it.
  *
- * '@/(\.|node_modules|js/|css/|bower_components|packages/|vendor/|sites/default/files/private)@'
+ * See https://docs.civicrm.org/sysadmin/en/latest/setup/optimizations/#exclude-dirs-that-do-not-need-to-be-scanned
+ * and also discussion on including vendor (excluded) in https://lab.civicrm.org/dev/core/-/issues/2031
  */
-// if (!defined('CIVICRM_EXCLUDE_DIRS_PATTERN')) {
-//   define('CIVICRM_EXCLUDE_DIRS_PATTERN', '@/\.@');
-// }
+if (strtoupper(substr(PHP_OS, 0, 3)) !== 'WIN' && !defined('CIVICRM_EXCLUDE_DIRS_PATTERN')) {
+  define('CIVICRM_EXCLUDE_DIRS_PATTERN', '@/(\.|node_modules|js/|css/|bower_components|packages/|sites/default/files/private)@');
+}
 
 /**
  *
@@ -552,7 +575,7 @@ if ( set_include_path( $include_path ) === false ) {
 }
 
 if (!defined('CIVICRM_CLEANURL')) {
-  if ( function_exists('variable_get') && variable_get('clean_url', '0') != '0') {
+  if (function_exists('variable_get') && variable_get('clean_url', '0') != '0') {
     define('CIVICRM_CLEANURL', 1 );
   }
   elseif ( function_exists('config_get') && config_get('system.core', 'clean_url') != 0) {

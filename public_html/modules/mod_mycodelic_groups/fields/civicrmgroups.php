@@ -11,7 +11,11 @@ class JFormFieldCivicrmgroups extends JFormField {
           'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
         ));  
         
-        $result = civicrm_api3('Group', 'get', array());
+        $result = civicrm_api3('Group', 'get', array(
+          'options'         => array(
+              'limit'           => 100
+          )
+        ));
         foreach($result['values'] as $index=>$group){
             $lists[$group['id']] = $group['title'];
         }

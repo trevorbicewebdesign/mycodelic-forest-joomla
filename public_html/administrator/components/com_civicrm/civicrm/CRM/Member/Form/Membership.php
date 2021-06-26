@@ -479,18 +479,15 @@ DESC limit 1");
         }
       }
       $totalAmount = $values['minimum_fee'] ?? NULL;
-      //CRM-18827 - override the default value if total_amount is submitted
-      if (!empty($this->_submitValues['total_amount'])) {
-        $totalAmount = CRM_Utils_Rule::cleanMoney($this->_submitValues['total_amount']);
-      }
       // build membership info array, which is used when membership type is selected to:
       // - set the payment information block
       // - set the max related block
       $allMembershipInfo[$key] = [
         'financial_type_id' => $values['financial_type_id'] ?? NULL,
-        'total_amount' => CRM_Utils_Money::format($totalAmount, NULL, '%a'),
+        'total_amount' => CRM_Utils_Money::formatLocaleNumericRoundedForDefaultCurrency($totalAmount),
         'total_amount_numeric' => $totalAmount,
         'auto_renew' => $values['auto_renew'] ?? NULL,
+        'tax_rate' => $values['tax_rate'],
         'has_related' => isset($values['relationship_type_id']),
         'max_related' => $values['max_related'] ?? NULL,
       ];
@@ -900,7 +897,6 @@ DESC limit 1");
    * @param array $formValues
    * @param object $membership
    *   Object.
-   * @param array $customValues
    *
    * @return bool
    *   true if mail was sent successfully
@@ -911,7 +907,7 @@ DESC limit 1");
    *   & needs rationalising.
    *
    */
-  public static function emailReceipt(&$form, &$formValues, &$membership, $customValues = NULL) {
+  public static function emailReceipt($form, &$formValues, $membership) {
     // retrieve 'from email id' for acknowledgement
     $receiptFrom = $formValues['from_email_address'] ?? NULL;
 
@@ -919,21 +915,6 @@ DESC limit 1");
     if (!empty($formValues['payment_instrument_id'])) {
       $paymentInstrument = CRM_Contribute_PseudoConstant::paymentInstrument();
       $formValues['paidBy'] = $paymentInstrument[$formValues['payment_instrument_id']];
-    }
-
-    $form->assign('customValues', $customValues);
-
-    if ($form->_mode) {
-      // @todo move this outside shared code as Batch entry just doesn't
-      $form->assign('address', CRM_Utils_Address::getFormattedBillingAddressFieldsFromParameters(
-        $form->_params,
-        $form->_bltID
-      ));
-
-      $valuesForForm = CRM_Contribute_Form_AbstractEditPayment::formatCreditCardDetails($form->_params);
-      $form->assignVariables($valuesForForm, ['credit_card_exp_date', 'credit_card_type', 'credit_card_number']);
-      $form->assign('is_pay_later', 0);
-      $form->assign('isPrimary', 1);
     }
 
     $form->assign('module', 'Membership');
@@ -959,13 +940,11 @@ DESC limit 1");
     $form->assign('receive_date', CRM_Utils_Array::value('receive_date', $formValues));
     $form->assign('formValues', $formValues);
 
-    if (empty($lineItem)) {
-      $form->assign('mem_start_date', CRM_Utils_Date::formatDateOnlyLong($membership->start_date));
-      if (!CRM_Utils_System::isNull($membership->end_date)) {
-        $form->assign('mem_end_date', CRM_Utils_Date::formatDateOnlyLong($membership->end_date));
-      }
-      $form->assign('membership_name', CRM_Member_PseudoConstant::membershipType($membership->membership_type_id));
+    $form->assign('mem_start_date', CRM_Utils_Date::formatDateOnlyLong($membership->start_date));
+    if (!CRM_Utils_System::isNull($membership->end_date)) {
+      $form->assign('mem_end_date', CRM_Utils_Date::formatDateOnlyLong($membership->end_date));
     }
+    $form->assign('membership_name', CRM_Member_PseudoConstant::membershipType($membership->membership_type_id));
 
     // @todo - if we have to figure out if this is for batch processing it doesn't belong in the shared function.
     $isBatchProcess = is_a($form, 'CRM_Batch_Form_Entry');
@@ -1008,8 +987,7 @@ DESC limit 1");
    * @throws \CRM_Core_Exception
    * @throws \CiviCRM_API3_Exception
    */
-  public function submit() {
-    $isTest = ($this->_mode === 'test') ? 1 : 0;
+  public function submit(): void {
     $this->storeContactFields($this->_params);
     $this->beginPostProcess();
     $endDate = NULL;
@@ -1077,20 +1055,10 @@ DESC limit 1");
 
     $termsByType = [];
 
-    $lineItem = [$this->_priceSetId => []];
+    $lineItem = [$this->order->getPriceSetID() => $this->order->getLineItems()];
 
-    // BEGIN Fix for dev/core/issues/860
-    // Prepare fee block and call buildAmount hook - based on CRM_Price_BAO_PriceSet::buildPriceSet().
-    CRM_Utils_Hook::buildAmount('membership', $this, $this->_priceSet['fields']);
-    // END Fix for dev/core/issues/860
-
-    CRM_Price_BAO_PriceSet::processAmount($this->_priceSet['fields'],
-      $formValues, $lineItem[$this->_priceSetId], $this->_priceSetId);
-
-    if (!empty($formValues['tax_amount'])) {
-      $params['tax_amount'] = $formValues['tax_amount'];
-    }
-    $params['total_amount'] = $formValues['amount'] ?? NULL;
+    $params['tax_amount'] = $this->order->getTotalTaxAmount();
+    $params['total_amount'] = $this->order->getTotalAmount();
     if (!empty($lineItem[$this->_priceSetId])) {
       foreach ($lineItem[$this->_priceSetId] as &$li) {
         if (!empty($li['membership_type_id'])) {
@@ -1221,7 +1189,7 @@ DESC limit 1");
         $this->assign('is_pay_later', 1);
       }
 
-      if (!empty($formValues['send_receipt'])) {
+      if ($this->getSubmittedValue('send_receipt')) {
         $params['receipt_date'] = $formValues['receive_date'] ?? NULL;
       }
 
@@ -1260,10 +1228,9 @@ DESC limit 1");
 
       // add all the additional payment params we need
       $formValues['amount'] = $params['total_amount'];
-      // @todo this is a candidate for beginPostProcessFunction.
-      $formValues['currencyID'] = CRM_Core_Config::singleton()->defaultCurrency;
+      $formValues['currencyID'] = $this->getCurrency();
       $formValues['description'] = ts("Contribution submitted by a staff person using member's credit card for signup");
-      $formValues['invoiceID'] = md5(uniqid(rand(), TRUE));
+      $formValues['invoiceID'] = $this->getInvoiceID();
       $formValues['financial_type_id'] = $params['financial_type_id'];
 
       // at this point we've created a contact and stored its address etc
@@ -1279,7 +1246,7 @@ DESC limit 1");
           $softParams['soft_credit_type_id'] = $formValues['soft_credit_type_id'];
         }
       }
-      if (!empty($formValues['send_receipt'])) {
+      if ($this->getSubmittedValue('send_receipt')) {
         $paymentParams['email'] = $this->_contributorEmail;
       }
 
@@ -1297,11 +1264,17 @@ DESC limit 1");
           [
             'contact_id' => $this->_contributorContactID,
             'line_item' => $lineItem,
-            'is_test' => $isTest,
+            'is_test' => $this->isTest(),
             'campaign_id' => $paymentParams['campaign_id'] ?? NULL,
             'source' => CRM_Utils_Array::value('source', $paymentParams, CRM_Utils_Array::value('description', $paymentParams)),
             'payment_instrument_id' => $paymentInstrumentID,
             'financial_type_id' => $params['financial_type_id'],
+            'receive_date' => CRM_Utils_Time::date('YmdHis'),
+            'tax_amount' => $params['tax_amount'] ?? NULL,
+            'invoice_id' => $this->getInvoiceID(),
+            'currency' => $this->getCurrency(),
+            'is_pay_later' => $params['is_pay_later'] ?? 0,
+            'skipLineItem' => $params['skipLineItem'] ?? 0,
           ]
         );
 
@@ -1350,8 +1323,6 @@ DESC limit 1");
       if ($paymentStatus !== 'Completed') {
         $params['status_id'] = $pendingMembershipStatusId;
         $params['skipStatusCal'] = TRUE;
-        // unset send-receipt option, since receipt will be sent when ipn is received.
-        unset($formValues['send_receipt'], $formValues['send_receipt']);
         //as membership is pending set dates to null.
         foreach ($this->_memTypeSelected as $memType) {
           $membershipTypeValues[$memType]['joinDate'] = NULL;
@@ -1362,18 +1333,18 @@ DESC limit 1");
       }
       $now = CRM_Utils_Time::date('YmdHis');
       $params['receive_date'] = CRM_Utils_Time::date('Y-m-d H:i:s');
-      $params['invoice_id'] = $formValues['invoiceID'];
+      $params['invoice_id'] = $this->getInvoiceID();
       $params['contribution_source'] = ts('%1 Membership Signup: Credit card or direct debit (by %2)',
         [1 => $this->getSelectedMembershipLabels(), 2 => $userName]
       );
       $params['source'] = $formValues['source'] ?: $params['contribution_source'];
       $params['trxn_id'] = $result['trxn_id'] ?? NULL;
-      $params['is_test'] = ($this->_mode === 'live') ? 0 : 1;
-      if (!empty($formValues['send_receipt'])) {
+      $params['is_test'] = $this->isTest();
+      $params['receipt_date'] = NULL;
+      if ($this->getSubmittedValue('send_receipt') && $paymentStatus === 'Completed') {
+        // @todo this should be updated by the send function once sent rather than
+        // set here.
         $params['receipt_date'] = $now;
-      }
-      else {
-        $params['receipt_date'] = NULL;
       }
 
       $this->set('params', $formValues);
@@ -1519,7 +1490,7 @@ DESC limit 1");
     }
 
     $receiptSent = FALSE;
-    if (!empty($formValues['send_receipt']) && $receiptSend) {
+    if ($this->getSubmittedValue('send_receipt') && $receiptSend) {
       $formValues['contact_id'] = $this->_contactID;
       $formValues['contribution_id'] = $contributionId;
       // We really don't need a distinct receipt_text_signup vs receipt_text_renewal as they are
@@ -1769,8 +1740,21 @@ DESC limit 1");
    */
   protected function emailMembershipReceipt($formValues, $membership) {
     $customValues = $this->getCustomValuesForReceipt($formValues, $membership);
+    $this->assign('customValues', $customValues);
 
-    return self::emailReceipt($this, $formValues, $membership, $customValues);
+    if ($this->_mode) {
+      // @todo move this outside shared code as Batch entry just doesn't
+      $this->assign('address', CRM_Utils_Address::getFormattedBillingAddressFieldsFromParameters(
+        $this->_params,
+        $this->_bltID
+      ));
+
+      $valuesForForm = CRM_Contribute_Form_AbstractEditPayment::formatCreditCardDetails($this->_params);
+      $this->assignVariables($valuesForForm, ['credit_card_exp_date', 'credit_card_type', 'credit_card_number']);
+      $this->assign('is_pay_later', 0);
+      $this->assign('isPrimary', 1);
+    }
+    return self::emailReceipt($this, $formValues, $membership);
   }
 
   /**
@@ -1856,76 +1840,39 @@ DESC limit 1");
     $transaction = new CRM_Core_Transaction();
     $contactID = $contributionParams['contact_id'];
 
-    $isEmailReceipt = !empty($form->_values['is_email_receipt']);
-
     // add these values for the recurringContrib function ,CRM-10188
     $params['financial_type_id'] = $contributionParams['financial_type_id'];
 
-    //@todo - this is being set from the form to resolve CRM-10188 - an
-    // eNotice caused by it not being set @ the front end
-    // however, we then get it being over-written with null for backend contributions
-    // a better fix would be to set the values in the respective forms rather than require
-    // a function being shared by two forms to deal with their respective values
-    // moving it to the BAO & not taking the $form as a param would make sense here.
-    if (!isset($params['is_email_receipt']) && $isEmailReceipt) {
-      $params['is_email_receipt'] = $isEmailReceipt;
-    }
+    $params['is_email_receipt'] = (bool) $this->getSubmittedValue('send_receipt');
     $params['is_recur'] = TRUE;
     $params['payment_instrument_id'] = $contributionParams['payment_instrument_id'] ?? NULL;
     $recurringContributionID = $this->legacyProcessRecurringContribution($params, $contactID);
 
     $now = CRM_Utils_Time::date('YmdHis');
     $receiptDate = $params['receipt_date'] ?? NULL;
-    if ($isEmailReceipt) {
+    if ($params['is_email_receipt']) {
       $receiptDate = $now;
     }
 
-    if (isset($params['amount'])) {
-      $contributionParams = array_merge([
-        'receive_date' => !empty($params['receive_date']) ? CRM_Utils_Date::processDate($params['receive_date']) : CRM_Utils_Time::date('YmdHis'),
-        'tax_amount' => $params['tax_amount'] ?? NULL,
-        'invoice_id' => $params['invoiceID'],
-        'currency' => $params['currencyID'],
-        'is_pay_later' => $params['is_pay_later'] ?? 0,
-        //setting to make available to hook - although seems wrong to set on form for BAO hook availability
-        'skipLineItem' => $params['skipLineItem'] ?? 0,
-      ], $contributionParams);
-
-      if (!empty($params["is_email_receipt"])) {
-        $contributionParams += [
-          'receipt_date' => $receiptDate,
-        ];
-      }
-
-      if ($recurringContributionID) {
-        $contributionParams['contribution_recur_id'] = $recurringContributionID;
-      }
-
-      $contributionParams['contribution_status_id'] = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending');
-      if (isset($contributionParams['invoice_id'])) {
-        $contributionParams['id'] = CRM_Core_DAO::getFieldValue(
-          'CRM_Contribute_DAO_Contribution',
-          $contributionParams['invoice_id'],
-          'id',
-          'invoice_id'
-        );
-      }
-
-      $contributionParams['skipCleanMoney'] = TRUE;
-      // @todo this is the wrong place for this - it should be done as close to form submission
-      // as possible
-      $contributionParams['total_amount'] = $params['amount'];
-      $contribution = CRM_Contribute_BAO_Contribution::add($contributionParams);
-
-      // lets store it in the form variable so postProcess hook can get to this and use it
-      $form->_contributionID = $contribution->id;
+    if ($this->getSubmittedValue('send_receipt')) {
+      $contributionParams += [
+        'receipt_date' => $receiptDate,
+      ];
     }
 
-    // process soft credit / pcp params first
-    CRM_Contribute_BAO_ContributionSoft::formatSoftCreditParams($params, $form);
+    if ($recurringContributionID) {
+      $contributionParams['contribution_recur_id'] = $recurringContributionID;
+    }
 
-    //CRM-13981, processing honor contact into soft-credit contribution
-    CRM_Contribute_BAO_ContributionSoft::processSoftContribution($params, $contribution);
+    $contributionParams['contribution_status_id'] = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending');
+
+    // @todo this is the wrong place for this - it should be done as close to form submission
+    // as possible
+    $contributionParams['total_amount'] = $params['amount'];
+    $contribution = CRM_Contribute_BAO_Contribution::add($contributionParams);
+
+    // lets store it in the form variable so postProcess hook can get to this and use it
+    $form->_contributionID = $contribution->id;
 
     $transaction->commit();
     return $contribution;
@@ -1939,13 +1886,9 @@ DESC limit 1");
    * @param array $params
    * @param int $contactID
    *
-   * @return int|null
+   * @return int
    */
-  protected function legacyProcessRecurringContribution(&$params, $contactID) {
-    $form = $this;
-    if (empty($params['is_recur'])) {
-      return NULL;
-    }
+  protected function legacyProcessRecurringContribution(array $params, $contactID): int {
 
     $recurParams = ['contact_id' => $contactID];
     $recurParams['amount'] = $params['amount'] ?? NULL;
@@ -1957,33 +1900,32 @@ DESC limit 1");
     $recurParams['currency'] = $params['currency'] ?? NULL;
     $recurParams['payment_instrument_id'] = $params['payment_instrument_id'];
 
-    $recurParams['is_test'] = 0;
-    if (($form->_action & CRM_Core_Action::PREVIEW) ||
-      (isset($form->_mode) && ($form->_mode == 'test'))
-    ) {
-      $recurParams['is_test'] = 1;
-    }
+    $recurParams['is_test'] = $this->isTest();
 
     $recurParams['start_date'] = $recurParams['create_date'] = $recurParams['modified_date'] = CRM_Utils_Time::date('YmdHis');
     if (!empty($params['receive_date'])) {
       $recurParams['start_date'] = date('YmdHis', CRM_Utils_Time::strtotime($params['receive_date']));
     }
-    $recurParams['invoice_id'] = $params['invoiceID'] ?? NULL;
+    $recurParams['invoice_id'] = $this->getInvoiceID();
     $recurParams['contribution_status_id'] = CRM_Core_PseudoConstant::getKey('CRM_Contribute_BAO_Contribution', 'contribution_status_id', 'Pending');
     $recurParams['payment_processor_id'] = $params['payment_processor_id'] ?? NULL;
-    $recurParams['is_email_receipt'] = (bool) ($params['is_email_receipt'] ?? FALSE);
+    $recurParams['is_email_receipt'] = (bool) $this->getSubmittedValue('send_receipt');
     // we need to add a unique trxn_id to avoid a unique key error
     // in paypal IPN we reset this when paypal sends us the real trxn id, CRM-2991
-    $recurParams['trxn_id'] = $params['trxn_id'] ?? $params['invoiceID'];
+    $recurParams['trxn_id'] = $params['trxn_id'] ?? $this->getInvoiceID();
 
-    $campaignId = $params['campaign_id'] ?? $form->_values['campaign_id'] ?? NULL;
+    $campaignId = $params['campaign_id'] ?? $this->_values['campaign_id'] ?? NULL;
     $recurParams['campaign_id'] = $campaignId;
-    $recurring = CRM_Contribute_BAO_ContributionRecur::add($recurParams);
-    if (is_a($recurring, 'CRM_Core_Error')) {
-      throw new CRM_Core_Exception(CRM_Core_Error::getMessages($recurring));
-    }
+    return CRM_Contribute_BAO_ContributionRecur::add($recurParams)->id;
+  }
 
-    return $recurring->id;
+  /**
+   * Is the form being submitted in test mode.
+   *
+   * @return bool
+   */
+  protected function isTest(): int {
+    return ($this->_mode === 'test') ? TRUE : FALSE;
   }
 
 }

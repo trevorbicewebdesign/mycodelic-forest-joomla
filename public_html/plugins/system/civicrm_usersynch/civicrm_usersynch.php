@@ -8,7 +8,7 @@ class plgSystemCivicrm_usersynch extends JPlugin
     function onUserAfterLogin($options) {
         $app = JFactory::getApplication();
         if(!$app->isAdmin()) {
-            $app->redirect(JRoute::_('/index.php?option=com_users&view=profile&layout=edit'));
+            //$app->redirect(JRoute::_('/index.php?option=com_users&view=profile&layout=edit'));
         }
     }
     function onAfterRoute()	{
@@ -129,7 +129,7 @@ class plgSystemCivicrm_usersynch extends JPlugin
             'contact_id' => $contact_id
         ); 
         $results = $api->Phone->Get($apiParams);
-        if ($results && $results->phone) {
+        if ($results) {
             //each key of the result array is an attribute of the api
             $civiUserPhone = $api->lastResult->values[0];
             return $civiUserPhone;
@@ -216,13 +216,13 @@ class plgSystemCivicrm_usersynch extends JPlugin
           // Specify location of "civicrm.settings.php".
           'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
         ));
-        
+        $name = explode (" ", $userinfo['name']);
         $apiParams = array(
               'contact_type' => 'individual'
             , 'first_name' => $name[0]
             , 'last_name' => $name[1]
             , 'nick_name' => $userInfo['profile']['playaname']
-            , 'source' => $userInfouserInfo['profile']['referred_by']
+            , 'source' => $userInfo['profile']['referred_by']
             , 'street_address' => $user['profile']['address1']
             , 'email' => $userInfo['email']
             , 'id' => $id
@@ -250,6 +250,7 @@ class plgSystemCivicrm_usersynch extends JPlugin
             , 'street_address' => $userinfo['profile']['address1']
             , 'email' => $userinfo['email']
         );
+        
         if ($results = $api->Contact->Create($apiParams)) {
             //each key of the result array is an attribute of the api
             $civiUser = $api->lastResult->values[0];
@@ -414,9 +415,12 @@ class plgSystemCivicrm_usersynch extends JPlugin
         
         // Update or create the phone
         $phone = $this->getPhone($contact_id);
-        if(!($phone)){
+        if($phone==false){
             $phone = $this->createPhone($user, $contact_id);
             $phone_id = $phone->id;
+        }
+        else {
+            $this->updatePhone($user, $contact_id, $phone->id);
         }
         
         if($isnew){
