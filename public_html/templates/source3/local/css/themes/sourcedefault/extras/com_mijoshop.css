@@ -81,8 +81,8 @@
 }
 .com_mijoshop #content_oc .product-grid:before,
 .com_mijoshop #content_oc .product-grid:after {
-  content: " ";
   display: table;
+  content: " ";
 }
 .com_mijoshop #content_oc .product-grid:after {
   clear: both;
