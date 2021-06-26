@@ -392,7 +392,10 @@ class T3Bot extends JObject
 					$app   = JFactory::getApplication();
 					$input = $app->input;
 					$fdata = empty($data) ? $input->post->get('jform', array(), 'array') : (is_object($data) ? $data->getProperties() : $data);
-					
+					if (isset($data->attribs) && is_string($data->attribs))
+			      	{
+			      		$data->attribs = json_decode($data->attribs, true);
+			      	}
 					if(!empty($fdata['catid']) && is_array($fdata['catid'])) { // create new
 						$catid = end($fdata['catid']);
 					} else { // edit
@@ -423,6 +426,23 @@ class T3Bot extends JObject
 					}
 				}
 			}
+		}
+	}
+
+	public static function onContentBeforeSave($context, $data, $isNew)
+	{
+		if(isset($data->attribs)){
+			$contentTable = \JTable::getInstance('Content', 'JTable',array());
+			$contentTable->load($data->id);
+			$oldAttribs = json_decode($contentTable->attribs, true);
+			$attribs = json_decode($data->attribs, true);
+			foreach ($attribs as $name => $attrib) {
+				if(!empty($oldAttribs[$name])){
+					$oldAttribs[$name] = $attrib;
+				}
+
+			}
+			$data->attribs = json_encode($oldAttribs);
 		}
 	}
 }
