@@ -42,8 +42,19 @@ class campbudgetHelper extends JHelperContent{
 	public function getCategories() {
 		$categories = JCategories::getInstance('CampBudget');
 		$subCategories = $categories->get('root')->getChildren();
+		$items[] = "|--Type--[c]";
+		foreach ($subCategories as $result) {
+			$value = $result->title;
+			$label = $result->title;
+			$items[] = $value.'|'.$label;
+		  }
+		   
+		  // Multiple values are separated by new lines, so we need to do this now
+		  sort($items);
+		  $items = implode("\n", $items);
+		   
+		  // Now we need to return the value to the field
+		  return $items;
 
 	}
 }
-
-?>
