@@ -28,21 +28,21 @@ class campbudgetHelper extends JHelperContent{
 
 	}
 	public static function getTotalWeight() {
-		$db =& JFactory::getDBO();
-		
+		$db = JFactory::getDBO();
 		$query	= $db->getQuery(true);
-		
 		$query->select(' SUM(weight) ');
 		$query->from($db->quoteName('#__campinventory_items').' AS budget');
-		
 		$query->where("budget.id 	=	'".$budgetid."' ");
-		
 		$db->setQuery($query);
-		
 		$rows = $db->loadObjectList();
-		print_r($rows);
-		
-		
+
+		return getTotalWeight();
+	}
+
+	public function getCategories() {
+		$categories = JCategories::getInstance('CampBudget');
+		$subCategories = $categories->get('root')->getChildren();
+
 	}
 }
 
