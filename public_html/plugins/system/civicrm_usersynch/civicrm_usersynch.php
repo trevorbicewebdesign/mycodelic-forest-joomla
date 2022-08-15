@@ -333,6 +333,9 @@ class plgSystemCivicrm_usersynch extends JPlugin
     function slackNotification($user, $contact_id){
         $currentuser = JFactory::getUser();
         $name = explode (" ", $user['name']);
+        $plugin = JPluginHelper::getPlugin('system', 'slack_integration');
+        $params = new JRegistry($plugin->params);//Joomla 1.6 Onward
+        $token = $params->get('token');
         $api = new civicrm_api3(array(
           // Specify location of "civicrm.settings.php".
           'conf_path' => JPATH_ROOT.'/administrator/components/com_civicrm/',
@@ -360,11 +363,10 @@ class plgSystemCivicrm_usersynch extends JPlugin
             $message .= "\n";
             $message .= "•<$scheme://$site_url/administrator/?option=com_civicrm&task=civicrm/contact/view&reset=1&cid={$contact_id}|Click here to view their profile. >";
         }
-
         $ch = curl_init("https://slack.com/api/chat.postMessage");
         $data = http_build_query([
                     "token" 		=> $token,
-                    "channel"		=> "#monitor-rsvp", //"#mychannel",
+                    "channel"		=> "#monitor-registration", //"#mychannel",
                     "text" 		=> $message, //"Hello, Foo-Bar channel message.",
                     "username" 	=> $name[0]." ".$name[1].": ".$user['phone'],
                     "icon_emoji"	=> ":robot_face:",
@@ -395,7 +397,8 @@ class plgSystemCivicrm_usersynch extends JPlugin
         // First create or update the contact
         $contact = $this->getContact($user['email']);
         if(!($contact)){
-            $contact_id = $this->createContact($user);
+            $contact = $this->createContact($user);
+            $contact_id = $contact->id;
         }
         else {
             $contact_id = $contact->id;
