@@ -14,6 +14,11 @@ class campbudgetHelper extends JHelperContent{
 			$vName == 'categories'
 		);
 		JHtmlSidebar::addEntry(
+			"Receipts",
+			'index.php?option=com_campbudget&view=receipts',
+			$vName == 'receipts'
+		);
+		JHtmlSidebar::addEntry(
 			'Items',
 			'index.php?option=com_campbudget&view=items',
 			$vName == 'items'

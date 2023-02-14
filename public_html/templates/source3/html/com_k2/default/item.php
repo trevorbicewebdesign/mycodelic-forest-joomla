@@ -215,23 +215,7 @@ defined('_JEXEC') or die('Restricted access');
 	  <div class="clr"></div>
   </div>
 
-	<?php //if($this->item->params->get('itemTwitterButton',1) || $this->item->params->get('itemFacebookButton',1) || $this->item->params->get('itemGooglePlusOneButton',1)): ?>
-    <!-- Social sharing -->
-	<div class="itemSocialSharing">
-
-		    <!-- AddThis Button BEGIN -->
-            <div class="addthis_toolbox addthis_default_style ">
-            <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
-            <a class="addthis_button_tweet"></a>
-            <a class="addthis_button_pinterest_pinit"></a>
-            <a class="addthis_counter addthis_pill_style"></a>
-            </div>
-            <script type="text/javascript">var addthis_config = {"data_track_addressbar":true};</script>
-            <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-506cd0d115721321"></script>
-            <!-- AddThis Button END -->
-		<div class="clr"></div>
-	</div>
-	<?php //endif; ?>
+	
 
   <?php if($this->item->params->get('itemCategory') || $this->item->params->get('itemTags') || $this->item->params->get('itemAttachments')): ?>
   <div class="itemLinks">

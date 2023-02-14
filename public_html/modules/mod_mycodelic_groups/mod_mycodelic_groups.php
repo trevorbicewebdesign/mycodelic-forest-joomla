@@ -66,7 +66,7 @@ if(is_array($contacts) && count($contacts)>0):
             $name = $contact->display_name;
         }
         else {
-            $name = "{$contact->nick_name} ({$contact->display_name})";
+            $name = "{$contact->nick_name} <span style='font-size:12px;'>({$contact->display_name})</span>";
         }
     
         $camp_dues_paid = ( isset($contact->contributions) && is_array($contact->contributions) && count($contact->contributions))?'<i class="fa fa-heart" aria-hidden="true" style="color:green;"></i> ':"";

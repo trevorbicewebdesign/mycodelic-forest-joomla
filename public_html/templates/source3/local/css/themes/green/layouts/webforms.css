@@ -1,0 +1,173 @@
+@media screen and (min-width: 1200px) {
+  #webforms .content-wrapper {
+    max-width: 50%;
+  }
+}
+@media screen and (max-width: 992px) {
+  #webforms {
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 4vw;
+  }
+  #webforms .content-wrapper .webform-header img {
+    width: 50vw;
+  }
+  #webforms h2 {
+    font-size: 6vw;
+  }
+}
+#webforms {
+  font-family: "Open Sans";
+}
+#webforms .formResponsive input,
+#webforms .formResponsive textarea,
+#webforms .formResponsive select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 40px;
+}
+#webforms .formResponsive textarea {
+  height: 100px;
+  display: inline-block;
+  vertical-align: middle;
+}
+#webforms .formResponsive .formRow [class*="formSpan"] {
+  min-height: auto !important;
+}
+#webforms .formResponsive input[type="radio"],
+#webforms .formResponsive input[type="checkbox"] {
+  width: 30px;
+}
+#webforms .rsform-block-address-1 label,
+#webforms .rsform-block-address-2 label,
+#webforms .rsform-block-city label,
+#webforms .rsform-block-state label,
+#webforms .rsform-block-zipcode label,
+#webforms .rsform-block-email label,
+#webforms .rsform-block-country label,
+#webforms .rsform-block-cell-phone label,
+#webforms .rsform-block-lname label,
+#webforms .rsform-block-fname label {
+  display: none !important;
+}
+#webforms .rsform-block-attending label {
+  padding-left: 0px !important;
+}
+#webforms .rsform-block-no-address {
+  font-size: 12px;
+}
+#webforms .rsform-block-no-address input {
+  height: 20px;
+  min-height: auto;
+  margin-right: 10px !important;
+}
+#webforms .rsform-block-no-address label {
+  padding-left: 0px !important;
+}
+#webforms .content-wrapper {
+  box-sizing: border-box;
+  
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+#webforms .content-wrapper .webform-header img {
+  width: 430px;
+  max-width: 100%;
+}
+#webforms h1 {
+  font-size: 35px;
+  width: 100%;
+  margin: 0px;
+  text-align: center;
+  font-family: "Fredericka the Great", cursive;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+#webforms h2 {
+  font-size: 20px;
+  width: 100%;
+  text-align: center;
+}
+#webforms .webform-header {
+  padding-bottom: 25px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #000;
+  text-align: center;
+  box-sizing: border-box;
+}
+#webforms .formResponsive .formBody {
+  width: 100%;
+  box-sizing: border-box;
+}
+#webforms .formResponsive label {
+  float: none;
+  text-align: left;
+  display: block;
+  width: 100%;
+  padding-left: 0px;
+  position: relative;
+}
+#webforms .formResponsive label input {
+  
+}
+#webforms .formResponsive input[type="radio"],
+#webforms .formResponsive input[type="checkbox"] {
+  float: none;
+  vertical-align: middle;
+  display: inline-block;
+}
+#webforms .form-row.contant-address,
+#webforms .form-row.contant-details {
+  display: none;
+}
+#webforms .form-row.contant-details-title h2,
+#webforms .form-row.contant-contant-address-title h2 {
+  font-size: 4vw;
+  font-color: #333;
+  text-align: left;
+}
+#webforms .form-row.contant-details-title h2:after,
+#webforms .form-row.contant-contant-address-title h2:after {
+  content: "+";
+  display: inline-block;
+  float: right;
+  width: 4vw;
+  height: 4vw;
+}
+#webforms .formResponsive .formHorizontal .formControls {
+  margin: 0px;
+}
+#webforms #rsform_11_page_0 .formControls {
+  margin: 0px;
+}
+#webforms #rsform_11_page_0 .formControlLabel {
+  display: none;
+}
+#webforms #rsform_11_page_0 p.formDescription {
+  display: none;
+}
+#webforms #rsform_11_page_0 .rsform-input-box {
+  width: 100%;
+}
+#webforms #rsform_11_page_0 .rsform-block:before,
+#webforms #rsform_11_page_0 .rsform-block:after {
+  display: none;
+}
+#webforms #rsform_11_page_0 .rsform-block-donation .formControlLabel {
+  display: inline-block;
+  padding-left: 0px;
+}
+#webforms #rsform_11_page_0 select,
+#webforms #rsform_11_page_0 textarea,
+#webforms #rsform_11_page_0 input[type="text"],
+#webforms #rsform_11_page_0 input[type="number"],
+#webforms #rsform_11_page_0 input[type="email"],
+#webforms #rsform_11_page_0 input[type="tel"],
+#webforms #rsform_11_page_0 input[type="url"],
+#webforms #rsform_11_page_0 input[type="password"] {
+  margin-bottom: 0px;
+}
+.itemid-1027 #webforms .content-wrapper {
+  max-width: 600px;
+}

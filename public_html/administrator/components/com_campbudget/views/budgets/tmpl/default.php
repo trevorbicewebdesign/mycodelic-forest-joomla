@@ -14,12 +14,9 @@ JHtml::_('behavior.tooltip');
 JHtml::_('behavior.multiselect');
 JHtml::_('behavior.modal');
 
-/*
-$canDo = UsersHelper::getActions();
-$listOrder = $this->escape($this->state->get('list.ordering'));
-$listDirn = $this->escape($this->state->get('list.direction'));
-$loggeduser = JFactory::getUser();
-*/
+require_once(JPATH_COMPONENT_ADMINISTRATOR . '/helpers/campbudget.php');
+$this->helper = new campbudgetHelper;
+$this->helper->getCategories();
 ?>
 
 <form action="<?php echo JRoute::_('index.php?option=com_campbudget&view=budgets');?>" method="post" name="adminForm" id="adminForm">

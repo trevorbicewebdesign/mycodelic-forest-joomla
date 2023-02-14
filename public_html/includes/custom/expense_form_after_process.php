@@ -1,20 +1,5 @@
 <?php
 
-$plugin = JPluginHelper::getPlugin('system', 'slack_integration');
-$params = new JRegistry($plugin->params);//Joomla 1.6 Onward
-$token = $params->get('token');
-
-$submitter_name = $_POST['form']['first_name']." ".$_POST['form']['last_name'];
-$total = $_POST['form']['item_total'];
-$message = "$submitter_name has submitted an expense form for $total";
-
-if($_POST['form']['donation']=='Yes'){
-    $message .= "
-*This is a donation. Thank you!!*";
-}
-
-$totalstrlength = 50;
-
 function setItems($id, $message){
     $strlen = strlen($_POST['form']['item_name_'.$id]);
     $diff = $totalstrlength - $strlen;
@@ -31,6 +16,21 @@ function setItems($id, $message){
     }
     return $message;
 }
+
+$plugin = JPluginHelper::getPlugin('system', 'slack_integration');
+$params = new JRegistry($plugin->params);//Joomla 1.6 Onward
+$token = $params->get('token');
+
+$submitter_name = $_POST['form']['first_name']." ".$_POST['form']['last_name'];
+$total = $_POST['form']['item_total'];
+$message = "$submitter_name has submitted an expense form for $total";
+
+if($_POST['form']['donation']=='Yes'){
+    $message .= "
+*This is a donation. Thank you!!*";
+}
+
+$totalstrlength = 50;
 
 $i = 1;
 while(isset($_POST['form']['item_name_'.$i])){

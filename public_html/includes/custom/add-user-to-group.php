@@ -23,17 +23,36 @@ if (
 ) {
     $result = $api->GroupContact->Create([
         'contact_id' => $civiUser->id,
-        'group_id' => 36,
+        'group_id' => 39,
     ]);
 } else {
     $result = $api->GroupContact->Delete([
         'contact_id' => $civiUser->id,
-        'group_id' => 36,
+        'group_id' => 39,
     ]);
 }
 
-$message = "*Are you intending to camp with Mycodelic Forest in 2021?* " . $_POST['form']['attending'] . "
-" . $_POST['form']['Note'];
+if (
+    isset($_POST['form']['attending'])
+    && $_POST['form']['attending'] == 'Yes'
+) {
+    $result = $api->GroupContact->Create([
+        'contact_id' => $civiUser->id,
+        'group_id' => 39,
+    ]);
+} else {
+    $result = $api->GroupContact->Delete([
+        'contact_id' => $civiUser->id,
+        'group_id' => 39,
+    ]);
+}
+
+$message = <<<MESSAGE
+*Are you intending to camp with Mycodelic Forest in 2022?* {$_POST['form']['attending']}
+
+{$_POST['form']['Note']}
+
+MESSAGE;
 
 $plugin = JPluginHelper::getPlugin('system', 'slack_integration');
 $params = new JRegistry($plugin->params); //Joomla 1.6 Onward
@@ -52,6 +71,7 @@ $data = http_build_query([
     "username" => $name,
     "icon_emoji" => ":robot_face:",
 ]);
+
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
 curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
