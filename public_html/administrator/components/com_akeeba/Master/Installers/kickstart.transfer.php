@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -135,15 +135,25 @@ class AKFeatureTransfer
 			return array(
 				'status'    => false,
 				// Yes, the message is intentionally vague
-				'message'   => 'Invalid file name specified'
+				'message'   => 'Invalid directory name specified'
 			);
 		}
 
 		// If a data file was given, read it to memory
 		if (empty($data) && !empty($dataFile))
 		{
+			$slashedDir = ($directory === '') ? '/' : sprintf('/%s/', $directory);
+
 			// Do not remove the basename(). It makes sure we won't try to read a file outside our directory.
-			$data = @file_get_contents(__DIR__ . '/' . basename($dataFile));
+			$data = @file_get_contents(__DIR__ . $slashedDir . basename($dataFile));
+
+			if (empty($data))
+			{
+				return array(
+					'status'    => false,
+					'message'   => 'The partial data file ' . basename($dataFile) . ' does not seem to have been uploaded.'
+				);
+			}
 		}
 
 		// We need some data to write, yes?

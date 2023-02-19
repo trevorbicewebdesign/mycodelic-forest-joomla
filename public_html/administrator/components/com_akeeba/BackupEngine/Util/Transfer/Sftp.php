@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -294,7 +294,7 @@ class Sftp implements TransferInterface, RemoteResourceInterface
 			return false;
 		}
 
-		$localFp = @fopen($localFilename, 'rb');
+		$localFp = @fopen($localFilename, 'r');
 
 		if ($localFp === false)
 		{

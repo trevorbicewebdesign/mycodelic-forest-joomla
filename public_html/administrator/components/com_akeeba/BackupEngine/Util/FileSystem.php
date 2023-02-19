@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -170,7 +170,7 @@ class FileSystem
 				'[PLATFORM_NAME]'    => $platformVars['name'],
 				'[PLATFORM_VERSION]' => $platformVars['version'],
 				'[SITENAME]'         => $siteName,
-				'[RANDOM]'           => $randVal->generateString(16),
+				'[RANDOM]'           => $randVal->generateString(16, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789'),
 			];
 		}
 
@@ -261,6 +261,11 @@ class FileSystem
 		// Start replacing paths with variables
 		foreach ($stock_directories as $var => $stockPath)
 		{
+			if (empty($stockPath))
+			{
+				continue;
+			}
+
 			if (strpos($path, $stockPath) !== 0)
 			{
 				continue;

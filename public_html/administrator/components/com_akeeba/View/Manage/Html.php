@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,8 +16,8 @@ use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use DateTimeZone;
 use Exception;
-use FOF30\Date\Date;
-use FOF30\View\DataView\Html as BaseView;
+use FOF40\Date\Date;
+use FOF40\View\DataView\Html as BaseView;
 use Joomla\CMS\Factory as JFactory;
 use Joomla\CMS\HTML\HTMLHelper as JHtml;
 use Joomla\CMS\Language\Text as JText;

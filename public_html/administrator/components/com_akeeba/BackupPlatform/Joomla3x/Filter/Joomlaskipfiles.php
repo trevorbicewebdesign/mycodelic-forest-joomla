@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -12,7 +12,7 @@ defined('AKEEBAENGINE') || die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Container\Container;
+use FOF40\Container\Container;
 
 /**
  * Subdirectories exclusion filter. Excludes temporary, cache and backup output

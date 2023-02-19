@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -11,8 +11,8 @@ namespace Akeeba\Backup\Admin\Model;
 defined('_JEXEC') || die();
 
 use AkeebaUsagestats;
-use FOF30\Encrypt\Randval;
-use FOF30\Model\Model;
+use FOF40\Encrypt\Randval;
+use FOF40\Model\Model;
 use Joomla\CMS\Uri\Uri;
 
 /**
@@ -41,7 +41,7 @@ class UsageStatistics extends Model
 			$siteUrl = md5(Uri::base());
 			$this->setCommonVariable('stats_siteurl', $siteUrl);
 
-			$randomData = (new Randval())->genRandomBytes(120);
+			$randomData = random_bytes(120);
 			$siteId     = sha1($randomData);
 
 			$this->setCommonVariable('stats_siteid', $siteId);

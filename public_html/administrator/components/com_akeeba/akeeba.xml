@@ -1,24 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
+<!--~
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 
 <extension version="3.9.0" type="component" method="upgrade">
 	<name>Akeeba</name>
-	<creationDate>2021-02-05</creationDate>
+	<creationDate>2023-02-08</creationDate>
 	<author>Nicholas K. Dionysopoulos</author>
 	<authorEmail>nicholas@dionysopoulos.me</authorEmail>
 	<authorUrl>https://www.akeeba.com</authorUrl>
 	<copyright>Copyright (c)2006-2019 Akeeba Ltd / Nicholas K. Dionysopoulos</copyright>
 	<license>GNU GPL v3 or later</license>
-	<version>7.5.3</version>
-	<description>Akeeba Backup Core - Full Joomla! site backup solution, Core Edition.</description>
+	<version>8.2.7</version>
+	<description>Akeeba Backup Pro - Full Joomla! site backup solution, Professional Edition</description>
 
 	<!-- Public front end files -->
 	<files folder="frontend">
+		<folder>Controller</folder>
 		<folder>Dispatcher</folder>
+		<folder>Model</folder>
 		<filename>akeeba.php</filename>
 	</files>
 
@@ -26,7 +28,7 @@
 	<languages folder="language/frontend">
 		<language tag="en-GB">en-GB/en-GB.com_akeeba.ini</language>
 	</languages>
-
+	
 	<!-- Media files -->
 	<media destination="com_akeeba" folder="media">
 		<folder>css</folder>
@@ -42,11 +44,12 @@
 
 		<!-- Back-end files -->
 		<files folder="backend">
+			<folder>AliceChecks</folder>
 			<folder>backup</folder>
 			<folder>BackupEngine</folder>
-			<folder>BackupPlatform</folder>
 			<folder>CliCommands</folder>
 			<folder>Controller</folder>
+			<folder>BackupPlatform</folder>
 			<folder>Dispatcher</folder>
 			<folder>fields</folder>
 			<folder>Helper</folder>
@@ -55,11 +58,11 @@
 			<folder>sql</folder>
 			<folder>Toolbar</folder>
 			<folder>View</folder>
-			<folder>views</folder>
-			<folder>ViewTemplates</folder>
+			<folder>tmpl</folder>
 
 			<filename>akeeba.php</filename>
 			<filename>fof.xml</filename>
+			<filename>restore.php</filename>
 			<filename>version.php</filename>
 			<filename>config.xml</filename>
 			<filename>access.xml</filename>

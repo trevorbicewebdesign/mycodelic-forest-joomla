@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -14,8 +14,8 @@ use Akeeba\Backup\Admin\Dispatcher\Dispatcher as AdminDispatcher;
 use Akeeba\Backup\Admin\Helper\SecretWord;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Container\Container;
-use FOF30\Dispatcher\Exception\AccessForbidden;
+use FOF40\Container\Container;
+use FOF40\Dispatcher\Exception\AccessForbidden;
 use Joomla\CMS\Document\Document;
 use Joomla\CMS\Document\JsonDocument as JDocumentJSON;
 use Joomla\CMS\Factory as JFactory;
@@ -76,8 +76,8 @@ class Dispatcher extends AdminDispatcher
 
 		// Load the FOF language
 		$lang = $this->container->platform->getLanguage();
-		$lang->load('lib_fof30', JPATH_SITE, 'en-GB', true, true);
-		$lang->load('lib_fof30', JPATH_SITE, null, true, false);
+		$lang->load('lib_fof40', JPATH_SITE, 'en-GB', true, true);
+		$lang->load('lib_fof40', JPATH_SITE, null, true, false);
 
 		// Necessary defines for Akeeba Engine
 		if (!defined('AKEEBAENGINE'))
@@ -132,16 +132,11 @@ class Dispatcher extends AdminDispatcher
 			}
 
 			$app     = JFactory::getApplication();
-			$content = $app->getDocument()->getBuffer();
-
-			var_dump($content);
-			die;
 
 			// Disable caching, disable offline, force use of index.php
 			$app->set('caching', 0);
 			$app->set('offline', 0);
 			$app->set('themeFile', 'index.php');
-
 
 			/** @var \Joomla\CMS\Document\JsonDocument $doc */
 			$doc = Document::getInstance('json');
@@ -152,7 +147,6 @@ class Dispatcher extends AdminDispatcher
 			{
 				JFactory::$document = $doc;
 			}
-
 
 			// Set a custom document name
 			/** @var JDocumentJSON $document */

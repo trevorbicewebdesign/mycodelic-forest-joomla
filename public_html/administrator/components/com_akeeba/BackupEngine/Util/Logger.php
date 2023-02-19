@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,9 +16,9 @@ use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\Log\LogInterface;
 use Akeeba\Engine\Util\Log\WarningsLoggerAware;
 use Akeeba\Engine\Util\Log\WarningsLoggerInterface;
-use Psr\Log\InvalidArgumentException;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
+use Akeeba\Engine\Psr\Log\InvalidArgumentException;
+use Akeeba\Engine\Psr\Log\LoggerInterface;
+use Akeeba\Engine\Psr\Log\LogLevel;
 
 /**
  * Writes messages to the backup log file
@@ -250,7 +250,7 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 				break;
 		}
 
-		$string .= @strftime("%y%m%d %H:%M:%S") . "|$message\r\n";
+		$string .= gmdate('Ymd H:i:s') . "|$message\r\n";
 
 		@fwrite($this->fp, $string);
 	}
@@ -335,7 +335,7 @@ class Logger implements LoggerInterface, LogInterface, WarningsLoggerInterface
 		@touch($this->logName);
 
 		// Open the log file. DO NOT USE APPEND ('ab') MODE. I NEED TO SEEK INTO THE FILE. SEE FURTHER BELOW!
-		$this->fp = @fopen($this->logName, 'cb');
+		$this->fp = @fopen($this->logName, 'c');
 
 		// If we couldn't open the file set the file pointer to null
 		if ($this->fp === false)

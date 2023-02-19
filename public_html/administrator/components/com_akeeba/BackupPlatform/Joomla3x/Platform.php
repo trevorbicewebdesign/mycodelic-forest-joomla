@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -18,10 +18,11 @@ use Akeeba\Engine\Factory;
 use Akeeba\Engine\Finalization\TestExtract;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Platform\Base as BasePlatform;
+use Akeeba\Engine\Psr\Log\LogLevel;
 use DateTimeZone;
 use Exception;
-use FOF30\Container\Container;
-use FOF30\Date\Date;
+use FOF40\Container\Container;
+use FOF40\Date\Date;
 use JLoader;
 use JMail;
 use Joomla\CMS\Access\Access;
@@ -31,7 +32,6 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Mail\Mail;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Version;
-use Psr\Log\LogLevel;
 
 if (!defined('DS'))
 {
@@ -82,21 +82,6 @@ class Joomla3x extends BasePlatform
 	 */
 	function __construct()
 	{
-		$configOverrides = [];
-
-		if (class_exists('Akeeba\\Engine\\Finalization\\TestExtract'))
-		{
-			$configOverrides['volatile.core.finalization.action_handlers']     = [
-				new TestExtract(),
-			];
-			$configOverrides['volatile.core.finalization.action_queue_before'] = [
-				'test_extract',
-			];
-		}
-
-		// Apply the configuration overrides, please
-		$this->configOverrides = $configOverrides;
-
 		$this->container = Container::getInstance('com_akeeba');
 	}
 
@@ -170,6 +155,11 @@ class Joomla3x extends BasePlatform
 		}
 
 		return false;
+	}
+
+	public static function quirk_400()
+	{
+		return version_compare(JVERSION, '4.0', 'ge');
 	}
 
 	/**
@@ -1117,7 +1107,7 @@ class Joomla3x extends BasePlatform
 			return;
 		}
 
-		$this->container->platform->setSessionVar($name, $value, 'akeebabackup');
+		$this->container->platform->setSessionVar($name, $value, 'akeeba');
 	}
 
 	/**
@@ -1144,8 +1134,8 @@ class Joomla3x extends BasePlatform
 			return $ret;
 		}
 
-		$ret = $this->container->platform->getSessionVar($name, $default, 'akeebabackup');
-		$this->container->platform->setSessionVar($name, null, 'akeebabackup');
+		$ret = $this->container->platform->getSessionVar($name, $default, 'akeeba');
+		$this->container->platform->setSessionVar($name, null, 'akeeba');
 
 		return $ret;
 	}
@@ -1167,7 +1157,33 @@ class Joomla3x extends BasePlatform
 		Factory::getConfigurationChecks()->addConfigurationCheckDefinition('013', 'critical', 'COM_AKEEBA_CPANEL_WARNING_Q013', [
 			Joomla3x::class, 'quirk_013',
 		]);
+		Factory::getConfigurationChecks()->addConfigurationCheckDefinition('400', 'critical', 'COM_AKEEBA_CPANEL_WARNING_Q400', [
+			Joomla3x::class, 'quirk_400',
+		]);
 	}
+
+	/** @inheritdoc  */
+	protected function detectProxySettings()
+	{
+		try
+		{
+			$app = \Joomla\CMS\Factory::getApplication();
+		}
+		catch (Exception $e)
+		{
+			$this->proxyEnabled                = false;
+			$this->hasInitialisedProxySettings = true;
+		}
+
+		$enabled = $app->get('proxy_enable', false);
+		$host    = $app->get('proxy_host', '');
+		$port    = (int) $app->get('proxy_port', 8080);
+		$user    = $app->get('proxy_user', '');
+		$pass    = $app->get('proxy_pass', '');
+
+		$this->setProxySettings($enabled, $host, $port, $user, $pass);
+	}
+
 
 	/**
 	 * Registers Akeeba Engine's core classes with JLoader

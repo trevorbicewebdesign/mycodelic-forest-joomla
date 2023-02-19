@@ -1,13 +1,13 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 defined('_JEXEC') || die();
 
-use FOF30\Container\Container;
+use FOF40\Container\Container;
 use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
@@ -28,7 +28,7 @@ if (!file_exists(JPATH_ADMINISTRATOR . '/components/com_akeeba'))
 }
 
 // Load FOF if not already loaded
-if (!defined('FOF30_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof30/include.php'))
+if (!defined('FOF40_INCLUDED') && !@include_once(JPATH_LIBRARIES . '/fof40/include.php'))
 {
 	return;
 }
@@ -111,6 +111,20 @@ class plgSystemBackuponupdate extends CMSPlugin
 
 		// Make sure we are enabled
 		if (!$this->isEnabled())
+		{
+			return;
+		}
+
+		// Make sure a user is logged in
+		$user = JFactory::getUser();
+
+		if (!is_object($user) || $user->guest)
+		{
+			return;
+		}
+
+		// Make sure the user is a Super User
+		if (!$user->authorise('core.admin'))
 		{
 			return;
 		}

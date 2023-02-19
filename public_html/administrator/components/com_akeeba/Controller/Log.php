@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -15,7 +15,7 @@ use Akeeba\Backup\Admin\Controller\Mixin\PredefinedTaskList;
 use Akeeba\Backup\Admin\Model\Log as LogModel;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Controller\Controller;
+use FOF40\Controller\Controller;
 
 class Log extends Controller
 {

@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -146,7 +146,7 @@ class Jpa extends BaseArchiver
 			$this->fp = null;
 		}
 
-		$this->fp = $this->fopen($this->_dataFileName, 'cb');
+		$this->fp = $this->fopen($this->_dataFileName, 'c');
 
 		if ($this->fp === false)
 		{
@@ -180,7 +180,7 @@ class Jpa extends BaseArchiver
 
 		$this->fclose($this->fp);
 
-		@chmod($this->_dataFileName, 0644);
+		@chmod($this->_dataFileName, $this->getPermissions());
 	}
 
 	/**
@@ -519,7 +519,7 @@ class Jpa extends BaseArchiver
 		// Touch the new file
 		$result = @touch($this->_dataFileName);
 
-		chmod($this->_dataFileName, 0666);
+		chmod($this->_dataFileName, $this->getPermissions());
 
 		// Try to write 6 bytes to it
 		if ($result)
@@ -532,7 +532,7 @@ class Jpa extends BaseArchiver
 			@unlink($this->_dataFileName);
 
 			$result = @touch($this->_dataFileName);
-			@chmod($this->_dataFileName, 0666);
+			@chmod($this->_dataFileName, $this->getPermissions());
 		}
 
 		return $result;

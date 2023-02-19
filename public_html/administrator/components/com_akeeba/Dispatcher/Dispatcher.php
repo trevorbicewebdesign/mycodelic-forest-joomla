@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -15,9 +15,9 @@ use Akeeba\Backup\Admin\Model\ControlPanel;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use AkeebaFEFHelper;
-use FOF30\Container\Container;
-use FOF30\Dispatcher\Dispatcher as BaseDispatcher;
-use FOF30\Dispatcher\Mixin\ViewAliases;
+use FOF40\Container\Container;
+use FOF40\Dispatcher\Dispatcher as BaseDispatcher;
+use FOF40\Dispatcher\Mixin\ViewAliases;
 use Joomla\CMS\Factory as JFactory;
 use Joomla\CMS\Language\Text;
 
@@ -84,8 +84,8 @@ class Dispatcher extends BaseDispatcher
 
 		// Load the FOF language
 		$lang = $this->container->platform->getLanguage();
-		$lang->load('lib_fof30', JPATH_ADMINISTRATOR, 'en-GB', true, true);
-		$lang->load('lib_fof30', JPATH_ADMINISTRATOR, null, true, false);
+		$lang->load('lib_fof40', JPATH_ADMINISTRATOR, 'en-GB', true, true);
+		$lang->load('lib_fof40', JPATH_ADMINISTRATOR, null, true, false);
 
 		// Necessary for routing the Alice view
 		$this->container->inflector->addWord('Alice', 'Alices');
@@ -104,15 +104,6 @@ class Dispatcher extends BaseDispatcher
 		{
 			$customCss .= ', media://com_akeeba/css/dark.min.css';
 		}
-
-		$helperFile = JPATH_SITE . '/media/fef/fef.php';
-
-		if (!class_exists('AkeebaFEFHelper') && is_file($helperFile))
-		{
-			include_once $helperFile;
-		}
-
-		AkeebaFEFHelper::load();
 
 		$this->container->renderer->setOptions([
 			'custom_css' => $customCss,
@@ -281,16 +272,6 @@ class Dispatcher extends BaseDispatcher
 	{
 		// Do not move: everything depends on UserInterfaceCommon
 		$this->container->template->addJS('media://com_akeeba/js/UserInterfaceCommon.min.js', true, false, $this->container->mediaVersion);
-		// Do not move: System depends on Modal
-		$this->container->template->addJS('media://com_akeeba/js/Modal.min.js', true, false, $this->container->mediaVersion);
-		// Do not move: System depends on Ajax
-		$this->container->template->addJS('media://com_akeeba/js/Ajax.min.js', true, false, $this->container->mediaVersion);
-		// Do not move: System depends on Ajax
-		$this->container->template->addJS('media://com_akeeba/js/System.min.js', true, false, $this->container->mediaVersion);
-		// Do not move: Tooltip depends on System
-		$this->container->template->addJS('media://com_akeeba/js/Tooltip.min.js', true, false, $this->container->mediaVersion);
-		// Always add last (it's the least important)
-		$this->container->template->addJS('media://com_akeeba/js/piecon.min.js', true, false, $this->container->mediaVersion);
 	}
 
 	/**
@@ -304,14 +285,14 @@ class Dispatcher extends BaseDispatcher
 		$model = $this->container->factory->model('ControlPanel')->tmpInstance();
 
 		// Update the db structure if necessary (once per session at most)
-		$lastVersion = $this->container->platform->getSessionVar('magicParamsUpdateVersion', null, 'com_akeeba');
+		$lastVersion = $this->container->platform->getSessionVar('magicParamsUpdateVersion', null, 'akeeba');
 
 		if ($lastVersion != AKEEBA_VERSION)
 		{
 			try
 			{
 				$model->checkAndFixDatabase();
-				$this->container->platform->setSessionVar('magicParamsUpdateVersion', AKEEBA_VERSION, 'com_akeeba');
+				$this->container->platform->setSessionVar('magicParamsUpdateVersion', AKEEBA_VERSION, 'akeeba');
 			}
 			catch (\RuntimeException $e)
 			{

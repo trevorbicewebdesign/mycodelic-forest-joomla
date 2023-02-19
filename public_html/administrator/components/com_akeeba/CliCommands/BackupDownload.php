@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -12,7 +12,7 @@ defined('_JEXEC') || die;
 use Akeeba\Backup\Admin\Model\Statistics;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Container\Container;
+use FOF40\Container\Container;
 use Joomla\Console\Command\AbstractCommand;
 use Akeeba\Backup\Admin\CliCommands\MixIt\ArgumentUtilities;
 use Akeeba\Backup\Admin\CliCommands\MixIt\ConfigureIO;
@@ -142,7 +142,7 @@ class BackupDownload extends AbstractCommand
 			return 5;
 		}
 
-		$fp = @fopen($outFile, 'wb');
+		$fp = @fopen($outFile, 'w');
 
 		if ($fp === false)
 		{

@@ -1,17 +1,226 @@
 <?php die();?>
-Akeeba Backup 7.5.3
+Akeeba Backup 8.2.7
 ================================================================================
-+ Rewritten Backup on Update plugin for improved UX (gh-685)
-+ Joomla 4: backup profile selection uses Choices.js for easier navigation among many backup profiles
-~ Releasing the previous version without changes, due to server and CDN issues which resulted in inconsistent updates
-~ Internals: normalised use JVERSION conditionals
-~ Document Microsoft Edge “sleeping tabs” and workarounds for long-running backups in background browser tabs
-~ Improved CHANGELOG layout in the Control Panel page
-# [HIGH] Import from S3: you cannot select .jps files
-# [MEDIUM] Frozen backups toggle wouldn't work on Joomla 4
-# [LOW] Import from S3: invisible breadcrumbs in Dark Mode
-# [LOW] Recommended PHP version was shown as 7.3 instead of 7.4
-# [LOW] Unable to access the component on Joomla 4 when using the PDOMySQL database driver with Site Debug enabled, see https://github.com/joomla/joomla-cms/issues/32019
++ Option to treat failed uploads as a backup error
+
+Akeeba Backup 8.2.6
+================================================================================
+! A packaging issue broke the restoration script in backup archives
+
+Akeeba Backup 8.2.5
+================================================================================
+# [HIGH] Cannot open the Step 1 - Authentication page for OAuth2-based post-processing engines
+
+Akeeba Backup 8.2.4
+================================================================================
+# [HIGH] Some password managers prevent successful submission of the Site Setup page (you get an error about a missing email address)
+# [LOW] Push messages may be untranslated strings when a backup is taken over the API or the frontend backup URL
+
+Akeeba Backup 8.2.3
+================================================================================
+# [HIGH] BackBlaze B2 single file uploads were broken
+# [MEDIUM] Restoration. Administrator email appears as "undefined" in the Site Setup page
+# [LOW] Restoration: Wrong message about the emial address when the administrator passwords don't match
+
+Akeeba Backup 8.2.2
+================================================================================
+~ Changed all warnings to much more compact DETAILS elements
+~ Much simpler message if you try to run Akeeba Backup on an unsupported (too low) version of PHP.
++ Allow installation on all Joomla 4 versions so you can uninstall the package in some uncommon cases
++ Option about including the latest backup in remote quotas
+- Removed the PHP version warning. Joomla already warns you about EOL versions of PHP.
+# [LOW] ZIP Archiver, invalid CRC32 calculated for some small files in the installation folder
+
+Akeeba Backup 8.2.1
+================================================================================
+~ Better warnings about CRC32 for ZIP files on 32-bit versions of PHP
+# [HIGH] Quota settings and emails are not processed at the end of the backup process
+
+Akeeba Backup 8.2.0
+================================================================================
++ ANGIE for Joomla: reset session and cache options in Site Setup
++ Support for ShowOn to conditionally show options in the Configuration page
+# [HIGH] Single part uploads to Azure stopped working
+
+Akeeba Backup 8.1.10
+================================================================================
++ Upload to Swift: Support for Keystone v3
+# [LOW] "Test FTP connection" button was not correctly applying the passive mode
+
+Akeeba Backup 8.1.9
+================================================================================
++ More informative error messages for database connection issues during restoration
+~ Workaround for utf8_encode and _decode being deprecated in PHP 8.2
+# [LOW] Restoration: You were shown separate port and socket options which were not taken into account
+# [MEDIUM] Restoration: Using a custom port or socket might result in the wrong hostname being written in the restored site's configuration file
+# [MEDIUM] Possible infinite loop on PHP 8 during DB restoration if a SQL file is missing
+# [LOW] Invalid SQL dump if we cannot get the create commands for a function, procedure or trigger
+
+Akeeba Backup 8.1.8
+================================================================================
++ Restoration: Warn about missing mysqli / PDO MySQL and REFUSE to proceed
+# [HIGH] Cannot download file from Amazon S3
+# [LOW] PHP Warning when backing up a database (purely cosmetic issue)
+
+Akeeba Backup 8.1.7
+================================================================================
++ Restoration: Warn about missing mysqli / PDO MySQL and REFUSE to proceed
+# [HIGH] Cannot download file from Amazon S3
+# [LOW] PHP Warning when backing up a database (purely cosmetic issue)
+
+Akeeba Backup 8.1.6
+================================================================================
+# [HIGH] Cannot connect to databases on localhost using the default named pipe
+# [MEDIUM] Custom Amazon S3 regions would not work with custom endpoints
+
+Akeeba Backup 8.1.5
+================================================================================
++ Support for custom Amazon S3 regions
+# [HIGH] Pagination in the Manage Backups page was broken
+
+Akeeba Backup 8.1.4
+================================================================================
++ Much improved FTP functions for uploading backup archives and transferring sites
++ Upload to Azure BLOB Storage now supports chunked uploads, files up to 190.7TB (up from 64Mb)
++ OneDrive for Business: you can now use Drives other than your personal
+~ Stricter conditions for determining when to show the “Manage remotely stored files” button in Manage Backups
+# [MEDIUM] OneDrive: Uploads may fail if they are between 4Mb and 100Mb
+
+Akeeba Backup 8.1.3
+================================================================================
++ Restoration: ANGIE now applies very high memory and execution time limits to prevent some timeout / memory outage issues on most hosts.
++ Restoration: ANGIE now warns you if you leave the database connection information empty
++ Option to set a really large PHP memory limit during backup
+~ More helpful and forceful installation abortion message when you try to install this package on Joomla 4.1 or later.
+# [LOW] The JPS archiver would show warnings about unreadable files when archiving directories without any files in them.
+
+Akeeba Backup 8.1.2
+================================================================================
+~ Make it clearer that you need Akeeba Backup 9 on Joomla 4.
+# [HIGH] Uploading to OVH is broken on many servers not using a proxy
+# [HIGH] Wrong RewriteBase set up in the .htaccess Maker when restoring a Joomla site with Admin Tools Professional installed
+
+Akeeba Backup 8.1.1
+================================================================================
+~ PHP 8.1 compatibility changes
+
+Akeeba Backup 8.1.0
+================================================================================
++ Allow using [REMOTESTATUS] in the email subject, not just the body
++ Joomla restoration: modify domains in the Admin Tools' Allowed Domains and server config maker features if necessary
+# [HIGH] Problems restoring if a table name ends in 0 when another table with an identical name EXCEPT the trailing zero is also being backed up
+# [HIGH] Backing up to SQL: indices would not have the correct table name prefix
+# [HIGH] Backing up as SQL: the query for finder_taxonomy does not use the correct prefix
+# [MEDIUM] Log Priorities global configuration option got mangled restoring a Joomla 4 site
+# [HIGH] PHP fatal error on PHP 8 if the output directory does not exist
+# [LOW] Occasional display issue on Chromium browsers with the database and file / folder filter pages.
+# [LOW] RackSpace CloudFiles: some hosts change the case of HTTP headers
+
+Akeeba Backup 8.0.15
+================================================================================
++ Support for MySQL 8 invisible columns
+# [LOW] Rare type error under PHP 8 during restoration
+# [LOW] Backend still tries to load PieCon, causing an error to be logged
+
+Akeeba Backup 8.0.14
+================================================================================
+- Remove piecon (pie graph favicon showing the backup progress)
+~ JSON API: Forcibly use the ‘json’ origin everywhere
+~ JSON API: Throw an error if the backup ID sent to stepBackup does not exist
+~ JSON API: Improved backup IDs prevent a number of JSON API issues
+
+Akeeba Backup 8.0.13
+================================================================================
+- Removed iDriveSync; the service has been discontinued by the provider.
+- Removed the “Archive integrity check” feature.
+~ Dropbox connector updated to require TLS v1.2
+~ Improved the display of the files and folders filters page
+# [LOW] Check failed backups: All Super Users were notified even when an email was supplied
+
+Akeeba Backup 8.0.12
+================================================================================
+# [LOW] PHP 8 error if the output directory is empty
+
+Akeeba Backup 8.0.11
+================================================================================
+~ Remove dash from automatically generated random values for archive naming
++ Increase the maximum Size Quota limit to 1Pb
++ Support for Joomla proxy configuration
+# [MEDIUM] Cannot restore on PHP 8 if Two Factor Authentication is enabled in any user account
+# [HIGH] Backing up to Box, Dropbox, Google Drive or OneDrive may not be possible if you are using an add-on Download ID
+
+Akeeba Backup 8.0.10
+================================================================================
+# [HIGH] Uninstallation broken on Joomla 4 due to different installation script event handling (wow, they even broke components' uninstallation, not just the packages!).
+# [LOW] Warning in Manage Backups page if you have deleted the backup profile used to take a backup listed there
+
+Akeeba Backup 8.0.9
+================================================================================
+~ Changes in Joomla 4.0.0-RC5 broke the date and time input fields. Now using native HTML 5 controls.
+# [HIGH] Uninstallation broken on Joomla 4 due to different installation script event handling.
+
+Akeeba Backup 8.0.8
+================================================================================
+! Exception when you do not have the package extension installed on your site. Shouldn't happen unless you've messed with your database.
+
+Akeeba Backup 8.0.7
+================================================================================
++ Restoration: information about disabling the password protection.
+~ Remove ROW_FORMAT during backup and restoration, makes it easier restoring sites using InnoDB across different MySQL server versions
+~ Joomla changed the location of cacert.pem, breaking backup upload to remote storage on some servers
+# [HIGH] Remote JSON API v2 fails on PHP 8
+# [MEDIUM] Tables with only numbers in their names cause the backup to fail
+
+Akeeba Backup 8.0.6
+================================================================================
+! Encrypted settings could not be read
+
+Akeeba Backup 8.0.5
+================================================================================
+- Removed Upload to pCloud
++ Only show failed backups' log files in ALICE
++ Stealth Mode support in integrated restoration
+# [MEDIUM] Backend backup may fail when using multiple profiles with different output directories.
+# [LOW] MySQL spatial data might be impossible to restore if there is a collation mismatch between the origin and target server.
+# [LOW] PHP 8 could still throw an error while backing up under some rare circumstances
+# [LOW] Fixed fatal error while sending backup email notification under certain server configuration
+# [LOW] PHP warning when the site's root is in an absolute root subdirectory (e.g. /site instead)
+
+Akeeba Backup 8.0.4
+================================================================================
+# [MEDIUM] Failed backups check would show old failed backups again after visiting Akeeba Backup's Control Panel page
+# [MEDIUM] Backup on Update message was never shown
+# [LOW] JSON API could return additional information around the JSON content when XDebug is enabled
+# [LOW] Backup on Update boolean controls appear inverted (Yes is No and vice-versa)
+
+Akeeba Backup 8.0.3
+================================================================================
+~ Rewritten installer plugin
+~ Converted all tables to InnoDB for better performance
+# [HIGH] Cannot take split archive backups under PHP 8
+# [HIGH] Backup on Update message shown to non-Super Users
+# [HIGH] Latest backup restoration backend menu item didn't work
+# [LOW] Annoying error message, without any real consequence, shown when clicking any feature button before checking the output folder security has completed in the background
+
+Akeeba Backup 8.0.2
+================================================================================
+! Update fails on some hosts which use opcache if the any of our software's installer plugin is enabled, you have gone through the Joomla Control Panel (with the extension updates quickicon plugin enabled) or the Extensions Update page before installing the new version, either as an automatic update or by manual installation (upload & install or install from URL).
+~ Will no longer uninstall FOF 3 even if it's no longer needed due to broken THIRD PARTY extensions using it.
+~ Workaround for Joomla bug which may not install the included FEF version 2 framework completely, leading to the component being broken after the update.
+~ Servers with opcache may report that FOF 4 classes are missing even though they are actually there.
+
+Akeeba Backup 8.0.1
+================================================================================
+! Update could fail on sites with old plugins we have removed years ago still installed
+
+Akeeba Backup 8.0.0
+================================================================================
++ Rewritten with FOF 4
++ Now using FEF 2 with a common JavaScript library across all Akeeba extensions
++ Renamed ViewTemplates to tmpl (Joomla 4 convention, with fallback code for Joomla 3)
++ Yes/No options in the component and plugin options now work correctly under Joomla 4.0 beta 7 and later
+# [HIGH] Dropbox for Business wouldn't work with the new scoped access tokens
+# [HIGH] Dropbox refresh token would disappear after the first refresh, making it impossible to use Dropbox reliably
 
 Akeeba Backup 7.5.2
 ================================================================================
@@ -20,6 +229,7 @@ Akeeba Backup 7.5.2
 ~ Internals: normalised use JVERSION conditionals
 ~ Document Microsoft Edge “sleeping tabs” and workarounds for long-running backups in background browser tabs
 ~ Improved CHANGELOG layout in the Control Panel page
+~ Code modernisation: using built-in random_bytes() instead of OpenSSL or mcrypt for random number generation
 # [HIGH] Import from S3: you cannot select .jps files
 # [MEDIUM] Frozen backups toggle wouldn't work on Joomla 4
 # [LOW] Import from S3: invisible breadcrumbs in Dark Mode

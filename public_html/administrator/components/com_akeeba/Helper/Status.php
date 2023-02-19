@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -12,8 +12,8 @@ defined('_JEXEC') || die();
 
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Container\Container;
-use FOF30\Date\Date;
+use FOF40\Container\Container;
+use FOF40\Date\Date;
 use Joomla\CMS\Language\Text;
 
 /**
@@ -246,6 +246,11 @@ class Status
 		}
 
 		$quirk['severity'] = $quirk['severity'] == 'critical' ? 'high' : $quirk['severity'];
+
+		if ($quirk['code'] == 400)
+		{
+			return sprintf("<li><a class=\"severity-%s\" href=\"%s\" target=\"_blank\">%s</a></li>\n", $quirk['severity'], 'https://www.akeeba.com/documentation/akeeba-backup-joomla/migrating-from-old-akeeba-backup.html', $quirk['description']);
+		}
 
 		return '<li><a class="severity-' . $quirk['severity'] .
 			'" href="' . $quirk['help_url'] . '" target="_blank">' . $quirk['description'] . '</a>' . "</li>\n";

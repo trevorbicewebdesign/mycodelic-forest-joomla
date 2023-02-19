@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
+<!--~
   ~ @package   akeebabackup
-  ~ @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+  ~ @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
   ~ @license   GNU General Public License version 3, or later
   -->
 
 <extension version="3.9.0" type="package" method="upgrade">
     <name>Akeeba Backup package</name>
     <author>Nicholas K. Dionysopoulos</author>
-    <creationDate>2021-02-05</creationDate>
+    <creationDate>2023-02-08</creationDate>
     <packagename>akeeba</packagename>
-    <version>7.5.3</version>
+    <version>8.2.7</version>
     <url>https://www.akeeba.com</url>
     <packager>Akeeba Ltd</packager>
     <packagerurl>https://www.akeeba.com</packagerurl>
     <copyright>Copyright (c)2006-2019 Akeeba Ltd / Nicholas K. Dionysopoulos</copyright>
     <license>GNU GPL v3 or later</license>
-    <description>Akeeba Backup installation package v.7.5.3</description>
+    <description>Akeeba Backup installation package v.8.2.7</description>
 
     <!-- List of extensions to install -->
     <files>

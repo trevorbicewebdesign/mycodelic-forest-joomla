@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -13,8 +13,8 @@ defined('_JEXEC') || die();
 use Akeeba\Backup\Admin\Model\Mixin\ExclusionFilter;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Container\Container;
-use FOF30\Model\Model;
+use FOF40\Container\Container;
+use FOF40\Model\Model;
 
 /**
  * File Filters model

@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -17,7 +17,7 @@ use Joomla\CMS\Uri\Uri as JUri;
 
 defined('_JEXEC') || die();
 
-class Html extends \FOF30\View\DataView\Html
+class Html extends \FOF40\View\DataView\Html
 {
 	use ProfileIdAndName;
 

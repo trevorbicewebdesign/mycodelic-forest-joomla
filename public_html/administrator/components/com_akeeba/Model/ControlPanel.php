@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,13 +16,16 @@ use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
 use Akeeba\Engine\Util\Complexify;
 use Akeeba\Engine\Util\RandomValue;
-use FOF30\Database\Installer;
-use FOF30\Download\Download;
-use FOF30\Model\Model;
-use JLoader;
+use FOF40\Database\Installer;
+use FOF40\Download\Download;
+use FOF40\Model\Model;
 use Joomla\CMS\Filesystem\File;
 use Joomla\CMS\Filesystem\Folder;
+use Joomla\CMS\Http\HttpFactory;
+use Joomla\CMS\Http\Transport\CurlTransport;
+use Joomla\CMS\Http\Transport\StreamTransport;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Registry\Registry;
 use RuntimeException;
 use stdClass;
 
@@ -422,7 +425,7 @@ class ControlPanel extends Model
 		catch (RuntimeException $e)
 		{
 			// Ah, the current Secret Word is bad. Create a new one if necessary.
-			$newSecret = $this->container->platform->getSessionVar('newSecretWord', null, 'akeeba.cpanel');
+			$newSecret = $this->container->platform->getSessionVar('newSecretWord', null, 'akeeba');
 
 			if (empty($newSecret))
 			{
@@ -669,44 +672,57 @@ class ControlPanel extends Model
 		$checkURL = $baseURL . '/' . $webPath . '/' . $checkFile;
 
 		// Try to download the file's contents
-		$downloader = new Download($this->container);
-
 		$options = [
-			CURLOPT_SSL_VERIFYPEER => 0,
-			CURLOPT_SSL_VERIFYHOST => 0,
-			CURLOPT_FOLLOWLOCATION => 1,
-			CURLOPT_TIMEOUT        => 10,
+			'follow_location'  => true,
+			'transport.curl'   => [
+				CURLOPT_SSL_VERIFYPEER => 0,
+				CURLOPT_SSL_VERIFYHOST => 0,
+				CURLOPT_FOLLOWLOCATION => 1,
+				CURLOPT_TIMEOUT        => 10,
+			],
+			'transport.stream' => [
+				'timeout' => 10,
+			],
 		];
 
-		if ($downloader->getAdapterName() == 'fopen')
+		$adapters = [];
+
+		if (CurlTransport::isSupported())
 		{
-			$options = [
-				'http' => [
-					'follow_location' => true,
-					'timeout'         => 10,
-				],
-				'ssl'  => [
-					'verify_peer' => false,
-				],
-			];
+			$adapters[] = 'Curl';
 		}
 
-		$downloader->setAdapterOptions($options);
+		if (StreamTransport::isSupported())
+		{
+			$adapters[] = 'Stream';
+		}
 
-		$result = $downloader->getFromURL($checkURL);
+		if (empty($adapters))
+		{
+			return $ret;
+		}
 
-		if ($result === 'AKEEBA BACKUP WEB ACCESS CHECK')
+		$downloader = HttpFactory::getHttp(new Registry($options), $adapters);
+
+		if ($downloader === false)
+		{
+			return $ret;
+		}
+
+		$response = $downloader->get($checkURL);
+
+		if ($response->body === 'AKEEBA BACKUP WEB ACCESS CHECK')
 		{
 			$ret['readFile'] = true;
 		}
 
 		// Can I list the directory contents?
 		$folderURL     = $baseURL . '/' . $webPath . '/';
-		$folderListing = $downloader->getFromURL($folderURL);
+		$folderListing = $downloader->get($folderURL)->body;
 
 		@unlink($checkFilePath);
 
-		if (($folderListing !== false) && (strpos($folderListing, basename($checkFile, '.txt')) !== false))
+		if (!is_null($folderListing) && (strpos($folderListing, basename($checkFile, '.txt')) !== false))
 		{
 			$ret['listFolder'] = true;
 		}

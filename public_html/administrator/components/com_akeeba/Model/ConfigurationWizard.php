@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -13,7 +13,7 @@ defined('_JEXEC') || die();
 use Akeeba\Backup\Admin\Model\Mixin\Chmod;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
-use FOF30\Model\Model;
+use FOF40\Model\Model;
 
 /**
  * ConfigurationWizard model. Contains the business logic for the configuration wizard.
@@ -35,7 +35,21 @@ class ConfigurationWizard extends Model
 		// Get the output directory, translated
 		$engineConfig    = Factory::getConfiguration();
 		$outputDirectory = $engineConfig->get('akeeba.basic.output_directory', '');
-		$fixOut = true;
+		$fixOut          = true;
+
+		// If no output directory is specified set it the default output and retry.
+		if (empty($outputDirectory) && !$dontRecurse)
+		{
+			/** @var @var Configuration $model $model */
+			$model = $this->container->factory->model('Configuration')->tmpInstance();
+
+			$model->setState('engineconfig', [
+				'akeeba.basic.output_directory' => '[DEFAULT_OUTPUT]',
+			]);
+			$model->saveEngineConfig();
+
+			return $this->autofixDirectories(true);
+		}
 
 		// Is the folder writeable?
 		if (is_dir($outputDirectory))
@@ -57,7 +71,8 @@ class ConfigurationWizard extends Model
 			$this->chmod($outputDirectory, 511);
 
 			// Repeat the test
-			$fixOut = !@file_put_contents($filename, 'test');
+			$filename = $outputDirectory . '/test.dat';
+			$fixOut   = !@file_put_contents($filename, 'test');
 
 			if (!$fixOut)
 			{

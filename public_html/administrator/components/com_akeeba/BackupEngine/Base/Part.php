@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -14,7 +14,7 @@ defined('AKEEBAENGINE') || die();
 use Akeeba\Engine\Base\Exceptions\ErrorException;
 use Akeeba\Engine\Factory;
 use Exception;
-use Psr\Log\LogLevel;
+use Akeeba\Engine\Psr\Log\LogLevel;
 use Throwable;
 
 /**
@@ -114,6 +114,11 @@ abstract class Part
 	 * @var null|Exception
 	 */
 	protected $lastException = null;
+
+	public function _onSerialize()
+	{
+		$this->lastException = null;
+	}
 
 	/**
 	 * Public constructor

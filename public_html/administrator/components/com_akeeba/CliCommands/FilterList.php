@@ -1,7 +1,7 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -15,7 +15,7 @@ use Akeeba\Backup\Admin\Model\IncludeFolders;
 use Akeeba\Backup\Admin\Model\MultipleDatabases;
 use Akeeba\Backup\Admin\Model\RegExDatabaseFilters;
 use Akeeba\Backup\Admin\Model\RegExFileFilters;
-use FOF30\Container\Container;
+use FOF40\Container\Container;
 use Joomla\Console\Command\AbstractCommand;
 use Akeeba\Backup\Admin\CliCommands\MixIt\ArgumentUtilities;
 use Akeeba\Backup\Admin\CliCommands\MixIt\ConfigureIO;

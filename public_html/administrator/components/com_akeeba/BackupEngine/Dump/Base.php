@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -16,51 +16,75 @@ use Akeeba\Engine\Core\Domain\Pack;
 use Akeeba\Engine\Driver\Base as DriverBase;
 use Akeeba\Engine\Factory;
 use Akeeba\Engine\Platform;
+use Akeeba\Engine\Util\FileCloseAware;
 use Exception;
 use RuntimeException;
 
 abstract class Base extends Part
 {
+	use FileCloseAware;
+
 	// **********************************************************************
 	// Configuration parameters
 	// **********************************************************************
 
 	/** @var int Current dump file part number */
 	public $partNumber = 0;
+
 	/** @var string Prefix to this database */
 	protected $prefix = '';
+
 	/** @var string MySQL database server host name or IP address */
 	protected $host = '';
+
 	/** @var string MySQL database server port (optional) */
 	protected $port = '';
+
+	/** @var string MySQL socket or named pipe (optional) */
+	protected $socket = '';
+
 	/** @var string MySQL user name, for authentication */
 	protected $username = '';
+
 	/** @var string MySQL password, for authentication */
 	protected $password = '';
+
 	/** @var string MySQL database */
 	protected $database = '';
+
 	/** @var string The database driver to use */
 	protected $driver = '';
+
+	/** @var array|null The MySQL SSL options */
+	protected $ssl;
 
 	// **********************************************************************
 	// File handling fields
 	// **********************************************************************
 	/** @var boolean Should I post process quoted values */
 	protected $postProcessValues = false;
+
 	/** @var string Absolute path to dump file; must be writable (optional; if left blank it is automatically calculated) */
 	protected $dumpFile = '';
+
 	/** @var string Data cache, used to cache data before being written to disk */
 	protected $data_cache = '';
+
 	/** @var int */
 	protected $largest_query = 0;
+
 	/** @var int Size of the data cache, default 128Kb */
 	protected $cache_size = 131072;
+
 	/** @var bool Should I process empty prefixes when creating abstracted names? */
 	protected $processEmptyPrefix = true;
+
 	/** @var string Absolute path to the temp file */
 	protected $tempFile = '';
+
 	/** @var string Relative path of how the file should be saved in the archive */
 	protected $saveAsName = '';
+
 	/** @var array Contains the sorted (by dependencies) list of tables/views to backup */
 	protected $tables = [];
 
@@ -69,26 +93,59 @@ abstract class Base extends Part
 	// **********************************************************************
 	/** @var array Contains the configuration data of the tables */
 	protected $tables_data = [];
+
 	/** @var array Maps database table names to their abstracted format */
 	protected $table_name_map = [];
+
 	/** @var array Contains the dependencies of tables and views (temporary) */
 	protected $dependencies = [];
+
 	/** @var string The next table to backup */
 	protected $nextTable;
+
 	/** @var integer The next row of the table to start backing up from */
 	protected $nextRange;
+
 	/** @var integer Current table's row count */
 	protected $maxRange;
+
 	/** @var bool Use extended INSERTs */
 	protected $extendedInserts = false;
+
 	/** @var integer Maximum packet size for extended INSERTs, in bytes */
 	protected $packetSize = 0;
+
 	/** @var string Extended INSERT query, while it's being constructed */
 	protected $query = '';
+
 	/** @var int Dump part's maximum size */
 	protected $partSize = 0;
+
 	/** @var resource Filepointer to the current dump part */
 	private $fp = null;
+
+	/**
+	 * Should I be using an abstract prefix (#__) for table names?
+	 *
+	 * @var   bool
+	 * @since 9.1.0
+	 */
+	private $useAbstractPrefix;
+
+	/**
+	 * Public constructor.
+	 *
+	 * @return  void
+	 * @since   9.1.0
+	 */
+	public function __construct()
+	{
+		$this->useAbstractPrefix =
+			Factory::getEngineParamsProvider()->getScriptingParameter('db.saveasname', 'normal') !== 'output';
+
+		parent::__construct();
+	}
+
 
 	/**
 	 * This method is called when the factory is being serialized and is used to perform necessary cleanup steps.
@@ -120,7 +177,7 @@ abstract class Base extends Part
 
 		Factory::getLog()->debug("Closing SQL dump file.");
 
-		@fclose($this->fp);
+		$this->conditionalFileClose($this->fp);
 		$this->fp = null;
 	}
 
@@ -157,11 +214,14 @@ abstract class Base extends Part
 	protected function getBackupFilePaths($partNumber = 0)
 	{
 		Factory::getLog()->debug(__CLASS__ . " :: Getting temporary file");
-		$this->tempFile = Factory::getTempFiles()->registerTempFile(dechex(crc32(microtime())) . '.sql');
+		$basename       = substr(md5(microtime() . random_bytes(8)), random_int(0, 16), 16);
+		$this->tempFile = Factory::getTempFiles()->registerTempFile($basename . '.sql');
 		Factory::getLog()->debug(__CLASS__ . " :: Temporary file is {$this->tempFile}");
+
 		// Get the base name of the dump file
 		$partNumber = intval($partNumber);
 		$baseName   = $this->dumpFile;
+
 		if ($partNumber > 0)
 		{
 			// The file names are in the format dbname.sql, dbname.s01, dbname.s02, etc
@@ -271,18 +331,31 @@ abstract class Base extends Part
 
 		// Process parameters, passed to us using the setup() public method
 		Factory::getLog()->debug(__CLASS__ . " :: Processing parameters");
+
 		if (is_array($this->_parametersArray))
 		{
-			$this->driver             = array_key_exists('driver', $this->_parametersArray) ? $this->_parametersArray['driver'] : $this->driver;
-			$this->host               = array_key_exists('host', $this->_parametersArray) ? $this->_parametersArray['host'] : $this->host;
-			$this->port               = array_key_exists('port', $this->_parametersArray) ? $this->_parametersArray['port'] : $this->port;
-			$this->username           = array_key_exists('username', $this->_parametersArray) ? $this->_parametersArray['username'] : $this->username;
-			$this->username           = array_key_exists('user', $this->_parametersArray) ? $this->_parametersArray['user'] : $this->username;
-			$this->password           = array_key_exists('password', $this->_parametersArray) ? $this->_parametersArray['password'] : $this->password;
-			$this->database           = array_key_exists('database', $this->_parametersArray) ? $this->_parametersArray['database'] : $this->database;
-			$this->prefix             = array_key_exists('prefix', $this->_parametersArray) ? $this->_parametersArray['prefix'] : $this->prefix;
-			$this->dumpFile           = array_key_exists('dumpFile', $this->_parametersArray) ? $this->_parametersArray['dumpFile'] : $this->dumpFile;
-			$this->processEmptyPrefix = array_key_exists('process_empty_prefix', $this->_parametersArray) ? $this->_parametersArray['process_empty_prefix'] : $this->processEmptyPrefix;
+			$this->driver             = $this->_parametersArray['driver'] ?? $this->driver;
+			$this->host               = $this->_parametersArray['host'] ?? $this->host;
+			$this->port               = $this->_parametersArray['port'] ?? $this->port;
+			$this->socket             = $this->_parametersArray['socket'] ?? $this->socket;
+			$this->username           = $this->_parametersArray['username'] ?? $this->username;
+			$this->username           = $this->_parametersArray['user'] ?? $this->username;
+			$this->password           = $this->_parametersArray['password'] ?? $this->password;
+			$this->database           = $this->_parametersArray['database'] ?? $this->database;
+			$this->prefix             = $this->_parametersArray['prefix'] ?? $this->prefix;
+			$this->dumpFile           = $this->_parametersArray['dumpFile'] ?? $this->dumpFile;
+			$this->processEmptyPrefix = $this->_parametersArray['process_empty_prefix'] ?? $this->processEmptyPrefix;
+			$this->ssl                = $this->_parametersArray['ssl'] ?? $this->ssl;
+			$this->ssl                = is_array($this->ssl) ? $this->ssl : [];
+
+			$this->ssl['enable']             = (bool)(($this->ssl['enable'] ?? $this->_parametersArray['dbencryption'] ?? false) ?: false);
+			$this->ssl['cipher']             = ($this->ssl['cipher'] ?? $this->_parametersArray['dbsslcipher'] ?? null) ?: null;
+			$this->ssl['ca']                 = ($this->ssl['ca'] ?? $this->_parametersArray['dbsslca'] ?? null) ?: null;
+			$this->ssl['capath']             = ($this->ssl['capath'] ?? $this->_parametersArray['dbsslcapath'] ?? null) ?: null;
+			$this->ssl['key']                = ($this->ssl['key'] ?? $this->_parametersArray['dbsslkey'] ?? null) ?: null;
+			$this->ssl['cert']               = ($this->ssl['cert'] ?? $this->_parametersArray['dbsslcert'] ?? null) ?: null;
+			$this->ssl['verify_server_cert'] = (bool)(($this->ssl['verify_server_cert'] ?? $this->_parametersArray['dbsslverifyservercert'] ?? false) ?: false);
+
 		}
 
 		// Make sure we have self-assigned the first part
@@ -388,8 +461,8 @@ abstract class Base extends Part
 		 */
 		if (Factory::getEngineParamsProvider()->getScriptingParameter('db.saveasname', 'normal') != 'output')
 		{
-			$archiver                     = Factory::getArchiverEngine();
-			$configuration                = Factory::getConfiguration();
+			$archiver      = Factory::getArchiverEngine();
+			$configuration = Factory::getConfiguration();
 
 			// Check whether we need to immediately post-processing a done part
 			if (Pack::postProcessDonePartFile($archiver, $configuration))
@@ -438,7 +511,7 @@ abstract class Base extends Part
 		}
 
 		// We need this to write out the cached extra SQL statements before closing the file.
-		$this->writeDump(null);
+		$this->writeDump(null, true);
 
 		// Close the file pointer (otherwise the SQL file is left behind)
 		$this->closeFile();
@@ -651,9 +724,15 @@ abstract class Base extends Part
 	{
 		if (!empty($data))
 		{
-			if ($addMarker)
+			if ($addMarker && $this->useAbstractPrefix)
 			{
 				$this->data_cache .= '/**ABDB**/';
+			}
+			elseif (!$this->useAbstractPrefix)
+			{
+				// Replace #__ with the prefix when writing plain .sql files
+				$db   = $this->getDB();
+				$data = $db->replacePrefix($data) . "\n";
 			}
 
 			$this->data_cache .= $data;
@@ -667,6 +746,15 @@ abstract class Base extends Part
 
 		if ((strlen($this->data_cache) >= $this->cache_size) || (is_null($data) && (!empty($this->data_cache))))
 		{
+			$this->data_cache = rtrim($this->data_cache, "\n");
+
+			if ($this->useAbstractPrefix && $addMarker && substr($this->data_cache, -10) !== '/**ABDB**/')
+			{
+				$this->data_cache .= '/**ABDB**/';
+			}
+
+			$this->data_cache .= "\n";
+
 			Factory::getLog()->debug("Writing " . strlen($this->data_cache) . " bytes to the dump file");
 			$result = $this->writeline($this->data_cache);
 
@@ -705,10 +793,7 @@ abstract class Base extends Part
 
 		if (is_null($fileData))
 		{
-			if (is_resource($this->fp))
-			{
-				@fclose($this->fp);
-			}
+			$this->conditionalFileClose($this->fp);
 
 			$this->fp = null;
 
@@ -738,15 +823,18 @@ abstract class Base extends Part
 	 */
 	protected function &getDB()
 	{
-		$host     = $this->host . ($this->port != '' ? ':' . $this->port : '');
-		$user     = $this->username;
-		$password = $this->password;
-		$driver   = $this->driver;
-		$database = $this->database;
-		$prefix   = is_null($this->prefix) ? '' : $this->prefix;
-		$options  = [
-			'driver'   => $driver, 'host' => $host, 'user' => $user, 'password' => $password,
-			'database' => $database, 'prefix' => $prefix,
+		$ssl     = $this->ssl ?? [];
+		$ssl     = is_array($ssl) ? $ssl : [];
+		$options = [
+			'driver'   => $this->driver,
+			'host'     => $this->host,
+			'port'     => $this->port,
+			'socket'   => $this->socket,
+			'user'     => $this->username,
+			'password' => $this->password,
+			'database' => $this->database,
+			'prefix'   => is_null($this->prefix) ? '' : $this->prefix,
+			'ssl'      => $ssl,
 		];
 
 		$db = Factory::getDatabase($options);

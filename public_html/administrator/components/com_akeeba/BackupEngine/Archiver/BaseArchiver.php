@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -68,6 +68,9 @@ abstract class BaseArchiver extends BaseFileManagement
 
 	/** @var bool Should I use Split ZIP? */
 	protected $useSplitArchive = false;
+
+	/** @var int Permissions for the backup archive part files */
+	protected $permissions = null;
 
 	/**
 	 * Release file pointers when the object is being serialized
@@ -143,7 +146,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	{
 		Factory::getLog()->debug(__CLASS__ . " :: Killing old archive");
 
-		$this->fp = $this->fopen($this->_dataFileName, "wb");
+		$this->fp = $this->fopen($this->_dataFileName, "w");
 
 		if ($this->fp === false)
 		{
@@ -155,7 +158,7 @@ abstract class BaseArchiver extends BaseFileManagement
 			@touch($this->_dataFileName);
 			@chmod($this->_dataFileName, 0666);
 
-			$this->fp = $this->fopen($this->_dataFileName, "wb");
+			$this->fp = $this->fopen($this->_dataFileName, "w");
 
 			if ($this->fp !== false)
 			{
@@ -179,7 +182,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	{
 		if (is_null($this->fp) || $force)
 		{
-			$this->fp = $this->fopen($this->_dataFileName, "ab");
+			$this->fp = $this->fopen($this->_dataFileName, "a");
 		}
 
 		if ($this->fp === false)
@@ -308,7 +311,7 @@ abstract class BaseArchiver extends BaseFileManagement
 		if (!is_readable($sourceNameOrData) && !$isDir)
 		{
 			// Really, REALLY check if it is readable (PHP sometimes lies, dammit!)
-			$myFP = @$this->fopen($sourceNameOrData, 'rb');
+			$myFP = @$this->fopen($sourceNameOrData, 'r');
 
 			if ($myFP === false)
 			{
@@ -571,7 +574,7 @@ abstract class BaseArchiver extends BaseFileManagement
 	protected function putUncompressedFileIntoArchive(&$sourceNameOrData, $fileLength = 0, $resumeOffset = null)
 	{
 		// Copy the file contents, ignore directories
-		$sourceFilePointer = @fopen($sourceNameOrData, "rb");
+		$sourceFilePointer = @fopen($sourceNameOrData, "r");
 
 		if ($sourceFilePointer === false)
 		{
@@ -588,7 +591,7 @@ abstract class BaseArchiver extends BaseFileManagement
 			if ($seek_result === -1)
 			{
 				// What?! We can't resume!
-				@fclose($sourceFilePointer);
+				$this->conditionalFileClose($sourceFilePointer);
 
 				throw new ErrorException(sprintf('Could not resume packing of file %s. Your archive is damaged!', $sourceNameOrData));
 			}
@@ -599,15 +602,35 @@ abstract class BaseArchiver extends BaseFileManagement
 
 		$mustBreak = $this->putDataFromFileIntoArchive($sourceFilePointer, $fileLength);
 
-		@fclose($sourceFilePointer);
+		$this->conditionalFileClose($sourceFilePointer);
 
 		return $mustBreak;
 	}
 
 	/**
+	 * Return the requested permissions for the backup archive file.
+	 *
+	 * @return  int
+	 * @since   8.0.0
+	 */
+	protected function getPermissions(): int
+	{
+		if (!is_null($this->permissions))
+		{
+			return $this->permissions;
+		}
+
+		$configuration     = Factory::getConfiguration();
+		$permissions       = $configuration->get('engine.archiver.common.permissions', '0666') ?: '0666';
+		$this->permissions = octdec($permissions);
+
+		return $this->permissions;
+	}
+
+	/**
 	 * Put up to $fileLength bytes of the file pointer $sourceFilePointer into the backup archive. Returns true if we
 	 * ran out of time and need to perform a step break. Returns false when the whole quantity of data has been copied.
-	 * Throws an ErrorException if soemthing really bad happens.
+	 * Throws an ErrorException if something terrible happens.
 	 *
 	 * @param   resource  $sourceFilePointer  The pointer to the input file
 	 * @param   int       $fileLength         How many bytes to copy
@@ -619,12 +642,13 @@ abstract class BaseArchiver extends BaseFileManagement
 		// Get references to engine objects we're going to be using
 		$configuration = Factory::getConfiguration();
 		$timer         = Factory::getTimer();
+		$isEOF         = false;
 
 		// Quick copy data into the archive, AKEEBA_CHUNK bytes at a time
-		while (!feof($sourceFilePointer) && ($timer->getTimeLeft() > 0) && ($fileLength > 0))
+		while (!$isEOF && ($timer->getTimeLeft() > 0) && ($fileLength > 0))
 		{
-			// Normally I read up to AKEEBA_CHUNK bytes at a time
-			$chunkSize = AKEEBA_CHUNK;
+			// Normally I read up to AKEEBA_CHUNK bytes at a time, unless the remaining $fileLength is smaller.
+			$chunkSize = min(AKEEBA_CHUNK, $fileLength);
 
 			// Do I have a split ZIP?
 			if ($this->useSplitArchive)
@@ -642,7 +666,7 @@ abstract class BaseArchiver extends BaseFileManagement
 					if ($configuration->get('engine.postproc.common.after_part', 0))
 					{
 						$resumeOffset = @ftell($sourceFilePointer);
-						@fclose($sourceFilePointer);
+						$this->conditionalFileClose($sourceFilePointer);
 
 						$configuration->set('volatile.engine.archiver.resume', $resumeOffset);
 						$configuration->set('volatile.engine.archiver.processingfile', true);
@@ -667,6 +691,41 @@ abstract class BaseArchiver extends BaseFileManagement
 
 			// Subtract the written bytes from the bytes left to write
 			$fileLength -= $bytesWritten;
+
+			/**
+			 * Have we reached the End of File?
+			 *
+			 * When we have read _exactly_ as many bytes as the size of the file we have not, in fact, reached EOF. We
+			 * reach the EOF if we try to read _beyond_ the actual end of file.
+			 *
+			 * So, if we have read exactly as many bytes as the file claimed to be at the start of backup (i.e. the
+			 * $fileLength is now 0) we try to read one more byte. If this returns no data (or false, e.g. the file went
+			 * away in the meantime) OR PHP reports we reached EOF then we consider we've reached EOF.
+			 *
+			 * If the file grew in size in the meantime this condition will fail and $isEOF will be false. We will still
+			 * exit the while loop because $fileLength === 0 but the next if-block after the while-block will catch this
+			 * discrepancy and issue a warning that the file grew in size.
+			 */
+			$isEOF = feof($sourceFilePointer);
+
+			if (!$isEOF && $fileLength === 0)
+			{
+				$junk = fread($sourceFilePointer, 1);
+				$isEOF = (($junk === false) || (is_string($junk) && strlen($junk) === 0)) || feof($sourceFilePointer);
+				fseek($sourceFilePointer, -1, SEEK_CUR);
+			}
+		}
+
+		/**
+		 * We have finished reading the entire file as per its size before we started backing it up. However, we still
+		 * have not reached EOF (there's more to the file). This means that the file grew in size in the meantime. Warn
+		 * the user.
+		 */
+		if (!$isEOF && ($timer->getTimeLeft() > 0) && ($fileLength === 0))
+		{
+			Factory::getLog()->warning(
+				'The file grew in size while putting it in the backup archive. If this is a temporary or cache file we advise you to exclude it, or exclude the contents of the temporary / cache folder it is contained in.'
+			);
 		}
 
 		/**
@@ -675,9 +734,11 @@ abstract class BaseArchiver extends BaseFileManagement
 		 * change the file header since it may be in a previous part file that's already been post-processed. All we can
 		 * do is try to warn the user.
 		 */
-		while (feof($sourceFilePointer) && ($timer->getTimeLeft() > 0) && ($fileLength > 0))
+		if ($isEOF && ($timer->getTimeLeft() > 0) && ($fileLength > 0))
 		{
-			throw new ErrorException('The file shrunk or went away while putting it in the backup archive. Your archive is damaged! If this is a temporary or cache file we advise you to exclude the contents of the temporary / cache folder it is contained in.');
+			throw new ErrorException(
+				'The file shrunk or went away while putting it in the backup archive. Your archive is damaged! If this is a temporary or cache file we advise you to exclude it, or exclude the contents of the temporary / cache folder it is contained in.'
+			);
 		}
 
 		// WARNING!!! The extra $unc_len != 0 check is necessary as PHP won't reach EOF for 0-byte files.
@@ -685,7 +746,7 @@ abstract class BaseArchiver extends BaseFileManagement
 		{
 			// We have to break, or we'll time out!
 			$resumeOffset = @ftell($sourceFilePointer);
-			@fclose($sourceFilePointer);
+			$this->conditionalFileClose($sourceFilePointer);
 
 			$configuration->set('volatile.engine.archiver.resume', $resumeOffset);
 			$configuration->set('volatile.engine.archiver.processingfile', true);

@@ -3,7 +3,7 @@
  * Akeeba Engine
  *
  * @package   akeebaengine
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
@@ -19,7 +19,7 @@ use RuntimeException;
 /**
  * Multiple database backup engine.
  */
-class Db extends Part
+final class Db extends Part
 {
 	/** @var array A list of the databases to be packed */
 	private $database_list = [];
@@ -243,8 +243,6 @@ class Db extends Part
 			Factory::getLog()->info("Closing the database connection to the main database");
 			Factory::unsetDatabase();
 		}
-
-		return;
 	}
 
 	/**
@@ -265,7 +263,7 @@ class Db extends Part
 
 			if (count($this->database_list) > 1)
 			{
-				$this->database_list = array_slice($this->database_list, 0, 1);
+				$this->database_list = array_shift($this->database_list);
 			}
 		}
 	}
@@ -300,23 +298,34 @@ class Db extends Part
 			}
 
 			$this->databases_json[$section] = [
-				'dbtype'  => $type,
-				'dbtech'  => $tech,
-				'dbname'  => $definition['database'],
-				'sqlfile' => $definition['dumpFile'],
-				'marker'  => "\n/**ABDB**/",
-				'dbhost'  => $definition['host'],
-				'dbuser'  => $definition['username'],
-				'dbpass'  => $definition['password'],
-				'prefix'  => $definition['prefix'],
-				'parts'   => $definition['parts'],
-				'tables'  => $definition['tables'],
+				'dbtype'                => $type,
+				'dbtech'                => $tech,
+				'dbname'                => $definition['database'],
+				'sqlfile'               => $definition['dumpFile'],
+				'marker'                => "\n/**ABDB**/",
+				'dbhost'                => $definition['host'] ?? '',
+				'dbport'                => $definition['port'] ?? '',
+				'dbsocket'              => $definition['socket'] ?? '',
+				'dbuser'                => $definition['username'] ?? '',
+				'dbpass'                => $definition['password'] ?? '',
+				'prefix'                => $definition['prefix'] ?? '',
+				'dbencryption'          => $definition['dbencryption'] ?? 0,
+				'dbsslcipher'           => $definition['dbsslcipher'] ?? '',
+				'dbsslca'               => $definition['dbsslca'] ?? '',
+				'dbsslkey'              => $definition['dbsslkey'] ?? '',
+				'dbsslcert'             => $definition['dbsslcert'] ?? '',
+				'dbsslverifyservercert' => $definition['dbsslverifyservercert'] ?? 0,
+				'parts'                 => $definition['parts'],
+				'tables'                => $definition['tables'],
 			];
 
 			if ($blankOutPass)
 			{
-				$this->databases_json[$section]['dbuser'] = '';
-				$this->databases_json[$section]['dbpass'] = '';
+				$this->databases_json[$section]['dbuser']    = '';
+				$this->databases_json[$section]['dbpass']    = '';
+				$this->databases_json[$section]['dbsslca']   = '';
+				$this->databases_json[$section]['dbsslkey']  = '';
+				$this->databases_json[$section]['dbsslcert'] = '';
 			}
 		}
 	}

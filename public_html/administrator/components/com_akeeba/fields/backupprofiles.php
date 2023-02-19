@@ -1,13 +1,14 @@
 <?php
 /**
  * @package   akeebabackup
- * @copyright Copyright (c)2006-2021 Nicholas K. Dionysopoulos / Akeeba Ltd
+ * @copyright Copyright (c)2006-2023 Nicholas K. Dionysopoulos / Akeeba Ltd
  * @license   GNU General Public License version 3, or later
  */
 
 defined('_JEXEC') || die();
 
 use Joomla\CMS\Form\FormField;
+use Joomla\CMS\HTML\HTMLHelper;
 
 if (class_exists('JFormFieldBackupprofiles'))
 {
@@ -64,6 +65,8 @@ class JFormFieldBackupprofiles extends FormField
 			array_unshift($objectList, $defaultItem);
 		}
 
-		return \Joomla\CMS\HTML\HTMLHelper::_('select.genericlist', $objectList, $this->name, 'class="inputbox"', $key, $val, $this->value, $this->id);
+		HTMLHelper::_('formbehavior.chosen');
+
+		return HTMLHelper::_('select.genericlist', $objectList, $this->name, 'class="inputbox advancedSelect"', $key, $val, $this->value, $this->id);
 	}
 }
