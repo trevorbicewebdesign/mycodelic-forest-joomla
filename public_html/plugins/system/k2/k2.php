@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -26,9 +26,9 @@ class plgSystemK2 extends JPlugin
         }
 
         // Define K2 version & build here
-        define('K2_CURRENT_VERSION', '2.10.3');
-        define('K2_BUILD_ID', '20200429');
-        define('K2_BUILD', ''); // Use '' for stable or "<br />[Dev Build '.K2_BUILD_ID.']" for the developer build
+        define('K2_CURRENT_VERSION', '2.11');
+        define('K2_BUILD_ID', '20230112');
+        define('K2_BUILD', '<br />[Build '.K2_BUILD_ID.']');
 
         // Define the DS constant (for backwards compatibility with old template overrides & 3rd party K2 extensions)
         if (!defined('DS')) {
@@ -44,7 +44,6 @@ class plgSystemK2 extends JPlugin
 
         // Get application & K2 component params
         $app = JFactory::getApplication();
-        $document = JFactory::getDocument();
         $user = JFactory::getUser();
         $config = JFactory::getConfig();
         $params = JComponentHelper::getParams('com_k2');
@@ -64,50 +63,6 @@ class plgSystemK2 extends JPlugin
         JLoader::register('K2View', JPATH_ADMINISTRATOR.'/components/com_k2/views/view.php');
         JLoader::register('K2HelperHTML', JPATH_ADMINISTRATOR.'/components/com_k2/helpers/html.php');
         JLoader::register('K2HelperUtilities', JPATH_SITE.'/components/com_k2/helpers/utilities.php');
-
-        // Define the default Itemid for users and tags (to be removed)
-        //define('K2_USERS_ITEMID', $params->get('defaultUsersItemid'));
-        //define('K2_TAGS_ITEMID', $params->get('defaultTagsItemid'));
-
-        // Use proper headers for JSON/JSONP
-        if (JRequest::getCmd('format') == 'json') {
-            if (K2_JVERSION == '15') {
-                $document->setMimeEncoding('application/json');
-                $document->setType('json');
-            }
-
-            if (JRequest::getCmd('callback')) {
-                $document->setMimeEncoding('application/javascript');
-            }
-        }
-
-        // --- Custom HTTP headers [start] ---
-
-        // Check caching state in Joomla
-        $cacheTime = 0;
-        if (K2_JVERSION == '15') {
-            $caching = $config->getValue('config.caching');
-            $cacheTime = $config->getValue('config.cachetime');
-        } else {
-            $caching = $config->get('caching');
-            $cacheTime = $config->get('cachetime');
-        }
-        $cacheTTL = $cacheTime * 60;
-
-        if ($user->guest) {
-            if ($caching) {
-                JResponse::allowCache(true);
-                JResponse::setHeader('Cache-Control', 'public, max-age='.$cacheTTL.', stale-while-revalidate='.($cacheTTL*2).', stale-if-error='.($cacheTTL*5), true);
-                JResponse::setHeader('Expires', gmdate('D, d M Y H:i:s', time()+$cacheTTL).' GMT', true);
-                JResponse::setHeader('Pragma', 'public', true);
-            }
-            JResponse::setHeader('X-Logged-In', 'False', true);
-        } else {
-            JResponse::setHeader('X-Logged-In', 'True', true);
-        }
-        JResponse::setHeader('X-Content-Powered-By', 'K2 v'.K2_CURRENT_VERSION.' (by JoomlaWorks)', true);
-
-        // --- Custom HTTP headers [finish] ---
 
         // Define JoomFish compatibility version.
         if (JFile::exists(JPATH_ADMINISTRATOR.'/components/com_joomfish/joomfish.php')) {
@@ -164,11 +119,10 @@ class plgSystemK2 extends JPlugin
                 $variables = JRequest::get('post');
 
                 foreach ($variables as $key => $value) {
-                    if (( bool )JString::stristr($key, 'K2ExtraField_')) {
-                        $object = new JObject;
-                        $object->set('id', JString::substr($key, 13));
-                        $object->set('value', $value);
-                        unset($object->_errors);
+                    if ((bool) stristr($key, 'K2ExtraField_')) {
+                        $object = new stdClass;
+                        $object->id = substr($key, 13);
+                        $object->value = $value;
                         $objects[] = $object;
                     }
                 }
@@ -268,6 +222,7 @@ class plgSystemK2 extends JPlugin
                 } else {
                     JHTML::_('behavior.framework');
                 }
+                $document = JFactory::getDocument();
                 $document->addScriptDeclaration("
                     window.addEvent('domready', function(){
                         var target = $$('table.adminform');
@@ -288,24 +243,23 @@ class plgSystemK2 extends JPlugin
                 $target = JRequest::getVar('option_target');
 
                 for ($i = 0; $i < count($values); $i++) {
-                    $object = new JObject;
-                    $object->set('name', $names[$i]);
+                    $object = new stdClass;
+                    $object->name = $names[$i];
 
                     if ($extraFieldType == 'select' || $extraFieldType == 'multipleSelect' || $extraFieldType == 'radio') {
-                        $object->set('value', $i + 1);
+                        $object->value = $i + 1;
                     } elseif ($extraFieldType == 'link') {
                         if (substr($values[$i], 0, 4) == 'http') {
                             $values[$i] = $values[$i];
                         } else {
                             $values[$i] = 'http://'.$values[$i];
                         }
-                        $object->set('value', $values[$i]);
+                        $object->value = $values[$i];
                     } else {
-                        $object->set('value', $values[$i]);
+                        $object->value = $values[$i];
                     }
 
-                    $object->set('target', $target[$i]);
-                    unset($object->_errors);
+                    $object->target = $target[$i];
                     $objects[] = $object;
                 }
 
@@ -470,32 +424,25 @@ class plgSystemK2 extends JPlugin
             }
         }
 
+        // B/C code for reCAPTCHA
+        $params->set('recaptchaV2', true);
+
         // Extend user forms with K2 fields
         if (($option == 'com_user' && $view == 'register') || ($option == 'com_users' && $view == 'registration')) {
             if ($params->get('recaptchaOnRegistration') && $params->get('recaptcha_public_key')) {
-                if ($params->get('recaptchaV2')) {
-                    $document->addScript('https://www.google.com/recaptcha/api.js?onload=onK2RecaptchaLoaded&render=explicit');
-                    $document->addScriptDeclaration('
-                    /* K2 - Google reCAPTCHA */
-                    function onK2RecaptchaLoaded(){
-                        grecaptcha.render("recaptcha", {"sitekey": "'.$params->get('recaptcha_public_key').'"});
-                    }
-                    ');
-                    $recaptchaClass = 'k2-recaptcha-v2';
-                } else {
-                    $document->addScript('https://www.google.com/recaptcha/api/js/recaptcha_ajax.js');
-                    $document->addScriptDeclaration('
-                        function showRecaptcha(){
-                            Recaptcha.create("'.$params->get('recaptcha_public_key').'", "recaptcha", {
-                                theme: "'.$params->get('recaptcha_theme', 'clean').'"
-                            });
-                        }
-                        $K2(document).ready(function() {
-                            showRecaptcha();
-                        });
-                    ');
-                    $recaptchaClass = 'k2-recaptcha-v1';
+                if (K2_JVERSION != '30') {
+                    $document->addScript(JURI::root(true).'/media/k2/assets/js/k2.rc.patch.js?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
                 }
+                $document->addScript('https://www.google.com/recaptcha/api.js?onload=onK2RecaptchaLoaded&render=explicit');
+                $document->addScriptDeclaration('
+                function onK2RecaptchaLoaded() {
+                    grecaptcha.render("recaptcha", {
+                        "sitekey": "'.$params->get('recaptcha_public_key').'",
+                        "theme": "'.$params->get('recaptcha_theme', 'light').'"
+                    });
+                }
+                ');
+                $recaptchaClass = 'k2-recaptcha-v2';
             }
 
             if (!$user->guest) {
@@ -523,19 +470,24 @@ class plgSystemK2 extends JPlugin
 
             $view->setLayout('register');
 
-            $K2User = new JObject;
+            $K2User = new stdClass;
 
             $K2User->description = '';
-            $K2User->gender = 'm';
+            $K2User->gender = 'n';
             $K2User->image = '';
             $K2User->url = '';
             $K2User->plugins = '';
 
-            $wysiwyg = JFactory::getEditor();
-            $editor = $wysiwyg->display('description', $K2User->description, '100%', '250px', '', '', false);
+            if ($params->get('K2ProfileEditor')) {
+                $wysiwyg = JFactory::getEditor();
+                $editor = $wysiwyg->display('description', $K2User->description, '100%', '250px', '', '', false);
+            } else {
+                $editor = '<textarea id="description" class="k2-plain-text-editor" name="description"></textarea>';
+            }
             $view->assignRef('editor', $editor);
 
             $lists = array();
+            $genderOptions[] = JHTML::_('select.option', 'n', JText::_('K2_NOT_SPECIFIED'));
             $genderOptions[] = JHTML::_('select.option', 'm', JText::_('K2_MALE'));
             $genderOptions[] = JHTML::_('select.option', 'f', JText::_('K2_FEMALE'));
             $lists['gender'] = JHTML::_('select.radiolist', $genderOptions, 'gender', '', 'value', 'text', $K2User->gender);
@@ -613,9 +565,9 @@ class plgSystemK2 extends JPlugin
             $model = K2Model::getInstance('Itemlist', 'K2Model');
             $K2User = $model->getUserProfile($user->id);
             if (!is_object($K2User)) {
-                $K2User = new Jobject;
+                $K2User = new stdClass;
                 $K2User->description = '';
-                $K2User->gender = 'm';
+                $K2User->gender = 'n';
                 $K2User->url = '';
                 $K2User->image = null;
             }
@@ -627,11 +579,17 @@ class plgSystemK2 extends JPlugin
                     'plugins'
                 ));
             }
-            $wysiwyg = JFactory::getEditor();
-            $editor = $wysiwyg->display('description', $K2User->description, '100%', '250px', '', '', false);
+
+            if ($params->get('K2ProfileEditor')) {
+                $wysiwyg = JFactory::getEditor();
+                $editor = $wysiwyg->display('description', $K2User->description, '100%', '250px', '', '', false);
+            } else {
+                $editor = '<textarea id="description" class="k2-plain-text-editor" name="description"></textarea>';
+            }
             $view->assignRef('editor', $editor);
 
             $lists = array();
+            $genderOptions[] = JHTML::_('select.option', 'n', JText::_('K2_NOT_SPECIFIED'));
             $genderOptions[] = JHTML::_('select.option', 'm', JText::_('K2_MALE'));
             $genderOptions[] = JHTML::_('select.option', 'f', JText::_('K2_FEMALE'));
             $lists['gender'] = JHTML::_('select.radiolist', $genderOptions, 'gender', '', 'value', 'text', $K2User->gender);
@@ -645,6 +603,7 @@ class plgSystemK2 extends JPlugin
             $view->assignRef('K2Plugins', $K2Plugins);
 
             $view->assignRef('K2User', $K2User);
+            $view->assignRef('K2Params', $params);
 
             // Asssign some variables depending on Joomla version
             $nameFieldName = K2_JVERSION != '15' ? 'jform[name]' : 'name';
@@ -684,26 +643,60 @@ class plgSystemK2 extends JPlugin
     {
         $app = JFactory::getApplication();
 
-
         if ($app->isSite()) {
-            $params = JComponentHelper::getParams('com_k2');
             $config = JFactory::getConfig();
-
+            $document = JFactory::getDocument();
+            $user = JFactory::getUser();
+            $params = JComponentHelper::getParams('com_k2');
             $response = JResponse::getBody();
 
-            // Set caching HTTP headers
+            // Use proper headers for JSON/JSONP
+            if (JRequest::getCmd('format') == 'json') {
+                if (K2_JVERSION == '15') {
+                    $document->setMimeEncoding('application/json');
+                    $document->setType('json');
+                }
+
+                if (JRequest::getCmd('callback')) {
+                    $document->setMimeEncoding('application/javascript');
+                }
+            }
+
+            // Check caching state in Joomla
+            $cacheTime = 0;
             if (K2_JVERSION == '15') {
                 $caching = $config->getValue('config.caching');
+                $cacheTime = $config->getValue('config.cachetime');
             } else {
                 $caching = $config->get('caching');
+                $cacheTime = $config->get('cachetime');
             }
+            $cacheTTL = $cacheTime * 60;
+
+            // Set caching HTTP headers
+            if ($user->guest) {
+                if ($caching) {
+                    JResponse::allowCache(true);
+                    JResponse::setHeader('Cache-Control', 'public, max-age='.$cacheTTL.', stale-while-revalidate='.($cacheTTL*2).', stale-if-error='.($cacheTTL*5), true);
+                    JResponse::setHeader('Expires', gmdate('D, d M Y H:i:s', time()+$cacheTTL).' GMT', true);
+                    JResponse::setHeader('Pragma', 'public', true);
+                }
+                JResponse::setHeader('X-Logged-In', 'False', true);
+            } else {
+                JResponse::setHeader('X-Logged-In', 'True', true);
+            }
+            JResponse::setHeader('X-Content-Powered-By', 'K2 v'.K2_CURRENT_VERSION.' (by JoomlaWorks)', true);
+
+            // Set additional caching HTTP headers defined as custom script tag in the <head>
             if ($caching) {
                 preg_match("#<script type=\"application/x\-k2\-headers\">(.*?)</script>#is", $response, $getK2CacheHeaders);
-                $getK2CacheHeaders = json_decode(trim($getK2CacheHeaders[1]));
-                if (is_object($getK2CacheHeaders)) {
-                    JResponse::allowCache(true);
-                    foreach ($getK2CacheHeaders as $type => $value) {
-                        JResponse::setHeader($type, $value, true);
+                if (is_array($getK2CacheHeaders) && !empty($getK2CacheHeaders[1])) {
+                    $getK2CacheHeaders = json_decode(trim($getK2CacheHeaders[1]));
+                    if (is_object($getK2CacheHeaders)) {
+                        JResponse::allowCache(true);
+                        foreach ($getK2CacheHeaders as $type => $value) {
+                            JResponse::setHeader($type, $value, true);
+                        }
                     }
                 }
             }

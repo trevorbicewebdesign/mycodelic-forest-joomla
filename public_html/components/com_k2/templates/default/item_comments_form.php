@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -39,9 +39,6 @@ defined('_JEXEC') or die;
     <input class="inputbox" type="text" name="commentURL" id="commentURL" value="<?php echo JText::_('K2_ENTER_YOUR_SITE_URL'); ?>" onblur="if(this.value=='') this.value='<?php echo JText::_('K2_ENTER_YOUR_SITE_URL'); ?>';" onfocus="if(this.value=='<?php echo JText::_('K2_ENTER_YOUR_SITE_URL'); ?>') this.value='';" />
 
     <?php if($this->params->get('recaptcha') && ($this->user->guest || $this->params->get('recaptchaForRegistered', 1))): ?>
-    <?php if(!$this->params->get('recaptchaV2')): ?>
-    <label class="formRecaptcha"><?php echo JText::_('K2_ENTER_THE_TWO_WORDS_YOU_SEE_BELOW'); ?></label>
-    <?php endif; ?>
     <div id="recaptcha" class="<?php echo $this->recaptchaClass; ?>"></div>
     <?php endif; ?>
 

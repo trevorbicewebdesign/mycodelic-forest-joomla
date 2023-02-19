@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -137,14 +137,6 @@ defined('_JEXEC') or die;
             <a data-k2-modal="iframe" target="_blank" href="https://www.joomlaworks.net/forum/k2">
                 <i class="dashicon help"></i>
                 <span><?php echo JText::_('K2_COMMUNITY'); ?></span>
-            </a>
-        </div>
-    </div>
-    <div class="icon-wrapper">
-        <div class="icon">
-            <a data-k2-modal="iframe" href="https://joomlareader.com/" title="<?php echo JText::_('K2_JOOMLA_NEWS_FROM_AROUND_THE_WORLD'); ?>">
-                <i class="dashicon joomlareader"></i>
-                <span><?php echo JText::_('K2_JOOMLAREADER'); ?></span>
             </a>
         </div>
     </div>

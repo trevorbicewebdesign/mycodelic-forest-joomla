@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -23,10 +23,6 @@ if ($params->get('k2Sef')) {
 
         // Get the menu
         $menu = JFactory::getApplication()->getMenu();
-
-        // Load the itemlist model
-        require_once(JPATH_SITE.'/components/com_k2/models/itemlist.php');
-        $itemlistModel = new K2ModelItemlist;
 
         // Detect the active menu item
         if (empty($query['Itemid'])) {
@@ -95,11 +91,6 @@ if ($params->get('k2Sef')) {
         if (isset($query['day'])) {
             $segments[] = $query['day'];
             unset($query['day']);
-        }
-
-        if (isset($query['task'])) {
-            $segments[] = $query['task'];
-            unset($query['task']);
         }
 
         // Item view
@@ -289,6 +280,7 @@ if ($params->get('k2Sef')) {
             }
             // Category path, without a prefix
             elseif (
+                isset(getCategoryProps($segments[0])->alias) &&
                 $segments[0] == getCategoryProps($segments[0])->alias &&
                 str_replace(':', '-', array_reverse($segments)[0]) != @getItemProps(str_replace(':', '-', array_reverse($segments)[0]))->alias
             ) {

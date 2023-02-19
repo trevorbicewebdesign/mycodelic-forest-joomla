@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -312,7 +312,7 @@ class K2ModelExtraFields extends K2Model
     public function removeGroups()
     {
         $app = JFactory::getApplication();
-        $db = &JFactory::getDbo();
+        $db = JFactory::getDbo();
         $cid = JRequest::getVar('cid');
         JArrayHelper::toInteger($cid);
         foreach ($cid as $id) {
@@ -323,7 +323,7 @@ class K2ModelExtraFields extends K2Model
             $db->query();
             $row->delete($id);
         }
-        $cache = &JFactory::getCache('com_k2');
+        $cache = JFactory::getCache('com_k2');
         $cache->clean();
         $app->enqueueMessage(JText::_('K2_DELETE_COMPLETED'));
         $app->redirect('index.php?option=com_k2&view=extrafieldsgroups');

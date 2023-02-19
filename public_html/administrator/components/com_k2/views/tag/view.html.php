@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -40,6 +40,22 @@ class K2ViewTag extends K2View
         $saveNewIcon = version_compare(JVERSION, '2.5.0', 'ge') ? 'save-new.png' : 'save.png';
         JToolBarHelper::custom('saveAndNew', $saveNewIcon, 'save_f2.png', 'K2_SAVE_AND_NEW', false);
         JToolBarHelper::cancel();
+
+        // JS
+        $document = JFactory::getDocument();
+        $document->addScriptDeclaration("
+            Joomla.submitbutton = function(pressbutton) {
+                if (pressbutton == 'cancel') {
+                    submitform(pressbutton);
+                    return;
+                }
+                if (\$K2.trim(\$K2('#name').val())=='') {
+                    alert('".JText::_('K2_TAG_CANNOT_BE_EMPTY', true)."');
+                } else {
+                    submitform(pressbutton);
+                }
+            };
+        ");
 
         parent::display($tpl);
     }

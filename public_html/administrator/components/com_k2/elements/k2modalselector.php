@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -42,11 +42,7 @@ class K2ElementK2modalselector extends K2Element
                 $scope = 'items';
             }
             if ($scope == 'items' || $scope == 'categories' || $scope == 'users' || $scope == 'tags') {
-                if (defined('K2_PLUGIN_API')) {
-                    $fieldName = 'plugins['.$control_name.'['.$name.']][]';
-                } else {
-                    $fieldName = $control_name.'['.$name.'][]';
-                }
+                $fieldName = $control_name.'['.$name.'][]';
             } else {
                 $fieldName = $control_name.'['.$name.']';
             }

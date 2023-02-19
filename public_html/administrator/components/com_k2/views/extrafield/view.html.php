@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -45,15 +45,15 @@ class K2ViewExtraField extends K2View
             ];
             Joomla.submitbutton = function(pressbutton) {
                 if (pressbutton == "cancel") {
-                    submitform( pressbutton );
+                    submitform(pressbutton);
                     return;
                 }
                 if ($K2.trim($K2("#group").val()) == "") {
-                    alert( "'.JText::_('K2_PLEASE_SELECT_A_GROUP_OR_CREATE_A_NEW_ONE', true).'" );
+                    alert("'.JText::_('K2_PLEASE_SELECT_A_GROUP_OR_CREATE_A_NEW_ONE', true).'");
                 } else if ($K2.trim($K2("#name").val()) == "") {
-                    alert( "'.JText::_('K2_NAME_CANNOT_BE_EMPTY', true).'" );
+                    alert("'.JText::_('K2_NAME_CANNOT_BE_EMPTY', true).'");
                 } else if ($K2("#type").val() == "0") {
-                    alert( "'.JText::_('K2_PLEASE_SELECT_THE_TYPE_OF_THE_EXTRA_FIELD', true).'" );
+                    alert("'.JText::_('K2_PLEASE_SELECT_THE_TYPE_OF_THE_EXTRA_FIELD', true).'");
                 } else {
                     submitform(pressbutton);
                 }

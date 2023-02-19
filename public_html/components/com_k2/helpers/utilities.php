@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -51,7 +51,12 @@ class K2HelperUtilities
                     $avatar = JURI::root(true).'/'.$avatarPath;
                 }
             } else {
-                $avatar = JURI::root(true).'/media/k2/users/'.$avatar;
+                $avatarTimestamp = '';
+                $avatarFile = JPATH_SITE.'/media/k2/users/'.$avatar;
+                if (file_exists($avatarFile) && filemtime($avatarFile)) {
+                    $avatarTimestamp = '?t='.date("Ymd_Hi", filemtime($avatarFile));
+                }
+                $avatar = JURI::root(true).'/media/k2/users/'.$avatar.$avatarTimestamp;
             }
         }
 
@@ -127,13 +132,13 @@ class K2HelperUtilities
     // Cleanup HTML entities
     public static function cleanHtml($text)
     {
-        return htmlentities($text, ENT_QUOTES, 'UTF-8');
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
     }
 
     // Gender
     public static function writtenBy($gender)
     {
-        if (is_null($gender)) {
+        if (empty($gender) || $gender == 'n') {
             return JText::_('K2_WRITTEN_BY');
         }
         if ($gender == 'm') {

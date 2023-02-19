@@ -1,9 +1,9 @@
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 var $K2 = jQuery.noConflict();
@@ -1227,7 +1227,10 @@ function initExtraFieldsEditor() {
             }).panelInstance(id);
             // Properly resize nicEdit
             $K2('.nicEdit-panelContain').parent().css('width', 'calc(90% + 12px)');
-            $K2('.nicEdit-panelContain').parent().next().css({'width': 'calc(90% + 12px)', 'min-height': '200px'});
+            $K2('.nicEdit-panelContain').parent().next().css({
+                'width': 'calc(90% + 12px)',
+                'min-height': '200px'
+            });
             $K2('.nicEdit-main').css('width', 'calc(90% + 12px)');
         }
     });

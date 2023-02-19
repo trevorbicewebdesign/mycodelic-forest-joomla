@@ -2,12 +2,12 @@
 <extension type="component" version="2.5" method="upgrade">
     <name>COM_K2</name>
     <author>JoomlaWorks</author>
-    <creationDate>April 27th, 2020</creationDate>
-    <copyright>Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.</copyright>
+    <creationDate>January 12th, 2023</creationDate>
+    <copyright>Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.</copyright>
     <authorEmail>please-use-the-contact-form@joomlaworks.net</authorEmail>
-    <authorUrl>www.joomlaworks.net</authorUrl>
-    <version>2.10.3</version>
-    <license>https://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+    <authorUrl>https://www.joomlaworks.net</authorUrl>
+    <version>2.11.20230112</version>
+    <license>https://gnu.org/licenses/gpl.html</license>
     <description>Thank you for installing K2 by JoomlaWorks, the powerful content extension for Joomla</description>
     <installfile>install.k2.php</installfile>
     <uninstallfile>uninstall.k2.php</uninstallfile>
@@ -176,6 +176,7 @@
                 <field name="itemImageXL" default="900" />
                 <field name="itemImageXS" default="100" />
                 <field name="jQueryHandling" default="1.9.1" />
+                <field name="K2ProfileEditor" default="0" />
                 <field name="k2Sef" default="0" />
                 <field name="k2SefCatIdTitleAliasSep" default="dash" />
                 <field name="k2SefInsertCatId" default="0" />
@@ -203,7 +204,7 @@
                 <field name="profilePageDisplay" default="" />
                 <field name="recaptcha_private_key" default="" />
                 <field name="recaptcha_public_key" default="" />
-                <field name="recaptcha_theme" default="clean" />
+                <field name="recaptcha_theme" default="light" />
                 <field name="recaptcha" default="0" />
                 <field name="recaptchaForRegistered" default="1" />
                 <field name="recaptchaOnRegistration" default="0" />
@@ -238,7 +239,8 @@
                 <field name="tagItemTitleLinked" default="1" />
                 <field name="tagName" default="1" />
                 <field name="tagOrdering" default="" />
-                <field name="twitterImage" default="Medium" />
+                <field name="twitterCardType" default="summary" />
+                <field name="twitterImage" default="Large" />
                 <field name="twitterMetatags" default="1" />
                 <field name="twitterUsername" default="" />
                 <field name="userDescription" default="1" />

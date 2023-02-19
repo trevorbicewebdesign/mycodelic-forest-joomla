@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -80,9 +80,9 @@ $context = JRequest::getCmd('context');
                             <?php if($context == "modalselector"): ?>
                             <?php
                             if(JRequest::getCmd('output') == 'list'){
-                                $onClick = 'window.parent.k2ModalSelector(\''.urlencode($row->name).'\', \''.str_replace(array("'", "\""), array("\\'", ""), $row->name).'\', \''.JRequest::getCmd('fid').'\', \''.JRequest::getVar('fname').'\', \''.JRequest::getCmd('output').'\'); return false;';
+                                $onClick = 'window.parent.k2ModalSelector(\''.$row->name.'\', \''.str_replace(array("'", "\""), array("\\'", ""), $row->name).'\', \''.JRequest::getCmd('fid').'\', \''.JRequest::getVar('fname').'\', \''.JRequest::getCmd('output').'\'); return false;';
                             } else {
-                                $onClick = 'window.parent.k2ModalSelector(\''.urlencode($row->name).'\', \''.str_replace(array("'", "\""), array("\\'", ""), $row->name).'\', \''.JRequest::getCmd('fid').'\', \''.JRequest::getVar('fname').'\'); return false;';
+                                $onClick = 'window.parent.k2ModalSelector(\''.$row->name.'\', \''.str_replace(array("'", "\""), array("\\'", ""), $row->name).'\', \''.JRequest::getCmd('fid').'\', \''.JRequest::getVar('fname').'\'); return false;';
                             }
                             ?>
                             <a class="k2ListItemDisabled" title="<?php echo JText::_('K2_CLICK_TO_ADD_THIS_ENTRY'); ?>" href="#" onclick="<?php echo $onClick; ?>"><?php echo $row->name; ?></a>

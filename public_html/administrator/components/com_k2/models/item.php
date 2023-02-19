@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -58,13 +58,17 @@ class K2ModelItem extends K2Model
 
         $isNew = ($row->id) ? false : true;
 
-        // If we are in the frontend and the item is not new, we need to get it's current published state
-        if (!$isNew && $front) {
+        // If the item is not new, retrieve its saved data
+        $savedRow = new stdClass();
+        if (!$isNew) {
             $id = JRequest::getInt('id');
-            $currentRow = JTable::getInstance('K2Item', 'Table');
-            $currentRow->load($id);
-            $published = $currentRow->published;
-            $featured = $currentRow->featured;
+            $savedRow = JTable::getInstance('K2Item', 'Table');
+            $savedRow->load($id);
+            // Frontend only
+            if ($front) {
+                $published = $savedRow->published;
+                $featured = $savedRow->featured;
+            }
         }
 
         if ($params->get('mergeEditors')) {
@@ -93,17 +97,17 @@ class K2ModelItem extends K2Model
 
         if ($row->id) {
             $datenow = JFactory::getDate();
-            $row->modified = K2_JVERSION == '15' ? $datenow->toMySQL() : $datenow->toSql();
+            $row->modified = (K2_JVERSION == '15') ? $datenow->toMySQL() : $datenow->toSql();
             $row->modified_by = $user->get('id');
         } else {
-            $row->ordering = $row->getNextOrder("catid = ".(int)$row->catid." AND trash = 0");
+            $row->ordering = $row->getNextOrder("catid = ".(int) $row->catid." AND trash = 0");
             if ($row->featured) {
                 $row->featured_ordering = $row->getNextOrder("featured = 1 AND trash = 0", 'featured_ordering');
             }
         }
 
+        // Author
         $row->created_by = ($row->created_by) ? $row->created_by : $user->get('id');
-
         if ($front) {
             $K2Permissions = K2Permissions::getInstance();
             if (!$K2Permissions->permissions->get('editAll')) {
@@ -118,7 +122,7 @@ class K2ModelItem extends K2Model
         $config = JFactory::getConfig();
         $tzoffset = K2_JVERSION == '30' ? $config->get('offset') : $config->getValue('config.offset');
         $date = JFactory::getDate($row->created, $tzoffset);
-        $row->created = K2_JVERSION == '15' ? $date->toMySQL() : $date->toSql();
+        $row->created = (K2_JVERSION == '15') ? $date->toMySQL() : $date->toSql();
 
         if (strlen(trim($row->publish_up)) <= 10) {
             $row->publish_up .= ' 00:00:00';
@@ -134,7 +138,7 @@ class K2ModelItem extends K2Model
                 $row->publish_down .= ' 00:00:00';
             }
             $date = JFactory::getDate($row->publish_down, $tzoffset);
-            $row->publish_down = K2_JVERSION == '15' ? $date->toMySQL() : $date->toSql();
+            $row->publish_down = (K2_JVERSION == '15') ? $date->toMySQL() : $date->toSql();
         }
 
         $metadata = JRequest::getVar('meta', null, 'post', 'array');
@@ -169,27 +173,6 @@ class K2ModelItem extends K2Model
         $dispatcher->trigger('onContentBeforeSave', array('com_k2.item', $row, $isNew));
         $dispatcher->trigger('onFinderBeforeSave', array('com_k2.item', $row, $isNew));
 
-        // Try to save the video if there is no need to wait for item ID
-        if (!JRequest::getBool('del_video')) {
-            if (!isset($files['video'])) {
-                if (JRequest::getVar('remoteVideo')) {
-                    $fileurl = JRequest::getVar('remoteVideo');
-                    $filetype = JFile::getExt($fileurl);
-                    $row->video = '{'.$filetype.'remote}'.$fileurl.'{/'.$filetype.'remote}';
-                }
-
-                if (JRequest::getVar('videoID')) {
-                    $provider = JRequest::getWord('videoProvider');
-                    $videoID = JRequest::getVar('videoID');
-                    $row->video = '{'.$provider.'}'.$videoID.'{/'.$provider.'}';
-                }
-
-                if (JRequest::getVar('embedVideo', '', 'post', 'string', JREQUEST_ALLOWRAW)) {
-                    $row->video = JRequest::getVar('embedVideo', '', 'post', 'string', JREQUEST_ALLOWRAW);
-                }
-            }
-        }
-
         // JoomFish front-end editing compatibility
         if ($app->isSite() && JFile::exists(JPATH_ADMINISTRATOR.'/components/com_joomfish/joomfish.php')) {
             if (version_compare(phpversion(), '5.0') < 0) {
@@ -212,18 +195,77 @@ class K2ModelItem extends K2Model
         }
 
         if (!$params->get('disableCompactOrdering')) {
-            $row->reorder("catid = ".(int)$row->catid." AND trash = 0");
+            $row->reorder("catid = ".(int) $row->catid." AND trash = 0");
         }
         if ($row->featured && !$params->get('disableCompactOrdering')) {
             $row->reorder("featured = 1 AND trash = 0", 'featured_ordering');
         }
+
+        // Tags
+        if ($params->get('taggingSystem') === '0' || $params->get('taggingSystem') === '1') {
+            // B/C - Convert old options
+            $whichTaggingSystem = ($params->get('taggingSystem')) ? 'free' : 'selection';
+            $params->set('taggingSystem', $whichTaggingSystem);
+        }
+        if ($user->gid < 24 && $params->get('lockTags')) {
+            $params->set('taggingSystem', 'selection');
+        }
+        $db->setQuery("DELETE FROM #__k2_tags_xref WHERE itemID=".(int) $row->id);
+        $db->query();
+
+        if ($params->get('taggingSystem') == 'free') {
+            if ($user->gid < 24 && $params->get('lockTags')) {
+                JError::raiseError(403, JText::_('K2_ALERTNOTAUTH'));
+            }
+
+            $tags = JRequest::getVar('tags', null, 'POST', 'array');
+            if (is_array($tags) && count($tags)) {
+                $tags = array_unique($tags);
+                foreach ($tags as $tag) {
+                    $tag = JString::trim($tag);
+                    if ($tag) {
+                        $tagID = false;
+                        $K2Tag = JTable::getInstance('K2Tag', 'Table');
+                        $K2Tag->name = $tag;
+                        // Tag has been filtered and does not exist
+                        if ($K2Tag->check()) {
+                            $K2Tag->published = 1;
+                            if ($K2Tag->store()) {
+                                $tagID = $K2Tag->id;
+                            }
+                        }
+                        // Tag has been filtered and it exists so try to find its ID
+                        elseif ($K2Tag->name) {
+                            $db->setQuery("SELECT id FROM #__k2_tags WHERE name=".$db->Quote($K2Tag->name));
+                            $tagID = $db->loadResult();
+                        }
+                        if ($tagID) {
+                            $db->setQuery("INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, ".(int) $tagID.", ".(int) $row->id.")");
+                            $db->query();
+                        }
+                    }
+                }
+            }
+        } else {
+            $tags = JRequest::getVar('selectedTags', null, 'POST', 'array');
+            if (is_array($tags) && count($tags)) {
+                foreach ($tags as $tagID) {
+                    $db->setQuery("INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, ".(int) $tagID.", ".(int) $row->id.")");
+                    $db->query();
+                }
+            }
+        }
+
+        // File Uploads
         $files = JRequest::get('files');
 
         // Image
-        if ((int)$params->get('imageMemoryLimit')) {
-            ini_set('memory_limit', (int)$params->get('imageMemoryLimit').'M');
+        if ((int) $params->get('imageMemoryLimit')) {
+            ini_set('memory_limit', (int) $params->get('imageMemoryLimit').'M');
         }
+
         $existingImage = JRequest::getVar('existingImage');
+
         if (($files['image']['error'] == 0 || $existingImage) && !JRequest::getBool('del_image')) {
             if ($files['image']['error'] == 0) {
                 $image = $files['image'];
@@ -243,8 +285,7 @@ class K2ModelItem extends K2Model
 
                 if ($cparams->get('inheritFrom')) {
                     $masterCategoryID = $cparams->get('inheritFrom');
-                    $query = "SELECT * FROM #__k2_categories WHERE id=".(int)$masterCategoryID;
-                    $db->setQuery($query, 0, 1);
+                    $db->setQuery("SELECT * FROM #__k2_categories WHERE id=".(int) $masterCategoryID, 0, 1);
                     $masterCategory = $db->loadObject();
                     $cparams = class_exists('JParameter') ? new JParameter($masterCategory->params) : new JRegistry($masterCategory->params);
                 }
@@ -258,7 +299,7 @@ class K2ModelItem extends K2Model
                 $handle->file_auto_rename = false;
                 $handle->file_overwrite = true;
                 $handle->file_new_name_body = md5("Image".$row->id);
-                $handle->Process($savepath);
+                $handle->process($savepath);
 
                 $filename = $handle->file_dst_name_body;
                 $savepath = JPATH_SITE.'/media/k2/items/cache';
@@ -277,7 +318,7 @@ class K2ModelItem extends K2Model
                     $imageWidth = $params->get('itemImageXL', '800');
                 }
                 $handle->image_x = $imageWidth;
-                $handle->Process($savepath);
+                $handle->process($savepath);
 
                 // Large image
                 $handle->image_resize = true;
@@ -293,7 +334,7 @@ class K2ModelItem extends K2Model
                     $imageWidth = $params->get('itemImageL', '600');
                 }
                 $handle->image_x = $imageWidth;
-                $handle->Process($savepath);
+                $handle->process($savepath);
 
                 // Medium image
                 $handle->image_resize = true;
@@ -309,7 +350,7 @@ class K2ModelItem extends K2Model
                     $imageWidth = $params->get('itemImageM', '400');
                 }
                 $handle->image_x = $imageWidth;
-                $handle->Process($savepath);
+                $handle->process($savepath);
 
                 // Small image
                 $handle->image_resize = true;
@@ -325,7 +366,7 @@ class K2ModelItem extends K2Model
                     $imageWidth = $params->get('itemImageS', '200');
                 }
                 $handle->image_x = $imageWidth;
-                $handle->Process($savepath);
+                $handle->process($savepath);
 
                 // XSmall image
                 $handle->image_resize = true;
@@ -341,7 +382,7 @@ class K2ModelItem extends K2Model
                     $imageWidth = $params->get('itemImageXS', '100');
                 }
                 $handle->image_x = $imageWidth;
-                $handle->Process($savepath);
+                $handle->process($savepath);
 
                 // Generic image
                 $handle->image_resize = true;
@@ -353,10 +394,10 @@ class K2ModelItem extends K2Model
                 $handle->file_new_name_body = $filename.'_Generic';
                 $imageWidth = $params->get('itemImageGeneric', '300');
                 $handle->image_x = $imageWidth;
-                $handle->Process($savepath);
+                $handle->process($savepath);
 
                 if ($files['image']['error'] == 0) {
-                    $handle->Clean();
+                    $handle->clean();
                 }
             } else {
                 $app->enqueueMessage(JText::_('K2_IMAGE_WAS_NOT_UPLOADED'), 'notice');
@@ -364,9 +405,7 @@ class K2ModelItem extends K2Model
         }
 
         if (JRequest::getBool('del_image')) {
-            $current = JTable::getInstance('K2Item', 'Table');
-            $current->load($row->id);
-            $filename = md5("Image".$current->id);
+            $filename = md5("Image".$savedRow->id);
 
             if (JFile::exists(JPATH_ROOT.'/media/k2/items/src/'.$filename.'.jpg')) {
                 JFile::delete(JPATH_ROOT.'/media/k2/items/src/'.$filename.'.jpg');
@@ -400,65 +439,11 @@ class K2ModelItem extends K2Model
             $row->image_credits = '';
         }
 
-        // Attachments
-        $path = $params->get('attachmentsFolder', null);
-        if (is_null($path)) {
-            $savepath = JPATH_ROOT.'/media/k2/attachments';
-        } else {
-            $savepath = $path;
-        }
-
-        $attPost = JRequest::getVar('attachment', null, 'POST', 'array');
-        $attFiles = JRequest::getVar('attachment', null, 'FILES', 'array');
-
-        if (is_array($attPost) && count($attPost)) {
-            foreach ($attPost as $key => $attachment) { /* Use the POST array's key as reference */
-                if (!empty($attachment['existing'])) {
-                    $src = JPATH_SITE.'/'.JPath::clean($attachment['existing']);
-                    $filename = basename($src);
-                    $dest = $savepath.'/'.$filename;
-                    if (JFile::exists($dest)) {
-                        $existingFileName = JFile::getName($dest);
-                        $ext = JFile::getExt($existingFileName);
-                        $basename = JFile::stripExt($existingFileName);
-                        $newFilename = $basename.'_'.time().'.'.$ext;
-                        $filename = $newFilename;
-                        $dest = $savepath.'/'.$newFilename;
-                    }
-                    JFile::copy($src, $dest);
-                    $attachmentToSave = JTable::getInstance('K2Attachment', 'Table');
-                    $attachmentToSave->itemID = $row->id;
-                    $attachmentToSave->filename = $filename;
-                    $attachmentToSave->title = (empty($attachment['title'])) ? $filename : $attachment['title'];
-                    $attachmentToSave->titleAttribute = (empty($attachment['title_attribute'])) ? $filename : $attachment['title_attribute'];
-                    $attachmentToSave->store();
-                } else {
-                    $handle = new Upload($attFiles['tmp_name'][$key]['upload']);
-                    $filename = $attFiles['name'][$key]['upload'];
-                    if ($handle->uploaded) {
-                        $handle->file_new_name_body = JFile::stripExt($filename);
-                        $handle->file_auto_rename = true;
-                        $handle->file_safe_name = true;
-                        $handle->allowed[] = 'application/x-zip';
-                        $handle->allowed[] = 'application/download';
-                        $handle->Process($savepath);
-                        $dstName = $handle->file_dst_name;
-                        $handle->Clean();
-                        $attachmentToSave = JTable::getInstance('K2Attachment', 'Table');
-                        $attachmentToSave->itemID = $row->id;
-                        $attachmentToSave->filename = $dstName;
-                        $attachmentToSave->title = (empty($attachment['title'])) ? $filename : $attachment['title'];
-                        $attachmentToSave->titleAttribute = (empty($attachment['title_attribute'])) ? $filename : $attachment['title_attribute'];
-                        $attachmentToSave->store();
-                    } else {
-                        $app->enqueueMessage($handle->error, 'error');
-                        $app->redirect('index.php?option=com_k2&view=items');
-                    }
-                }
-            }
-        }
-
         // Gallery
+        if (empty($savedRow->gallery)) {
+            $row->gallery = '';
+        }
+
         $flickrGallery = JRequest::getVar('flickrGallery');
         if ($flickrGallery) {
             $row->gallery = '{gallery}'.$flickrGallery.'{/gallery}';
@@ -469,26 +454,23 @@ class K2ModelItem extends K2Model
             $handle->file_auto_rename = true;
             $savepath = JPATH_ROOT.'/media/k2/galleries';
             $handle->allowed = array(
-                "application/download",
-                "application/rar",
-                "application/x-rar-compressed",
-                "application/arj",
                 "application/gnutar",
+                "application/gzip",
                 "application/x-bzip",
                 "application/x-bzip2",
                 "application/x-compressed",
+                "application/x-gtar",
                 "application/x-gzip",
+                "application/x-tar",
                 "application/x-zip-compressed",
                 "application/zip",
-                "multipart/x-zip",
                 "multipart/x-gzip",
-                "application/x-unknown",
-                "application/x-zip"
+                "multipart/x-zip",
             );
 
             if ($handle->uploaded) {
-                $handle->Process($savepath);
-                $handle->Clean();
+                $handle->process($savepath);
+                $handle->clean();
 
                 if (JFolder::exists($savepath.'/'.$row->id)) {
                     JFolder::delete($savepath.'/'.$row->id);
@@ -511,7 +493,7 @@ class K2ModelItem extends K2Model
                     $row->gallery = '{gallery}'.$row->id.'{/gallery}';
                 }
                 JFile::delete($savepath.'/'.$handle->file_dst_name);
-                $handle->Clean();
+                $handle->clean();
             } else {
                 $app->enqueueMessage($handle->error, 'error');
                 $app->redirect('index.php?option=com_k2&view=items');
@@ -519,62 +501,85 @@ class K2ModelItem extends K2Model
         }
 
         if (JRequest::getBool('del_gallery')) {
-            $current = JTable::getInstance('K2Item', 'Table');
-            $current->load($row->id);
-
-            if (JFolder::exists(JPATH_ROOT.'/media/k2/galleries/'.$current->id)) {
-                JFolder::delete(JPATH_ROOT.'/media/k2/galleries/'.$current->id);
+            if (JFolder::exists(JPATH_ROOT.'/media/k2/galleries/'.$savedRow->id)) {
+                JFolder::delete(JPATH_ROOT.'/media/k2/galleries/'.$savedRow->id);
             }
             $row->gallery = '';
         }
 
-        // Media
-        if (!JRequest::getBool('del_video')) {
-            if (isset($files['video']) && $files['video']['error'] == 0) {
-                $filetype = JFile::getExt($files['video']['name']);
+        // === Media ===
 
-                $videoExtensions = array(
-                    "avi",
-                    "m4v",
-                    "mkv",
-                    "mp4",
-                    "ogv",
-                    "webm"
-                );
-                $audioExtensions = array(
-                    "flac",
-                    "m4a",
-                    "mp3",
-                    "oga",
-                    "ogg",
-                    "wav"
-                );
-                $validExtensions = array_merge($videoExtensions, $audioExtensions);
+        // Allowed filetypes for uploading
+        $videoExtensions = array(
+            "avi",
+            "m4v",
+            "mkv",
+            "mp4",
+            "ogv",
+            "webm"
+        );
+        $audioExtensions = array(
+            "flac",
+            "m4a",
+            "mp3",
+            "oga",
+            "ogg",
+            "wav"
+        );
+        $validExtensions = array_merge($videoExtensions, $audioExtensions);
 
-                if (!in_array($filetype, $validExtensions)) {
-                    $app->enqueueMessage(JText::_('K2_INVALID_VIDEO_FILE'), 'error');
-                    $app->redirect('index.php?option=com_k2&view=items');
-                }
+        // No stored media & form fields empty for media
+        if (empty($savedRow->video) && !JRequest::getVar('embedVideo') && !JRequest::getVar('videoID') && !JRequest::getVar('remoteVideo') && !JRequest::getVar('uploadedVideo')) {
+            $row->video = '';
+        }
 
-                if (in_array($filetype, $videoExtensions)) {
-                    $savepath = JPATH_ROOT.'/media/k2/videos';
-                } else {
-                    $savepath = JPATH_ROOT.'/media/k2/audio';
-                }
+        // There is stored media
+        if (!empty($savedRow->video)) {
+            $row->video = $savedRow->video;
+        }
 
-                $filename = JFile::stripExt($files['video']['name']);
+        // Embed
+        if (JRequest::getVar('embedVideo', '', 'post', 'string', JREQUEST_ALLOWRAW)) {
+            $row->video = JRequest::getVar('embedVideo', '', 'post', 'string', JREQUEST_ALLOWRAW);
+        }
 
-                JFile::upload($files['video']['tmp_name'], $savepath.'/'.$row->id.'.'.$filetype);
+        // Third-party Media Service
+        if (JRequest::getVar('videoID')) {
+            $provider = JRequest::getWord('videoProvider');
+            $videoID = JRequest::getVar('videoID');
+            $row->video = '{'.$provider.'}'.$videoID.'{/'.$provider.'}';
+        }
 
-                $filetype = JFile::getExt($files['video']['name']);
+        // Browse server or remote media
+        if (JRequest::getVar('remoteVideo')) {
+            $fileurl = JRequest::getVar('remoteVideo');
+            $filetype = JFile::getExt($fileurl);
+            $allVideosTagSuffix = 'remote';
+            $row->video = '{'.$filetype.$allVideosTagSuffix.'}'.$fileurl.'{/'.$filetype.$allVideosTagSuffix.'}';
+        }
 
-                $row->video = '{'.$filetype.'}'.$row->id.'{/'.$filetype.'}';
+        // Upload media
+        if (isset($files['video']) && $files['video']['error'] == 0 && !JRequest::getBool('del_video')) {
+            $filetype = JFile::getExt($files['video']['name']);
+            if (!in_array($filetype, $validExtensions)) {
+                $app->enqueueMessage(JText::_('K2_INVALID_VIDEO_FILE'), 'error');
+                $app->redirect('index.php?option=com_k2&view=items');
             }
-        } else {
-            $current = JTable::getInstance('K2Item', 'Table');
-            $current->load($row->id);
+            if (in_array($filetype, $videoExtensions)) {
+                $savepath = JPATH_ROOT.'/media/k2/videos';
+            } else {
+                $savepath = JPATH_ROOT.'/media/k2/audio';
+            }
+            $filename = JFile::stripExt($files['video']['name']);
+            JFile::upload($files['video']['tmp_name'], $savepath.'/'.$row->id.'.'.$filetype);
+            $filetype = JFile::getExt($files['video']['name']);
 
-            preg_match_all("#^{(.*?)}(.*?){#", $current->video, $matches, PREG_PATTERN_ORDER);
+            $row->video = '{'.$filetype.'}'.$row->id.'{/'.$filetype.'}';
+        }
+
+        // Delete media
+        if (JRequest::getBool('del_video')) {
+            preg_match_all("#^{(.*?)}(.*?){#", $savedRow->video, $matches, PREG_PATTERN_ORDER);
 
             $mediaType = $matches[1][0];
             $mediaFile = $matches[2][0];
@@ -592,23 +597,26 @@ class K2ModelItem extends K2Model
             }
 
             $row->video = '';
+        }
+
+        // Media Caption & Credits
+        if (!$row->video) {
             $row->video_caption = '';
             $row->video_credits = '';
         }
 
-        // Extra fields
+        // === Extra fields ===
         if ($params->get('showExtraFieldsTab') || $app->isAdmin()) {
             $objects = array();
             $variables = JRequest::get('post', 2);
             foreach ($variables as $key => $value) {
                 if (( bool )JString::stristr($key, 'K2ExtraField_')) {
-                    $object = new JObject;
-                    $object->set('id', JString::substr($key, 13));
+                    $object = new stdClass();
+                    $object->id = substr($key, 13);
                     if (is_string($value)) {
                         $value = trim($value);
                     }
-                    $object->set('value', $value);
-                    unset($object->_errors);
+                    $object->value = $value;
                     $objects[] = $object;
                 }
             }
@@ -616,8 +624,8 @@ class K2ModelItem extends K2Model
             $csvFiles = JRequest::get('files');
             foreach ($csvFiles as $key => $file) {
                 if ((bool) JString::stristr($key, 'K2ExtraField_')) {
-                    $object = new JObject;
-                    $object->set('id', JString::substr($key, 13));
+                    $object = new stdClass();
+                    $object->id = substr($key, 13);
                     $csvFile = $file['tmp_name'][0];
                     if (!empty($csvFile) && JFile::getExt($file['name'][0]) == 'csv') {
                         $handle = @fopen($csvFile, 'r');
@@ -626,14 +634,13 @@ class K2ModelItem extends K2Model
                             $csvData[] = $data;
                         }
                         fclose($handle);
-                        $object->set('value', $csvData);
+                        $object->value = $csvData;
                     } else {
-                        $object->set('value', json_decode(JRequest::getVar('K2CSV_'.$object->id)));
+                        $object->value = json_decode(JRequest::getVar('K2CSV_'.$object->id));
                         if (JRequest::getBool('K2ResetCSV_'.$object->id)) {
-                            $object->set('value', null);
+                            $object->value = null;
                         }
                     }
-                    unset($object->_errors);
                     $objects[] = $object;
                 }
             }
@@ -649,62 +656,68 @@ class K2ModelItem extends K2Model
             }
         }
 
-        // Tags
-        if ($params->get('taggingSystem') === '0' || $params->get('taggingSystem') === '1') {
-            // B/C - Convert old options
-            $whichTaggingSystem = ($params->get('taggingSystem')) ? 'free' : 'selection';
-            $params->set('taggingSystem', $whichTaggingSystem);
-        }
-        if ($user->gid < 24 && $params->get('lockTags')) {
-            $params->set('taggingSystem', 'selection');
-        }
-        $db = JFactory::getDbo();
-        $query = "DELETE FROM #__k2_tags_xref WHERE itemID={intval($row->id)}";
-        $db->setQuery($query);
-        $db->query();
-
-        if ($params->get('taggingSystem') == 'free') {
-            if ($user->gid < 24 && $params->get('lockTags')) {
-                JError::raiseError(403, JText::_('K2_ALERTNOTAUTH'));
-            }
-
-            $tags = JRequest::getVar('tags', null, 'POST', 'array');
-            if (is_array($tags) && count($tags)) {
-                $tags = array_unique($tags);
-                foreach ($tags as $tag) {
-                    $tag = JString::trim($tag);
-                    if ($tag) {
-                        $tagID = false;
-                        $K2Tag = JTable::getInstance('K2Tag', 'Table');
-                        $K2Tag->name = $tag;
-                        // Tag has been filtered and does not exist
-                        if ($K2Tag->check()) {
-                            $K2Tag->published = 1;
-                            if ($K2Tag->store()) {
-                                $tagID = $K2Tag->id;
-                            }
-                        }
-                        // Tag has been filtered and it exists so try to find its ID
-                        elseif ($K2Tag->name) {
-                            $query = "SELECT id FROM #__k2_tags WHERE name=".$db->Quote($K2Tag->name);
-                            $db->setQuery($query);
-                            $tagID = $db->loadResult();
-                        }
-                        if ($tagID) {
-                            $query = "INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, {intval($tagID)}, {intval($row->id)})";
-                            $db->setQuery($query);
-                            $db->query();
-                        }
-                    }
-                }
-            }
+        // Attachments
+        $path = $params->get('attachmentsFolder', null);
+        if (is_null($path)) {
+            $savepath = JPATH_ROOT.'/media/k2/attachments';
         } else {
-            $tags = JRequest::getVar('selectedTags', null, 'POST', 'array');
-            if (is_array($tags) && count($tags)) {
-                foreach ($tags as $tagID) {
-                    $query = "INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, {intval($tagID)}, {intval($row->id)})";
-                    $db->setQuery($query);
-                    $db->query();
+            $savepath = $path;
+        }
+
+        $attPost = JRequest::getVar('attachment', null, 'POST', 'array');
+        $attFiles = JRequest::getVar('attachment', null, 'FILES', 'array');
+
+        if (is_array($attPost) && count($attPost)) {
+            foreach ($attPost as $key => $attachment) { /* Use the POST array's key as reference */
+                if (!empty($attachment['existing'])) {
+                    $src = JPATH_SITE.'/'.JPath::clean($attachment['existing']);
+                    $filename = basename($src);
+                    $dest = $savepath.'/'.$filename;
+
+                    if (JFile::exists($dest)) {
+                        $existingFileName = JFile::getName($dest);
+                        $ext = JFile::getExt($existingFileName);
+                        $basename = JFile::stripExt($existingFileName);
+                        $newFilename = $basename.'_'.time().'.'.$ext;
+                        $filename = $newFilename;
+                        $dest = $savepath.'/'.$newFilename;
+                    }
+
+                    JFile::copy($src, $dest);
+
+                    $attachmentToSave = JTable::getInstance('K2Attachment', 'Table');
+                    $attachmentToSave->itemID = $row->id;
+                    $attachmentToSave->filename = $filename;
+                    $attachmentToSave->title = (empty($attachment['title'])) ? $filename : $attachment['title'];
+                    $attachmentToSave->titleAttribute = (empty($attachment['title_attribute'])) ? $filename : $attachment['title_attribute'];
+                    $attachmentToSave->store();
+                } else {
+                    $handle = new Upload($attFiles['tmp_name'][$key]['upload']);
+                    $filename = $attFiles['name'][$key]['upload'];
+                    if ($handle->uploaded) {
+                        $handle->file_auto_rename = true;
+                        $handle->file_new_name_body = JFile::stripExt($filename);
+                        $handle->file_new_name_ext = JFile::getExt($filename);
+                        $handle->file_safe_name = true;
+                        $handle->forbidden = array(
+                            "application/java-archive",
+                            "application/x-httpd-php",
+                            "application/x-sh",
+                        );
+                        $handle->process($savepath);
+                        $dstName = $handle->file_dst_name;
+                        $handle->clean();
+
+                        $attachmentToSave = JTable::getInstance('K2Attachment', 'Table');
+                        $attachmentToSave->itemID = $row->id;
+                        $attachmentToSave->filename = $dstName;
+                        $attachmentToSave->title = (empty($attachment['title'])) ? $filename : $attachment['title'];
+                        $attachmentToSave->titleAttribute = (empty($attachment['title_attribute'])) ? $filename : $attachment['title_attribute'];
+                        $attachmentToSave->store();
+                    } else {
+                        $app->enqueueMessage($handle->error, 'error');
+                        $app->redirect('index.php?option=com_k2&view=items');
+                    }
                 }
             }
         }
@@ -729,19 +742,17 @@ class K2ModelItem extends K2Model
             }
         }
 
-        $query = "UPDATE #__k2_items SET video_caption = ".$db->Quote($row->video_caption).", video_credits = ".$db->Quote($row->video_credits).", ";
-
-        if (!is_null($row->video)) {
-            $query .= " video = ".$db->Quote($row->video).", ";
-        }
-        if (!is_null($row->gallery)) {
-            $query .= " gallery = ".$db->Quote($row->gallery).", ";
-        }
-
+        $query = "UPDATE #__k2_items SET
+            image_caption = ".$db->Quote($row->image_caption).",
+            image_credits = ".$db->Quote($row->image_credits).",
+            video_caption = ".$db->Quote($row->video_caption).",
+            video_credits = ".$db->Quote($row->video_credits).",
+            video = ".$db->Quote($row->video).",
+            gallery = ".$db->Quote($row->gallery);
         if ($params->get('showExtraFieldsTab') || $app->isAdmin()) {
-            $query .= " extra_fields = ".$db->Quote($row->extra_fields).", extra_fields_search = ".$db->Quote($row->extra_fields_search).", ";
+            $query .= ", extra_fields = ".$db->Quote($row->extra_fields).", extra_fields_search = ".$db->Quote($row->extra_fields_search);
         }
-        $query .= " published = ".$db->Quote($row->published)." WHERE id = ".$row->id;
+        $query .= ", published = ".$db->Quote($row->published)." WHERE id = ".$row->id;
 
         $db->setQuery($query);
 
@@ -887,9 +898,6 @@ class K2ModelItem extends K2Model
         $file = $savepath.'/'.$attachment->filename;
 
         if (JFile::exists($file)) {
-            require_once(JPATH_SITE.'/media/k2/assets/vendors/verot/class.upload.php/src/class.upload.php');
-            $handle = new Upload($file);
-
             // Trigger K2 plugins
             $dispatcher->trigger('onK2AfterDownload', array(&$attachment, &$params));
 
@@ -900,13 +908,13 @@ class K2ModelItem extends K2Model
             $filename = basename($file);
             ob_end_clean();
             JResponse::clearHeaders();
-            JResponse::setHeader('Pragma', 'public', true);
-            JResponse::setHeader('Expires', '0', true);
             JResponse::setHeader('Cache-Control', 'must-revalidate, post-check=0, pre-check=0', true);
-            JResponse::setHeader('Content-Type', $handle->file_src_mime, true);
             JResponse::setHeader('Content-Disposition', 'attachment; filename="'.$filename.'";', true);
-            JResponse::setHeader('Content-Transfer-Encoding', 'binary', true);
             JResponse::setHeader('Content-Length', $len, true);
+            JResponse::setHeader('Content-Transfer-Encoding', 'binary', true);
+            JResponse::setHeader('Content-Type', 'application/octet-stream', true);
+            JResponse::setHeader('Expires', '0', true);
+            JResponse::setHeader('Pragma', 'public', true);
             JResponse::sendHeaders();
             readfile($file);
         } else {
@@ -918,8 +926,7 @@ class K2ModelItem extends K2Model
     public function getAttachments($itemID)
     {
         $db = JFactory::getDbo();
-        $query = "SELECT * FROM #__k2_attachments WHERE itemID=".(int)$itemID;
-        $db->setQuery($query);
+        $db->setQuery("SELECT * FROM #__k2_attachments WHERE itemID=".(int) $itemID);
         $rows = $db->loadObjectList();
         foreach ($rows as $row) {
             $hash = version_compare(JVERSION, '3.0', 'ge') ? JApplication::getHash($row->id) : JUtility::getHash($row->id);
@@ -941,8 +948,7 @@ class K2ModelItem extends K2Model
         $dispatcher = JDispatcher::getInstance();
 
         $db = JFactory::getDbo();
-        $query = "SELECT COUNT(*) FROM #__k2_attachments WHERE itemID={$itemID} AND id={$id}";
-        $db->setQuery($query);
+        $db->setQuery("SELECT COUNT(*) FROM #__k2_attachments WHERE itemID={$itemID} AND id={$id}");
         $result = $db->loadResult();
 
         if (!$result) {
@@ -976,7 +982,7 @@ class K2ModelItem extends K2Model
         $db = JFactory::getDbo();
         $query = "SELECT * FROM #__k2_tags as tags";
         if (!is_null($itemID)) {
-            $query .= " WHERE tags.id NOT IN (SELECT tagID FROM #__k2_tags_xref WHERE itemID=".(int)$itemID.")";
+            $query .= " WHERE tags.id NOT IN (SELECT tagID FROM #__k2_tags_xref WHERE itemID=".(int) $itemID.")";
         }
         $db->setQuery($query);
         $rows = $db->loadObjectList();
@@ -986,9 +992,8 @@ class K2ModelItem extends K2Model
     public function getCurrentTags($itemID)
     {
         $db = JFactory::getDbo();
-        $itemID = (int)$itemID;
-        $query = "SELECT tags.* FROM #__k2_tags AS tags JOIN #__k2_tags_xref AS xref ON tags.id = xref.tagID WHERE xref.itemID = ".(int)$itemID." ORDER BY xref.id ASC";
-        $db->setQuery($query);
+        $itemID = (int) $itemID;
+        $db->setQuery("SELECT tags.* FROM #__k2_tags AS tags JOIN #__k2_tags_xref AS xref ON tags.id = xref.tagID WHERE xref.itemID = ".(int) $itemID." ORDER BY xref.id ASC");
         $rows = $db->loadObjectList();
         return $rows;
     }
@@ -998,8 +1003,7 @@ class K2ModelItem extends K2Model
         $app = JFactory::getApplication();
         $id = JRequest::getInt('id');
         $db = JFactory::getDbo();
-        $query = "UPDATE #__k2_items SET hits=0 WHERE id={$id}";
-        $db->setQuery($query);
+        $db->setQuery("UPDATE #__k2_items SET hits=0 WHERE id={$id}");
         $db->query();
         if ($app->isAdmin()) {
             $url = 'index.php?option=com_k2&view=item&cid='.$id;
@@ -1015,8 +1019,7 @@ class K2ModelItem extends K2Model
         $app = JFactory::getApplication();
         $id = JRequest::getInt('id');
         $db = JFactory::getDbo();
-        $query = "DELETE FROM #__k2_rating WHERE itemID={$id}";
-        $db->setQuery($query);
+        $db->setQuery("DELETE FROM #__k2_rating WHERE itemID={$id}");
         $db->query();
         if ($app->isAdmin()) {
             $url = 'index.php?option=com_k2&view=item&cid='.$id;
@@ -1031,8 +1034,7 @@ class K2ModelItem extends K2Model
     {
         $id = JRequest::getInt('cid');
         $db = JFactory::getDbo();
-        $query = "SELECT * FROM #__k2_rating WHERE itemID={$id}";
-        $db->setQuery($query, 0, 1);
+        $db->setQuery("SELECT * FROM #__k2_rating WHERE itemID={$id}", 0, 1);
         $row = $db->loadObject();
         return $row;
     }
@@ -1081,7 +1083,7 @@ class K2ModelItem extends K2Model
             $filterGroups = $config->get('filter_groups');
 
             // Convert to array if one group is selected
-            if ((!is_array($filterGroups) && (int)$filterGroups > 0)) {
+            if ((!is_array($filterGroups) && (int) $filterGroups > 0)) {
                 $filterGroups = array($filterGroups);
             }
 

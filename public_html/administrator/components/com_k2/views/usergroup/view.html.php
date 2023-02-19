@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -47,7 +47,6 @@ class K2ViewUserGroup extends K2View
         require_once JPATH_ADMINISTRATOR.'/components/com_k2/models/categories.php';
         $categoriesModel = K2Model::getInstance('Categories', 'K2Model');
         $categories = $categoriesModel->categoriesTree(null, true);
-        $categories_options = @array_merge($categories_option, $categories);
         $lists['categories'] = JHTML::_('select.genericlist', $categories, 'params[categories][]', 'multiple="multiple" size="15"', 'value', 'text', $appliedCategories);
         $lists['inheritance'] = JHTML::_('select.booleanlist', 'params[inheritance]', null, $inheritance);
         $this->assignRef('lists', $lists);
@@ -63,6 +62,22 @@ class K2ViewUserGroup extends K2View
         $saveNewIcon = version_compare(JVERSION, '2.5.0', 'ge') ? 'save-new.png' : 'save.png';
         JToolBarHelper::custom('saveAndNew', $saveNewIcon, 'save_f2.png', 'K2_SAVE_AND_NEW', false);
         JToolBarHelper::cancel();
+
+        // JS
+        $document = JFactory::getDocument();
+        $document->addScriptDeclaration("
+            Joomla.submitbutton = function(pressbutton) {
+                if (pressbutton == 'cancel') {
+                    submitform(pressbutton);
+                    return;
+                }
+                if (\$K2.trim(\$K2('#name').val()) == '') {
+                    alert('".JText::_('K2_GROUP_NAME_CANNOT_BE_EMPTY', true)."');
+                } else {
+                    submitform(pressbutton);
+                }
+            };
+        ");
 
         parent::display($tpl);
     }

@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -40,7 +40,7 @@ class K2ModelItems extends K2Model
         $tag = $app->getUserStateFromRequest($option.$view.'tag', 'tag', 0, 'int');
         $language = $app->getUserStateFromRequest($option.$view.'language', 'language', '', 'string');
 
-        $query = "SELECT SQL_CALC_FOUND_ROWS i.*, g.name AS groupname, c.name AS category, v.name AS author, w.name AS moderator, u.name AS editor
+        $query = "/* Backend / K2 / Items */ SELECT SQL_CALC_FOUND_ROWS i.*, g.name AS groupname, c.name AS category, v.name AS author, w.name AS moderator, u.name AS editor
             FROM #__k2_items AS i
             LEFT JOIN #__k2_categories AS c ON c.id = i.catid
             LEFT JOIN #__groups AS g ON g.id = i.access
@@ -66,11 +66,11 @@ class K2ModelItems extends K2Model
             $search = trim(str_replace('"', '', $search));
 
             // Escape remaining string
-            $escaped = K2_JVERSION == '15' ? $db->getEscaped($search, true) : $db->escape($search, true);
+            $escaped = (K2_JVERSION == '15') ? $db->getEscaped($search, true) : $db->escape($search, true);
 
             // Full phrase or set of words
-            if (strpos($escaped, ' ')!==false && !$exact) {
-                $escaped=explode(' ', $escaped);
+            if (strpos($escaped, ' ') !== false && !$exact) {
+                $escaped = explode(' ', $escaped);
                 $quoted = array();
                 foreach ($escaped as $key=>$escapedWord) {
                     $quoted[] = $db->Quote('%'.$escapedWord.'%', false);
@@ -183,140 +183,6 @@ class K2ModelItems extends K2Model
     public function getTotal()
     {
         return $this->getTotal;
-        /*
-        $app = JFactory::getApplication();
-        $params = JComponentHelper::getParams('com_k2');
-        $option = JRequest::getCmd('option');
-        $view = JRequest::getCmd('view');
-        $db = JFactory::getDbo();
-        $filter_trash = $app->getUserStateFromRequest($option.$view.'filter_trash', 'filter_trash', 0, 'int');
-        $filter_featured = $app->getUserStateFromRequest($option.$view.'filter_featured', 'filter_featured', -1, 'int');
-        $filter_category = $app->getUserStateFromRequest($option.$view.'filter_category', 'filter_category', 0, 'int');
-        $filter_author = $app->getUserStateFromRequest($option.$view.'filter_author', 'filter_author', 0, 'int');
-        $filter_state = $app->getUserStateFromRequest($option.$view.'filter_state', 'filter_state', -1, 'int');
-        $search = $app->getUserStateFromRequest($option.$view.'search', 'search', '', 'string');
-        $search = JString::strtolower($search);
-        $search = trim(preg_replace('/[^\p{L}\p{N}\s\"\-_]/u', '', $search));
-        $tag = $app->getUserStateFromRequest($option.$view.'tag', 'tag', 0, 'int');
-        $language = $app->getUserStateFromRequest($option.$view.'language', 'language', '', 'string');
-
-        $query = "SELECT COUNT(*) FROM #__k2_items AS i ";
-
-        if ($params->get('showTagFilter') && $tag) {
-            $query .= " LEFT JOIN #__k2_tags_xref AS tags_xref ON tags_xref.itemID = i.id";
-        }
-
-        $query .= " WHERE trash={$filter_trash} ";
-
-        if ($search) {
-
-            // Detect exact search phrase using double quotes in search string
-            if (substr($search, 0, 1)=='"' && substr($search, -1)=='"') {
-                $exact = true;
-            } else {
-                $exact = false;
-            }
-
-            // Now completely strip double quotes
-            $search = trim(str_replace('"', '', $search));
-
-            // Escape remaining string
-            $escaped = K2_JVERSION == '15' ? $db->getEscaped($search, true) : $db->escape($search, true);
-
-            // Full phrase or set of words
-            if (strpos($escaped, ' ')!==false && !$exact) {
-                $escaped=explode(' ', $escaped);
-                $quoted = array();
-                foreach ($escaped as $key=>$escapedWord) {
-                    $quoted[] = $db->Quote('%'.$escapedWord.'%', false);
-                }
-                if ($params->get('adminSearch') == 'full') {
-                    foreach ($quoted as $quotedWord) {
-                        $query .= " AND ( ".
-                            "LOWER(i.title) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.introtext) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.`fulltext`) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.extra_fields_search) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.image_caption) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.image_credits) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.video_caption) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.video_credits) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.metadesc) LIKE ".$quotedWord." ".
-                            "OR LOWER(i.metakey) LIKE ".$quotedWord." ".
-                            " )";
-                    }
-                } else {
-                    foreach ($quoted as $quotedWord) {
-                        $query .= " AND LOWER(i.title) LIKE ".$quotedWord;
-                    }
-                }
-            }
-            // Single word or exact phrase to search for (wrapped in double quotes in the search block)
-            else {
-                $quoted = $db->Quote('%'.$escaped.'%', false);
-
-                if ($params->get('adminSearch') == 'full') {
-                    $query .= " AND ( ".
-                        "LOWER(i.title) LIKE ".$quoted." ".
-                        "OR LOWER(i.introtext) LIKE ".$quoted." ".
-                        "OR LOWER(i.`fulltext`) LIKE ".$quoted." ".
-                        "OR LOWER(i.extra_fields_search) LIKE ".$quoted." ".
-                        "OR LOWER(i.image_caption) LIKE ".$quoted." ".
-                        "OR LOWER(i.image_credits) LIKE ".$quoted." ".
-                        "OR LOWER(i.video_caption) LIKE ".$quoted." ".
-                        "OR LOWER(i.video_credits) LIKE ".$quoted." ".
-                        "OR LOWER(i.metadesc) LIKE ".$quoted." ".
-                        "OR LOWER(i.metakey) LIKE ".$quoted." ".
-                        " )";
-                } else {
-                    $query .= " AND LOWER(i.title) LIKE ".$quoted;
-                }
-            }
-        }
-
-        if ($filter_state > -1) {
-            $query .= " AND published={$filter_state}";
-        }
-
-        if ($filter_featured > -1) {
-            $query .= " AND featured={$filter_featured}";
-        }
-
-        if ($filter_category > 0) {
-            if ($params->get('showChildCatItems')) {
-                K2Model::addIncludePath(JPATH_SITE.'/components/com_k2/models');
-                $itemListModel = K2Model::getInstance('Itemlist', 'K2Model');
-                $categories = $itemListModel->getCategoryTree($filter_category);
-                $sql = @implode(',', $categories);
-                $query .= " AND catid IN ({$sql})";
-            } else {
-                $query .= " AND catid={$filter_category}";
-            }
-        }
-
-        if ($filter_author > 0) {
-            $query .= " AND created_by={$filter_author}";
-        }
-
-        if ($params->get('showTagFilter') && $tag) {
-            $query .= " AND tags_xref.tagID = {$tag}";
-        }
-
-        if ($language) {
-            $query .= " AND (language = ".$db->Quote($language)." OR language = '*')";
-        }
-
-        // Plugins Events
-        JPluginHelper::importPlugin('k2');
-        $dispatcher = JDispatcher::getInstance();
-
-        // Trigger K2 plugins
-        $dispatcher->trigger('onK2BeforeSetQuery', array(&$query));
-
-        $db->setQuery($query);
-        $result = $db->loadResult();
-        return $result;
-        */
     }
 
     public function publish()
@@ -775,7 +641,7 @@ class K2ModelItems extends K2Model
 
             // Target tags
             foreach ($sourceTags as $tag) {
-                $query = "INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, {intval($tag->tagID)}, {intval($row->id)})";
+                $query = "INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, ".(int) $tag->tagID.", ".(int) $row->id.")";
                 $db->setQuery($query);
                 $db->query();
             }
@@ -1410,6 +1276,26 @@ class K2ModelItems extends K2Model
                     foreach ($itemTags as $itemTag) {
                         $itemTag = JString::trim($itemTag);
                         if ($itemTag) {
+
+                            // Check if the tag exists already, otherwise insert it as a K2 tag
+                            $query = "SELECT id FROM #__k2_tags WHERE name=".$db->Quote($itemTag);
+                            $db->setQuery($query);
+                            $id = $db->loadResult();
+                            if ($id) {
+                                $query = "INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, {$id}, {$K2Item->id})";
+                            } else {
+                                $K2Tag = JTable::getInstance('K2Tag', 'Table');
+                                $K2Tag->name = $itemTag;
+                                $K2Tag->published = 1;
+                                $K2Tag->store();
+                                $tags[] = $K2Tag;
+                                $query = "INSERT INTO #__k2_tags_xref (`id`, `tagID`, `itemID`) VALUES (NULL, {$K2Tag->id}, {$K2Item->id})";
+                            }
+                            $db->setQuery($query);
+                            $db->query();
+
+                            /*
+                            // OLD
                             if (in_array($itemTag, JArrayHelper::getColumn($tags, 'name'))) {
                                 $query = "SELECT id FROM #__k2_tags WHERE name=".$db->Quote($itemTag);
                                 $db->setQuery($query);
@@ -1429,6 +1315,7 @@ class K2ModelItems extends K2Model
                                 $db->setQuery($query);
                                 $db->query();
                             }
+                            */
                         }
                     }
                 }

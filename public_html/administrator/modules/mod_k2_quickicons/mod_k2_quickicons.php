@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -46,7 +46,7 @@ $componentParams = JComponentHelper::getParams('com_k2');
 // Load CSS & JS
 K2HelperHTML::loadHeadIncludes(true, false, true, false);
 if ($modCSSStyling) {
-    $document->addStyleSheet(JURI::base(true).'/modules/'.$mod_name.'/tmpl/css/style.css?v='.K2_CURRENT_VERSION);
+    $document->addStyleSheet(JURI::base(true).'/modules/'.$mod_name.'/tmpl/css/style.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
 }
 
 // Output content with template

@@ -1,9 +1,9 @@
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 /* --- Common --- */
@@ -44,6 +44,8 @@ body .select2-container--default.select2-container--focus.select2-container--bel
 .isJ25 .select2-container--default .select2-selection--multiple .select2-selection__rendered li {font-size:13px;padding:4px;margin:2px 5px 0 0;}
 .isJ15 .select2-container--default .select2-selection--multiple .select2-selection__rendered li span,
 .isJ25 .select2-container--default .select2-selection--multiple .select2-selection__rendered li span {margin-right:4px;}
+.isJ15 .select2-container--default .select2-selection--multiple .select2-selection__rendered li.select2-search.select2-search--inline,
+.isJ25 .select2-container--default .select2-selection--multiple .select2-selection__rendered li.select2-search.select2-search--inline {visibility:hidden;}
 
 
 
@@ -78,6 +80,12 @@ body .select2-container--default.select2-container--focus.select2-container--bel
 @media all and (min-width:481px) and (max-width:770px){
     .com_modules .form-horizontal .span9 .control-group .control-label {width:45% !important;}
     .com_modules .form-horizontal .span9 .control-group .controls {margin-left:47% !important;}
+}
+@media screen and (max-width:480px) {
+    .com_modules .form-horizontal .span9 .control-group:nth-child(2n-1) {background:none;}
+    .com_modules .form-horizontal .span9 .control-group .control-label {border-bottom:1px solid #e9e9e9;padding:10px;text-align:left;background:#f6f6f6;display:table-cell;width:30%;min-width:200px;box-sizing:border-box;vertical-align:middle;font-family:'Open Sans',sans-serif;font-size:13px;font-weight:600;}
+    .com_modules .form-horizontal .span9 .control-group .control-label label {font-weight:600;}
+    .com_modules .form-horizontal .span9 .control-group .controls {background:#fbfbfb;margin-bottom:10px;}
 }
 .com_modules .form-horizontal .span9 .control-group-header {background:#e5f7fd;margin-top:32px !important;}
 .com_modules .form-horizontal .span9 .control-group-header .control-label,
@@ -143,6 +151,12 @@ body .select2-container--default.select2-container--focus.select2-container--bel
 @media all and (min-width:481px) and (max-width:770px){
     .com_config .form-horizontal .span10 .control-group .control-label {width:45% !important;}
     .com_config .form-horizontal .span10 .control-group .controls {margin-left:47% !important;}
+}
+@media screen and (max-width:480px) {
+    .com_config .form-horizontal .span10 .control-group:nth-child(2n-1) {background:none;}
+    .com_config .form-horizontal .span10 .control-group .control-label {border-bottom:1px solid #e9e9e9;padding:10px;text-align:left;background:#f6f6f6;display:table-cell;width:30%;min-width:200px;box-sizing:border-box;vertical-align:middle;font-family:'Open Sans',sans-serif;font-size:13px;font-weight:600;}
+    .com_config .form-horizontal .span10 .control-group .control-label label {font-weight:600;}
+    .com_config .form-horizontal .span10 .control-group .controls {background:#fbfbfb;margin-bottom:10px;}
 }
 .com_config .form-horizontal .span10 .control-group-header {background:#e5f7fd;margin-top:32px !important;}
 .com_config .form-horizontal .span10 .control-group-header .control-label,

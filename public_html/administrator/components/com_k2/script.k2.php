@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -99,7 +99,7 @@ class Com_K2InstallerScript
             }
         }
 
-        // Cleanups
+        // File Cleanups
         if (JFile::exists(JPATH_ADMINISTRATOR.'/components/com_k2/admin.k2.php')) {
             JFile::delete(JPATH_ADMINISTRATOR.'/components/com_k2/admin.k2.php');
         }
@@ -111,6 +111,21 @@ class Com_K2InstallerScript
         $query = "DELETE FROM #__k2_users WHERE userID = 0";
         $db->setQuery($query);
         $db->query();
+
+        // User groups (set first 2 user groups)
+        $query = "SELECT COUNT(*) FROM #__k2_user_groups";
+        $db->setQuery($query);
+        $userGroupCount = $db->loadResult();
+
+        if ($userGroupCount == 0) {
+            $query = "INSERT INTO #__k2_user_groups (`id`, `name`, `permissions`) VALUES('', 'Registered', '{\"comment\":\"1\",\"frontEdit\":\"0\",\"add\":\"0\",\"editOwn\":\"0\",\"editAll\":\"0\",\"publish\":\"0\",\"editPublished\":\"0\",\"inheritance\":\"0\",\"categories\":\"all\"}')";
+            $db->setQuery($query);
+            $db->query();
+
+            $query = "INSERT INTO #__k2_user_groups (`id`, `name`, `permissions`) VALUES('', 'Site Owner', '{\"comment\":\"1\",\"frontEdit\":\"1\",\"add\":\"1\",\"editOwn\":\"1\",\"editAll\":\"1\",\"publish\":\"1\",\"editPublished\":\"1\",\"inheritance\":\"1\",\"categories\":\"all\"}')";
+            $db->setQuery($query);
+            $db->query();
+        }
 
         /*
         // TO DO: Check main folders for 0755 first and then apply this fix
@@ -235,6 +250,30 @@ class Com_K2InstallerScript
             $db->query();
         }
 
+        $query = "SHOW INDEX FROM #__k2_items";
+        $db->setQuery($query);
+        $itemIndices = $db->loadObjectList();
+        $itemKeys_item = false;
+        $itemKeys_idx_item = false;
+        foreach ($itemIndices as $index) {
+            if ($index->Key_name == 'item') {
+                $itemKeys_item = true;
+            }
+            if ($index->Key_name == 'idx_item') {
+                $itemKeys_idx_item = true;
+            }
+        }
+        if ($itemKeys_item) {
+            $query = "ALTER TABLE #__k2_items DROP INDEX `item`";
+            $db->setQuery($query);
+            $db->query();
+        }
+        if (!$itemKeys_idx_item) {
+            $query = "ALTER TABLE #__k2_items ADD INDEX `idx_item` (`published`,`publish_up`,`publish_down`,`trash`,`access`)";
+            $db->setQuery($query);
+            $db->query();
+        }
+
         // Categories
         $fields = $db->getTableColumns('#__k2_categories');
         if (!array_key_exists('language', $fields)) {
@@ -267,9 +306,19 @@ class Com_K2InstallerScript
         $fields = $db->getTableColumns('#__k2_users');
         if (!array_key_exists('ip', $fields)) {
             $query = "ALTER TABLE `#__k2_users`
-	            ADD `ip` VARCHAR(45) NOT NULL ,
-	            ADD `hostname` VARCHAR(255) NOT NULL ,
-	            ADD `notes` TEXT NOT NULL";
+                ADD `ip` VARCHAR(45) NOT NULL ,
+                ADD `hostname` VARCHAR(255) NOT NULL ,
+                ADD `notes` TEXT NOT NULL";
+            $db->setQuery($query);
+            $db->query();
+        }
+
+        // Users - add new ENUM option for "gender"
+        $query = "SELECT DISTINCT gender FROM #__k2_users";
+        $db->setQuery($query);
+        $enumOptions = $db->loadColumn();
+        if (count($enumOptions) < 3) {
+            $query = "ALTER TABLE #__k2_users MODIFY COLUMN `gender` enum('m','f','n') NOT NULL DEFAULT 'n'";
             $db->setQuery($query);
             $db->query();
         }
@@ -277,24 +326,24 @@ class Com_K2InstallerScript
         // User groups (set first 2 user groups)
         $query = "SELECT COUNT(*) FROM #__k2_user_groups";
         $db->setQuery($query);
-        $num = $db->loadResult();
+        $userGroupCount = $db->loadResult();
 
-        if ($num == 0) {
-            $query = "INSERT INTO #__k2_user_groups (`id`, `name`, `permissions`) VALUES('', 'Registered', '{\"comment\":\"1\",\"frontEdit\":\"0\",\"add\":\"0\",\"editOwn\":\"0\",\"editAll\":\"0\",\"publish\":\"0\",\"inheritance\":0,\"categories\":\"all\"}')";
+        if ($userGroupCount == 0) {
+            $query = "INSERT INTO #__k2_user_groups (`id`, `name`, `permissions`) VALUES('', 'Registered', '{\"comment\":\"1\",\"frontEdit\":\"0\",\"add\":\"0\",\"editOwn\":\"0\",\"editAll\":\"0\",\"publish\":\"0\",\"editPublished\":\"0\",\"inheritance\":\"0\",\"categories\":\"all\"}')";
             $db->setQuery($query);
             $db->query();
 
-            $query = "INSERT INTO #__k2_user_groups (`id`, `name`, `permissions`) VALUES('', 'Site Owner', '{\"comment\":\"1\",\"frontEdit\":\"1\",\"add\":\"1\",\"editOwn\":\"1\",\"editAll\":\"1\",\"publish\":\"1\",\"inheritance\":1,\"categories\":\"all\"}')";
+            $query = "INSERT INTO #__k2_user_groups (`id`, `name`, `permissions`) VALUES('', 'Site Owner', '{\"comment\":\"1\",\"frontEdit\":\"1\",\"add\":\"1\",\"editOwn\":\"1\",\"editAll\":\"1\",\"publish\":\"1\",\"editPublished\":\"1\",\"inheritance\":\"1\",\"categories\":\"all\"}')";
             $db->setQuery($query);
             $db->query();
         }
 
         // Log for updates
         $query = "CREATE TABLE IF NOT EXISTS `#__k2_log` (
-		        `status` int(11) NOT NULL,
-		        `response` text NOT NULL,
-		        `timestamp` datetime NOT NULL
-	        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;";
+                `status` int(11) NOT NULL,
+                `response` text NOT NULL,
+                `timestamp` datetime NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;";
         $db->setQuery($query);
         $db->query();
 

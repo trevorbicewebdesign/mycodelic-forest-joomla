@@ -1,29 +1,14 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
 defined('_JEXEC') or die;
-
-$document = JFactory::getDocument();
-$document->addScriptDeclaration("
-    Joomla.submitbutton = function(pressbutton){
-        if (pressbutton == 'cancel') {
-            submitform( pressbutton );
-            return;
-        }
-        if (\$K2.trim(\$K2('#name').val()) == '') {
-            alert( '".JText::_('K2_GROUP_NAME_CANNOT_BE_EMPTY', true)."' );
-        } else {
-            submitform( pressbutton );
-        }
-    };
-");
 
 ?>
 
@@ -39,7 +24,7 @@ $document->addScriptDeclaration("
         <ul class="adminformlist">
             <li>
                 <div class="paramLabel">
-                    <?php echo JText::_('K2_GROUP_NAME'); ?>
+                    <label for="name"><?php echo JText::_('K2_GROUP_NAME'); ?></label>
                 </div>
                 <div class="paramValue">
                     <input class="text_area k2TitleBox" type="text" name="name" id="name" value="<?php echo $this->row->name; ?>" size="50" maxlength="250" />

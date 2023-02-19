@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -73,10 +73,10 @@ class K2ViewTags extends K2View
             Joomla.submitbutton = function(pressbutton) {
                 if (pressbutton == 'remove') {
                     if (confirm('".JText::_('K2_ARE_YOU_SURE_YOU_WANT_TO_DELETE_SELECTED_TAGS', true)."')){
-                        submitform( pressbutton );
+                        submitform(pressbutton);
                     }
                 } else {
-                    submitform( pressbutton );
+                    submitform(pressbutton);
                 }
             };
         ");

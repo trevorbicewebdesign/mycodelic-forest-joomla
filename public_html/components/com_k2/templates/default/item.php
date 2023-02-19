@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -63,8 +63,8 @@ defined('_JEXEC') or die;
         <?php if($this->item->params->get('itemAuthor')): ?>
         <!-- Item Author -->
         <span class="itemAuthor">
-            <?php echo K2HelperUtilities::writtenBy($this->item->author->profile->gender); ?>
-            <?php if(empty($this->item->created_by_alias)): ?>
+            <?php echo (!empty($this->item->author->profile->gender)) ? K2HelperUtilities::writtenBy($this->item->author->profile->gender) : ''; ?>
+            <?php if(isset($this->item->author->link) && $this->item->author->link): ?>
             <a rel="author" href="<?php echo $this->item->author->link; ?>"><?php echo $this->item->author->name; ?></a>
             <?php else: ?>
             <?php echo $this->item->author->name; ?>
@@ -471,7 +471,7 @@ defined('_JEXEC') or die;
                 <div class="itemRelAuthor"><?php echo JText::_("K2_BY"); ?> <a rel="author" href="<?php echo $item->author->link; ?>"><?php echo $item->author->name; ?></a></div>
                 <?php endif; ?>
 
-                <?php if($this->item->params->get('itemRelatedImageSize')): ?>
+                <?php if($this->item->params->get('itemRelatedImageSize') && !empty($item->image)): ?>
                 <img style="width:<?php echo $item->imageWidth; ?>px;height:auto;" class="itemRelImg" src="<?php echo $item->image; ?>" alt="<?php echo K2HelperUtilities::cleanHtml($item->title); ?>" />
                 <?php endif; ?>
 
@@ -539,17 +539,18 @@ defined('_JEXEC') or die;
     </div>
     <?php endif; ?>
 
+    <?php /* Developer Note for the previous/next items: The full item data (e.g. images, the category etc.) are available under $this->item->previous & $this->item->next */ ?>
     <?php if($this->item->params->get('itemNavigation') && !JRequest::getCmd('print') && (isset($this->item->nextLink) || isset($this->item->previousLink))): ?>
     <!-- Item navigation -->
     <div class="itemNavigation">
         <span class="itemNavigationTitle"><?php echo JText::_('K2_MORE_IN_THIS_CATEGORY'); ?></span>
 
-        <?php if(isset($this->item->previousLink)): ?>
-        <a class="itemPrevious" href="<?php echo $this->item->previousLink; ?>">&laquo; <?php echo $this->item->previousTitle; ?></a>
+        <?php if(isset($this->item->previous->link)): ?>
+        <a class="itemPrevious" href="<?php echo $this->item->previous->link; ?>">&laquo; <?php echo $this->item->previous->title; ?></a>
         <?php endif; ?>
 
-        <?php if(isset($this->item->nextLink)): ?>
-        <a class="itemNext" href="<?php echo $this->item->nextLink; ?>"><?php echo $this->item->nextTitle; ?> &raquo;</a>
+        <?php if(isset($this->item->next->link)): ?>
+        <a class="itemNext" href="<?php echo $this->item->next->link; ?>"><?php echo $this->item->next->title; ?> &raquo;</a>
         <?php endif; ?>
     </div>
     <?php endif; ?>

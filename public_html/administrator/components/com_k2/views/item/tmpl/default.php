@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -45,10 +45,6 @@ $app = JFactory::getApplication();
 
         <!-- Top Nav Tabs START here -->
         <div id="k2FormTopNav" class="k2Tabs">
-            <?php if($this->row->id): ?>
-            <div id="k2ID"><strong><?php echo JText::_('K2_ID'); ?></strong> <?php echo $this->row->id; ?></div>
-            <?php endif; ?>
-
             <div class="k2NavTabsWrapper">
                 <h2><?php echo JText::_('K2_EDIT_ITEM'); ?></h2>
                 <ul class="k2NavTabs">
@@ -62,6 +58,10 @@ $app = JFactory::getApplication();
 
             <!-- BASIC [start] -->
             <div class="k2NavTabContent" id="k2TabBasic">
+                <?php if($this->row->id): ?>
+                <div id="k2ID"><strong><?php echo JText::_('K2_ID'); ?></strong> <?php echo $this->row->id; ?></div>
+                <?php endif; ?>
+
                 <div class="k2ui-table-basic">
                     <div class="k2ui-field-label">
                         <label for="title"><?php echo JText::_('K2_TITLE'); ?></label>
@@ -246,11 +246,9 @@ $app = JFactory::getApplication();
                         <div class="itemPlugins itemPluginsContent">
                             <?php foreach($this->K2PluginsItemContent as $K2Plugin): ?>
                             <?php if(!is_null($K2Plugin)): ?>
-                            <div class="itemAdditionalField">
-                                <legend><?php echo $K2Plugin->name; ?></legend>
-                                <div class="itemAdditionalData">
-                                    <?php echo $K2Plugin->fields; ?>
-                                </div>
+                            <h3><?php echo $K2Plugin->name; ?></h3>
+                            <div class="itemAdditionalData">
+                                <?php echo $K2Plugin->fields; ?>
                             </div>
                             <?php endif; ?>
                             <?php endforeach; ?>
@@ -308,18 +306,12 @@ $app = JFactory::getApplication();
                             </div>
                         </div>
                         <?php if (count($this->K2PluginsItemImage)): ?>
-                        <div class="itemPlugins">
+                        <div class="itemPlugins itemPluginsImage">
                             <?php foreach($this->K2PluginsItemImage as $K2Plugin): ?>
                             <?php if(!is_null($K2Plugin)): ?>
-                            <div class="itemAdditionalField">
-                                <fieldset>
-                                    <div class="itemAdditionalValue">
-                                        <label><?php echo $K2Plugin->name; ?></label>
-                                    </div>
-                                    <div class="itemAdditionalData">
-                                        <?php echo $K2Plugin->fields; ?>
-                                    </div>
-                                </fieldset>
+                            <h3><?php echo $K2Plugin->name; ?></h3>
+                            <div class="itemAdditionalData">
+                                <?php echo $K2Plugin->fields; ?>
                             </div>
                             <?php endif; ?>
                             <?php endforeach; ?>
@@ -401,16 +393,12 @@ $app = JFactory::getApplication();
                         </div>
                         <?php endif; ?>
                         <?php if (count($this->K2PluginsItemGallery)): ?>
-                        <div class="itemPlugins">
+                        <div class="itemPlugins itemPluginsImageGallery">
                             <?php foreach($this->K2PluginsItemGallery as $K2Plugin): ?>
                             <?php if(!is_null($K2Plugin)): ?>
-                            <div class="itemAdditionalField">
-                                <fieldset>
-                                    <legend><?php echo $K2Plugin->name; ?></legend>
-                                    <div class="itemAdditionalData">
-                                        <?php echo $K2Plugin->fields; ?>
-                                    </div>
-                                </fieldset>
+                            <h3><?php echo $K2Plugin->name; ?></h3>
+                            <div class="itemAdditionalData">
+                                <?php echo $K2Plugin->fields; ?>
                             </div>
                             <?php endif; ?>
                             <?php endforeach; ?>
@@ -440,6 +428,7 @@ $app = JFactory::getApplication();
                                             <div class="panel" id="Upload_video">
                                                 <input type="file" name="video" class="fileUpload k2Selector" accept="video/*,audio/*" />
                                                 <i>(<?php echo JText::_('K2_MAX_UPLOAD_SIZE'); ?>: <?php echo ini_get('upload_max_filesize'); ?>)</i>
+                                                <input type="hidden" name="uploadedVideo" value="<?php echo $this->lists['uploadedVideo']; ?>" />
                                             </div>
                                         </div>
                                         <div id="k2MediaTab2" class="k2TabsContent">
@@ -585,20 +574,17 @@ $app = JFactory::getApplication();
                         <!-- END of the AllVideos check -->
 
                         <?php if (count($this->K2PluginsItemVideo)): ?>
-                        <div class="itemPlugins">
+                        <div class="itemPlugins itemPluginsMedia">
                             <?php foreach($this->K2PluginsItemVideo as $K2Plugin): ?>
                             <?php if(!is_null($K2Plugin)): ?>
-                            <div class="itemAdditionalField">
-                                <legend><?php echo $K2Plugin->name; ?></legend>
-                                <div class="itemAdditionalData">
-                                    <?php echo $K2Plugin->fields; ?>
-                                </div>
+                            <h3><?php echo $K2Plugin->name; ?></h3>
+                            <div class="itemAdditionalData">
+                                <?php echo $K2Plugin->fields; ?>
                             </div>
                             <?php endif; ?>
                             <?php endforeach; ?>
                         </div>
                         <?php endif; ?>
-
                     </div>
                     <?php endif; ?>
 
@@ -631,12 +617,12 @@ $app = JFactory::getApplication();
                             <?php endif; ?>
                         </div>
                         <?php if (count($this->K2PluginsItemExtraFields)): ?>
-                        <div class="itemPlugins">
+                        <div class="itemPlugins itemPluginsExtraFields">
                             <?php foreach($this->K2PluginsItemExtraFields as $K2Plugin): ?>
                             <?php if(!is_null($K2Plugin)): ?>
-                            <div class="itemAdditionalField">
-                                <legend><?php echo $K2Plugin->name; ?></legend>
-                                <div class="itemAdditionalData"><?php echo $K2Plugin->fields; ?></div>
+                            <h3><?php echo $K2Plugin->name; ?></h3>
+                            <div class="itemAdditionalData">
+                                <?php echo $K2Plugin->fields; ?>
                             </div>
                             <?php endif; ?>
                             <?php endforeach; ?>
@@ -686,12 +672,12 @@ $app = JFactory::getApplication();
                         <div id="itemAttachments"></div>
 
                         <?php if (count($this->K2PluginsItemAttachments)): ?>
-                        <div class="itemPlugins">
+                        <div class="itemPlugins itemPluginsAttachments">
                             <?php foreach($this->K2PluginsItemAttachments as $K2Plugin): ?>
                             <?php if(!is_null($K2Plugin)): ?>
-                            <div class="itemAdditionalField">
-                                <legend><?php echo $K2Plugin->name; ?></legend>
-                                <div class="itemAdditionalData"><?php echo $K2Plugin->fields; ?></div>
+                            <h3><?php echo $K2Plugin->name; ?></h3>
+                            <div class="itemAdditionalData">
+                                <?php echo $K2Plugin->fields; ?>
                             </div>
                             <?php endif; ?>
                             <?php endforeach; ?>
@@ -703,13 +689,13 @@ $app = JFactory::getApplication();
                     <?php if(count(array_filter($this->K2PluginsItemOther)) && $this->params->get('showK2Plugins')): ?>
                     <!-- Tab other plugins -->
                     <div class="k2TabsContent" id="k2TabPlugins">
-                        <div class="itemPlugins">
+                        <div class="itemPlugins itemPluginsPlugins">
                             <?php foreach($this->K2PluginsItemOther as $K2Plugin): ?>
                             <?php if(!is_null($K2Plugin)): ?>
-                            <fieldset>
-                                <legend><?php echo $K2Plugin->name; ?></legend>
+                            <h3><?php echo $K2Plugin->name; ?></h3>
+                            <div class="itemAdditionalData">
                                 <?php echo $K2Plugin->fields; ?>
-                            </fieldset>
+                            </div>
                             <?php endif; ?>
                             <?php endforeach; ?>
                         </div>

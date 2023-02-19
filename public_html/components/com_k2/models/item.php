@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -205,7 +205,7 @@ class K2ModelItem extends K2Model
             $item->author->profile = $this->getUserProfile($item->created_by);
         }
         if (empty($item->author->profile)) {
-            $item->author->profile = new JObject;
+            $item->author->profile = new stdClass;
             $item->author->profile->gender = null;
         }
 
@@ -263,7 +263,7 @@ class K2ModelItem extends K2Model
         // Item image
         if ($params->get('feedItemImage') && JFile::exists(JPATH_SITE.'/media/k2/items/cache/'.md5("Image".$item->id).'_'.$params->get('feedImgSize').'.jpg')) {
             $altText = ($item->image_caption) ? $item->image_caption : $item->title;
-            $item->description .= '<div class="K2FeedImage"><img src="'.JURI::root().'media/k2/items/cache/'.md5('Image'.$item->id).'_'.$params->get('feedImgSize').'.jpg" alt="'.$altText.'" /></div>';
+            $item->description .= '<div class="K2FeedImage"><img src="'.JURI::root().'media/k2/items/cache/'.md5('Image'.$item->id).'_'.$params->get('feedImgSize').'.jpg" alt="'.K2HelperUtilities::cleanHtml($altText).'" /></div>';
 
             // Set an image enclosure object
             $item->enclosure = new JFeedEnclosure();
@@ -287,14 +287,21 @@ class K2ModelItem extends K2Model
         }
 
         // Item Tags
+        $item->tags = array();
         if ($params->get('feedItemTags')) {
             $tags = $this->getItemTags($item->id);
-            if (isset($tags) && count($tags)) {
+            if (is_array($tags) && count($tags)) {
+                foreach ($tags as $tag) {
+                    $item->tags[] = '#'.str_replace(' ', '_', $tag->name);
+                }
+                $item->description .= '<div class="K2FeedTags">'.implode(' ', $item->tags).'</div>';
+                /*
                 $item->description .= '<div class="K2FeedTags"><ul>';
                 foreach ($tags as $tag) {
                     $item->description .= '<li>'.$tag->name.'</li>';
                 }
-                $item->description .= '<ul></div>';
+                $item->description .= '</ul></div>';
+                */
             }
         }
 
@@ -304,7 +311,7 @@ class K2ModelItem extends K2Model
             $params->set('enabledownload', '0');
 
             // Create temp object to parse plugins
-            $galleryTempText = new JObject();
+            $galleryTempText = new stdClass;
             $galleryTempText->text = $item->gallery;
             if (K2_JVERSION == '15') {
                 $dispatcher->trigger('onPrepareContent', array(
@@ -337,7 +344,7 @@ class K2ModelItem extends K2Model
                 $params->set('afolder', 'media/k2/audio');
 
                 // Create temp object to parse plugins
-                $mediaTempText = new JObject();
+                $mediaTempText = new stdClass;
                 $mediaTempText->text = $item->video;
                 if (K2_JVERSION == '15') {
                     $dispatcher->trigger('onPrepareContent', array(
@@ -368,11 +375,15 @@ class K2ModelItem extends K2Model
             if (isset($attachments) && count($attachments)) {
                 $item->description .= '<div class="K2FeedAttachments"><ul>';
                 foreach ($attachments as $attachment) {
-                    $item->description .= '<li><a title="'.htmlentities($attachment->titleAttribute, ENT_QUOTES, 'UTF-8').'" href="'.$attachment->link.'">'.$attachment->title.'</a></li>';
+                    $item->description .= '<li><a href="'.$attachment->link.'" title="'.K2HelperUtilities::cleanHtml($attachment->titleAttribute).'">'.$attachment->title.'</a></li>';
                 }
-                $item->description .= '<ul></div>';
+                $item->description .= '</ul></div>';
             }
         }
+
+        // Cleanup new lines
+        $item->description = preg_replace("#(\r|\n|\r\n)#is", ' ', $item->description);
+        $item->description = preg_replace("#(\t|\s+)#is", ' ', $item->description);
 
         // Author
         if (!empty($item->created_by_alias)) {
@@ -393,8 +404,7 @@ class K2ModelItem extends K2Model
 
     public function prepareJSONItem($item)
     {
-        $row = new JObject();
-        unset($row->_errors);
+        $row = new stdClass;
         $row->id = $item->id;
         $row->title = $item->title;
         $row->alias = $item->alias;
@@ -454,7 +464,7 @@ class K2ModelItem extends K2Model
                 $row->author->profile->url = htmlspecialchars($row->author->profile->url, ENT_QUOTES, 'UTF-8');
             }
         }
-        $row->numOfComments = $item->numOfComments;
+        $row->numOfComments = (!empty($item->numOfComments)) ? $item->numOfComments : null;
         $row->events = $item->event;
         $row->language = $item->language;
         return $row;
@@ -513,7 +523,7 @@ class K2ModelItem extends K2Model
                 }
 
                 // Create temp object to parse plugins
-                $galleryTempText = new JObject();
+                $galleryTempText = new stdClass;
                 $galleryTempText->text = $item->gallery;
                 if (K2_JVERSION == '15') {
                     $dispatcher->trigger('onPrepareContent', array(
@@ -563,7 +573,7 @@ class K2ModelItem extends K2Model
                 }
 
                 // Create temp object to parse plugins
-                $mediaTempText = new JObject();
+                $mediaTempText = new stdClass;
                 $mediaTempText->text = $item->video;
                 if (K2_JVERSION == '15') {
                     $dispatcher->trigger('onPrepareContent', array(
@@ -723,7 +733,17 @@ class K2ModelItem extends K2Model
         $item->event->K2BeforeDisplayContent = '';
         $item->event->K2AfterDisplayContent = '';
 
-        if (($view == 'item' && $item->params->get('itemK2Plugins')) || ($view == 'itemlist' && ($task == '' || $task == 'category') && $item->params->get('catItemK2Plugins')) || ($view == 'itemlist' && $task == 'user' && $item->params->get('userItemK2Plugins')) || ($view == 'itemlist' && ($task == 'search' || $task == 'tag' || $task == 'date'))) {
+        if (
+            $item->params->get('itemK2Plugins') ||
+            $item->params->get('catItemK2Plugins') ||
+            $item->params->get('userItemK2Plugins')
+            /*
+            ($view == 'item' && $item->params->get('itemK2Plugins')) ||
+            ($view == 'itemlist' && ($task == '' || $task == 'category') && $item->params->get('catItemK2Plugins')) ||
+            ($view == 'itemlist' && $task == 'user' && $item->params->get('userItemK2Plugins')) ||
+            ($view == 'itemlist' && ($task == 'search' || $task == 'tag' || $task == 'date'))
+            */
+        ) {
             $results = $dispatcher->trigger('onK2BeforeDisplay', array(
                 &$item,
                 &$params,
@@ -778,7 +798,7 @@ class K2ModelItem extends K2Model
                 foreach ($item->extra_fields as $key => $extraField) {
                     if ($extraField->type == 'textarea' || $extraField->type == 'textfield') {
                         // Create temp object to parse plugins
-                        $extraFieldTempText = new JObject();
+                        $extraFieldTempText = new stdClass;
                         $extraFieldTempText->text = $extraField->value;
                         if (K2_JVERSION == '15') {
                             $dispatcher->trigger('onPrepareContent', array(
@@ -948,7 +968,7 @@ class K2ModelItem extends K2Model
         $params = K2HelperUtilities::getParams('com_k2');
         $user = JFactory::getUser();
         $config = JFactory::getConfig();
-        $response = new JObject();
+        $response = new stdClass;
 
         // Get item
         $item = JTable::getInstance('K2Item', 'Table');
@@ -1064,28 +1084,12 @@ class K2ModelItem extends K2Model
             // Google reCAPTCHA
             if ($params->get('antispam') == 'recaptcha' || $params->get('antispam') == 'both') {
                 if ($user->guest || $params->get('recaptchaForRegistered', 1)) {
-                    if ($params->get('recaptchaV2')) {
-                        require_once JPATH_SITE.'/components/com_k2/helpers/utilities.php';
-                        if (!K2HelperUtilities::verifyRecaptcha()) {
-                            $response->message = JText::_('K2_COULD_NOT_VERIFY_THAT_YOU_ARE_NOT_A_ROBOT');
-                            $response->cssClass = 'k2FormLogError';
-                            echo json_encode($response);
-                            $app->close();
-                        }
-                    } else {
-                        if (!function_exists('_recaptcha_qsencode')) {
-                            require_once(JPATH_SITE.'/media/k2/assets/vendors/google/recaptcha_legacy/recaptcha.php');
-                        }
-                        $privatekey = trim($params->get('recaptcha_private_key'));
-                        $recaptcha_challenge_field = isset($_POST["recaptcha_challenge_field"]) ? $_POST["recaptcha_challenge_field"] : '';
-                        $recaptcha_response_field = isset($_POST["recaptcha_response_field"]) ? $_POST["recaptcha_response_field"] : '';
-                        $resp = recaptcha_check_answer($privatekey, $_SERVER["REMOTE_ADDR"], $recaptcha_challenge_field, $recaptcha_response_field);
-                        if (!$resp->is_valid) {
-                            $response->message = JText::_('K2_THE_WORDS_YOU_TYPED_DID_NOT_MATCH_THE_ONES_DISPLAYED_PLEASE_TRY_AGAIN');
-                            $response->cssClass = 'k2FormLogError';
-                            echo json_encode($response);
-                            $app->close();
-                        }
+                    require_once JPATH_SITE.'/components/com_k2/helpers/utilities.php';
+                    if (!K2HelperUtilities::verifyRecaptcha()) {
+                        $response->message = JText::_('K2_COULD_NOT_VERIFY_THAT_YOU_ARE_NOT_A_ROBOT');
+                        $response->cssClass = 'k2FormLogError';
+                        echo json_encode($response);
+                        $app->close();
                     }
                 }
             }
@@ -1535,7 +1539,7 @@ class K2ModelItem extends K2Model
         return $row;
     }
 
-    public function getPreviousItem($id, $catid, $ordering)
+    public function getPreviousItem($id, $catid, $ordering, $catOrdering)
     {
         $app = JFactory::getApplication();
         $user = JFactory::getUser();
@@ -1562,38 +1566,39 @@ class K2ModelItem extends K2Model
             }
         }
 
-        if ($ordering == "0") {
-            $query = "SELECT *
-                FROM #__k2_items
-                WHERE id < {$id}
-                    AND catid = {$catid}
-                    AND published = 1
-                    AND (publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now).")
-                    AND (publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now).")
-                    {$accessCondition}
-                    AND trash = 0
-                    {$languageCondition}
-                ORDER BY ordering DESC";
-        } else {
+        $query = "SELECT *
+            FROM #__k2_items
+            WHERE id < {$id}
+                AND catid = {$catid}
+                AND published = 1
+                AND trash = 0
+                AND (publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now).")
+                AND (publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now).")
+                {$accessCondition}
+                {$languageCondition}
+            ORDER BY id DESC";
+
+        if ($catOrdering == 'order') {
             $query = "SELECT *
                 FROM #__k2_items
                 WHERE id != {$id}
                     AND catid = {$catid}
                     AND ordering < {$ordering}
                     AND published = 1
+                    AND trash = 0
                     AND (publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now).")
                     AND (publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now).")
                     {$accessCondition}
-                    AND trash = 0
                     {$languageCondition}
                 ORDER BY ordering DESC";
         }
+
         $db->setQuery($query, 0, 1);
         $row = $db->loadObject();
         return $row;
     }
 
-    public function getNextItem($id, $catid, $ordering)
+    public function getNextItem($id, $catid, $ordering, $catOrdering)
     {
         $app = JFactory::getApplication();
         $user = JFactory::getUser();
@@ -1620,32 +1625,33 @@ class K2ModelItem extends K2Model
             }
         }
 
-        if ($ordering == "0") {
-            $query = "SELECT *
-                FROM #__k2_items
-                WHERE id > {$id}
-                    AND catid = {$catid}
-                    AND published = 1
-                    AND (publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now).")
-                    AND (publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now).")
-                    {$accessCondition}
-                    AND trash = 0
-                    {$languageCondition}
-                ORDER BY ordering ASC";
-        } else {
+        $query = "SELECT *
+            FROM #__k2_items
+            WHERE id > {$id}
+                AND catid = {$catid}
+                AND published = 1
+                AND trash = 0
+                AND (publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now).")
+                AND (publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now).")
+                {$accessCondition}
+                {$languageCondition}
+            ORDER BY id ASC";
+
+        if ($catOrdering == 'order') {
             $query = "SELECT *
                 FROM #__k2_items
                 WHERE id != {$id}
                     AND catid = {$catid}
                     AND ordering > {$ordering}
                     AND published = 1
+                    AND trash = 0
                     AND (publish_up = ".$db->Quote($nullDate)." OR publish_up <= ".$db->Quote($now).")
                     AND (publish_down = ".$db->Quote($nullDate)." OR publish_down >= ".$db->Quote($now).")
                     {$accessCondition}
-                    AND trash = 0
                     {$languageCondition}
                 ORDER BY ordering ASC";
         }
+
         $db->setQuery($query, 0, 1);
         $row = $db->loadObject();
         return $row;

@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -15,10 +15,6 @@ defined('_JEXEC') or die;
 <form action="index.php" enctype="multipart/form-data" method="post" name="adminForm" id="adminForm" class="k2CategoryForm">
     <!-- Top Nav Tabs START here -->
     <div id="k2FormTopNav" class="k2Tabs">
-        <?php if($this->row->id): ?>
-        <div id="k2ID"><strong><?php echo JText::_('K2_ID'); ?></strong> <?php echo $this->row->id; ?></div>
-        <?php endif; ?>
-
         <div class="k2NavTabsWrapper">
             <h2><?php echo JText::_('K2_EDIT_CATEGORY'); ?></h2>
             <ul class="k2NavTabs">
@@ -30,6 +26,10 @@ defined('_JEXEC') or die;
 
         <!-- BASIC [start] -->
         <div class="k2NavTabContent" id="k2TabBasic">
+            <?php if($this->row->id): ?>
+            <div id="k2ID"><strong><?php echo JText::_('K2_ID'); ?></strong> <?php echo $this->row->id; ?></div>
+            <?php endif; ?>
+
             <div class="k2ui-table-basic">
                 <div class="k2ui-field-label">
                     <label for="name"><?php echo JText::_('K2_TITLE'); ?></label>

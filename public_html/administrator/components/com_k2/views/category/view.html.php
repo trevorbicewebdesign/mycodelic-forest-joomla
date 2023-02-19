@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -45,14 +45,13 @@ class K2ViewCategory extends K2View
         // JS
         $document->addScriptDeclaration("
             var K2BasePath = '".JURI::base(true)."/';
-
-            Joomla.submitbutton = function(pressbutton){
+            Joomla.submitbutton = function(pressbutton) {
                 if (pressbutton == 'cancel') {
                     submitform(pressbutton);
                     return;
                 }
                 if (\$K2.trim(\$K2('#name').val()) == '') {
-                    alert( '".JText::_('K2_A_CATEGORY_MUST_AT_LEAST_HAVE_A_TITLE', true)."' );
+                    alert('".JText::_('K2_A_CATEGORY_MUST_AT_LEAST_HAVE_A_TITLE', true)."');
                 } else {
                     ".$onSave."
                     submitform(pressbutton);

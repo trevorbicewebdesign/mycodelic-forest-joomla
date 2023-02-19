@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -138,10 +138,10 @@ class K2ViewUsers extends K2View
             $document->addScriptDeclaration("
                 var K2Language = ['".JText::_('K2_REPORT_USER_WARNING', true)."'];
 
-                \$K2(document).ready(function(){
-                    \$K2('#K2ImportUsersButton').click(function(event){
+                \$K2(document).ready(function() {
+                    \$K2('#K2ImportUsersButton').click(function(event) {
                         var answer = confirm('".JText::_('K2_WARNING_YOU_ARE_ABOUT_TO_IMPORT_JOOMLA_USERS_TO_K2_GENERATING_CORRESPONDING_K2_USER_GROUPS_IF_YOU_HAVE_EXECUTED_THIS_OPERATION_BEFORE_DUPLICATE_CONTENT_MAY_BE_PRODUCED', true)."');
-                        if (!answer){
+                        if (!answer) {
                             event.preventDefault();
                         }
                     });
@@ -246,7 +246,6 @@ class K2ViewUsers extends K2View
 
         JToolBarHelper::custom('saveMove', 'save.png', 'save_f2.png', 'K2_SAVE', false);
         JToolBarHelper::custom('cancelMove', 'cancel.png', 'cancel_f2.png', 'K2_CANCEL', false);
-        //JToolBarHelper::cancel();
 
         parent::display();
     }

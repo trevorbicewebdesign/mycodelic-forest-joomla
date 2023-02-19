@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -65,7 +65,7 @@ K2HelperUtilities::setDefaultImage($this->item, 'itemlist', $this->params);
         <?php if($this->item->params->get('catItemAuthor')): ?>
         <!-- Item Author -->
         <span class="catItemAuthor">
-            <?php echo K2HelperUtilities::writtenBy($this->item->author->profile->gender); ?>
+            <?php echo (!empty($this->item->author->profile->gender)) ? K2HelperUtilities::writtenBy($this->item->author->profile->gender) : ''; ?>
             <?php if(isset($this->item->author->link) && $this->item->author->link): ?>
             <a rel="author" href="<?php echo $this->item->author->link; ?>"><?php echo $this->item->author->name; ?></a>
             <?php else: ?>

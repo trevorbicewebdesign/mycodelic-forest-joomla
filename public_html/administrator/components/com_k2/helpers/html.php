@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -75,6 +75,15 @@ class K2HelperHTML
                 <li>
                     <span>'.JText::_('K2_INFORMATION').'</span>
                 </li>
+            ';
+            if ($user->gid > 23) {
+                $sidebarMenu .= '
+                <li>
+                    <span>'.JText::_('K2_SETTINGS').'</span>
+                </li>
+                ';
+            }
+            $sidebarMenu .= '
             </ul>
             ';
         } else {
@@ -265,7 +274,7 @@ class K2HelperHTML
                 if ($app->isSite()) {
                     // B/C for saved old options
                     if ($option == 'com_k2' && $view == 'item' && $task == 'edit') {
-                        $document->addScript('https://code.jquery.com/jquery-1.8.3.min.js');
+                        $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js');
                     } else {
                         if ($jQueryHandling) {
                             if ($jQueryHandling == '1.7remote') {
@@ -286,7 +295,7 @@ class K2HelperHTML
                             if ($jQueryHandling == '1.12remote') {
                                 $jQueryHandling = '1.12.4';
                             }
-                            $document->addScript('https://code.jquery.com/jquery-'.$jQueryHandling.'.min.js');
+                            $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/jquery/'.$jQueryHandling.'/jquery.min.js');
                         }
                     }
                 }
@@ -294,9 +303,9 @@ class K2HelperHTML
                 // Backend
                 if ($app->isAdmin()) {
                     if (($option == 'com_k2' && ($view == 'item' || $view == 'category')) || $option == 'com_menus') {
-                        $document->addScript('https://code.jquery.com/jquery-1.8.3.min.js');
+                        $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js');
                     } else {
-                        $document->addScript('https://code.jquery.com/jquery-1.12.4.min.js');
+                        $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js');
                     }
                 }
             }
@@ -305,13 +314,13 @@ class K2HelperHTML
             if ($jQueryUI) {
                 // Load version 1.8.24 for tabs & sortables (called the "old" way)...
                 if (($option == 'com_k2' && ($view == 'item' || $view == 'category')) || $option == 'com_menus') {
-                    $document->addScript('https://code.jquery.com/ui/1.8.24/jquery-ui.min.js');
+                    $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.8.24/jquery-ui.min.js');
                 }
 
                 // Load latest version for the "media" view & modules only
                 if (($option == 'com_k2' && $view == 'media') || $option == 'com_modules' || $option == 'com_advancedmodules') {
-                    $document->addStyleSheet('https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css');
-                    $document->addScript('https://code.jquery.com/ui/1.12.1/jquery-ui.min.js');
+                    $document->addStyleSheet('https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.min.css');
+                    $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js');
                 }
             }
 
@@ -337,23 +346,23 @@ class K2HelperHTML
                     })();
 
                     // K2 Language Strings
-                    var K2_THE_ENTRY_IS_ALREADY_IN_THE_LIST = '".JText::_('K2_THE_ENTRY_IS_ALREADY_IN_THE_LIST')."';
-                    var K2_REMOVE_THIS_ENTRY = '".JText::_('K2_REMOVE_THIS_ENTRY')."';
-                    var K2_THE_ENTRY_WAS_ADDED_IN_THE_LIST = '".JText::_('K2_THE_ENTRY_WAS_ADDED_IN_THE_LIST')."';
+                    var K2_THE_ENTRY_IS_ALREADY_IN_THE_LIST = '".JText::_('K2_THE_ENTRY_IS_ALREADY_IN_THE_LIST', true)."';
+                    var K2_REMOVE_THIS_ENTRY = '".JText::_('K2_REMOVE_THIS_ENTRY', true)."';
+                    var K2_THE_ENTRY_WAS_ADDED_IN_THE_LIST = '".JText::_('K2_THE_ENTRY_WAS_ADDED_IN_THE_LIST', true)."';
 
                 ");
                 $document->addScript(JURI::root(true).'/media/k2/assets/js/k2.backend.js?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID.'&sitepath='.JURI::root(true).'/');
 
                 // NicEdit
                 if ($option == 'com_k2' && $view == 'item') {
-                    $document->addScript(JURI::root(true).'/media/k2/assets/vendors/bkirchoff/nicedit/nicEdit.js?v='.K2_CURRENT_VERSION);
+                    $document->addScript(JURI::root(true).'/media/k2/assets/vendors/bkirchoff/nicedit/nicEdit.js?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
                 }
 
                 // Media (elFinder)
                 if ($view == 'media') {
-                    $document->addStyleSheet(JURI::root(true).'/media/k2/assets/vendors/studio-42/elfinder/css/elfinder.min.css?v='.K2_CURRENT_VERSION);
-                    $document->addStyleSheet(JURI::root(true).'/media/k2/assets/vendors/studio-42/elfinder/css/theme.css?v='.K2_CURRENT_VERSION);
-                    $document->addScript(JURI::root(true).'/media/k2/assets/vendors/studio-42/elfinder/js/elfinder.min.js?v='.K2_CURRENT_VERSION);
+                    $document->addStyleSheet(JURI::root(true).'/media/k2/assets/vendors/studio-42/elfinder/css/elfinder.min.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
+                    $document->addStyleSheet(JURI::root(true).'/media/k2/assets/vendors/studio-42/elfinder/css/theme.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
+                    $document->addScript(JURI::root(true).'/media/k2/assets/vendors/studio-42/elfinder/js/elfinder.min.js?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
                 } else {
                     JHTML::_('behavior.tooltip');
                     if (version_compare(JVERSION, '3.0.0', 'ge')) {
@@ -372,40 +381,40 @@ class K2HelperHTML
 
                 // Flatpickr
                 if ($view == 'item' || $view == 'extrafield') {
-                    $document->addStyleSheet('https://cdn.jsdelivr.net/npm/flatpickr@4.5.7/dist/flatpickr.min.css');
-                    $document->addScript('https://cdn.jsdelivr.net/npm/flatpickr@4.5.7/dist/flatpickr.min.js');
+                    $document->addStyleSheet('https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.5.7/flatpickr.min.css');
+                    $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.5.7/flatpickr.min.js');
                     if ($languageTag != 'en') {
                         if ($languageTag == 'el') {
                             $languageTag = 'gr';
                         }
-                        $document->addScript('https://cdn.jsdelivr.net/npm/flatpickr@4.5.7/dist/l10n/'.$languageTag.'.js');
+                        $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.5.7/l10n/'.$languageTag.'.js');
                         $document->addScriptDeclaration('
                             /* K2 - Flatpickr Localization */
                             flatpickr.localize(flatpickr.l10ns.'.$languageTag.');
                         ');
                     }
-                    $document->addCustomTag('<!--[if IE 9]><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/flatpickr@4.5.7/dist/ie.css" /><![endif]-->');
+                    $document->addCustomTag('<!--[if IE 9]><link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.5.7/ie.css" /><![endif]-->');
                 }
 
                 // Magnific Popup
-                $document->addStyleSheet('https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/magnific-popup.min.css');
+                $document->addStyleSheet('https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css');
                 $document->addStyleDeclaration('
                     /* K2 - Magnific Popup Overrides */
                     .mfp-iframe-holder {padding:10px;}
                     .mfp-iframe-holder .mfp-content {max-width:100%;width:100%;height:100%;}
                     .mfp-iframe-scaler iframe {background:#fff;padding:10px;box-sizing:border-box;box-shadow:none;}
                 ');
-                $document->addScript('https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/jquery.magnific-popup.min.js');
+                $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js');
 
                 // Fancybox
                 if (in_array($view, array('item', 'items', 'category', 'categories', 'user', 'users'))) {
-                    $document->addStyleSheet('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css');
-                    $document->addScript('https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js');
+                    $document->addStyleSheet('https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css');
+                    $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js');
                 }
 
                 // CSS
                 if ($option == 'com_k2' || $adminModuleIncludes) {
-                    $document->addStyleSheet('https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css');
+                    $document->addStyleSheet('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
                 }
                 if ($option == 'com_k2') {
                     $document->addStyleSheet('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap');
@@ -420,14 +429,14 @@ class K2HelperHTML
             if ($app->isSite()) {
                 // Magnific Popup
                 if (!$user->guest || ($option == 'com_k2' && $view == 'item') || defined('K2_JOOMLA_MODAL_REQUIRED')) {
-                    $document->addStyleSheet('https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/magnific-popup.min.css');
+                    $document->addStyleSheet('https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css');
                     $document->addStyleDeclaration('
                         /* K2 - Magnific Popup Overrides */
                         .mfp-iframe-holder {padding:10px;}
                         .mfp-iframe-holder .mfp-content {max-width:100%;width:100%;height:100%;}
                         .mfp-iframe-scaler iframe {background:#fff;padding:10px;box-sizing:border-box;box-shadow:none;}
                     ');
-                    $document->addScript('https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/jquery.magnific-popup.min.js');
+                    $document->addScript('https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js');
                 }
 
                 // JS
@@ -439,13 +448,13 @@ class K2HelperHTML
                     $template = JRequest::getCmd('template');
 
                     // Simple Line Icons
-                    $document->addStyleSheet('https://cdn.jsdelivr.net/npm/simple-line-icons@2.4.1/css/simple-line-icons.css');
+                    $document->addStyleSheet('https://cdnjs.cloudflare.com/ajax/libs/simple-line-icons/2.4.1/css/simple-line-icons.min.css');
 
                     // k2.css
                     if (isset($template) && JFile::exists(JPATH_SITE.'/templates/'.$template.'/css/k2.css')) {
-                        $document->addStyleSheet(JURI::root(true).'/templates/'.$template.'/css/k2.css?v='.K2_CURRENT_VERSION);
+                        $document->addStyleSheet(JURI::root(true).'/templates/'.$template.'/css/k2.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
                     } elseif (JFile::exists(JPATH_SITE.'/templates/'.$app->getTemplate().'/css/k2.css')) {
-                        $document->addStyleSheet(JURI::root(true).'/templates/'.$app->getTemplate().'/css/k2.css?v='.K2_CURRENT_VERSION);
+                        $document->addStyleSheet(JURI::root(true).'/templates/'.$app->getTemplate().'/css/k2.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
                     } else {
                         $document->addStyleSheet(JURI::root(true).'/components/com_k2/css/k2.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID);
                     }
@@ -453,9 +462,9 @@ class K2HelperHTML
                     // k2.print.css
                     if (JRequest::getInt('print') == 1) {
                         if (isset($template) && JFile::exists(JPATH_SITE.'/templates/'.$template.'/css/k2.print.css')) {
-                            $document->addStyleSheet(JURI::root(true).'/templates/'.$template.'/css/k2.print.css?v='.K2_CURRENT_VERSION, 'text/css', 'print');
+                            $document->addStyleSheet(JURI::root(true).'/templates/'.$template.'/css/k2.print.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID, 'text/css', 'print');
                         } elseif (JFile::exists(JPATH_SITE.'/templates/'.$app->getTemplate().'/css/k2.print.css')) {
-                            $document->addStyleSheet(JURI::root(true).'/templates/'.$app->getTemplate().'/css/k2.print.css?v='.K2_CURRENT_VERSION, 'text/css', 'print');
+                            $document->addStyleSheet(JURI::root(true).'/templates/'.$app->getTemplate().'/css/k2.print.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID, 'text/css', 'print');
                         } else {
                             $document->addStyleSheet(JURI::root(true).'/components/com_k2/css/k2.print.css?v='.K2_CURRENT_VERSION.'&b='.K2_BUILD_ID, 'text/css', 'print');
                         }

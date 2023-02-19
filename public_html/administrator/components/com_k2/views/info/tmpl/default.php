@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -55,7 +55,7 @@ defined('_JEXEC') or die;
                                 <tbody>
                                     <tr>
                                         <td><a target="_blank" href="https://github.com/verot/class.upload.php">class.upload.php</a></td>
-                                        <td>0.34dev</td>
+                                        <td>0.34dev (modified by JoomlaWorks)</td>
                                         <td><?php echo JText::_('K2_PHP_LIBRARY'); ?></td>
                                         <td>GNU/GPL v2</td>
                                     </tr>
@@ -79,14 +79,8 @@ defined('_JEXEC') or die;
                                     </tr>
                                     <tr>
                                         <td><a target="_blank" href="https://github.com/Studio-42/elFinder">elFinder</a></td>
-                                        <td>2.1.50</td>
+                                        <td>2.1.61</td>
                                         <td><?php echo JText::_('K2_INFO_FILE_MANAGER'); ?></td>
-                                        <td>BSD</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a target="_blank" href="https://github.com/google/recaptcha">reCAPTCHA PHP client library (by Google)</a></td>
-                                        <td>1.2.1</td>
-                                        <td><?php echo JText::_('K2_PHP_LIBRARY'); ?></td>
                                         <td>BSD</td>
                                     </tr>
                                     <tr>

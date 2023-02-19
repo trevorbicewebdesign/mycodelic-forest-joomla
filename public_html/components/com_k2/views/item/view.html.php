@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -157,6 +157,8 @@ class K2ViewItem extends K2View
             $params->set('recaptcha', false);
             $item->params->set('recaptcha', false);
         }
+        $params->set('recaptchaV2', true);
+        $item->params->set('recaptchaV2', true);
 
         // Comments
         if ($document->getType() != 'json') {
@@ -185,32 +187,16 @@ class K2ViewItem extends K2View
                     // Load reCaptcha
                     if (!JRequest::getInt('print') && ($item->params->get('comments') == '1' || ($item->params->get('comments') == '2' && K2HelperPermissions::canAddComment($item->catid)))) {
                         if ($params->get('recaptcha') && ($user->guest || $params->get('recaptchaForRegistered', 1))) {
-                            if ($params->get('recaptchaV2')) {
-                                $document->addScript('https://www.google.com/recaptcha/api.js?onload=onK2RecaptchaLoaded&render=explicit');
-                                $document->addScriptDeclaration('
-                                    /* K2: reCaptcha v2 */
-                                    function onK2RecaptchaLoaded(){
-                                        grecaptcha.render("recaptcha", {
-                                            "sitekey": "'.$item->params->get('recaptcha_public_key').'"
-                                        });
-                                    }
-                                ');
-                                $this->recaptchaClass = 'k2-recaptcha-v2';
-                            } else {
-                                $document->addScript('https://www.google.com/recaptcha/api/js/recaptcha_ajax.js');
-                                $document->addScriptDeclaration('
-                                    /* K2: reCaptcha v1 */
-                                    function showRecaptcha(){
-                                        Recaptcha.create("'.$item->params->get('recaptcha_public_key').'", "recaptcha", {
-                                            theme: "'.$item->params->get('recaptcha_theme', 'clean').'"
-                                        });
-                                    }
-                                    $K2(window).load(function() {
-                                        showRecaptcha();
+                            $document->addScript('https://www.google.com/recaptcha/api.js?onload=onK2RecaptchaLoaded&render=explicit');
+                            $document->addScriptDeclaration('
+                                function onK2RecaptchaLoaded() {
+                                    grecaptcha.render("recaptcha", {
+                                        "sitekey": "'.$item->params->get('recaptcha_public_key').'",
+                                        "theme": "'.$item->params->get('recaptcha_theme', 'light').'"
                                     });
-                                ');
-                                $this->recaptchaClass = 'k2-recaptcha-v1';
-                            }
+                                }
+                            ');
+                            $this->recaptchaClass = 'k2-recaptcha-v2';
                         }
                     }
 
@@ -276,8 +262,8 @@ class K2ViewItem extends K2View
 
         // Author's latest items
         if ($item->params->get('itemAuthorLatest') && $item->created_by_alias == '') {
-            $model = $this->getModel('itemlist');
-            $authorLatestItems = $model->getAuthorLatest($item->id, $item->params->get('itemAuthorLatestLimit'), $item->created_by);
+            $itemlistModel = $this->getModel('itemlist');
+            $authorLatestItems = $itemlistModel->getAuthorLatest($item->id, $item->params->get('itemAuthorLatestLimit'), $item->created_by);
             if (count($authorLatestItems)) {
                 for ($i = 0; $i < count($authorLatestItems); $i++) {
                     $authorLatestItems[$i]->link = urldecode(JRoute::_(K2HelperRoute::getItemRoute($authorLatestItems[$i]->id.':'.urlencode($authorLatestItems[$i]->alias), $authorLatestItems[$i]->catid.':'.urlencode($authorLatestItems[$i]->categoryalias))));
@@ -288,8 +274,8 @@ class K2ViewItem extends K2View
 
         // Related items
         if ($item->params->get('itemRelated') && isset($item->tags) && count($item->tags)) {
-            $model = $this->getModel('itemlist');
-            $relatedItems = $model->getRelatedItems($item->id, $item->tags, $item->params);
+            $itemlistModel = $this->getModel('itemlist');
+            $relatedItems = $itemlistModel->getRelatedItems($item->id, $item->tags, $item->params);
             if (count($relatedItems)) {
                 for ($i = 0; $i < count($relatedItems); $i++) {
                     $relatedItems[$i]->link = urldecode(JRoute::_(K2HelperRoute::getItemRoute($relatedItems[$i]->id.':'.urlencode($relatedItems[$i]->alias), $relatedItems[$i]->catid.':'.urlencode($relatedItems[$i]->categoryalias))));
@@ -300,48 +286,15 @@ class K2ViewItem extends K2View
 
         // Navigation (previous and next item)
         if ($item->params->get('itemNavigation')) {
-            $model = $this->getModel('item');
-
-            $nextItem = $model->getNextItem($item->id, $item->catid, $item->ordering);
-            if (!is_null($nextItem)) {
-                $item->nextLink = urldecode(JRoute::_(K2HelperRoute::getItemRoute($nextItem->id.':'.urlencode($nextItem->alias), $nextItem->catid.':'.urlencode($item->category->alias))));
-                $item->nextTitle = $nextItem->title;
-
-                // Image
-                $item->nextImageXSmall = '';
-                $item->nextImageSmall = '';
-                $item->nextImageMedium = '';
-                $item->nextImageLarge = '';
-                $item->nextImageXLarge = '';
-
-                $imageTimestamp = '';
-                $dateModified = ((int) $nextItem->modified) ? $nextItem->modified : '';
-                if ($params->get('imageTimestamp', 1) && $dateModified) {
-                    $imageTimestamp = '?t='.strftime("%Y%m%d_%H%M%S", strtotime($dateModified));
-                }
-
-                $imageFilenamePrefix = md5("Image".$nextItem->id);
-                $imagePathPrefix = JUri::base(true).'/media/k2/items/cache/'.$imageFilenamePrefix;
-
-                // Check if the "generic" variant exists
-                if (JFile::exists(JPATH_SITE.'/media/k2/items/cache/'.$imageFilenamePrefix.'_Generic.jpg')) {
-                    $item->nextImageGeneric = $imagePathPrefix.'_Generic.jpg'.$imageTimestamp;
-                    $item->nextImageXSmall  = $imagePathPrefix.'_XS.jpg'.$imageTimestamp;
-                    $item->nextImageMedium  = $imagePathPrefix.'_S.jpg'.$imageTimestamp;
-                    $item->nextImageMedium  = $imagePathPrefix.'_M.jpg'.$imageTimestamp;
-                    $item->nextImageLarge   = $imagePathPrefix.'_L.jpg'.$imageTimestamp;
-                    $item->nextImageXLarge  = $imagePathPrefix.'_XL.jpg'.$imageTimestamp;
-
-                    $item->nextImageProperties = new stdClass;
-                    $item->nextImageProperties->filenamePrefix = $imageFilenamePrefix;
-                    $item->nextImageProperties->pathPrefix = $imagePathPrefix;
-                }
-            }
-
-            $previousItem = $model->getPreviousItem($item->id, $item->catid, $item->ordering);
+            // Previous Item
+            $previousItem = $model->getPreviousItem($item->id, $item->catid, $item->ordering, $item->params->get('catOrdering'));
             if (!is_null($previousItem)) {
-                $item->previousLink = urldecode(JRoute::_(K2HelperRoute::getItemRoute($previousItem->id.':'.urlencode($previousItem->alias), $previousItem->catid.':'.urlencode($item->category->alias))));
-                $item->previousTitle = $previousItem->title;
+                $item->previous = $model->prepareItem($previousItem, 'item', '');
+                $item->previous = $model->execPlugins($item->previous, 'item', '');
+
+                // B/C
+                $item->previousLink = $item->previous->link;
+                $item->previousTitle = $item->previous->title;
 
                 // Image
                 $item->previousImageXSmall = '';
@@ -363,7 +316,7 @@ class K2ViewItem extends K2View
                 if (JFile::exists(JPATH_SITE.'/media/k2/items/cache/'.$imageFilenamePrefix.'_Generic.jpg')) {
                     $item->previousImageGeneric = $imagePathPrefix.'_Generic.jpg'.$imageTimestamp;
                     $item->previousImageXSmall  = $imagePathPrefix.'_XS.jpg'.$imageTimestamp;
-                    $item->previousImageMedium  = $imagePathPrefix.'_S.jpg'.$imageTimestamp;
+                    $item->previousImageSmall   = $imagePathPrefix.'_S.jpg'.$imageTimestamp;
                     $item->previousImageMedium  = $imagePathPrefix.'_M.jpg'.$imageTimestamp;
                     $item->previousImageLarge   = $imagePathPrefix.'_L.jpg'.$imageTimestamp;
                     $item->previousImageXLarge  = $imagePathPrefix.'_XL.jpg'.$imageTimestamp;
@@ -371,6 +324,47 @@ class K2ViewItem extends K2View
                     $item->previousImageProperties = new stdClass;
                     $item->previousImageProperties->filenamePrefix = $imageFilenamePrefix;
                     $item->previousImageProperties->pathPrefix = $imagePathPrefix;
+                }
+            }
+
+            // Next Item
+            $nextItem = $model->getNextItem($item->id, $item->catid, $item->ordering, $item->params->get('catOrdering'));
+            if (!is_null($nextItem)) {
+                $item->next = $model->prepareItem($nextItem, 'item', '');
+                $item->next = $model->execPlugins($item->next, 'item', '');
+
+                // B/C
+                $item->nextLink = $item->next->link;
+                $item->nextTitle = $item->next->title;
+
+                // Image
+                $item->nextImageXSmall = '';
+                $item->nextImageSmall = '';
+                $item->nextImageMedium = '';
+                $item->nextImageLarge = '';
+                $item->nextImageXLarge = '';
+
+                $imageTimestamp = '';
+                $dateModified = ((int) $nextItem->modified) ? $nextItem->modified : '';
+                if ($params->get('imageTimestamp', 1) && $dateModified) {
+                    $imageTimestamp = '?t='.strftime("%Y%m%d_%H%M%S", strtotime($dateModified));
+                }
+
+                $imageFilenamePrefix = md5("Image".$nextItem->id);
+                $imagePathPrefix = JUri::base(true).'/media/k2/items/cache/'.$imageFilenamePrefix;
+
+                // Check if the "generic" variant exists
+                if (JFile::exists(JPATH_SITE.'/media/k2/items/cache/'.$imageFilenamePrefix.'_Generic.jpg')) {
+                    $item->nextImageGeneric = $imagePathPrefix.'_Generic.jpg'.$imageTimestamp;
+                    $item->nextImageXSmall  = $imagePathPrefix.'_XS.jpg'.$imageTimestamp;
+                    $item->nextImageSmall   = $imagePathPrefix.'_S.jpg'.$imageTimestamp;
+                    $item->nextImageMedium  = $imagePathPrefix.'_M.jpg'.$imageTimestamp;
+                    $item->nextImageLarge   = $imagePathPrefix.'_L.jpg'.$imageTimestamp;
+                    $item->nextImageXLarge  = $imagePathPrefix.'_XL.jpg'.$imageTimestamp;
+
+                    $item->nextImageProperties = new stdClass;
+                    $item->nextImageProperties->filenamePrefix = $imageFilenamePrefix;
+                    $item->nextImageProperties->pathPrefix = $imagePathPrefix;
                 }
             }
         }
@@ -429,17 +423,16 @@ class K2ViewItem extends K2View
 
         // --- JSON Output [start] ---
         if ($document->getType() == 'json') {
+            $uri = JURI::getInstance();
+
             // Build the output object
             $row = $model->prepareJSONItem($item);
 
             // Output
-            $response = new stdClass();
+            $response = new stdClass;
 
             // Site
-            $response->site = new stdClass();
-
-            $uri = JURI::getInstance();
-
+            $response->site = new stdClass;
             $response->site->url = $uri->toString(array('scheme', 'host', 'port'));
             $response->site->name = (K2_JVERSION == '30') ? $config->get('sitename') : $config->getValue('config.sitename');
             $response->item = $row;
@@ -467,7 +460,7 @@ class K2ViewItem extends K2View
         JResponse::setHeader('Last-Modified', $itemCreatedOrModifiedDate);
 
         // Etag HTTP header
-        JResponse::setHeader('ETag', md5($item->alias.'_'.$itemCreatedOrModifiedDate));
+        JResponse::setHeader('ETag', md5($item->id.'_'.$itemCreatedOrModifiedDate));
 
         // Append as custom script tag to bypass Joomla cache shortcomings
         if (K2_JVERSION == '15') {
@@ -476,7 +469,7 @@ class K2ViewItem extends K2View
             $caching = $config->get('caching');
         }
         if ($caching) {
-            $document->addScriptDeclaration('{"Last-Modified": "'.$itemCreatedOrModifiedDate.'", "ETag": "'.md5($item->alias.'_'.$itemCreatedOrModifiedDate).'"}', 'application/x-k2-headers');
+            $document->addScriptDeclaration('{"Last-Modified": "'.$itemCreatedOrModifiedDate.'", "ETag": "'.md5($item->id.'_'.$itemCreatedOrModifiedDate).'"}', 'application/x-k2-headers');
         }
 
         // --- Insert additional HTTP headers [finish] ---
@@ -586,6 +579,13 @@ class K2ViewItem extends K2View
                 }
             }
 
+            // Use a large image preview for Google Discover
+            if ($metaRobots == '') {
+                $metaRobots = 'max-image-preview:large';
+            } else {
+                $metaRobots .= ', max-image-preview:large';
+            }
+
             $document->setMetadata('robots', $metaRobots);
 
             $metaAuthor = trim($metaAuthor);
@@ -618,7 +618,7 @@ class K2ViewItem extends K2View
 
             // Set Twitter meta tags
             if ($params->get('twitterMetatags', 1)) {
-                $document->setMetaData('twitter:card', 'summary');
+                $document->setMetaData('twitter:card', $params->get('twitterCardType', 'summary'));
                 if ($params->get('twitterUsername')) {
                     $document->setMetaData('twitter:site', '@'.$params->get('twitterUsername'));
                 }
@@ -771,7 +771,11 @@ class K2ViewItem extends K2View
 
     private function absUrl($relUrl)
     {
-        return substr(JURI::root(), 0, -1).str_replace(JURI::root(true), '', $relUrl);
+        if (substr($relUrl, 0, 4) != 'http') {
+            return substr(JURI::root(), 0, -1).str_replace(JURI::root(true), '', $relUrl);
+        } else {
+            return $relUrl;
+        }
     }
 
     private function filterHTML($str)

@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -124,7 +124,7 @@ if (
     </div>
 
     <!-- K2 Update Service -->
-    <script type="text/javascript">var K2_INSTALLED_VERSION = \''.K2_CURRENT_VERSION.'\';</script>
+    <script type="text/javascript">var K2_INSTALLED_VERSION = \''.K2_CURRENT_VERSION.'.'.K2_BUILD_ID.'\';</script>
     <script type="text/javascript" src="https://getk2.org/app/update.js?t='.date('Ymd').'"></script>
     ';
 } else {

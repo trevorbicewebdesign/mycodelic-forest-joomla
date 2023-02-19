@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -54,9 +54,18 @@ defined('_JEXEC') or die;
                 </div>
                 <div class="paramValue">
                     <input type="file" name="image" accept="image/*" />
-                    <?php if ($this->row->image): ?>
+                    <?php if ($this->row->image):
+                        $avatarTimestamp = '';
+                        $avatarFile = JPATH_SITE.'/media/k2/users/'.$this->row->image;
+                        if (file_exists($avatarFile) && filemtime($avatarFile)) {
+                            $avatarTimestamp = '?t='.date("Ymd_Hi", filemtime($avatarFile));
+                        }
+                        $avatar = JURI::root(true).'/media/k2/users/'.$this->row->image.$avatarTimestamp;
+                    ?>
                     <div class="k2ImagePreview">
-                        <img class="k2AdminImage" src="<?php echo JURI::root().'media/k2/users/'.$this->row->image; ?>" alt="<?php echo $this->row->name; ?>" />
+                        <a href="<?php echo $avatar; ?>" title="<?php echo JText::_('K2_PREVIEW_IMAGE'); ?>" data-fancybox="gallery" data-caption="<?php echo $this->row->name; ?>">
+                            <img class="k2AdminImage" src="<?php echo $avatar; ?>" alt="<?php echo $this->row->name; ?>" />
+                        </a>
                         <br />
                         <input type="checkbox" name="del_image" id="del_image" />
                         <label for="del_image"><?php echo JText::_('K2_CHECK_THIS_BOX_TO_DELETE_CURRENT_IMAGE_OR_JUST_UPLOAD_A_NEW_IMAGE_TO_REPLACE_THE_EXISTING_ONE'); ?></label>
@@ -84,10 +93,12 @@ defined('_JEXEC') or die;
             <?php foreach ($this->K2Plugins as $K2Plugin): ?>
             <?php if (!is_null($K2Plugin)): ?>
             <li>
-                <fieldset class="adminform">
-                    <legend><?php echo $K2Plugin->name; ?></legend>
-                    <?php echo $K2Plugin->fields; ?>
-                </fieldset>
+                <div class="userPlugins pluginIs<?php echo preg_replace('/[^\p{L}\p{N}_]/u', '', ucwords(strtolower($K2Plugin->name))); ?>">
+                    <h3><?php echo $K2Plugin->name; ?></h3>
+                    <div class="userPluginFields">
+                        <?php echo $K2Plugin->fields; ?>
+                    </div>
+                </div>
             </li>
             <?php endif; ?>
             <?php endforeach; ?>

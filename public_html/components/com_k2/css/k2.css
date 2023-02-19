@@ -1,9 +1,9 @@
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license:https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 /*
@@ -69,10 +69,12 @@ span.siteRoot {display:none;}
 .largerFontSize {font-size:150%;line-height:140%;}
 
 /* --- ReCaptcha --- */
+/*
 .recaptchatable .recaptcha_image_cell,
 #recaptcha_table {background-color:#fff !important;}
 #recaptcha_table {border-color:#ccc !important;}
 #recaptcha_response_field {border-color:#ccc !important;background-color:#fff !important;}
+*/
 .k2-recaptcha-v2 {margin-top:12px;}
 
 /* --- Icon Font Support --- */
@@ -292,9 +294,9 @@ div.itemAttachmentsBlock {padding:4px;border-bottom:1px dotted #ccc;}
 div.itemAuthorBlock {background:#fafafa;border:1px solid #ddd;border-radius:4px;margin:0 0 16px 0;padding:8px;}
     div.itemAuthorBlock img.itemAuthorAvatar {float:left;display:block;background:#fff;padding:4px;border:1px solid #ddd;margin:0 8px 0 0;border-radius:50%;}
     div.itemAuthorBlock div.itemAuthorDetails {margin:0;padding:4px 0 0 0;}
-    div.itemAuthorBlock div.itemAuthorDetails h3.authorName {margin:0 0 4px 0;padding:0;}
-    div.itemAuthorBlock div.itemAuthorDetails h3.authorName a {font-size:16px;}
-    div.itemAuthorBlock div.itemAuthorDetails h3.authorName a:hover {}
+    div.itemAuthorBlock div.itemAuthorDetails h3.itemAuthorName {margin:0 0 4px 0;padding:0;}
+    div.itemAuthorBlock div.itemAuthorDetails h3.itemAuthorName a {font-size:16px;}
+    div.itemAuthorBlock div.itemAuthorDetails h3.itemAuthorName a:hover {}
     div.itemAuthorBlock div.itemAuthorDetails p {}
     div.itemAuthorBlock div.itemAuthorDetails span.itemAuthorUrl {font-weight:bold;color:#555;}
     div.itemAuthorBlock div.itemAuthorDetails span.itemAuthorEmail {font-weight:bold;color:#555;}
@@ -819,6 +821,8 @@ img.k2AccountPageImage {border:4px solid #ddd;margin:10px 0;padding:0;display:bl
 .k2AccountPage table.admintable td.key,
 .k2AccountPage table.admintable td.paramlist_key {background:#f6f6f6;border-bottom:1px solid #e9e9e9;border-right:1px solid #e9e9e9;color:#666;font-weight:bold;text-align:right;font-size:11px;width:140px;}
 
+.k2-plain-text-editor {width:100%;min-height:100px;padding:8px;box-sizing:border-box;}
+
 /* Profile edit */
 .k2AccountPage table.admintable {}
 .k2AccountPage table.admintable tr td {}
@@ -1027,6 +1031,13 @@ div.k2TagCloudBlock a:hover {padding:4px;float:left;display:block;background:#13
 
 /* --- Custom Code --- */
 div.k2CustomCodeBlock {}
+
+/* --- Selected Tags --- */
+.k2SelectedTagsBlock {}
+.k2SelectedTagsBlock ul {list-style:none;padding:8px 0;margin:0;}
+.k2SelectedTagsBlock ul li {display:inline-block;}
+.k2SelectedTagsBlock ul li a {display:inline-block;padding:4px 8px;font-size:1.12rem;}
+.k2SelectedTagsBlock ul li a:before {content:"#";margin:0;}
 
 
 

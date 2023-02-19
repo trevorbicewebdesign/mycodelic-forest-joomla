@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -215,7 +215,7 @@ class modK2ContentHelper
                 case 'hits':
                     if ($params->get('popularityRange')) {
                         if ($params->get('popularityRange') == 'today') {
-                            $date = $jnow->toFormat('%Y-%m-%d').' 00:00:00';
+                            $date = (K2_JVERSION != '15') ? $jnow->format('%Y-%m-%d').' 00:00:00' : $jnow->toFormat('%Y-%m-%d').' 00:00:00';
                             $query .= " AND i.publish_up > '{$date}'";
                         } else {
                             $query .= " AND i.created > DATE_SUB('{$now}', INTERVAL ".$params->get('popularityRange')." DAY)";
@@ -288,6 +288,26 @@ class modK2ContentHelper
                 // Title cleanup
                 $item->title = JFilterOutput::ampReplace($item->title);
 
+                // Manipulate tag rendering in the feed URL
+                if (JRequest::getCmd('format') == 'feed') {
+                    $tagsForFeed = array();
+                    $tags = $model->getItemTags($item->id);
+                    if (is_array($tags) && count($tags)) {
+                        foreach ($tags as $tag) {
+                            $tagsForFeed[] = '#'.str_replace(' ', '_', $tag->name);
+                        }
+                    }
+                    if (JRequest::getBool('tagsontitle', false) && is_array($tagsForFeed) && count($tagsForFeed)) {
+                        // Limit no. of rendered tags in the title (if set)
+                        $tagLimit = JRequest::getInt('taglimit', 0);
+                        if ($tagLimit && $tagLimit < count($tagsForFeed)) {
+                            $tagsForFeed = array_slice($tagsForFeed, 0, $tagLimit);
+                        }
+                        // Append tags to the title
+                        $item->title = html_entity_decode($item->title.' '.implode(' ', $tagsForFeed));
+                    }
+                }
+
                 // Tags
                 if ($params->get('itemTags')) {
                     $tags = $model->getItemTags($item->id);
@@ -354,7 +374,7 @@ class modK2ContentHelper
                     $params->set('afolder', 'media/k2/audio');
 
                     // Create temp object to parse plugins
-                    $mediaTempText = new JObject();
+                    $mediaTempText = new stdClass;
                     $mediaTempText->text = $item->video;
                     if ($params->get('JPlugins', 1)) {
                         if (K2_JVERSION == '15') {
@@ -391,7 +411,7 @@ class modK2ContentHelper
                         foreach ($item->extra_fields as $key => $extraField) {
                             if ($extraField->type == 'textarea' || $extraField->type == 'textfield') {
                                 // Create temp object to parse plugins
-                                $extraFieldTempText = new JObject();
+                                $extraFieldTempText = new stdClass;
                                 $extraFieldTempText->text = $extraField->value;
                                 if ($params->get('JPlugins', 1)) {
                                     if (K2_JVERSION == '15') {

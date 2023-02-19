@@ -1,10 +1,10 @@
 <?php
 /**
- * @version    2.10.x
+ * @version    2.11 (rolling release)
  * @package    K2
  * @author     JoomlaWorks https://www.joomlaworks.net
- * @copyright  Copyright (c) 2006 - 2020 JoomlaWorks Ltd. All rights reserved.
- * @license    GNU/GPL license: https://www.gnu.org/copyleft/gpl.html
+ * @copyright  Copyright (c) 2009 - 2023 JoomlaWorks Ltd. All rights reserved.
+ * @license    GNU/GPL: https://gnu.org/licenses/gpl.html
  */
 
 // no direct access
@@ -47,9 +47,9 @@ class K2ViewItems extends K2View
 
         // JS
         $document->addScriptDeclaration("
-            var K2SelectItemsError = '".JText::_('K2_SELECT_SOME_ITEMS_FIRST')."';
-            \$K2(document).ready(function(){
-                \$K2('#K2ImportContentButton').click(function(event){
+            var K2SelectItemsError = '".JText::_('K2_SELECT_SOME_ITEMS_FIRST', true)."';
+            \$K2(document).ready(function() {
+                \$K2('#K2ImportContentButton').click(function(event) {
                     var answer = confirm('".JText::_('K2_WARNING_YOU_ARE_ABOUT_TO_IMPORT_ALL_SECTIONS_CATEGORIES_AND_ARTICLES_FROM_JOOMLAS_CORE_CONTENT_COMPONENT_COM_CONTENT_INTO_K2_IF_THIS_IS_THE_FIRST_TIME_YOU_IMPORT_CONTENT_TO_K2_AND_YOUR_SITE_HAS_MORE_THAN_A_FEW_THOUSAND_ARTICLES_THE_PROCESS_MAY_TAKE_A_FEW_MINUTES_IF_YOU_HAVE_EXECUTED_THIS_OPERATION_BEFORE_DUPLICATE_CONTENT_MAY_BE_PRODUCED', true)."');
                     if(!answer){
                         event.preventDefault();
@@ -203,7 +203,7 @@ class K2ViewItems extends K2View
         if ($params->get('showTagFilter')) {
             $tagsModel = K2Model::getInstance('Tags', 'K2Model');
             $options = $tagsModel->getFilter();
-            $option = new JObject();
+            $option = new stdClass;
             $option->id = 0;
             $option->name = JText::_('K2_SELECT_TAG');
             array_unshift($options, $option);
@@ -340,8 +340,8 @@ class K2ViewItems extends K2View
                     table = document.getElementById("sortTable");
                     direction = document.getElementById("directionTable");
                     order = table.options[table.selectedIndex].value;
-                    if (order != \''.$this->lists['order'].'\') {
-                        dirn = \'asc\';
+                    if (order != "'.$this->lists['order'].'") {
+                        dirn = "asc";
                     } else {
                         dirn = direction.options[direction.selectedIndex].value;
                     }
