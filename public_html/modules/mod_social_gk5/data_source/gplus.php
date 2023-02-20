@@ -28,8 +28,13 @@ class SocialGK5GPLusHelper
 	function render() {
 		// create instances of basic Joomla! classes
 		$document = JFactory::getDocument();
-
-		
+		// init $headData variable
+		$headData = false;	
+		// getting module head section datas
+		unset($headData);
+		$headData = $document->getHeadData();
+		// generate keys of script section
+		$headData_keys = array_keys($headData["scripts"]);
         if(in_array('plus.google.com', $headData_keys)) {
             $link_founded = true;
         }

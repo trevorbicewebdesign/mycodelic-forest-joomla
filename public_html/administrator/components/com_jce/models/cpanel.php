@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -50,7 +50,7 @@ class JceModelCpanel extends JModelLegacy
                 $title = JText::_('WF_' . strtoupper($name) . '_TITLE');
             }
 
-            $icons[] = '<li class="quickicon mb-3"><a title="' . JText::_('WF_' . strtoupper($name) . '_DESC') . '" href="' . $link . '" class="btn btn-default" role="button"><div class="quickicon-icon d-flex align-items-end" role="presentation"><span class="fa fa-' . $icon . ' icon-' . $icon . '" aria-hidden="true" role="presentation"></span></div><div class="quickicon-text d-flex align-items-center"><span class="j-links-link">' . $title . '</span></div></a></li>';
+            $icons[] = '<li class="quickicon mb-3"><a title="' . JText::_('WF_' . strtoupper($name) . '_DESC') . '" href="' . $link . '" class="btn btn-default" role="button"><div class="quickicon-icon d-flex align-items-end" role="presentation"><span class="icon-' . $icon . '" aria-hidden="true" role="presentation"></span></div><div class="quickicon-text d-flex align-items-center"><span class="j-links-link">' . $title . '</span></div></a></li>';
         }
 
         return $icons;
@@ -118,7 +118,7 @@ class JceModelCpanel extends JModelLegacy
             $version = (string) $xml->version;
 
             if (WF_EDITOR_PRO) {
-                $version = '<span class="badge badge-info badge-primary">Pro</span>&nbsp;' . $version;
+                $version = '<span class="badge badge-info badge-primary bg-primary">Pro</span>&nbsp;' . $version;
             }
         }
 

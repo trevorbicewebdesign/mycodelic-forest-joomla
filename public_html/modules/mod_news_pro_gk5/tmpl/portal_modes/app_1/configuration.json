@@ -1,0 +1,9 @@
+{
+	"name": "APP_1",
+	"full_name": "APP_1",
+	"support": [
+		"com_content",
+		"com_k2"
+	],
+	"thumbnails": true
+}

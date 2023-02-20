@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -803,7 +803,9 @@ class WFJoomlaFileSystem extends WFFileSystem
 
         $result = new WFFileSystemResult();
 
-        $result->state = $this->folderCreate($path);
+        $result->state  = $this->folderCreate($path);
+        $result->path   = $path;
+        $result->type   = 'folders';
 
         JFactory::getApplication()->triggerEvent('onWfFileSystemCreateFolder', array($path, $result->state));
 
@@ -891,8 +893,11 @@ class WFJoomlaFileSystem extends WFFileSystem
             'filepath' => $dest,
         ));
 
+        // vars for Joomla events
+        $vars = array('com_jce.file', &$object_file, true, array());
+
         // trigger Joomla event before upload
-        $app->triggerEvent('onContentBeforeSave', array('com_jce.file', &$object_file, true));
+        $app->triggerEvent('onContentBeforeSave', $vars);
 
         if (JFile::upload($src, $dest, false, true)) {
             $result->state = true;
@@ -906,7 +911,7 @@ class WFJoomlaFileSystem extends WFFileSystem
         $object_file->filepath = $result->path;
 
         // trigger Joomla event after upload
-        $app->triggerEvent('onContentAfterSave', array('com_jce.file', &$object_file, true));
+        $app->triggerEvent('onContentAfterSave', $vars);
 
         return $result;
     }

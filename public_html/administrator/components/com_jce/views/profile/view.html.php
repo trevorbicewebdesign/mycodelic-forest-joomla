@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -65,13 +65,13 @@ class JceViewProfile extends JViewLegacy
         $hash = md5(WF_VERSION);
 
         $document = JFactory::getDocument();
-        $document->addStyleSheet('components/com_jce/media/css/profile.min.css?' . $hash);
+        $document->addStyleSheet(JURI::root(true) . '/media/com_jce/css/profile.min.css?' . $hash);
         $document->addStyleSheet(JURI::root(true) . '/components/com_jce/editor/libraries/vendor/jquery/css/jquery-ui.min.css?' . $hash);
 
         $document->addScript(JURI::root(true) . '/components/com_jce/editor/libraries/vendor/jquery/js/jquery-ui.min.js?' . $hash);
 
-        $document->addScript('components/com_jce/media/js/core.min.js?' . $hash);
-        $document->addScript('components/com_jce/media/js/profile.min.js?' . $hash);
+        $document->addScript(JURI::root(true) . '/media/com_jce/js/core.min.js?' . $hash);
+        $document->addScript(JURI::root(true) . '/media/com_jce/js/profile.min.js?' . $hash);
 
         // default theme
         $document->addStyleSheet(JURI::root(true) . '/components/com_jce/editor/tiny_mce/themes/advanced/skins/default/ui.admin.css?' . $hash);

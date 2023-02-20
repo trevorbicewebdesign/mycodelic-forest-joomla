@@ -1,6 +1,6 @@
 jQuery.noConflict();
 
-jQuery(window).load(function(){
+jQuery(window).on('load', function(){
 	jQuery(document).find('.gkTabsGK5').each(function(i, el) {
 		el = jQuery(el);
 		var config = jQuery.parseJSON(el.attr('data-config').replace(new RegExp('\'', 'g'), '"')); 

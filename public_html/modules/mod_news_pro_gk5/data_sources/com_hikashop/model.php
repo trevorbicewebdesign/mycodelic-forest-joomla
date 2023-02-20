@@ -134,7 +134,7 @@ class NSP_GK5_com_hikashop_Model {
 		}
 		//
 		if($config['news_since'] == '' && $config['news_in'] != '') {
-			$since_con = ' AND contentR.product_created >= ' . $db->Quote(strftime('%Y-%m-%d 00:00:00', time() - ($config['news_in'] * 24 * 60 * 60)));
+			$since_con = ' AND contentR.product_created >= ' . $db->Quote(date('Y-m-d H:i:s', time() - ($config['news_in'] * 24 * 60 * 60)));
 		}
 		// Ordering string
 		$order_options = '';

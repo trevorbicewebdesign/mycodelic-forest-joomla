@@ -136,7 +136,7 @@ class NSP_GK5_com_solidres_Model {
 		}
 		//
 		if($config['news_since'] == '' && $config['news_in'] != '') {
-			$since_con = ' AND content.created_date >= ' . $db->Quote(strftime('%Y-%m-%d 00:00:00', time() - ($config['news_in'] * 24 * 60 * 60)));
+			$since_con = ' AND content.created_date >= ' . $db->Quote(date('Y-m-d H:i:s', time() - ($config['news_in'] * 24 * 60 * 60)));
 		}
 		
 		// Ordering string
@@ -337,32 +337,25 @@ class NSP_GK5_com_solidres_Model {
 		return $content; 
 	}
 	
-	static function getPrice($room_id, $day) {
+	static function getPrice($room_id = 0, $day = 0, $currency_id = 1) {
 		$db = JFactory::getDBO();
-		// creating SQL query			
-		$query_news = '
-		SELECT
-			tariff_details.price AS price			
-		FROM 
-			#__sr_tariffs AS tariffs
-		LEFT JOIN
-			#__sr_tariff_details AS tariff_details
-			ON
-			tariffs.id = tariff_details.tariff_id
-		WHERE 
-			tariffs.room_type_id = '.$room_id.'
-			AND
-			tariff_details.w_day = '.$day.'
-		LIMIT 1;
-		';
-		// run SQL query
-		$db->setQuery($query_news);
-		// when exist some results
-		if($news = $db->loadAssocList()) {			
-			// generating tables of news data
-			foreach($news as $item) {	
-				return $item['price'];
-			}
+		$now = gmdate('Y-m-d');
+		$query_news = "SELECT b.price
+			FROM `#__sr_tariffs` a
+			INNER JOIN `#__sr_tariff_details` b ON b.tariff_id = a.id
+			WHERE a.currency_id = {$db->q($currency_id)}
+			AND a.room_type_id = {$db->q($room_id)}
+			AND (a.valid_to >= {$db->q($now)} OR a.valid_to = '0000-00-00')";
+
+		$values = $db->setQuery($query_news)->loadColumn();
+		$values = array_filter($values, function($value) {
+			return (float) $value;
+		});
+
+		if ($values) {
+			return min($values);
+		} else {
+			return 0;
 		}
 	}
 }

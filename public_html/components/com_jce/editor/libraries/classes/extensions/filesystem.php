@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -33,18 +33,17 @@ class WFFileSystem extends WFExtension
     /**
      * Returns a reference to a plugin object.
      *
-     * This method must be invoked as:
-     *    <pre>  $advlink =AdvLink::getInstance();</pre>
-     *
      * @return JCE The editor object
      *
      * @since 1.5
      */
     public static function getInstance($type = 'joomla', $config = array())
     {
-        static $instance = array();
+        static $instances = array();
 
-        if (!isset($instance[$type])) {
+        $signature = md5($type . serialize($config));
+
+        if (!isset($instances[$signature])) {
             $fs = parent::loadExtensions('filesystem', $type);
 
             // load the default...
@@ -60,13 +59,13 @@ class WFFileSystem extends WFExtension
             $classname = 'WF' . ucfirst($fs->name) . 'FileSystem';
 
             if (class_exists($classname)) {
-                $instance[$type] = new $classname($config);
+                $instances[$signature] = new $classname($config);
             } else {
-                $instance[$type] = new self($config);
+                $instances[$signature] = new self($config);
             }
         }
 
-        return $instance[$type];
+        return $instances[$signature];
     }
 
     public function updateOptions(&$options)
@@ -124,8 +123,19 @@ class WFFileSystem extends WFExtension
             }
 
             // Replace any path variables
-            $path_pattern = array('/\$id/', '/\$username/', '/\$name/', '/\$user(group|type)/', '/\$(group|profile)/', '/\$day/', '/\$month/', '/\$year/');
-            $path_replacement = array($user->id, $user->username, $user->name, $usertype, $profile->name, date('d'), date('m'), date('Y'));
+            $path_pattern = array(
+                '/\$id/', 
+                '/\$username/', 
+                '/\$name/', 
+                '/\$user(group|type)/', 
+                '/\$(group|profile)/',
+                '/\$hour/',
+                '/\$day/', 
+                '/\$month/', 
+                '/\$year/'
+            );
+
+            $path_replacement = array($user->id, $user->username, $user->name, $usertype, $profile->name, date('H'), date('d'), date('m'), date('Y'));
 
             $websafe_textcase = $wf->getParam('editor.websafe_textcase', '');
 

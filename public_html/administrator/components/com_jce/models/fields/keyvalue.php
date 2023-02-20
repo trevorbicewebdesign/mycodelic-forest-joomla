@@ -46,11 +46,27 @@ class JFormFieldKeyValue extends JFormField
         $values = $this->value;
 
         if (is_string($values) && !empty($values)) {
-            $values = json_decode(htmlspecialchars_decode($this->value), true);
-        }
+            $value = htmlspecialchars_decode($this->value);
 
-        // cast to array
-        $values = (array) $values;
+            $values = json_decode($value, true);
+
+            if (empty($values) && strpos($value, ':') !== false && strpos($value, '{') === false) {
+                $values = array();
+                
+                foreach (explode(',', $value) as $item) {
+                    $pair = explode(':', $item);
+
+                    array_walk($pair, function (&$val) {
+                        $val = trim($val, chr(0x22) . chr(0x27) . chr(0x38));
+                    });
+
+                    $values[] = array(
+                        'name'  => $pair[0],
+                        'value' => $pair[1]
+                    );
+                }
+            }
+        }
 
         // default
         if (empty($values)) {
@@ -112,7 +128,11 @@ class JFormFieldKeyValue extends JFormField
             $str[] = '</div>';
         }
 
-        $str[] = '<input type="hidden" name="' . $this->name . '" value="' . htmlspecialchars($this->value) . '" />';
+        if (!empty($this->value)) {
+            $this->value = htmlspecialchars(json_encode($values));
+        }
+
+        $str[] = '<input type="hidden" name="' . $this->name . '" value="' . $this->value . '" />';
 
         return implode("", $str);
     }

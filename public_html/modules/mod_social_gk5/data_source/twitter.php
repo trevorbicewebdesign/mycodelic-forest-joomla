@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Gavick Social GK5 - helper class
  * @package Joomla!
@@ -10,173 +11,163 @@
  **/
 // no direct access
 defined('_JEXEC') or die('Restricted access');
-require 'tmhOAuth'.DS.'tmhOAuth.php';
-require 'tmhOAuth'.DS.'tmhUtilities.php';
+require 'tmhOAuth' . DS . 'tmhOAuth.php';
+require 'tmhOAuth' . DS . 'tmhUtilities.php';
 // Main class
 class SocialGK5TwitterHelper
 {
     private $config;
     private $content;
     private $error;
-    private $pData;
+    private $pData = array();
     private $json;
     private $id;
-    
+
     /**
      *  INITIALIZATION 
      **/
-    function __construct($module,$params)
+    function __construct($module, $params)
     {
         jimport('joomla.filesystem.file');
         // configuration array
         $this->config = $params->toArray();
         $this->id = $module->id;
         // query validation process
-        $this->config['twitter_search_query'] = str_replace('#','%23', $this->config['twitter_search_query']);
-        $this->config['twitter_search_query'] = str_replace('@','%40', $this->config['twitter_search_query']);
-        $this->config['twitter_search_query'] = str_replace(' ','%20', $this->config['twitter_search_query']);
+        $this->config['twitter_search_query'] = str_replace('#', '%23', $this->config['twitter_search_query']);
+        $this->config['twitter_search_query'] = str_replace('@', '%40', $this->config['twitter_search_query']);
+        $this->config['twitter_search_query'] = str_replace(' ', '%20', $this->config['twitter_search_query']);
     }
     function getData()
     {
         clearstatcache();
-        setlocale(LC_ALL,"0");
+        setlocale(LC_ALL, "0");
         $doc = JFactory::getDocument();
-        if($this->config['twitter_show_actions']) {
-            if($this->config['cookie_conset'] == 0) {
-                        $content = '<script type="text/javascript" ';   
+        if ($this->config['twitter_show_actions']) {
+            if ($this->config['cookie_conset'] == 0) {
+                $content = '<script type="text/javascript" ';
             } else {
-                        $content = '<script type="text/plain" class="cc-onconsent-social" ';    
+                $content = '<script type="text/plain" class="cc-onconsent-social" ';
             }
             $content .= 'src="//platform.twitter.com/widgets.js"></script>';
             echo $content;
         }
-        if($this->config['twitter_use_css']) {
+        if ($this->config['twitter_use_css']) {
             $uri = JURI::getInstance();
-            $doc->addStyleSheet( $uri->root().'modules/mod_social_gk5/styles/twitter/'.$this->config['twitter_tweet_style'].'.css', 'text/css' );
+            $doc->addStyleSheet($uri->root() . 'modules/mod_social_gk5/styles/twitter/' . $this->config['twitter_tweet_style'] . '.css', 'text/css');
         }
-    
-        if($this->config['twitter_cache'] == 1) {
-            if(filesize(realpath('modules/mod_social_gk5/cache/cache.'.$this->id.'.json')) == 0 || ((filemtime(realpath('modules/mod_social_gk5/cache/cache.'.$this->id.'.json')) + $this->config['twitter_cache_time'] * 60) < time())) {
 
-            // get the data from twitter
-            $this->getTweets();
-            
-            if($this->error == '') {
-                // saving cache
-                if($this->pData != '') {
-                	JFile::write(realpath('modules/mod_social_gk5/cache/cache.'.$this->id.'.json'), json_encode($this->pData));
-                	JFile::write(realpath('modules/mod_social_gk5/cache/cache.backup.'.$this->id.'.json'), json_encode($this->pData));
+        if ($this->config['twitter_cache'] == 1) {
+            $cachePath = JPATH_ROOT . '/modules/mod_social_gk5/cache/cache.' . $this->id . '.json' ;
+            $cacheBackupPath = JPATH_ROOT . '/modules/mod_social_gk5/cache/cache.backup.' . $this->id . '.json' ;
+
+            if (!file_exists($cachePath) || ((filemtime($cachePath) + $this->config['twitter_cache_time'] * 60) < time())) {
+                // get the data from twitter
+                $this->getTweets();
+
+                if ($this->error == '') {
+                    JFile::write(__DIR__ . '/../cache/cache.' . $this->id . '.json', json_encode($this->pData));
+                    JFile::write(__DIR__ . '/../cache/cache.backup.' . $this->id . '.json', json_encode($this->pData));
                 }
             } else {
-                if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-                    $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.backup.'.$this->id.'.json')), true, 512, JSON_BIGINT_AS_STRING);
-                } else {
-                    $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.backup.'.$this->id.'.json')));
-                }
-            }
-            } else {
-                if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-                    $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.'.$this->id.'.json')), true, 512, JSON_BIGINT_AS_STRING);
-                } else {
-                    $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.'.$this->id.'.json')));
-                }
+                $this->pData = json_decode(file_get_contents($cachePath));
             } /// close
         } else {
-            $this->getTweets(); 
-                        
+            $this->getTweets();
         }
     }
     /**
      *  RENDERING LAYOUT
      **/
-    function render() {
-        require (JModuleHelper::getLayoutPath('mod_social_gk5', 'twitterTweets'));
+    function render()
+    {
+        require(JModuleHelper::getLayoutPath('mod_social_gk5', 'twitterTweets'));
     }
-    function dateDifference($date) {
+    function dateDifference($date)
+    {
         return $this->dateDiff("now", $date);
     }
-    
-    function getTweets() {
-        if (function_exists('curl_init') && ($this->config['twitter_search_query'] != '' || $this->config['twitter_tweet_amount'] > 0)) {                
-                $tmhOAuth = new tmhOAuth(array(
-                 'consumer_key' => $this->config['twitter_consumer_key'],
-                 'consumer_secret' => $this->config['twitter_consumer_secret'],
-                 'user_token' => $this->config['twitter_user_token'],
-                 'user_secret' => $this->config['twitter_user_secret'],
-                 'curl_ssl_verifypeer' => true
-                ));
-               
-                $tmhOAuth->request(
-                   'GET',
-                   'https://api.twitter.com/1.1/search/tweets.json',
-                   array(
+
+    function getTweets()
+    {
+        if (function_exists('curl_init') && ($this->config['twitter_search_query'] != '' || $this->config['twitter_tweet_amount'] > 0)) {
+            $tmhOAuth = new tmhOAuth(array(
+                'consumer_key' => $this->config['twitter_consumer_key'],
+                'consumer_secret' => $this->config['twitter_consumer_secret'],
+                'user_token' => $this->config['twitter_user_token'],
+                'user_secret' => $this->config['twitter_user_secret'],
+                'curl_ssl_verifypeer' => true
+            ));
+
+            $tmhOAuth->request(
+                'GET',
+                'https://api.twitter.com/1.1/search/tweets.json',
+                array(
                     'q' => $this->config['twitter_search_query'],
                     'count' => $this->config['twitter_tweet_amount'],
                     'result_type' => 'recent'
-                   )
-                 );
-               
-                if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-                    $decode = json_decode($tmhOAuth->response['response'], true, 512, JSON_BIGINT_AS_STRING); //getting the file content as array
-                } else {
-                    $decode = json_decode($tmhOAuth->response['response'], true, 512);                  
-                }
-               
-                $count = count($decode['statuses']); //counting the number of status        
-                $save = json_encode($tmhOAuth->response['response']);
-                file_put_contents('results.json', $save);
-                            
-                for ($i = 0; $i < $count; $i++) {       
-                    $this->pData[$i]['id'] = $decode['statuses'][$i]['id'];
-                    $this->pData[$i]['text'] = $decode['statuses'][$i]['text'];
-                    $this->pData[$i]['username'] = $decode['statuses'][$i]['user']['screen_name'];
-                    $this->pData[$i]['user_id'] = $decode['statuses'][$i]['user']['id'];
-                    $this->pData[$i]['avatar'] = $decode['statuses'][$i]['user']['profile_image_url'];
-                    $this->pData[$i]['name'] = $decode['statuses'][$i]['user']['name'];
-                    $this->pData[$i]['time'] = date("d M", strtotime($decode['statuses'][$i]['created_at']));
-                    $this->pData[$i]['timestamp'] = $decode['statuses'][$i]['created_at'];
-                    $this->pData[$i]['time_diff'] = $this->dateDifference($decode['statuses'][$i]['created_at']);
-                    $this->pData[$i]['url'] = $decode['statuses'][$i]['user']['screen_name'];
-                    
-                    preg_match_all('/#\w*/', $this->pData[$i]['text'], $matches, PREG_PATTERN_ORDER);
-                    foreach($matches as $key => $match) {
-                        foreach($match as $m) {
-                            $m = substr($m, 1);
-                            $this->pData[$i]['text'] = str_replace($m, "<a href='https://twitter.com/#!/search/".$m."'>".$m."</a>", $this->pData[$i]['text']);
-                        }
-                    }
-                    
-                    preg_match_all('/@\w*/', $this->pData[$i]['text'], $matches, PREG_PATTERN_ORDER);
-                    foreach($matches as $key => $match) {
-                        foreach($match as $m) {
-                            $m = substr($m, 1);
-                            $this->pData[$i]['text'] = str_replace($m, "<a href='https://twitter.com/#!/".$m."'>".$m."</a>", $this->pData[$i]['text']);
-                        }
-                    }
-                    
-                    preg_match_all('/http:\/\/\S*/', $this->pData[$i]['text'], $matches, PREG_PATTERN_ORDER);
-                    foreach($matches as $key => $match) {
-                        foreach($match as $m) {
-                            $this->pData[$i]['text'] = str_replace($m, "<a href='".$m."'>".$m."</a>", $this->pData[$i]['text']);
-                        }
-                    }
-                }
-                
-                if($this->config['twitter_search_query'] == '' || $this->pData=='') {
-                    $this->error = 'There is no feed to display';
-                } else {
-                    usort($this->pData, array($this, "cmp"));
-                }
+                )
+            );
+
+            if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+                $decode = json_decode($tmhOAuth->response['response'], true, 512, JSON_BIGINT_AS_STRING); //getting the file content as array
             } else {
-                $this->error = 'cURL extension and file_get_content method is not available on your server';
-            }   
-        
+                $decode = json_decode($tmhOAuth->response['response'], true, 512);
+            }
+
+            $count = count($decode['statuses']); //counting the number of status        
+            $save = json_encode($tmhOAuth->response['response']);
+            file_put_contents('results.json', $save);
+
+            for ($i = 0; $i < $count; $i++) {
+                $this->pData[$i]['id'] = $decode['statuses'][$i]['id'];
+                $this->pData[$i]['text'] = $decode['statuses'][$i]['text'];
+                $this->pData[$i]['username'] = $decode['statuses'][$i]['user']['screen_name'];
+                $this->pData[$i]['user_id'] = $decode['statuses'][$i]['user']['id'];
+                $this->pData[$i]['avatar'] = $decode['statuses'][$i]['user']['profile_image_url'];
+                $this->pData[$i]['name'] = $decode['statuses'][$i]['user']['name'];
+                $this->pData[$i]['time'] = date("d M", strtotime($decode['statuses'][$i]['created_at']));
+                $this->pData[$i]['timestamp'] = $decode['statuses'][$i]['created_at'];
+                $this->pData[$i]['time_diff'] = $this->dateDifference($decode['statuses'][$i]['created_at']);
+                $this->pData[$i]['url'] = $decode['statuses'][$i]['user']['screen_name'];
+
+                preg_match_all('/#\w*/', $this->pData[$i]['text'], $matches, PREG_PATTERN_ORDER);
+                foreach ($matches as $key => $match) {
+                    foreach ($match as $m) {
+                        $m = substr($m, 1);
+                        $this->pData[$i]['text'] = str_replace($m, "<a href='https://twitter.com/#!/search/" . $m . "'>" . $m . "</a>", $this->pData[$i]['text']);
+                    }
+                }
+
+                preg_match_all('/@\w*/', $this->pData[$i]['text'], $matches, PREG_PATTERN_ORDER);
+                foreach ($matches as $key => $match) {
+                    foreach ($match as $m) {
+                        $m = substr($m, 1);
+                        $this->pData[$i]['text'] = str_replace($m, "<a href='https://twitter.com/#!/" . $m . "'>" . $m . "</a>", $this->pData[$i]['text']);
+                    }
+                }
+
+                preg_match_all('/http:\/\/\S*/', $this->pData[$i]['text'], $matches, PREG_PATTERN_ORDER);
+                foreach ($matches as $key => $match) {
+                    foreach ($match as $m) {
+                        $this->pData[$i]['text'] = str_replace($m, "<a href='" . $m . "'>" . $m . "</a>", $this->pData[$i]['text']);
+                    }
+                }
+            }
+
+            if ($this->config['twitter_search_query'] == '' || $this->pData == '') {
+                $this->error = 'There is no feed to display';
+            } else {
+                usort($this->pData, array($this, "cmp"));
+            }
+        } else {
+            $this->error = 'cURL extension and file_get_content method is not available on your server';
+        }
     }
     /*
     	Function used to get the data comparision
     */
     function cmp($a, $b)
-  	{
+    {
         $a = strtotime($a['timestamp']);
         $b = strtotime($b['timestamp']);
         return ($a == $b) ? 0 : ($a > $b ? -1 : 1);
@@ -253,9 +244,9 @@ class SocialGK5TwitterHelper
     {
         $this->error = '';
         if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.'.$this->id.'.json', true, 512, JSON_BIGINT_AS_STRING)));
+            $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.' . $this->id . '.json', true, 512, JSON_BIGINT_AS_STRING)));
         } else {
-            $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.'.$this->id.'.json')));
+            $this->pData = json_decode(JFile::read(realpath('modules/mod_social_gk5/cache/cache.' . $this->id . '.json')));
         }
     }
 }

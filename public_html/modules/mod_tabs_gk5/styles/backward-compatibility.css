@@ -18,6 +18,28 @@
 .gkTabsWrap {
 	margin: 0;
 }
+.gkTabsWrap.horizontal {
+	display: flex;
+}
+
+.gkTabsWrap.vertical .gkTabsNav + .gkTabsContainer {
+	margin-top: 20px;
+	margin-bottom: 0;
+}
+
+.gkTabsWrap.vertical .gkTabsContainer + .gkTabsNav {
+	margin-top: 20px;
+	margin-bottom: 0;
+}
+
+.gkTabsWrap.horizontal .gkTabsNav li {
+	clear: both;
+}
+
+.gkTabsWrap.horizontal .gkTabsNav li + li {
+	margin-top: 10px;
+}
+
 .gkTabsContainer {
 	-webkit-transition: all .3s ease-out;
 	-moz-transition: all .3s ease-out;
@@ -31,7 +53,7 @@
 	box-sizing: border-box;
 	display: block!important;
 	left: 0!important;
-	padding: 20px 2px;
+	padding: 0;
 	position: absolute;
 	top: 0;
 	-webkit-transition: all .3s ease-out;

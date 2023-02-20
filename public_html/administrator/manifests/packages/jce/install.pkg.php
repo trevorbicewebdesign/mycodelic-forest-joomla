@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -180,25 +180,25 @@ class pkg_jceInstallerScript
     public function preflight($route, $installer)
     {
         // skip on uninstall etc.
-        if ($route === "remove") {
+        if ($route == 'remove' || $route == 'uninstall') {
             return true;
         }
+
+        $parent = $installer->getParent();
 
         $requirements = '<a href="https://www.joomlacontenteditor.net/support/documentation/editor/requirements" title="Editor Requirements" target="_blank" rel="noopener">https://www.joomlacontenteditor.net/support/documentation/editor/requirements</a>';
 
         // php version check
-        if (version_compare(PHP_VERSION, '5.6', 'lt')) {
-            throw new RuntimeException('JCE requires PHP 5.6 or later - ' . $requirements);
+        if (version_compare(PHP_VERSION, '7.4', 'lt')) {
+            throw new RuntimeException('JCE requires PHP 7.4 or later - ' . $requirements);
         }
 
         $jversion = new JVersion();
 
         // joomla version check
-        if (version_compare($jversion->getShortVersion(), '3.6', 'lt')) {
-            throw new RuntimeException('JCE requires Joomla 3.6 or later - ' . $requirements);
+        if (version_compare($jversion->getShortVersion(), '3.9', 'lt')) {
+            throw new RuntimeException('JCE requires Joomla 3.9 or later - ' . $requirements);
         }
-
-        $parent = $installer->getParent();
 
         // set current package version and variant
         list($version, $variant) = $this->getCurrentVersion();
@@ -246,36 +246,53 @@ class pkg_jceInstallerScript
         }
     }
 
+    private function checkTableUpdate()
+    {
+        $db = JFactory::getDBO();
+
+        $state = true;
+
+        // only for mysql / mysqli
+        if (strpos($db->getName(), 'mysql') === false) {
+            return $state;
+        }
+
+        $query = "DESCRIBE #__wf_profiles";
+        $db->setQuery($query);
+        $items = $db->loadObjectList();
+        
+        foreach($items as $item) {
+        	if ($item->Field == 'checked_out') {
+        		if (strpos($item->Type, 'unsigned') === false) {
+                    $state = false;
+                }
+
+                if (strpos($item->Type, 'unsigned') === false) {
+                    $state = false;
+                }
+        	}
+
+            if ($item->Field == 'checked_out_time') {
+                $item = (array) $item;
+                
+                if (strtolower($item['Null']) == 'no') {
+                    $state = false;
+                }
+        	}
+        }
+
+        return $state;
+    }
+
     public function postflight($route, $installer)
     {
         $app = JFactory::getApplication();
         $extension = JTable::getInstance('extension');
         $parent = $installer->getParent();
 
+        $db = JFactory::getDBO();
+
         JTable::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_jce/tables');
-
-        /*$plugin = JPluginHelper::getPlugin('extension', 'joomla');
-
-        if ($plugin) {
-            $parent = $installer->getParent();
-
-            // find and remove package
-            $component_id = $extension->find(array('type' => 'component', 'element' => 'com_jce'));
-
-            if ($component_id) {
-                $app->triggerEvent('onExtensionAfterUninstall', array($parent, $component_id, true));
-            }
-
-            // find and remove package
-            $package_id = $extension->find(array('type' => 'package', 'element' => 'pkg_jce'));
-
-            if ($package_id) {
-                // remove
-                $app->triggerEvent('onExtensionAfterUninstall', array($parent, $package_id, true));
-                // install
-                $app->triggerEvent('onExtensionAfterInstall', array($parent, $package_id));
-            }
-        }*/
 
         // remove legacy jcefilebrowser quickicon
         $plugin = JPluginHelper::getPlugin('quickicon', 'jcefilebrowser');
@@ -303,17 +320,34 @@ class pkg_jceInstallerScript
                 if (is_dir($branding)) {
                     JFolder::delete($branding);
                 }
+
+                // clean up updates sites
+                $query = $db->getQuery(true);
+
+                $query->select('update_site_id')->from('#__update_sites');
+                $query->where($db->qn('location') . ' = ' . $db->q('https://cdn.joomlacontenteditor.net/updates/xml/editor/pkg_jce.xml'));
+                $db->setQuery($query);
+                $id = $db->loadResult();
+
+                if ($id) {
+                    JModelLegacy::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_installer/models');
+                    $model = JModelLegacy::getInstance('Updatesites', 'InstallerModel');
+
+                    if ($model) {
+                        $model->delete(array($id));
+                    }
+                }
             }
 
             $theme = '';
 
             // update toolbar_theme for 2.8.0 and 2.8.1 beta
-            if (version_compare($current_version, '2.8.0', '>=') && version_compare($current_version, '2.8.1', '<')) {
+            if (version_compare($current_version, '2.8.0', 'ge') && version_compare($current_version, '2.8.1', 'lt')) {
                 $theme = 'modern';
             }
 
             // update toolbar_theme for 2.7.x
-            if (version_compare($current_version, '2.8', '<')) {
+            if (version_compare($current_version, '2.8', 'lt')) {
                 $theme = 'default';
             }
 
@@ -321,7 +355,6 @@ class pkg_jceInstallerScript
             if ($theme) {
                 $table = JTable::getInstance('Profiles', 'JceTable');
 
-                $db = JFactory::getDBO();
                 $query = $db->getQuery(true);
 
                 $query->select('*')->from('#__wf_profiles');
@@ -383,6 +416,27 @@ class pkg_jceInstallerScript
                     $extension->publish(null, 1);
                 }
             }
+
+            // check for "unsigend" in "checked_out" and default value in "checked_out_time" fields and update if necessary
+            if (false == $this->checkTableUpdate()) {
+                // fix checked_out table
+                $query = "ALTER TABLE #__wf_profiles CHANGE COLUMN " . $db->qn('checked_out') . " " . $db->qn('checked_out') . " INT UNSIGNED NULL";
+                $db->setQuery($query);
+                $db->execute();
+
+                // fix checked_out_time default value
+                $query = "ALTER TABLE #__wf_profiles CHANGE COLUMN " . $db->qn('checked_out_time') . " " . $db->qn('checked_out_time') . " DATETIME NULL DEFAULT NULL";
+                $db->setQuery($query);
+                $db->execute();
+            }
+
+            /*try {
+                $query = "SELECT DEFAULT (" . $db->qn('checked_out_time') . ") FROM #__wf_profiles";
+                $db->setQuery($query);
+                $db->execute();
+            } catch (Exception $e) {
+                
+            }*/
 
             self::cleanupInstall($installer);
         }
@@ -488,6 +542,26 @@ class pkg_jceInstallerScript
             $site . '/editor/tiny_mce/plugins/imgmanager_ext/img'
         );
 
+        // remove fields folder
+        $folders['2.9.7'] = array(
+            JPATH_PLUGINS . '/system/jce/fields'
+        );
+
+        // remove media folder
+        $folders['2.9.17'] = array(
+            $admin . '/media'
+        );
+
+        $folders['2.9.31'] = array(
+
+        );
+
+        // remove font manifest and window
+        $files['2.9.18'] = array(
+            $site . '/editor/libraries/fonts/selection.json',
+            $site . '/editor/tiny_mce/plugins/browser/js/window.min.js'
+        );
+
         $files['2.6.38'] = array(
             $admin . '/install.php',
             $admin . '/install.script.php',
@@ -565,9 +639,7 @@ class pkg_jceInstallerScript
         // remove help files
         $files['2.8.6'] = array(
             $admin . '/controller/help.php',
-            $admin . '/models/help.php',
-            $admin . '/media/css/help.min.css',
-            $admin . '/media/js/help.min.js'
+            $admin . '/models/help.php'
         );
 
         $files['2.8.11'] = array(

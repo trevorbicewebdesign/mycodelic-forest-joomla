@@ -41,7 +41,7 @@ class JFormFieldPortalModes extends JFormField {
 			// check if the data source contains the configuration.json file
 			if(JFile::exists($folder['fullname'] . '/configuration.json')) {
 				// read JSON from this data source
-				$file_content = JFile::read($folder['fullname'] . '/configuration.json');
+				$file_content = file_get_contents($folder['fullname'] . '/configuration.json');
 				// parse JSON
 				$json_data = json_decode($file_content);
 				// if the JSON file is correct
@@ -55,15 +55,12 @@ class JFormFieldPortalModes extends JFormField {
 					if(isset($json_matches[0]) && count($json_matches[0]) > 0 && strlen($json_matches[0][0]) > 0) {
 						foreach($json_matches[0] as $translations) {
 							$phrase = str_replace('"', '', $translations);
-							$file_content = str_replace($phrase, '\'.JText::_("'.$phrase.'").\'', $file_content);
+							$file_content = str_replace($phrase, JText::_($phrase), $file_content);
 						}
 					}
 
-					$file_content = "'" . $file_content . "'";
-					@$out_fn = create_function('', 'return ' . $file_content . ';');
-
 					// output the config
-					$output_configs .= '<div class="gk-json-config-pm" id="gk-json-config-pm-'.$json_data->name.'">'.$out_fn().'</div>';
+					$output_configs .= '<div class="gk-json-config-pm" id="gk-json-config-pm-'.$json_data->name.'">'.$file_content.'</div>';
 				}
 			}
 		}

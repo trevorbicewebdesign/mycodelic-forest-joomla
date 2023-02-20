@@ -78,7 +78,7 @@ class T3Bot extends JObject
 		$input     = $app->input;
 		$tplparams = $app->getTemplate(true)->params;
 		
-		if (!$app->isAdmin()) {
+		if (!T3::isAdmin()) {
 			// check if need update megamenu configuration
 			if ($tplparams->get ('mm_config_needupdate')) {
 				T3::import('menu/megamenu');
@@ -434,15 +434,10 @@ class T3Bot extends JObject
 		if(isset($data->attribs)){
 			$contentTable = \JTable::getInstance('Content', 'JTable',array());
 			$contentTable->load($data->id);
-			$oldAttribs = json_decode($contentTable->attribs, true);
-			$attribs = json_decode($data->attribs, true);
-			foreach ($attribs as $name => $attrib) {
-				if(!empty($oldAttribs[$name])){
-					$oldAttribs[$name] = $attrib;
-				}
-
-			}
-			$data->attribs = json_encode($oldAttribs);
+			$oldAttribs = new \JRegistry($contentTable->attribs);
+			$attribs = new \JRegistry($data->attribs);
+			$oldAttribs->merge($attribs);
+			$data->attribs = $oldAttribs->toString();
 		}
 	}
 }

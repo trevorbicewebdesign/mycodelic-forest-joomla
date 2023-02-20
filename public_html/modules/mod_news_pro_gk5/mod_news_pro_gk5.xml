@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="module" version="3.0" client="site" method="upgrade">
 	<name>News Show Pro GK5</name>
-	<creationDate>December 24, 2019</creationDate>
+	<creationDate>December 6, 2022</creationDate>
 	<author>Gavick.com</author>
-	<copyright>(C) 2009-2018 Gavick.com</copyright>
+	<copyright>(C) 2009-2022 Gavick.com</copyright>
 	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<authorEmail>info@gavick.com</authorEmail>
 	<authorUrl>www.gavick.com</authorUrl>
-	<version>2.0.1</version>
+	<version>2.1.2</version>
 	<description>
 	<![CDATA[
 		<span class='readonly'>
-			<h1>News Show Pro GK5 <small>ver. 2.0.1</small></h1>
+			<h1>News Show Pro GK5 <small>ver. 2.1.1</small></h1>
 			<p>GK5 is new generation of our extensions dedicated to Joomla 3+.</p>
 			<p>Basing on experiences gathered, we created probably the best tool to present articles for Joomla! Huge amount of options and possibilities of formatting causes News Show Pro GK5 is a complex tool in making www pages content attractive. News Show Pro is appropriate while preparing simple structures with an individual article, the same as, complex arrangements including few articles and a list of links.</p>
 			<p class='homepage'><a href='http://www.gavick.com/news-show-pro-gk5.html' target='_blank'>Learn more at the NSP GK5 project website.</a></p>
@@ -56,12 +56,12 @@
 
     	        <field name="module_unique_id" type="text" default="" label="MOD_NEWS_PRO_GK5_MODID" description="MOD_NEWS_PRO_GK5_MODID_DESC" />
 
-    	        <field name="cache" type="list" default="1" label="COM_MODULES_FIELD_CACHING_LABEL" description="COM_MODULES_FIELD_CACHING_DESC">
+    	        <field name="cache" type="list" default="1" label="COM_MODULES_FIELD_CACHING_LABEL" description="">
 					<option value="1">JGLOBAL_USE_GLOBAL</option>
 					<option value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
 				</field>
 
-				 <field name="cache_time" type="text" default="900" label="COM_MODULES_FIELD_CACHE_TIME_LABEL" description="COM_MODULES_FIELD_CACHE_TIME_DESC" />
+				 <field name="cache_time" type="text" default="900" label="COM_MODULES_FIELD_CACHE_TIME_LABEL" description="" />
 
 				<field name="cachemode" type="hidden" default="itemid">
 					<option value="itemid"></option>
@@ -1425,21 +1425,10 @@
 						<option value="1">MOD_NEWS_PRO_GK5_FORCEENABLED</option>
                         <option value="0">MOD_NEWS_PRO_GK5_FORCEDISABLED</option>
                 </field>
-
-				<field name="engine_mode" type="list" default="jquery" label="MOD_NEWS_PRO_GK5_ENGINE_MODE" description="MOD_NEWS_PRO_GK5_ENGINE_MODE_DESC">
-						<option value="mootools">MOD_NEWS_PRO_GK5_MODE_MOOTOOLS</option>
-						<option value="jquery">MOD_NEWS_PRO_GK5_MODE_JQUERY</option>
-				</field>
-
-				<field name="include_jquery" type="list" class="gk_switch" default="0" label="MOD_NEWS_PRO_GK5_INCLUDE_JQUERY" description="MOD_NEWS_PRO_GK5_INCLUDE_JQUERY_DESC">
-				        <option value="0">MOD_NEWS_PRO_GK5_DISABLED</option>
-				        <option value="1">MOD_NEWS_PRO_GK5_ENABLED</option>
-				</field>
-
-				<field name="url_overrides" type="list" class="gk_switch" default="0" label="MOD_NEWS_PRO_GK5_USEOVERRIDES" description="MOD_NEWS_PRO_GK5_USEOVERRIDES_DESC">
-					<option value="1">MOD_NEWS_PRO_GK5_ENABLED</option>
-					<option value="0">MOD_NEWS_PRO_GK5_DISABLED</option>
-				</field>
+		<field name="url_overrides" type="list" class="gk_switch" default="0" label="MOD_NEWS_PRO_GK5_USEOVERRIDES" description="MOD_NEWS_PRO_GK5_USEOVERRIDES_DESC">
+			<option value="1">MOD_NEWS_PRO_GK5_ENABLED</option>
+			<option value="0">MOD_NEWS_PRO_GK5_DISABLED</option>
+		</field>
             </fieldset>
 
              <fieldset addfieldpath="/modules/mod_news_pro_gk5/admin/elements" name="NSP_CHECKOUT">

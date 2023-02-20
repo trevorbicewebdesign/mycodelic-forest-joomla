@@ -10,6 +10,16 @@ jimport('joomla.filesystem.file');
 jimport('joomla.filesystem.folder');
 
 
+if(!function_exists('isJoomla4')){
+  function isJoomla4() {
+    return version_compare(JVERSION, '4.0', 'ge');
+  }
+}
+
+if (isJoomla4()) {
+	include_once(JPATH_SITE . DS . 'modules' . DS . 'mod_tabs_gk5' . DS . 'admin' . DS . 'elements' . DS . 'j4' . DS . 'configmanager.php');
+}
+else {
 class JFormFieldConfigManager extends JFormField {
 	protected $type = 'ConfigManager';
 
@@ -31,14 +41,14 @@ class JFormFieldConfigManager extends JFormField {
 				if(JFile::exists($base_path . $file)) {
 					//
 					$query = '
-						UPDATE 
+						UPDATE
 							#__modules
-						SET	
+						SET
 							params = '.$db->quote(file_get_contents($base_path . $file)).'
-						WHERE 
+						WHERE
 						 	id = '.$mod_id.'
 						LIMIT 1
-						';	
+						';
 					// Executing SQL Query
 					$db->setQuery($query);
 					$result = $db->query();
@@ -50,7 +60,7 @@ class JFormFieldConfigManager extends JFormField {
 					}
 				} else {
 					$msg = '<div class="gk_error">'.JText::_('MOD_TABS_GK5_CONFIG_SELECTED_FILE_DOESNT_EXIST').'</div>';
-				}	
+				}
 			} else if($task == 'save') {
 				if($file == '') {
 					$file = date('d_m_Y_h_s');
@@ -62,17 +72,17 @@ class JFormFieldConfigManager extends JFormField {
 					// find the proper name for the file by incrementing
 					$i = 1;
 					while(JFile::exists($base_path . $file . $i . '.json')) { $i++; }
-				}	
+				}
 				// get the settings from the database
 				$query = '
 					SELECT
 						params AS params
-					FROM 
+					FROM
 						#__modules
-					WHERE 
+					WHERE
 					 	id = '.$mod_id.'
 					LIMIT 1
-					';	
+					';
 				// Executing SQL Query
 				$db->setQuery($query);
 				$row = $db->loadObject();
@@ -97,7 +107,7 @@ class JFormFieldConfigManager extends JFormField {
 					}
 				} else {
 					$msg = '<div class="gk_error">'. $file . ' ' . JText::_('MOD_TABS_GK5_CONFIG_FILE_WASNT_DELETED_PLEASE_CHECK_FILE') .'</div>';
-				}	
+				}
 			}
 		}
 		// generate the select list
@@ -133,5 +143,5 @@ class JFormFieldConfigManager extends JFormField {
 		return array_merge($options);
 	}
 }
-
+}
 /* EOF */

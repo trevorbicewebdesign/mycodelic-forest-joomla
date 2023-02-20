@@ -25,21 +25,21 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 }
 ?>
 <?php if($news_amount > 0) : ?>
-	<div class="nspMain<?php if($this->config['autoanim'] == TRUE) echo ' autoanim'; ?><?php if($this->config['hover_anim'] == TRUE) echo ' hover'; ?><?php echo ' ' . $this->config['moduleclass_sfx']; ?>" id="nsp-<?php echo $this->config['module_id']; ?>" data-config="<?php echo $news_config_json; ?>">		
+	<div class="nspMain<?php if($this->config['autoanim'] == TRUE) echo ' autoanim'; ?><?php if($this->config['hover_anim'] == TRUE) echo ' hover'; ?><?php echo ' ' . $this->config['moduleclass_sfx']; ?>" id="nsp-<?php echo $this->config['module_id']; ?>" data-config="<?php echo $news_config_json; ?>">
 		<?php if(!empty($this->config['nsp_pre_text']) && trim($this->config['nsp_pre_text'])) : ?>
 		<?php echo $this->config['nsp_pre_text']; ?>
 		<?php endif; ?>
-		
+
 		<?php if(($this->config['news_column'] * $this->config['news_rows']) > 0) : ?>
 			<div class="nspArts<?php echo ' '.$this->config['links_position']; ?>" style="width:<?php echo $arts_width; ?>%;">
 				<?php if(
-						$news_html_tab_amount > ($this->config['news_column'] * $this->config['news_rows']) && 
+						$news_html_tab_amount > ($this->config['news_column'] * $this->config['news_rows']) &&
 						$this->config['news_full_pages'] > 1 &&
 						$this->config['top_interface_style'] != 'none'
 						) : ?>
 				<div class="nspTopInterface">
 					<?php if(
-								$this->config['top_interface_style'] == 'pagination' || 
+								$this->config['top_interface_style'] == 'pagination' ||
 								$this->config['top_interface_style'] == 'arrows_with_pagination'
 							) : ?>
 					<ul class="nspPagination">
@@ -48,9 +48,9 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 						<?php endfor; ?>
 					</ul>
 					<?php endif; ?>
-					
+
 					<?php if(
-								$this->config['top_interface_style'] == 'arrows' || 
+								$this->config['top_interface_style'] == 'arrows' ||
 								$this->config['top_interface_style'] == 'arrows_with_pagination'
 							) : ?>
 					<a href="#" class="nspPrev"><?php echo JText::_('MOD_NEWS_PRO_GK5_NSP_PREV'); ?></a>
@@ -64,7 +64,7 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 						<?php if($i == 0) : ?>
 						<div class="nspArtPage active nspCol<?php echo $this->config['news_full_pages']; ?>">
 						<?php endif; ?>
-							<?php 
+							<?php
 								$style = 'padding:'. $this->config['art_padding'] .';';
 								if(($i+1) % ($this->config['news_column']) == 1) {
 									$style .= 'clear:both;';
@@ -83,9 +83,9 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 					<?php endfor; ?>
 					</div>
 
-					<?php 
-						if(isset($this->config['articles_link']) && $this->config['articles_link'] == '1') : 
-							$article_bottom_url = $this->config['articles_link_url'];	
+					<?php
+						if(isset($this->config['articles_link']) && $this->config['articles_link'] == '1') :
+							$article_bottom_url = $this->config['articles_link_url'];
 					?>
 					<div class="readon-button-wrap">
 					<a href="<?php echo $article_bottom_url; ?>" class="readon-button">
@@ -111,21 +111,21 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 							<?php if($j == 0) : ?>
 							<ul class="nspList active nspCol<?php echo $this->config['news_short_pages'] * $this->config['links_columns_amount']; ?>">
 							<?php endif; ?>
-							
+
 							<?php echo $news_list_tab[$j]; ?>
-							
+
 							<?php if(($j > 0 && (($j+1) % ($this->config['links_amount']) == 0) && $j != $news_html_list_amount - 1) || ($this->config['links_amount'] == 1 && $j != $news_html_list_amount - 1)) : ?>
 							</ul>
 							<ul class="nspList <?php echo ++$count_active < $this->config['news_short_pages'] ? ' active ' : ''; ?> nspCol<?php echo $this->config['news_short_pages'] * $this->config['links_columns_amount']; ?>">
 							<?php elseif($j == $news_html_list_amount - 1) : ?>
 							</ul>
 							<?php endif; ?>
-						<?php endfor; ?>		
+						<?php endfor; ?>
 					</div>
-					
-					<?php 
-						if($this->config['links_title'] == '1') : 
-							$bottom_url = ($this->params->get('module_link_switch') == '1' && $this->config['links_title_url'] == '') ? $this->params->get('module_link') : $this->config['links_title_url'];	
+
+					<?php
+						if($this->config['links_title'] == '1') :
+							$bottom_url = ($this->params->get('module_link_switch') == '1' && $this->config['links_title_url'] == '') ? $this->params->get('module_link') : $this->config['links_title_url'];
 					?>
 					<a href="<?php echo $bottom_url; ?>" class="readon-button">
 						<?php if($this->config['links_title_label'] != '') : ?>
@@ -135,18 +135,18 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 						<?php endif; ?>
 					</a>
 					<?php endif; ?>
-				</div>	
-				<?php endif; ?>	
-				
+				</div>
+				<?php endif; ?>
+
 				<?php if(
-						(!empty($news_list_tab) && count($news_list_tab) > $this->config['links_amount']) && 
+						(!empty($news_list_tab) && count($news_list_tab) > $this->config['links_amount']) &&
 						$this->config['news_short_pages'] > 1 &&
 					 	ceil(floor($news_html_list_amount / $this->config['links_amount']) / $this->config['links_columns_amount']) >= 1 &&
 						$this->config['bottom_interface_style'] != 'none'
 						) : ?>
 				<div class="nspBotInterface">
 					<?php if(
-								$this->config['bottom_interface_style'] == 'pagination' || 
+								$this->config['bottom_interface_style'] == 'pagination' ||
 								$this->config['bottom_interface_style'] == 'arrows_with_pagination'
 							) : ?>
 					<ul class="nspPagination">
@@ -155,20 +155,20 @@ if($this->config['links_position'] != 'bottom' && $this->config['news_short_page
 						<?php endfor; ?>
 					</ul>
 					<?php endif; ?>
-					
+
 					<?php if(
-								$this->config['bottom_interface_style'] == 'arrows' || 
+								$this->config['bottom_interface_style'] == 'arrows' ||
 								$this->config['bottom_interface_style'] == 'arrows_with_pagination'
 							) : ?>
 					<span class="nspPrev"><?php echo JText::_('MOD_NEWS_PRO_GK5_NSP_PREV'); ?></span>
 					<span class="nspNext"><?php echo JText::_('MOD_NEWS_PRO_GK5_NSP_NEXT'); ?></span>
 					<?php endif; ?>
 				</div>
-				<?php endif; ?>	
+				<?php endif; ?>
 			</div>
 		</div>
 		<?php endif; ?>
-		
+
 		<?php if(!empty($this->config['nsp_post_text']) && trim($this->config['nsp_post_text'])) : ?>
 		<?php echo $this->config['nsp_post_text']; ?>
 		<?php endif; ?>

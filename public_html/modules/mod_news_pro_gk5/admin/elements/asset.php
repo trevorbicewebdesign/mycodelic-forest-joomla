@@ -20,10 +20,15 @@ class JFormFieldAsset extends JFormField {
         $doc = JFactory::getDocument();
         $refresher = rand(1000000, 9999999);
         // scripts
-        $doc->addScript(JURI::root().$this->element['path'].'class.articlelayout.js?r=' . $refresher);
+        if (version_compare(JVERSION, '4', '>=')) {
+            $doc->addScript(JURI::root().$this->element['path'].'class.datasources.j4.js?r=' . $refresher);
+            $doc->addScript(JURI::root().$this->element['path'].'class.portalmodes.j4.js?r=' . $refresher);
+        } else {
+            $doc->addScript(JURI::root().$this->element['path'].'class.datasources.js?r=' . $refresher);
+            $doc->addScript(JURI::root().$this->element['path'].'class.portalmodes.js?r=' . $refresher);
+        }
         $doc->addScript(JURI::root().$this->element['path'].'class.configmanager.js?r=' . $refresher);
-        $doc->addScript(JURI::root().$this->element['path'].'class.datasources.js?r=' . $refresher);
-        $doc->addScript(JURI::root().$this->element['path'].'class.portalmodes.js?r=' . $refresher);
+        $doc->addScript(JURI::root().$this->element['path'].'class.articlelayout.js?r=' . $refresher);
         $doc->addScript(JURI::root().$this->element['path'].'class.imagecrop.js?r=' . $refresher);
         $doc->addScript(JURI::root().$this->element['path'].'main.js?r=' . $refresher);
   		// stylesheets

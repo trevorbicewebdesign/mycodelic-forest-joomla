@@ -3,16 +3,29 @@
  * @package     Joomla.Site
  * @subpackage  com_users
  *
- * @copyright   Copyright (C) 2005 - 2018 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2021 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
-JHtml::_('behavior.keepalive');
-JHtml::_('behavior.formvalidator');
-JHtml::_('formbehavior.chosen', 'select');
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
 
+if (version_compare(JVERSION, '4', 'ge')) {
+	/** @var Joomla\CMS\WebAsset\WebAssetManager $wa */
+	$wa = $this->document->getWebAssetManager();
+	$wa->useScript('keepalive')
+		->useScript('form.validate');
+	if (version_compare(JVERSION, '4.2', 'lt')) {
+		HTMLHelper::_('script', 'com_users/two-factor-switcher.min.js', array('version' => 'auto', 'relative' => true));
+	}
+}
+else {
+	HTMLHelper::_('behavior.keepalive');
+	HTMLHelper::_('behavior.formvalidator');
+	HTMLHelper::_('formbehavior.chosen', 'select');
+}
 // Load user_profile plugin language
 $lang = JFactory::getLanguage();
 $lang->load('plg_user_profile', JPATH_ADMINISTRATOR);
@@ -52,11 +65,11 @@ $lang->load('plg_user_profile', JPATH_ADMINISTRATOR);
 			<?php // If the fieldset has a label set, display it as the legend. ?>
 			<?php if (isset($fieldset->label)) : ?>
 			<legend>
-				<?php echo JText::_($fieldset->label); ?>
+				<?php echo Text::_($fieldset->label); ?>
 			</legend>
 			<?php endif; ?>
 			<?php if (isset($fieldset->description) && trim($fieldset->description)) : ?>
-				<?php echo '<p>' . $this->escape(JText::_($fieldset->description)) . '</p>'; ?>
+				<?php echo '<p>' . $this->escape(Text::_($fieldset->description)) . '</p>'; ?>
 			<?php endif; ?>
 			<?php // Iterate through the fields in the set and display them. ?>
 			<?php foreach ($fields as $field) : ?>
@@ -68,7 +81,9 @@ $lang->load('plg_user_profile', JPATH_ADMINISTRATOR);
 						<div class="col-sm-3 control-label">
 							<?php echo $field->label; ?>
 							<?php if (!$field->required && $field->type !== 'Spacer') : ?>
-								<span class="optional"><?php echo JText::_('COM_USERS_OPTIONAL'); ?></span>
+								<?php if(version_compare(JVERSION, '4', 'lt')) : ?>
+								<span class="optional"><?php echo Text::_('COM_USERS_OPTIONAL'); ?></span>
+								<?php endif; ?>
 							<?php endif; ?>
 						</div>
 						<div class="col-sm-9 controls">
@@ -83,58 +98,66 @@ $lang->load('plg_user_profile', JPATH_ADMINISTRATOR);
 		</fieldset>
 		<?php endif; ?>
 	<?php endforeach; ?>
+	<?php if(version_compare(JVERSION,'4.2','ge')):?>
+		<?php if ($this->mfaConfigurationUI) : ?>
+				<fieldset class="com-users-profile__multifactor">
+						<legend><?php echo Text::_('COM_USERS_PROFILE_MULTIFACTOR_AUTH'); ?></legend>
+						<?php echo $this->mfaConfigurationUI ?>
+				</fieldset>
+		<?php endif; ?>
+	<?php else:?>
+		<?php if (is_array($this->twofactormethods) && count($this->twofactormethods) > 1): ?>
+			<fieldset>
+				<legend><?php echo Text::_('COM_USERS_PROFILE_TWO_FACTOR_AUTH'); ?></legend>
 
-	<?php if (count($this->twofactormethods) > 1) : ?>
-		<fieldset>
-			<legend><?php echo JText::_('COM_USERS_PROFILE_TWO_FACTOR_AUTH'); ?></legend>
+				<div class="form-group">
+					<div class="col-sm-3 control-label">
+						<label id="jform_twofactor_method-lbl" for="jform_twofactor_method" class="hasTooltip"
+								title="<?php echo '<strong>' . Text::_('COM_USERS_PROFILE_TWOFACTOR_LABEL') . '</strong><br />' . Text::_('COM_USERS_PROFILE_TWOFACTOR_DESC'); ?>">
+							<?php echo Text::_('COM_USERS_PROFILE_TWOFACTOR_LABEL'); ?>
+						</label>
+					</div>
+					<div class="col-sm-9 controls">
+						<?php echo JHtml::_('select.genericlist', $this->twofactormethods, 'jform[twofactor][method]', array('onchange' => 'Joomla.twoFactorMethodChange()'), 'value', 'text', $this->otpConfig->method, 'jform_twofactor_method', false); ?>
+					</div>
+				</div>
+				<div id="com_users_twofactor_forms_container">
+					<?php foreach ($this->twofactorform as $form) : ?>
+					<?php $style = $form['method'] == $this->otpConfig->method ? 'display: block' : 'display: none'; ?>
+					<div id="com_users_twofactor_<?php echo $form['method']; ?>" style="<?php echo $style; ?>">
+						<?php echo $form['form']; ?>
+					</div>
+					<?php endforeach; ?>
+				</div>
+			</fieldset>
 
-			<div class="form-group">
-				<div class="col-sm-3 control-label">
-					<label id="jform_twofactor_method-lbl" for="jform_twofactor_method" class="hasTooltip"
-						   title="<?php echo '<strong>' . JText::_('COM_USERS_PROFILE_TWOFACTOR_LABEL') . '</strong><br />' . JText::_('COM_USERS_PROFILE_TWOFACTOR_DESC'); ?>">
-						<?php echo JText::_('COM_USERS_PROFILE_TWOFACTOR_LABEL'); ?>
-					</label>
+			<fieldset>
+				<legend>
+					<?php echo Text::_('COM_USERS_PROFILE_OTEPS'); ?>
+				</legend>
+				<div class="alert alert-info">
+					<?php echo Text::_('COM_USERS_PROFILE_OTEPS_DESC'); ?>
 				</div>
-				<div class="col-sm-9 controls">
-					<?php echo JHtml::_('select.genericlist', $this->twofactormethods, 'jform[twofactor][method]', array('onchange' => 'Joomla.twoFactorMethodChange()'), 'value', 'text', $this->otpConfig->method, 'jform_twofactor_method', false); ?>
+				<?php if (empty($this->otpConfig->otep)) : ?>
+				<div class="alert alert-warning">
+					<?php echo Text::_('COM_USERS_PROFILE_OTEPS_WAIT_DESC'); ?>
 				</div>
-			</div>
-			<div id="com_users_twofactor_forms_container">
-				<?php foreach ($this->twofactorform as $form) : ?>
-				<?php $style = $form['method'] == $this->otpConfig->method ? 'display: block' : 'display: none'; ?>
-				<div id="com_users_twofactor_<?php echo $form['method']; ?>" style="<?php echo $style; ?>">
-					<?php echo $form['form']; ?>
-				</div>
+				<?php else : ?>
+				<?php foreach ($this->otpConfig->otep as $otep) : ?>
+				<span class="span3">
+					<?php echo substr($otep, 0, 4); ?>-<?php echo substr($otep, 4, 4); ?>-<?php echo substr($otep, 8, 4); ?>-<?php echo substr($otep, 12, 4); ?>
+				</span>
 				<?php endforeach; ?>
-			</div>
-		</fieldset>
-
-		<fieldset>
-			<legend>
-				<?php echo JText::_('COM_USERS_PROFILE_OTEPS'); ?>
-			</legend>
-			<div class="alert alert-info">
-				<?php echo JText::_('COM_USERS_PROFILE_OTEPS_DESC'); ?>
-			</div>
-			<?php if (empty($this->otpConfig->otep)) : ?>
-			<div class="alert alert-warning">
-				<?php echo JText::_('COM_USERS_PROFILE_OTEPS_WAIT_DESC'); ?>
-			</div>
-			<?php else : ?>
-			<?php foreach ($this->otpConfig->otep as $otep) : ?>
-			<span class="span3">
-				<?php echo substr($otep, 0, 4); ?>-<?php echo substr($otep, 4, 4); ?>-<?php echo substr($otep, 8, 4); ?>-<?php echo substr($otep, 12, 4); ?>
-			</span>
-			<?php endforeach; ?>
-			<div class="clearfix"></div>
-			<?php endif; ?>
-		</fieldset>
+				<div class="clearfix"></div>
+				<?php endif; ?>
+			</fieldset>
+		<?php endif; ?>
 	<?php endif; ?>
 
 		<div class="form-group form-actions">
 			<div class="col-sm-offset-3 col-sm-9">
-				<button type="submit" class="btn btn-primary validate"><span><?php echo JText::_('JSUBMIT'); ?></span></button>
-				<a class="btn" href="<?php echo JRoute::_('index.php?option=com_users&view=profile'); ?>" title="<?php echo JText::_('JCANCEL'); ?>"><?php echo JText::_('JCANCEL'); ?></a>
+				<button type="submit" class="btn btn-primary validate"><span><?php echo Text::_('JSUBMIT'); ?></span></button>
+				<a class="btn" href="<?php echo JRoute::_('index.php?option=com_users&view=profile'); ?>" title="<?php echo Text::_('JCANCEL'); ?>"><?php echo Text::_('JCANCEL'); ?></a>
 				<input type="hidden" name="option" value="com_users" />
 				<input type="hidden" name="task" value="profile.save" />
 			</div>

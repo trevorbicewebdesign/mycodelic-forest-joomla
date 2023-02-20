@@ -57,7 +57,7 @@ DataSources.prototype.changeValue = function() {
 		}
 	});	
 	// hide previously showed field (if exists)
-	if(jQuery('.gk-used-option')) {
+	if(jQuery('.gk-used-option').length) {
 		if(jQuery('.gk-used-option').attr('id') != 'jform_params_' + data_source_value) {
 			if(jQuery('.gk-used-option').parent().hasClass('input-append')) {
 				jQuery('.gk-used-option').parents().eq(2).css('display', 'none');
@@ -68,7 +68,7 @@ DataSources.prototype.changeValue = function() {
 	}
 	
 	// show the field connected with the selected option
-	if(jQuery('#jform_params_' + data_source_value)) {
+	if(jQuery('#jform_params_' + data_source_value).length) {
 		jQuery('#jform_params_' + data_source_value).addClass('gk-used-option');
 		jQuery('#jform_params_' + data_source_value).parent().parent().css('display', 'block');
 	}

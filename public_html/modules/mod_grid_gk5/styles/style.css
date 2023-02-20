@@ -7,7 +7,7 @@
 **/
 
 .gkGridGK5 {
-	overflow: hidden;	
+	overflow: hidden;
 	-webkit-transform: translate3d(0, 0, 0);
 	-moz-transform: translate3d(0, 0, 0);
 	-ms-transform: translate3d(0, 0, 0);
@@ -27,10 +27,10 @@
 
 .gkGridGK5Wrap {
 	background: url('loader.gif') no-repeat center center;
-	-webkit-perspective: 1200;
-	-moz-perspective: 1200;
-	-ms-perspective: 1200;
-	perspective: 1200;
+	-webkit-perspective: 1200px;
+	-moz-perspective: 1200px;
+	-ms-perspective: 1200px;
+	perspective: 1200px;
 	position: relative;
 }
 
@@ -287,5 +287,5 @@
 /*
  * Additional styles for modules inside the GK Grid
  */
- 
+
 /* Coming soon */

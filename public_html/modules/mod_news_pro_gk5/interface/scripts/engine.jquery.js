@@ -11,7 +11,7 @@
 jQuery.noConflict();
 
 jQuery(window).on('load', function() {
-	jQuery(document).find('.nspMain').each(function(i, module) {	
+	jQuery(document).find('.nspMain').each(function(i, module) {
 		if(!jQuery(module).hasClass('activated')) {
 			new NSP5(module);
 		}
@@ -61,8 +61,8 @@ NSP5.prototype = {
 		this.links = (this.module.find('.nspLinkScroll1')) ? this.module.find('.nspLinkScroll1 li') : [];
 		this.links_pages = this.module.find('.nspList');
 		this.links_pages_amount = Math.ceil(Math.ceil(this.links.length / this.config['links_amount']) / this.config['links_columns_amount']);
-		this.modInterface = { 
-			top: this.module.find('.nspTopInterface'), 
+		this.modInterface = {
+			top: this.module.find('.nspTopInterface'),
 			bottom: this.module.find('.nspBotInterface')
 		};
 		this.pages_amount = Math.ceil(this.arts.length / this.arts_per_page);
@@ -98,12 +98,12 @@ NSP5.prototype = {
 				if($this.hover_anim == 'mouseenter') {
 					jQuery(item).mouseenter(function(){
 						$this.arts_anim(i);
-					});	
+					});
 				}else {
 					jQuery(item).click(function(e){
 						e.preventDefault();
 						$this.arts_anim(i);
-					});	
+					});
 				}
 			});
 		}
@@ -113,7 +113,7 @@ NSP5.prototype = {
 				e.preventDefault();
 				$this.arts_anim('prev');
 			});
-			
+
 			this.modInterface.top.find('.nspNext').click(function(e){
 				e.preventDefault();
 				$this.arts_anim('next');
@@ -125,12 +125,12 @@ NSP5.prototype = {
 				if($this.hover_anim == 'mouseenter') {
 					jQuery(item).mouseenter(function(){
 						$this.lists_anim(i);
-					});	
+					});
 				}else {
 					jQuery(item).click(function(e){
 						e.preventDefault();
 						$this.lists_anim(i);
-					});	
+					});
 				}
 			});
 		}
@@ -140,7 +140,7 @@ NSP5.prototype = {
 				e.preventDefault();
 				$this.lists_anim('prev');
 			});
-			
+
 			this.modInterface.bottom.find('.nspNext').click(function(e){
 				e.preventDefault();
 				$this.lists_anim('next');
@@ -154,26 +154,26 @@ NSP5.prototype = {
 		}
 		// Touch events for the articles
 		var arts_wrap = this.module.find('.nspArts');
-		if(arts_wrap) {		
+		if(arts_wrap) {
 			var arts_pos_start_x = 0;
 			var arts_pos_start_y = 0;
 			var arts_time_start = 0;
 			var arts_swipe = false;
-			
+
 			arts_wrap.bind('touchstart', function(e) {
 				arts_swipe = true;
 				var touches = e.originalEvent.changedTouches || e.originalEvent.touches;
-	
+
 				if(touches.length > 0) {
 					arts_pos_start_x = touches[0].pageX;
 					arts_pos_start_y = touches[0].pageY;
 					arts_time_start = new Date().getTime();
 				}
 			});
-			
+
 			arts_wrap.bind('touchmove', function(e) {
 				var touches = e.originalEvent.changedTouches || e.originalEvent.touches;
-				
+
 				if(touches.length > 0 && arts_swipe) {
 					if(
 						Math.abs(touches[0].pageX - arts_pos_start_x) > Math.abs(touches[0].pageY - arts_pos_start_y)
@@ -184,15 +184,15 @@ NSP5.prototype = {
 					}
 				}
 			});
-						
+
 			arts_wrap.bind('touchend', function(e) {
 				var touches = e.originalEvent.changedTouches || e.originalEvent.touches;
-				
-				if(touches.length > 0 && arts_swipe) {									
+
+				if(touches.length > 0 && arts_swipe) {
 					if(
-						Math.abs(touches[0].pageX - arts_pos_start_x) >= $this.swipe_min_move && 
+						Math.abs(touches[0].pageX - arts_pos_start_x) >= $this.swipe_min_move &&
 						new Date().getTime() - arts_time_start <= $this.swipe_max_time
-					) {					
+					) {
 						if(touches[0].pageX - arts_pos_start_x > 0) {
 							$this.arts_anim('prev');
 						} else {
@@ -204,26 +204,26 @@ NSP5.prototype = {
 		}
 		// Touch events for the links
 		var links_wrap = this.module.find('.nspLinksWrap');
-		if(links_wrap) {	
+		if(links_wrap) {
 			var links_pos_start_x = 0;
 			var links_pos_start_y = 0;
 			var links_time_start = 0;
 			var links_swipe = false;
-			
+
 			links_wrap.bind('touchstart', function(e) {
 				links_swipe = true;
 				var touches = e.originalEvent.changedTouches || e.originalEvent.touches;
-	
+
 				if(touches.length > 0) {
 					links_pos_start_x = touches[0].pageX;
 					links_pos_start_y = touches[0].pageY;
 					links_time_start = new Date().getTime();
 				}
 			});
-			
+
 			links_wrap.bind('touchmove', function(e) {
 				var touches = e.originalEvent.changedTouches || e.originalEvent.touches;
-				
+
 				if(touches.length > 0 && links_swipe) {
 					if(
 						Math.abs(touches[0].pageX - links_pos_start_x) > Math.abs(touches[0].pageY - links_pos_start_y)
@@ -234,15 +234,15 @@ NSP5.prototype = {
 					}
 				}
 			});
-						
+
 			links_wrap.bind('touchend', function(e) {
 				var touches = e.originalEvent.changedTouches || e.originalEvent.touches;
-				
-				if(touches.length > 0 && links_swipe) {									
+
+				if(touches.length > 0 && links_swipe) {
 					if(
-						Math.abs(touches[0].pageX - links_pos_start_x) >= $this.swipe_min_move && 
+						Math.abs(touches[0].pageX - links_pos_start_x) >= $this.swipe_min_move &&
 						new Date().getTime() - links_time_start <= $this.swipe_max_time
-					) {					
+					) {
 						if(touches[0].pageX - links_pos_start_x > 0) {
 							$this.lists_anim('prev');
 						} else {
@@ -257,7 +257,7 @@ NSP5.prototype = {
 	//
 	nsp_art_list: function(i, pos){
 		var num  = (i !== null) ? i : (pos == 'top') ? this.arts_current : this.links_current;
-		
+
 		if(this.modInterface[pos] && this.modInterface[pos].find('.nspPagination')){
 			var pagination = this.modInterface[pos].find('.nspPagination');
 			pagination.find('li').attr('class', '');
@@ -270,7 +270,7 @@ NSP5.prototype = {
 			var $this = this;
 			this.anim_arts = true;
 			jQuery(this.arts_pages[this.arts_current]).removeClass('active');
-			
+
 			if(dir == 'next') {
 				this.arts_current = (this.arts_current == this.pages_amount - 1) ? 0 : this.arts_current + 1;
 			} else if(dir == 'prev') {
@@ -279,20 +279,20 @@ NSP5.prototype = {
 				this.arts_current = dir;
 			}
             $this.beforeAnim();
-			//		
+			//
 			jQuery($this.module.find('.nspArtScroll2')).animate({
 				'margin-left': (-1 * this.arts_current * this.arts_block_width) + "%"
 			}, $this.config['animation_speed']);
-			
+
 			setTimeout(function() {
 				jQuery($this.arts_pages[$this.arts_current]).addClass('active');
 			}, this.config['animation_speed'] * 0.5);
-			
+
 			setTimeout(function() {
 				$this.anim_arts = false;
 				$this.afterAnim();
 			}, this.config['animation_speed']);
-			
+
 			this.nsp_art_list(this.arts_current, 'top');
 			this.animation = false;
 			setTimeout(function(){
@@ -305,14 +305,14 @@ NSP5.prototype = {
 		if(!this.anim_lists) {
 			var $this = this;
 			this.anim_lists = true;
-			
+
 			for(var x = 0; x < this.config['links_columns_amount']; x++) {
 				var item = this.links_pages[this.links_current * this.config['links_columns_amount'] + x];
 				if(item) {
 					jQuery(item).removeClass('active');
 				}
 			}
-			
+
 			if(dir == 'next') {
 				this.links_current = (this.links_current == this.links_pages_amount - 1) ? 0 : this.links_current + 1;
 			} else if(dir == 'prev') {
@@ -320,12 +320,12 @@ NSP5.prototype = {
 			} else {
 				$this.links_current = dir;
 			}
-			
+
 			$this.beforeAnim();
-			
+
 			setTimeout(function() {
 				for(var x = 0; x < $this.config['links_columns_amount']; x++) {
-					var item = $this.links_pages[$this.links_current * $this.config['links_columns_amount'] + x]; 
+					var item = $this.links_pages[$this.links_current * $this.config['links_columns_amount'] + x];
 					if(jQuery(item).length) {
 						jQuery(item).addClass('active');
 					}
@@ -340,7 +340,7 @@ NSP5.prototype = {
 			jQuery($this.module.find('.nspLinkScroll2')).animate({
 				'margin-left': (-1 * this.links_current * this.links_block_width) + "%"
 			}, $this.config['animation_speed']);
-			
+
 			this.nsp_art_list(null, 'bottom');
 		}
 	},
@@ -358,11 +358,11 @@ NSP5.prototype = {
 	},
 	beforeAnim: function() {
 	    // support callback after animation
-	    
+
 	},
 	afterAnim: function() {
 	    // support callback after animation
-	    
+
 	},
 	afterInit: function() {
 	    // support callback after init interface

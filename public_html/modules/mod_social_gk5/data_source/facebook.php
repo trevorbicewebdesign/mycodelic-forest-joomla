@@ -44,10 +44,8 @@ class SocialGK5FacebookHelper
 		} else {
 			$js = '<script type="text/plain" class="cc-onconsent-social">';	
 		}
-		$js .= 'window.addEvent(\'load\', function() { if(document.id(\'fb-root\') == null){
-			console.log("not found"); 
-		var fbroot = new Element(\'div#fb-root\');
-		$$(\'body\').grab(fbroot);
+		$js .= 'document.addEventListener(\'DOMContentLoaded\', function() { if(document.getElementById(\'fb-root\') == null){
+	
 		(function(d, s, id) { var js, fjs = d.getElementsByTagName(s)[0];if (d.getElementById(id)) return; js = d.createElement(s); js.id = id; js.src = "//connect.facebook.net/'.$this->config['fb_language'].'/all.js#xfbml=1';
 		// include APP ID
 		if($this->config['fb_app_id'] != '') {

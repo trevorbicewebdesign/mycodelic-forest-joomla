@@ -174,6 +174,7 @@ class NSP_GK5_com_easyblog_Model {
 			$access_con = ' AND content.access = 0 ';
 		}
 		$app = JFactory::getApplication();
+		$input = $app->input;
 		// $timezone = $app->getCfg('offset') + $config['time_offset'];
 
 		// check if the timezone offset is set
@@ -206,18 +207,18 @@ class NSP_GK5_com_easyblog_Model {
 		}
 		//
 		if($config['news_since'] == '' && $config['news_in'] != '') {
-			$since_con = ' AND content.created >= ' . $db->Quote(strftime('%Y-%m-%d 00:00:00', time() - ($config['news_in'] * 24 * 60 * 60)));
+			$since_con = ' AND content.created >= ' . $db->Quote(date('Y-m-d H:i:s', time() - ($config['news_in'] * 24 * 60 * 60)));
 		}
 		// current article hiding
 		$current_con = '';
 
 		if(
 			$config['hide_current_easyblog_article'] == '1' &&
-			JRequest::getCmd('option') == 'com_easyblog' &&
-			JRequest::getCmd('view') == 'entry' &&
-			JRequest::getVar('id') != ''
+			$input->get('option') == 'com_easyblog' &&
+			$input->get('view') == 'entry' &&
+			$input->get('id') != ''
 		) {
-			$id = (int) JRequest::getVar('id');
+			$id = (int) $input->get('id');
 			// filter the alias from ID
 			if(stripos($id, ':') !== FALSE) {
 				$id = explode(':', $id);

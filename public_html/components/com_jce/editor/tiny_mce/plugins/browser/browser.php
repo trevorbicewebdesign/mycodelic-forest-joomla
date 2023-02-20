@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -53,6 +53,8 @@ class WFBrowserPlugin extends WFMediaManager
             $map = array(
                 'images' => 'jpg,jpeg,png,apng,gif,webp,avif',
                 'media' => 'avi,wmv,wm,asf,asx,wmx,wvx,mov,qt,mpg,mpeg,m4a,m4v,swf,dcr,rm,ra,ram,divx,mp4,ogv,ogg,webm,flv,f4v,mp3,ogg,wav,xap',
+                'documents' => 'doc,docx,odg,odp,ods,odt,pdf,ppt,pptx,txt,xcf,xls,xlsx,csv',
+                'html' => 'html,htm,txt,md',
                 'files' => $filetypes,
             );
 
@@ -61,26 +63,34 @@ class WFBrowserPlugin extends WFMediaManager
                 $map['images'] .= ',svg';
             }
 
+            $accept = explode(',', $filetypes);
+
             if (array_key_exists($mediatype, $map)) {
+                // process the map to filter permitted extensions
+                array_walk($map, function (&$item, $key) use ($accept) {
+                    $items = explode(',', $item);
+
+                    $values = array_intersect($items, $accept);
+                    $item = empty($values) ? '' : implode(',', $values);
+                });
+
                 $filetypes = $map[$mediatype];
             } else {
-                $filetypes = $mediatype;
+                $filetypes = implode(',', array_intersect(explode(',', $mediatype), $accept));
             }
 
             // set updated filetypes
-            $browser->setFileTypes($filetypes);
-
-            $properties = array();
-
-            // get existing upload values
-            $upload = $browser->get('upload', array());
-            $upload['filetypes'] = $filetypes;
-
-            // update upload filetypes
-            $properties['upload'] = $upload;
-
-            $browser->setProperties($properties);
+            $this->setFileTypes($filetypes);
         }
+    }
+
+    public function setFileTypes($filetypes = '')
+    {
+        // get file browser reference
+        $browser = $this->getFileBrowser();
+        
+        // set updated filetypes
+        $browser->setFileTypes($filetypes);
     }
 
     /**
@@ -93,21 +103,21 @@ class WFBrowserPlugin extends WFMediaManager
         $app = JFactory::getApplication();
 
         $document = WFDocument::getInstance();
-        $layout = $app->input->getCmd('layout', 'plugin');
+        $slot = $app->input->getCmd('slot', 'plugin');
 
         // update some document variables
         $document->setName('browser');
         $document->setTitle(JText::_('WF_BROWSER_TITLE'));
 
         if ($document->get('standalone') == 1) {
-            if ($layout === 'plugin') {
-                $document->addScript(array('window.min'), 'plugins');
+            if ($slot === 'plugin') {
+                $document->addScript(array('window.min'));
 
                 $callback = $app->input->getCmd('callback', '');
-                $element = $app->input->getCmd('fieldid', '');
+                $element = $app->input->getCmd('fieldid', 'field-media-id');
 
                 // Joomla 4 field variable not converted
-                if (!$element || $element === 'field-media-id') {
+                if ($element == 'field-media-id') {
                     $element = $app->input->getCmd('element', '');
                 }
 
@@ -130,7 +140,7 @@ class WFBrowserPlugin extends WFMediaManager
             $document->addStyleSheet(array('browser.min'), 'plugins');
         }
 
-        if ($layout === 'plugin') {
+        if ($slot === 'plugin') {
             $document->addScript(array('browser'), 'plugins');
         }
     }

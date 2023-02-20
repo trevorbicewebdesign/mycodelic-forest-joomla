@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -31,7 +31,7 @@ class JceModelProfiles extends JModelList
                 'checked_out', 'checked_out',
                 'checked_out_time', 'checked_out_time',
                 'published', 'published',
-                'ordering', 'ordering',
+                'ordering', 'ordering'
             );
         }
 
@@ -49,7 +49,7 @@ class JceModelProfiles extends JModelList
      * @note    Calling getState in this method will result in recursion.
      * @since   1.6
      */
-    protected function populateState($ordering = null, $direction = null)
+    protected function populateState($ordering = 'id', $direction = 'asc')
     {
         // Load the filter state.
         $this->setState('filter.search', $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string'));
@@ -241,6 +241,10 @@ class JceModelProfiles extends JModelList
                         break;
                 }
             }
+
+            // default
+            $table->checked_out = 0;
+            $table->checked_out_time = '0000-00-00 00:00:00';
 
             // Check the data.
             if (!$table->check()) {

@@ -2,26 +2,14 @@
 <extension type="module" version="3.0" client="site" method="upgrade">
 	<name>Grid GK5</name>
 	<author>GavickPro</author>
-	<creationDate>07/05/2014</creationDate>
+	<creationDate>November 12th, 2021</creationDate>
 	<copyright>Copyright (C) 2014 GavickPro. All rights reserved.</copyright>
 	<license>GNU General Public License version 2 or later</license>
 	<authorEmail>info@gavick.com</authorEmail>
 	<authorUrl>www.gavickpro.com</authorUrl>
-	<version>1.2.1</version>
+	<version>1.2.7</version>
 	<description><![CDATA[
-		<style type="text/css">
-			span.readonly { padding: 10px; font-family: Arial; font-size:13px !important; font-weight: normal !important; text-align: justify; color: #4d4d4d; line-height: 24px; }
-			span.readonly h1 { clear:both; font-family: Georgia, sans-serif; font-size:38px; margin:30px 20px 23px; padding:0px 0px 24px 10px; color:#333; border-bottom: 1px solid #eee; font-weight: normal; }
-			span.tooltip-content { display: none; }
-			.tip-text span.readonly { display: none; }
-			.tip-text span.tooltip-content { display: block; }
-			span.readonly p { margin: 0 26px 10px }
-			span.readonly p a { color: #2F4C6D }
-			span.readonly p.homepage { margin-top: 30px }
-			span.readonly p.license { border-top: 1px solid #eee; font-size: 11px; margin: 30px 26px 0; padding: 6px 0; }
-		</style>
-		
-		<span class="readonly"><h1>Grid GK5<small>ver. 1.2.1</small></h1><p>GK5 is one product of the next generation of GavickPro extensions designed exclusively for Joomla 2.5+.</p><p>With the Grid GK5 module, you can implement space-saving grid area on websites and incorporate a variety of content types via modules. Thanks to the amazing grid management system we've integrated into the module, Grid GK5 remains easy, intuitive and quick to configure.  With built-in support for module embedding, the possibilities for implementing this new release are unlimited!</p> <p class='homepage'><a href='http://www.gavick.com/documentation/joomla-extensions/extensions-for-joomla-1-6/grid-gk5-module/' target='_blank'>Learn more at the Grid GK5 project website.</a></p><p class='license'>Grid GK5 is released under the <a target="_blank" href="http://www.gnu.org/licenses/gpl-2.0.html">GNU/GPL v2 license.</a></p></span>
+		<span class="readonly"><h1>Grid GK5<small>ver. 1.2.7</small></h1><p>GK5 is one product of the next generation of GavickPro extensions designed exclusively for Joomla 2.5+.</p><p>With the Grid GK5 module, you can implement space-saving grid area on websites and incorporate a variety of content types via modules. Thanks to the amazing grid management system we've integrated into the module, Grid GK5 remains easy, intuitive and quick to configure.  With built-in support for module embedding, the possibilities for implementing this new release are unlimited!</p> <p class='homepage'><a href='http://www.gavick.com/documentation/joomla-extensions/extensions-for-joomla-1-6/grid-gk5-module/' target='_blank'>Learn more at the Grid GK5 project website.</a></p><p class='license'>Grid GK5 is released under the <a target="_blank" href="http://www.gnu.org/licenses/gpl-2.0.html">GNU/GPL v2 license.</a></p></span>
 		<span class='tooltip-content'>Advanced grid module for Joomla! 3.x</span>
 	]]></description>
 	<files>
@@ -37,7 +25,7 @@
 	</files>
 	
 	<updateservers>
-		<server type="extension" priority="1" name="Grid GK5 Updates">https://www.gavick.com/update_server/joomla25/grid_gk5.xml</server>
+		<server type="extension" priority="1" name="Grid GK5 Updates">http://update.joomlart.com/service/tracking/j30/mod_grid_gk5.xml</server>
 	</updateservers>
 	
 	<languages>
@@ -116,16 +104,6 @@
 						<option value="1">MOD_GRID_ENABLED</option>
 				        <option value="2">MOD_GRID_AUTOMATIC</option>
 				</field>
-				
-				<field name="engine_mode" type="radio" class="btn-group" default="mootools" label="MOD_GRID_ENGINE_MODE" description="MOD_GRID_ENGINE_MODE_DESC">
-						<option value="mootools">MOD_GRID_MODE_MOOTOOLS</option>
-						<option value="jquery">MOD_GRID_MODE_JQUERY</option>
-				</field> 
-				
-				<field name="include_jquery" type="radio" class="btn-group" default="0" label="MOD_GRID_INCLUDE_JQUERY" description="MOD_GRID_INCLUDE_JQUERY_DESC">
-				        <option value="0">MOD_GRID_DISABLED</option>
-				        <option value="1">MOD_GRID_ENABLED</option>
-				</field>				
 			</fieldset>
 			<!-- about us -->
 			<fieldset name="GRID_ABOUT_US" addfieldpath="/modules/mod_grid_gk5/admin/elements">

@@ -254,8 +254,8 @@ class NSP_GK5_Product_Gallery {
 		    $currency = CurrencyDisplay::getInstance();
 		    
 		    $price = '<strong>'.$currency->createPriceDiv($config['vm_show_price_type'], '', $product->prices, true).'</strong>';
-	       
-	        if($config['vm_add_to_cart'] == 1 && JRequest::getCmd('option') != 'com_virtuemart') {
+	       	$input = JFactory::getApplication()->input;
+	        if($config['vm_add_to_cart'] == 1 && $input->get('option') != 'com_virtuemart') {
 	            vmJsApi::jPrice();
 	            vmJsApi::addJScript( 'facebox' );
 				vmJsApi::css( 'facebox' );

@@ -1,0 +1,46 @@
+.control-group .form-text {
+	clear: both;
+	margin-top: .5em;
+}
+
+.control-group .form-control {
+	display: inline-block;
+}
+
+.j32 ul#myTabTabs {
+	border: none;
+	box-shadow: none;
+}
+
+div.gk_tab_edit_submit,
+div.gk_tab_add_submit {
+	padding-left: 0;
+	margin-left: 160px;
+}
+
+button#config_manager_load,
+button#config_manager_delete,
+button#config_manager_save {
+	margin-left: -1px;
+}
+
+#gk_tab_add_header {
+	padding-bottom: 4em;
+}
+
+div#config_manager_form label {
+	margin-bottom: .5em;
+}
+
+#attrib-TABS_BASIC .control-group:nth-child(2) > .control-label {
+	display: none;
+}
+
+.gk_tab_edit textarea,
+.gk_tab_add textarea {
+	display: inline-block !important;
+}
+
+.input-group > [id$="-desc"] {
+	display: none;
+}

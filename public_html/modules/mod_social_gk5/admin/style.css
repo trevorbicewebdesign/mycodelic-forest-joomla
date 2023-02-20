@@ -38,6 +38,9 @@
 .switcher-off {
 	background-position: -94px 0
 }
+.form-text {
+	display: none;
+}
 span.unit {
 	line-height: 34px
 }
@@ -172,7 +175,6 @@ fieldset.panelform .desc {
 	padding: 10px;
 }
 
-
 select#jform_params_module_data_source.fb,
 select#jform_params_module_data_source option[value="fb"] {
 	background: transparent url(fb.png) no-repeat 4px 3px
@@ -185,6 +187,16 @@ select#jform_params_module_data_source.twitter,
  select#jform_params_module_data_source option[value="twitter"] {
 	background: transparent url(twitter.png) no-repeat 4px 3px
 }
+
+.j4 select#jform_params_module_data_source.fb,
+.j4 select#jform_params_module_data_source option[value="fb"],
+.j4 select#jform_params_module_data_source.gplus,
+.j4 select#jform_params_module_data_source option[value="gplus"],
+.j4 select#jform_params_module_data_source.twitter,
+.j4 select#jform_params_module_data_source option[value="twitter"] {
+	background-position: 8px 7px;
+}
+
 select#jform_params_module_data_source option {
 	min-height: 23px;
 	line-height: 20px;
@@ -292,6 +304,13 @@ button#config_manager_delete {
 	margin-left: 12px;
 	vertical-align: top;
 }
+
+.j4 button#config_manager_load,
+.j4 button#config_manager_delete,
+.j4 button#config_manager_save {
+	margin-left: 0;
+}
+
 button#config_manager_save {
 	min-width: 85px;
 	margin-left: 12px;

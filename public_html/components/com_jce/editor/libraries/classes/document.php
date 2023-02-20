@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -474,8 +474,8 @@ class WFDocument extends JObject
 
         $query['plugin'] = $name;
 
-        // set layout
-        $query['layout'] = $app->input->getCmd('layout');
+        // set slot
+        $query['slot'] = $app->input->getCmd('slot');
 
         // set standalone mode (for File Browser etc)
         $query['standalone'] = $this->get('standalone');
@@ -665,7 +665,9 @@ class WFDocument extends JObject
                         'plugins' => array('core' => array($this->getName()), 'external' => array()),
                         'sections' => array('dlg', $this->getName() . '_dlg'),
                         'mode' => 'plugin',
+                        'language' => WFLanguage::getTag()
                     ));
+
                     $data .= $parser->load();
 
                     // add script declarations

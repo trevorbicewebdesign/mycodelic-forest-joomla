@@ -31,9 +31,7 @@ class JFormFieldAsset extends JFormField {
 		// include the back-end styles
 		$doc->addStyleSheet(JURI::root().$this->element['path'].'style.css');     
 		$doc->addStyleSheet(JURI::root().$this->element['path'].'widget.css'); 
-		//$doc->addStyleSheet(JURI::root().$this->element['path'].'/colorpicker/mooRainbow.css');     
 		// include color picker script 
-		$doc->addScript(JURI::root().$this->element['path'].'/colorpicker/mooRainbow.js');   
 		// return null, because there is no HTML output
 		return null;
 	}

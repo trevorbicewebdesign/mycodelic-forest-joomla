@@ -140,7 +140,8 @@ class NSP_GK5_com_virtuemart_View extends NSP_GK5_View {
 	    
 	    $price = '<strong>'.$currency->createPriceDiv($config['vm_show_price_type'], '', $product->prices, true).'</strong>';
        
-        if($config['vm_add_to_cart'] == 1 && JRequest::getCmd('option') != 'com_virtuemart') {
+       	$input = JFactory::getApplication()->input;
+        if($config['vm_add_to_cart'] == 1 && $input->get('option') != 'com_virtuemart') {
             vmJsApi::jPrice();
             vmJsApi::addJScript( 'facebox' );
 			vmJsApi::css( 'facebox' );
@@ -231,12 +232,12 @@ class NSP_GK5_com_virtuemart_View extends NSP_GK5_View {
 		}
 		
 		$itemid = $config['vm_itemid'];
-		$link = 'index.php?option=com_virtuemart&amp;view=productdetails&amp;virtuemart_product_id='.$item['id'].'&amp;virtuemart_category_id='.$item['cid'].'&amp;Itemid='.$itemid;
+		$link = JRoute::_('index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id='.$item['id'].'&virtuemart_category_id='.$item['cid'] . '&Itemid=' . $itemid);
 		return $link;
 	}
 	// category link generator
 	static function categoryLink($item) {
-		return 'index.php?option=com_virtuemart&amp;view=category&amp;virtuemart_category_id='.$item['cid'];
+		return JRoute::_('index.php?option=com_virtuemart&amp;view=category&amp;virtuemart_category_id='.$item['cid'] . '&Itemid=');
 	}
 	// user link generator
 	static function authorLink($item) {

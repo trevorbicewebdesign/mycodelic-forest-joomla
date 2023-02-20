@@ -29,23 +29,11 @@ class TabsGK5Helper {
         // if the user set engine mode to Mootools
         if($this->config['engine_mode'] == 'mootools') {
             // load the MooTools framework to use with the module
-            JHtml::_('behavior.framework', true);
+        	if(version_compare(JVERSION,"4","lt")) {
+	            JHtml::_('behavior.framework', true);
+	        }
         } else if($this->config['include_jquery'] == 1) {
-            // if the user specify to include the jQuery framework - load newest jQuery 1.7.* 
-            $doc = JFactory::getDocument();
-            // generate keys of script section
-            $headData = $doc->getHeadData();
-            $headData_keys = array_keys($headData["scripts"]);
-            // set variable for false
-            $engine_founded = false;
-            // searching phrase mootools in scripts paths
-            if(array_search('https://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js', $headData_keys) > 0) {
-                $engine_founded = true;
-            }
-            //
-            if(!$engine_founded) {
-                $doc->addScript('https://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js');
-            }
+            JHtml::_('jquery.framework');
         }
 		// set the active tab
 		$this->active_tab = $this->config['initial_tab'];
@@ -134,9 +122,9 @@ class TabsGK5Helper {
 		$uri = JURI::getInstance();
 		// add stylesheets to document header
 		if($this->config["useCSS"] == 1) {
-			$document->addStyleSheet( $uri->root().'modules/mod_tabs_gk5/styles/'.$this->config['styleCSS'].'.css', 'text/css' );
+			$document->addStyleSheet( $uri->root().'modules/mod_tabs_gk5/styles/'.$this->config['styleCSS'].'.css');
 		} else {
-			$document->addStyleSheet( $uri->root().'modules/mod_tabs_gk5/styles/backward-compatibility.css', 'text/css' );
+			$document->addStyleSheet( $uri->root().'modules/mod_tabs_gk5/styles/backward-compatibility.css');
 		}
 		// get active tab:
 		$uri_id_fragment = '';
@@ -172,8 +160,7 @@ class TabsGK5Helper {
 		}
 		// if engine file doesn't exists in document head section
 		if(!$engine_founded || $this->config['useScript'] == 1) {
-			// add new script tag connected with mootools from module
-			$document->addScript($uri->root().'modules/mod_tabs_gk5/scripts/engine.'.($this->config['engine_mode']).'.js');
+			JHtml::_('script', $uri->root().'modules/mod_tabs_gk5/scripts/engine.'.($this->config['engine_mode']).'.js', array('version' => 'auto', 'relative' => true));
 		}
 		// generate GK Tab configuration array
 		$config_data = array(
@@ -191,7 +178,7 @@ class TabsGK5Helper {
 		$config_data = str_replace('"', '\'', json_encode($config_data));
 		//
 		if($this->config['tabs_position'] == 'left' || $this->config['tabs_position'] == 'right') {
-			$document->addStyleDeclaration('#'.$this->config['module_id'].' .gkTabsWrap > ol { width: '.$this->config['tabs_width'].'px; }'. "\n");
+			$document->addStyleDeclaration('#'.$this->config['module_id'].' .gkTabsWrap > ol { width: '.$this->config['tabs_width'].'px; min-width: '.$this->config['tabs_width'].'px;}'. "\n");
 		}
 		// override styles for RTL
 		if(isset($this->config['rtl']) && $this->config['rtl'] == 1) {

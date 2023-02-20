@@ -211,7 +211,7 @@ class NSP_GK5_Product_Gallery_2 {
 	        }
 	        // load the base
 	        $productModel = new VirtueMartModelProduct();
-		    $product = $productModel->getProduct($id, 100, true, true, true);
+		    $product = $productModel->getProduct($id, true, false);
 		    $currency = CurrencyDisplay::getInstance();
 		    
 		    $price = '<strong>'.$currency->createPriceDiv($config['vm_show_price_type'], '', $product->prices, true).'</strong>';

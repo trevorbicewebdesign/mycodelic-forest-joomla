@@ -12,7 +12,9 @@
 
 // access restriction
 defined('_JEXEC') or die('Restricted access');
-
+if(version_compare(JVERSION, '4', '<')) { 
+	JHtml::_('behavior.framework');
+}
 ?>
 <?php if($this->config['fb_code_type'] == 'iframe') : ?>
 	<iframe src="//www.facebook.com/plugins/likebox.php?href=<?php echo urlencode($this->config['fb_site']); ?>&amp;width=<?php echo $this->config['fb_likebox_width']; ?>&amp;colorscheme=<?php echo $this->config['fb_likebox_colorscheme']; ?>&amp;show_faces=<?php echo $this->config['fb_likebox_faces']; ?>&amp;stream=<?php echo $this->config['fb_likebox_stream'] ?>&amp;header=<?php echo $this->config['fb_likebox_header']; ?>&amp;height=<?php echo $this->config['fb_likebox_height']; ?>&amp;show_border=<?php echo $this->config['fb_likebox_show_border']; ?>" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:<?php echo $this->config['fb_likebox_width'] ?>px; height:<?php echo $this->config['fb_likebox_height']; ?>px;" allowtransparency="true"></iframe>

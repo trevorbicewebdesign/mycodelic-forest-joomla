@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -118,7 +118,8 @@ class WFStyleselectPluginConfig
                         $style->classes = self::cleanString($style->classes);
                     }
 
-                    if (isset($style->styles)) {
+                    // validate and cleanup styles
+                    if (isset($style->styles) && preg_match('#\s*([^:]+):\s*([^;]+);?#', $style->styles)) {
                         // replace comma with semi-colon and remove duplicates
                         $style->styles = preg_replace('#[;]+#', ';', $style->styles);
                     }
@@ -150,10 +151,11 @@ class WFStyleselectPluginConfig
                         // match all if not set
                         if (!isset($style->selector)) {
                             $style->selector = '*';
-
                             // set to element
                             if (isset($style->element)) {
-                                $style->selector = $style->element;
+                                $style->selector = false;
+                            } else {
+                                $style->inline = 'span';
                             }
                         }
                     }
@@ -204,6 +206,7 @@ class WFStyleselectPluginConfig
         }
 
         $settings['styleselect_sort'] = $wf->getParam('styleselect.sort', 1, 1);
+        $settings['styleselect_preview_styles'] = $wf->getParam('styleselect.preview_styles', 1, 1);
     }
 
     protected static function cleanString($string)

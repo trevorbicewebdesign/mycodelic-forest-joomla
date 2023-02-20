@@ -74,6 +74,7 @@ jQuery(document).ready(function() {
 				// prepare links
 				photos.each(function(j, photo) {
 					photo = jQuery(photo);
+					photo.attr('data-index', j);
 					collection.push(photo.attr('data-popup-url'));
 					
 					photo.click(function(e) {						
@@ -100,6 +101,7 @@ jQuery(document).ready(function() {
 									img.removeClass('loading');
 								});
 								img.attr('src', photo.attr('data-popup-url'));
+								img.attr('data-index', j);
 								img.prependTo(overlay);
 							}, 50);
 						}
@@ -120,9 +122,10 @@ jQuery(document).ready(function() {
 						}
 						setTimeout(function() {
 							var current_img = img.attr('src');
-							var id = collection.indexOf(current_img);
-							var new_img = collection[(id > 0) ? id - 1 : collection.length - 1];
-							img.attr('src', new_img);
+							var index = +img.attr('data-index') || 0;
+							var prev = index > 0 ? index - 1 : 0;
+							img.attr('src', collection[prev]);
+							img.attr('data-index', prev);
 						}, 300);
 					});
 					
@@ -136,9 +139,11 @@ jQuery(document).ready(function() {
 						}
 						setTimeout(function() {
 							var current_img = img.attr('src');
-							var id = collection.indexOf(current_img);
-							var new_img = collection[(id < collection.length - 1) ? id + 1 : 0];
-							img.attr('src', new_img);
+							var index = +img.attr('data-index') || 0;
+							var last = collection.length - 1;
+							var next = index < last ? index + 1 : last;
+							img.attr('src', collection[next]);
+							img.attr('data-index', next);
 						}, 300);
 					});
 					

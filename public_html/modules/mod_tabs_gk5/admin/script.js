@@ -7,7 +7,7 @@
  *
  */
 
-var GKSortables = new Class({
+ var GKSortables = new Class({
 	// inherit from the Sortables class
 	Extends: Sortables,
 	// overrided method
@@ -16,35 +16,35 @@ var GKSortables = new Class({
 			!this.idle ||
 			event.rightClick ||
 			['button', 'input', 'a', 'textarea'].contains(event.target.get('tag'))
-		) return;
+			) return;
 
-		if(element && !element.hasClass('isOpened')) {
-			this.idle = false;
-			this.element = element;
-			this.opacity = element.getStyle('opacity');
-			this.list = element.getParent();
-			this.clone = this.getClone(event, element);
-	
-			this.drag = new Drag.Move(this.clone, Object.merge({
-				
-				droppables: this.getDroppables()
-			}, this.options.dragOptions)).addEvents({
-				onSnap: function(){
-					event.stop();
-					this.clone.setStyle('visibility', 'visible');
-					this.element.setStyle('opacity', this.options.opacity || 0);
-					this.fireEvent('start', [this.element, this.clone]);
-				}.bind(this),
-				onEnter: this.insert.bind(this),
-				onCancel: this.end.bind(this),
-				onComplete: this.end.bind(this)
-			});
-	
-			this.clone.inject(this.element, 'before');
-			this.drag.start(event);
+			if(element && !element.hasClass('isOpened')) {
+				this.idle = false;
+				this.element = element;
+				this.opacity = element.getStyle('opacity');
+				this.list = element.getParent();
+				this.clone = this.getClone(event, element);
+
+				this.drag = new Drag.Move(this.clone, Object.merge({
+
+					droppables: this.getDroppables()
+				}, this.options.dragOptions)).addEvents({
+					onSnap: function(){
+						event.stop();
+						this.clone.setStyle('visibility', 'visible');
+						this.element.setStyle('opacity', this.options.opacity || 0);
+						this.fireEvent('start', [this.element, this.clone]);
+					}.bind(this),
+					onEnter: this.insert.bind(this),
+					onCancel: this.end.bind(this),
+					onComplete: this.end.bind(this)
+				});
+
+				this.clone.inject(this.element, 'before');
+				this.drag.start(event);
+			}
 		}
-	}
-});
+	});
 
 
 /*
@@ -61,10 +61,104 @@ window.addEvent("domready",function(){
 	var settings = new TabsGK5Settings();
 	// check Joomla! version and add suffix
 	// check Joomla! version and add suffix
-	if(parseFloat((jQuery('#gk_about_us').data('jversion')).substr(0,3)) >= '3.2') {
-		jQuery('#module-form').addClass('j32');
+	// if(parseFloat((jQuery('#gk_about_us').data('jversion')).substr(0,3)) >= '3.2') {
+	// 	jQuery('#module-form').addClass('j32');
+	// }
+
+	if (jQuery('#gk_about_us').length && jQuery('#module-form').length) {
+		if (parseFloat((jQuery('#gk_about_us').data('jversion')).substr(0, 3)) >= '4') {
+			jQuery('#module-form').addClass('j32 j4');
+		} else if (parseFloat((jQuery('#gk_about_us').data('jversion')).substr(0, 3)) >= '3.2') {
+			console.log(jQuery('#module-form'));
+			jQuery('#module-form').addClass('j32');
+			jQuery('.j32 .switcher').addClass('btn-group btn-group-yesno');
+
+			// Turn radios into btn-group
+			jQuery('.radio.btn-group label').addClass('btn');
+
+			jQuery('fieldset.btn-group').each(function () {
+				// Handle disabled, prevent clicks on the container, and add disabled style to each button
+				if (jQuery(this).prop('disabled')) {
+					jQuery(this).css('pointer-events', 'none').off('click');
+					jQuery(this).find('.btn').addClass('disabled');
+				}
+			});
+
+			jQuery('.btn-group label:not(.active)').off().unbind().click(function ()
+			{
+				var label = jQuery(this);
+				var input = jQuery('#' + label.attr('for'));
+
+				if (!input.prop('checked'))
+				{
+					label.closest('.btn-group').find('label').removeClass('active btn-success btn-danger btn-primary');
+
+					if (label.closest('.btn-group').hasClass('btn-group-reversed'))
+					{
+						if (input.val() == '')
+						{
+							label.addClass('active btn-primary');
+						} else if (input.val() == 0)
+						{
+							label.addClass('active btn-success');
+						} else
+						{
+							label.addClass('active btn-danger');
+						}
+					} else
+					{
+						if (input.val() == '')
+						{
+							label.addClass('active btn-primary');
+						} else if (input.val() == 0)
+						{
+							label.addClass('active btn-danger');
+						} else
+						{
+							label.addClass('active btn-success');
+						}
+
+					}
+					input.prop('checked', true);
+					input.trigger('change');
+				}
+			});
+			jQuery('.btn-group input[checked=checked]').each(function ()
+			{
+				var $self = jQuery(this);
+				var attrId = $self.attr('id');
+
+				if ($self.parent().hasClass('btn-group-reversed'))
+				{
+					if ($self.val() == '')
+					{
+						jQuery('label[for=' + attrId + ']').addClass('active btn-primary');
+					} else if ($self.val() == 0)
+					{
+						jQuery('label[for=' + attrId + ']').addClass('active btn-success');
+					} else
+					{
+						jQuery('label[for=' + attrId + ']').addClass('active btn-danger');
+					}
+				} else
+				{
+					if ($self.val() == '')
+					{
+						jQuery('label[for=' + attrId + ']').addClass('active btn-primary');
+					} else if ($self.val() == 0)
+					{
+						jQuery('label[for=' + attrId + ']').addClass('active btn-danger');
+					} else
+					{
+						jQuery('label[for=' + attrId + ']').addClass('active btn-success');
+					}
+				}
+			});
+		} else {
+			console.log(jQuery('ellelelele'));
+		}
 	}
-	
+
 });
 
 /*
@@ -72,7 +166,7 @@ window.addEvent("domready",function(){
  * Main class
  *
  */
-var TabsGK5Settings = new Class({
+ var TabsGK5Settings = new Class({
 	// class fields
 	options: {
 		tabs: null, // tabs data in JSON format
@@ -82,7 +176,7 @@ var TabsGK5Settings = new Class({
 	},
 	// constructor
 	initialize: function() {
-	
+
 		// fix accordian names
 		$$('#moduleOptions a[href^="#collapse"]').each(function(el) {
 			el.id = el.innerHTML.replace(/ /g,'_').replace('!', '');
@@ -109,7 +203,7 @@ var TabsGK5Settings = new Class({
 			if(document.id('Tabs')) { document.id('Tabs').getParent('.accordion-group').addClass('gkUnvisible'); }
 		} else {
 			if(document.id('External_sources')) { document.id('External_sources').getParent('.accordion-group').addClass('gkUnvisible'); }
-		} 
+		}
 		// hide one of unnecessary tabs
 		document.id('jform_params_tabs_data-lbl').getParent().setStyle('display', 'none');
 		document.id('jform_params_tabs_data-lbl').getParent().getParent().getElement('.controls').setStyle('margin-left', 0);
@@ -123,12 +217,12 @@ var TabsGK5Settings = new Class({
 				} else {
 					document.id('Tabs').getParent('.accordion-group').removeClass('gkUnvisible');
 					document.id('External_sources').getParent('.accordion-group').addClass('gkUnvisible');
-				} 
+				}
 			}
 		});
 		// function used for changing data source to help if the onChange event doesn't fire
 		document.id('jform_params_module_data_source').addEvent('blur', function() {
-			document.id('jform_params_module_data_source').fireEvent('change');	
+			document.id('jform_params_module_data_source').fireEvent('change');
 		});
 		// get translations texts
 		this.options.translations['module_text'] = add_form.getElements('.gk_tab_add_type option')[0].innerHTML;
@@ -156,13 +250,13 @@ var TabsGK5Settings = new Class({
 			}
 		});
 		// function used to avoid problems with height of the blocks
-		var add_form_scroll = new Fx.Tween(add_form_scroll_wrap, { 
-			duration: 250, 
-			property: 'height', 
-			onComplete: function() { 
+		var add_form_scroll = new Fx.Tween(add_form_scroll_wrap, {
+			duration: 250,
+			property: 'height',
+			onComplete: function() {
 				if(add_form_scroll_wrap.getSize().y > 0) {
-					add_form_scroll_wrap.setStyle('height', 'auto'); 
-				} 
+					add_form_scroll_wrap.setStyle('height', 'auto');
+				}
 			}
 		});
 		// onClick event for the header in the tabs manager
@@ -205,8 +299,8 @@ var TabsGK5Settings = new Class({
 		});
 		// enable drag'n'drop
 		$this.options.sortables = new GKSortables(document.id('tabs_list'), {
-			clone: true, 
-			opacity: 0.5, 
+			clone: true,
+			opacity: 0.5,
 			onStart: function(element, clone) {
 				clone.addClass('gk_tab_item_clone');
 				var iter = 0;
@@ -216,7 +310,7 @@ var TabsGK5Settings = new Class({
 						iter++;
 					}
 				});
-				
+
 				document.id('tabs_list').addClass('dragging');
 				$this.options.isDragged = true;
 			},
@@ -288,12 +382,12 @@ var TabsGK5Settings = new Class({
 		// edit
 		item.getElement('.gk_tab_item_desc').addEvent('click', function(e){
 			if(e) e.stop();
-			
+
 			if(!$this.options.isDragged) {
 				var scroller = item.getElement('.gk_tab_editor_scroll');
 				scroller.setStyle('height', scroller.getSize().y + "px");
 				var fx = new Fx.Tween(scroller, { duration: 250, property: 'height', onComplete: function() { if(scroller.getSize().y > 0) scroller.setStyle('height', 'auto'); } });
-				
+
 				if(scroller.getSize().y > 0) {
 					fx.start(0);
 					item.removeClass('isOpened');
@@ -301,7 +395,7 @@ var TabsGK5Settings = new Class({
 					item.getParent().getElements('.gk_tab_item').each(function(it) {
 						if(it != item) it.getElements('.gk_tab_edit_submit a')[1].fireEvent('click');
 					});
-				
+
 					fx.start(scroller.getElement('div').getSize().y);
 					item.addClass('isOpened');
 				}
@@ -409,22 +503,22 @@ var TabsGK5Settings = new Class({
 	},
 	// function used to make other adjustments in the form
 	formInit: function() {
-		
-		
-		
+
+
+
 		document.id('config_manager_form').getParent().setStyle('margin', '0');
 		// adjust the inputs
 		$$('.input-pixels').each(function(el){el.getParent().innerHTML = "<div class=\"input-prepend\">" + el.getParent().innerHTML + "<span class=\"add-on\">px</span></div>"});
 		$$('.input-ms').each(function(el){el.getParent().innerHTML = "<div class=\"input-prepend\">" + el.getParent().innerHTML + "<span class=\"add-on\">ms</span></div>"});
 		$$('.input-percents').each(function(el){el.getParent().innerHTML = "<div class=\"input-prepend\">" + el.getParent().innerHTML + "<span class=\"add-on\">%</span></div>"});
 		$$('.input-minutes').each(function(el){el.getParent().innerHTML = "<div class=\"input-prepend\">" + el.getParent().innerHTML + "<span class=\"add-on\">minutes</span></div>"});
-			
+
 	},
 	// function to encode chars
 	htmlspecialchars: function(string) {
-	    string = string.toString();
-	    string = string.replace(/&/g, '[ampersand]').replace(/</g, '[leftbracket]').replace(/>/g, '[rightbracket]');
-	    return string;
+		string = string.toString();
+		string = string.replace(/&/g, '[ampersand]').replace(/</g, '[leftbracket]').replace(/>/g, '[rightbracket]');
+		return string;
 	},
 	// function to decode chars
 	htmlspecialchars_decode: function(string) {
@@ -439,7 +533,7 @@ var TabsGK5Settings = new Class({
  * Configuration manager class
  *
  */
-var TabsGK5ConfigManager = new Class({
+ var TabsGK5ConfigManager = new Class({
 	// constructor
 	initialize: function() {
 		// create additional variable to avoid problems with the scopes
@@ -447,34 +541,35 @@ var TabsGK5ConfigManager = new Class({
 		// button load
 		document.id('config_manager_load').addEvent('click', function(e) {
 			e.stop();
-		    $obj.operation('load');
+			$obj.operation('load');
 		});
 		// button save
 		document.id('config_manager_save').addEvent('click', function(e) {
 			e.stop();
-		   	$obj.operation('save');
+			$obj.operation('save');
 		});
 		// button delete
 		document.id('config_manager_delete').addEvent('click', function(e) {
 			e.stop();
-		   	$obj.operation('delete');
+			$obj.operation('delete');
 		});
 	},
 	// operation made by the class
 	operation: function(type) {
-		// current url 
+		// current url
 		var current_url = window.location;
 		// check if the current url has no hashes
 		if((current_url + '').indexOf('#', 0) === -1) {
 			// if no - put the variables
-		    current_url = current_url + '&gk_module_task='+type+'&gk_module_file=' + document.id('config_manager_'+type+'_filename').get('value');    
+			current_url = current_url + '&gk_module_task='+type+'&gk_module_file=' + document.id('config_manager_'+type+'_filename').get('value');
 		} else {
-			// if the url has hashes - remove the hash 
-		    current_url = current_url.substr(0, (current_url + '').indexOf('#', 0) - 1);
+			// if the url has hashes - remove the hash
+			current_url = current_url.substr(0, (current_url + '').indexOf('#', 0) - 1);
 		    // and put the variables
 		    current_url = current_url + '&gk_module_task='+type+'&gk_module_file=' + document.id('config_manager_'+type+'_filename').get('value');
-		}
+		  }
 		// redirect to the url with variables
 		window.location = current_url;
-	} 
+	}
+
 });

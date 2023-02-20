@@ -179,7 +179,7 @@ class NSP_GK5_com_content_Model {
 			$featured_join = ''; // get featured ordering
 		} else if($config['only_featured'] == 1) {
 			$frontpage_con = ' AND content.featured = 1';
-			$featured_join = 'LEFT JOIN #__content_frontpage as content_frontpage ON id = content_id'; // get featured ordering
+			$featured_join = 'LEFT JOIN #__content_frontpage as content_frontpage ON content_frontpage.content_id = content.id'; // get featured ordering
 		}
 
 		$since_con = '';
@@ -188,7 +188,7 @@ class NSP_GK5_com_content_Model {
 		}
 		//
 		if($config['news_since'] == '' && $config['news_in'] != '') {
-			$since_con = ' AND content.created >= ' . $db->Quote(strftime('%Y-%m-%d 00:00:00', time() - ($config['news_in'] * 24 * 60 * 60)));
+			$since_con = ' AND content.created >= ' . $db->Quote(date('Y-m-d H:i:s', time() - ($config['news_in'] * 24 * 60 * 60)));
 		}
 
 		// current article hiding
@@ -256,7 +256,7 @@ class NSP_GK5_com_content_Model {
 			content.state = 1
                 '. $access_con .'
 		 		AND ( content.publish_up = '.$db->Quote($nullDate).' OR content.publish_up <= '.$db->Quote($now).' )
-				AND ( content.publish_down = '.$db->Quote($nullDate).' OR content.publish_down >= '.$db->Quote($now).' )
+				AND ( ISNULL(content.publish_down) OR content.publish_down = '.$db->Quote($nullDate).' OR content.publish_down >= '.$db->Quote($now).' )
 			'.$sql_where.'
 			'.$lang_filter.'
 			'.$frontpage_con.'

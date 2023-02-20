@@ -1015,6 +1015,10 @@ select ~ .chzn-container {
 }
 
 /* J4 fixex */
+.j4 #config_manager_form {
+	position: relative;
+}
+
 .j4 ul#myTabTabs > li {
 	width: 100%;
 }
@@ -1073,4 +1077,18 @@ span.tooltip-content { display: none; }
 #modules-form #jform_params_links_img_height {
 	padding-left: 2px;
 	padding-right: 2px;
+}
+
+
+/* style for APP_1 */
+.app_1 #jform_params_news_full_pages-lbl,
+.app_1 #jform_params_news_full_pages,
+.app_1 #jform_params_top_interface_style-lbl,
+.app_1 #jform_params_top_interface_style {
+	display: none !important;
+}
+
+/* Style J4 */
+.form-grid .control-group {
+	display: block;
 }

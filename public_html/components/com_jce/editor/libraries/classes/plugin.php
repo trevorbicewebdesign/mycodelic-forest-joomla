@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -38,9 +38,17 @@ class WFEditorPlugin extends JObject
         // get name and caller from plugin name
         if (strpos($name, '.') !== false) {
             list($name, $caller) = explode('.', $name);
-            // store caller
+
+            // validate then store caller
             if ($caller !== $name) {
-                $this->set('caller', $caller);
+
+                $profile = $this->getProfile();
+
+                if (!empty($profile)) {
+                    if (in_array($caller, explode(',', $profile->plugins))) {
+                        $this->set('caller', $caller);
+                    }
+                }
             }
         }
 
@@ -147,7 +155,7 @@ class WFEditorPlugin extends JObject
         if ($language->getTag() === WFLanguage::getTag()) {
             return $language->isRTL();
         }
-        
+
         return false;
     }
 
@@ -180,6 +188,8 @@ class WFEditorPlugin extends JObject
 
         // set standalone mode
         $document->set('standalone', $wf->input->getInt('standalone', 0));
+
+        JFactory::getApplication()->triggerEvent('onWfPluginInit', array($this));
     }
 
     public function execute()
@@ -194,7 +204,7 @@ class WFEditorPlugin extends JObject
         $document = WFDocument::getInstance();
 
         // ini language
-        $document->addScript(array('index.php?option=com_jce&' . $document->getQueryString(
+        $document->addScript(array(JURI::base(true) . '/index.php?option=com_jce&' . $document->getQueryString(
             array('task' => 'plugin.loadlanguages', 'lang' => WFLanguage::getCode())
         )), 'joomla');
 
@@ -218,6 +228,7 @@ class WFEditorPlugin extends JObject
             'plugins' => array('core' => array($name), 'external' => array()),
             'sections' => array('dlg', $name . '_dlg', 'colorpicker'),
             'mode' => 'plugin',
+            'language' => WFLanguage::getTag(),
         ));
 
         $data = $parser->load();
@@ -237,7 +248,7 @@ class WFEditorPlugin extends JObject
         jimport('joomla.filesystem.folder');
         $document = WFDocument::getInstance();
 
-        if ($document->get('standalone') === 0) {
+        if ($document->get('standalone') == 0) {
             $document->addScript(array('tiny_mce_popup'), 'tiny_mce');
         }
 
@@ -252,6 +263,8 @@ class WFEditorPlugin extends JObject
         if (is_file(JPATH_SITE . '/media/jce/css/plugin.css')) {
             $document->addStyleSheet(array('media/jce/css/plugin.css'), 'joomla');
         }
+
+        JFactory::getApplication()->triggerEvent('onWfPluginDisplay', array($this));
     }
 
     /**

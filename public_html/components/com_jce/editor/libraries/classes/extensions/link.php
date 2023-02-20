@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -101,7 +101,8 @@ class WFLinkExtension extends WFExtension
 
         foreach ($args as $k => $v) {
             $args->$k = $filter->clean($v, $method);
-            $args->$k = (string) filter_var($args->$k, FILTER_SANITIZE_STRING, FILTER_FLAG_NO_ENCODE_QUOTES | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK);
+            $args->$k = (string) filter_var($args->$k, FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_BACKTICK);
+            $args->$k = htmlspecialchars(strip_tags($args->$k));
         }
 
         return $args;
@@ -220,29 +221,6 @@ class WFLinkExtension extends WFExtension
         }
 
         return $match ? '&Itemid=' . $match : '';
-    }
-
-    /**
-     * Translates an internal Joomla URL to a humanly readible URL.
-     *
-     * @param string $url Absolute or Relative URI to Joomla resource
-     *
-     * @return The translated humanly readible URL
-     */
-    public static function route($url)
-    {
-        $app = JApplication::getInstance('site');
-        $router = $app->getRouter('site');
-
-        if (!$router) {
-            return $url;
-        }
-
-        $uri = $router->build($url);
-        $url = $uri->toString();
-        $url = str_replace('/administrator/', '/', $url);
-
-        return $url;
     }
 
     /**

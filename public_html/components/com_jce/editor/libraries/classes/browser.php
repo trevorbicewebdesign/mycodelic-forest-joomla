@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright     Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright     Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license       GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -175,24 +175,26 @@ class WFFileBrowser extends JObject
 
     public function getFileSystem()
     {
-        static $filesystem = array();
+        static $instances = array();
 
         $fs = $this->get('filesystem', 'joomla');
 
-        if (!isset($filesystem[$fs])) {
-            $wf = WFEditorPlugin::getInstance();
+        $wf = WFEditorPlugin::getInstance();
 
-            $config = array(
-                'dir' => $this->get('dir'),
-                'upload_conflict' => $wf->getParam('editor.upload_conflict', 'overwrite'),
-                'upload_suffix' => $wf->getParam('editor.upload_suffix', '_copy'),
-                'filetypes' => $this->listFileTypes(),
-            );
+        $config = array(
+            'dir' => $this->get('dir'),
+            'upload_conflict' => $wf->getParam('editor.upload_conflict', 'overwrite'),
+            'upload_suffix' => $wf->getParam('editor.upload_suffix', '_copy'),
+            'filetypes' => $this->listFileTypes(),
+        );
 
-            $filesystem[$fs] = WFFileSystem::getInstance($fs, $config);
+        $signature = md5($fs . serialize($config));
+
+        if (!isset($instances[$signature])) {
+            $instances[$signature] = WFFileSystem::getInstance($fs, $config);
         }
 
-        return $filesystem[$fs];
+        return $instances[$signature];
     }
 
     private function getViewable()
@@ -272,37 +274,25 @@ class WFFileBrowser extends JObject
         return $this->getFileTypes('list', $list);
     }
 
+    /**
+     * Set filetypes and update upload properties
+     */
     public function setFileTypes($list = 'jpg,jpeg,png,gif')
     {
         if ($list && $list[0] === '=') {
             $list = substr($list, 1);
         }
 
-        $this->set('filetypes', $list);
-    }
+        // get existing upload values
+        $upload = $this->get('upload', array());
 
-    public function addFileTypes($filetypes)
-    {
-        $list = $this->get('filetypes');
+        // set updated filetypes
+        $upload['filetypes'] = $list;
 
-        if (strpos($list, '=') === false) {
-            // convert to array if needed
-            if (is_string($list)) {
-                $list = explode(',', $list);
-            }
-            // combine
-            $list = array_unique(array_merge($list, $filetypes));
-            // convert to string
-            $list = implode(',', $list);
-        } else {
-            $list = explode(';', $list);
-
-            foreach ($filetypes as $group => $extensions) {
-                $list[] = $group . '=' . $extensions;
-            }
-
-            $list = implode(';', $list);
-        }
+        // update filetypes
+        $this->setProperties(array(
+            'upload' => $upload
+        ));
 
         $this->set('filetypes', $list);
     }
@@ -386,7 +376,7 @@ class WFFileBrowser extends JObject
 
                     $return = false;
 
-                // hide this folder
+                    // hide this folder
                 } else {
                     $return = true;
 
@@ -486,7 +476,7 @@ class WFFileBrowser extends JObject
     {
         try {
             $q = preg_replace('#[^a-zA-Z0-9_\.\-\:~\pL\pM\pN\s\* ]#u', '', $query);
-        } catch (\Exception $e) {
+        } catch (\Exception$e) {
             // PCRE replace failed, use ASCII
             $q = preg_replace('#[^a-zA-Z0-9_\.\-\:~\s\* ]#', '', $query);
         }
@@ -786,6 +776,7 @@ class WFFileBrowser extends JObject
 
         if ($init) {
             $treedir = $dir;
+
             if ($root) {
                 $result = '<ul>'
                 . '<li data-id="/" class="uk-tree-open uk-tree-root uk-padding-remove">'
@@ -801,10 +792,12 @@ class WFFileBrowser extends JObject
                 $dir = '/';
             }
         }
+
         $folders = $this->getFolders($dir);
 
         if ($folders) {
             $result .= '<ul class="uk-tree-node">';
+
             foreach ($folders as $folder) {
                 $name = ltrim($folder['id'], '/');
 
@@ -818,19 +811,20 @@ class WFFileBrowser extends JObject
                     . '   </a>'
                     . ' </div>';
 
-                if ($open) {
-                    if ($h = $this->getTreeItems($folder['id'], false, false)) {
-                        $result .= $h;
-                    }
-                }
+                /*if ($open) {
+                $result .= $this->getTreeItems($folder['id'], false, false);
+                }*/
 
                 $result .= '</li>';
             }
+
             $result .= '</ul>';
         }
+
         if ($init && $root) {
             $result .= '</li></ul>';
         }
+
         $init = false;
 
         return $result;
@@ -1182,7 +1176,7 @@ class WFFileBrowser extends JObject
     public function upload()
     {
         // Check for request forgeries
-        JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+        JSession::checkToken('request') or jexit(JText::_('JINVALID_TOKEN'));
 
         // check for feature access
         if (!$this->checkFeature('upload')) {
@@ -1716,7 +1710,17 @@ class WFFileBrowser extends JObject
                     $this->setResult(JText::sprintf('WF_MANAGER_NEW_FOLDER_ERROR', WFUtility::mb_basename($new)), 'error');
                 }
             } else {
-                $this->fireEvent('onFolderNew', array($new));
+                $data = array(
+                    'name'  => WFUtility::mb_basename($new),
+                    'id'    => WFUtility::mb_basename($new)
+                );
+
+                $event = $this->fireEvent('onFolderNew', array($new));
+
+                // merge event data with default values
+                $data = array_merge($data, $event);
+
+                $this->setResult($data, $result->type);
             }
         }
 

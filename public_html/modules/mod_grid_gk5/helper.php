@@ -14,7 +14,7 @@
 // access restriction
 defined('_JEXEC') or die('Restricted access');
 // import JString class for UTF-8 problems
-jimport('joomla.utilities.string'); 
+jimport('joomla.utilities.string');
 // Main GK Tab class
 class GridGK5Helper {
 	private $config; // configuration array
@@ -24,26 +24,7 @@ class GridGK5Helper {
 		// put the module params to the $config variable
 		$this->config = $params->toArray();
         // if the user set engine mode to Mootools
-        if($this->config['engine_mode'] == 'mootools') {
-            // load the MooTools framework to use with the module
-            JHtml::_('behavior.framework', true);
-        } else if($this->config['include_jquery'] == 1) {
-            // if the user specify to include the jQuery framework - load newest jQuery 1.7.* 
-            $doc = JFactory::getDocument();
-            // generate keys of script section
-            $headData = $doc->getHeadData();
-            $headData_keys = array_keys($headData["scripts"]);
-            // set variable for false
-            $engine_founded = false;
-            // searching phrase mootools in scripts paths
-            if(array_search('https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js', $headData_keys) > 0) {
-                $engine_founded = true;
-            }
-            //
-            if(!$engine_founded) {
-                $doc->addScript('https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js');
-            }
-        }
+		JHtml::_('jquery.framework');
 		// getting module ID
 		$this->config['module_id'] = ($params->get('module_id', '') == '') ? 'gk-grid-' . $module->id : $params->get('module_id', '');
 		// parse JSON data which comes from the grid manager
@@ -55,12 +36,12 @@ class GridGK5Helper {
 			echo JText::_('MOD_GRID_NO_BLOCKS');
 			return false;
 		}
-		// create necessary instances of the Joomla! classes 
+		// create necessary instances of the Joomla! classes
 		$document = JFactory::getDocument();
 		$uri = JURI::getInstance();
 		// add stylesheets to document header
 		if($this->config["useCSS"] == 1) {
-			$document->addStyleSheet( $uri->root().'modules/mod_grid_gk5/styles/style.css', 'text/css' );
+			$document->addStyleSheet( $uri->root().'modules/mod_grid_gk5/styles/style.css' );
 		}
 		// put the generated CSS rules to head
 		$document = JFactory::getDocument();
@@ -72,21 +53,21 @@ class GridGK5Helper {
 		// set variable for false
 		$engine_founded = false;
 		// searching phrase mootools in scripts paths
-		if(array_search($uri->root().'modules/mod_grid_gk5/scripts/engine.'.($this->config['engine_mode']).'.js', $headData_keys) > 0) {
+		if(array_search($uri->root().'modules/mod_grid_gk5/scripts/engine.jquery.js', $headData_keys) > 0) {
 			// if founded set variable to true
 			$engine_founded = true;
 		}
 		// if engine file doesn't exists in document head section
 		if(!$engine_founded || $this->config['useScript'] == 1) {
 			// add new script tag connected with mootools from module
-			$document->addScript($uri->root().'modules/mod_grid_gk5/scripts/engine.'.($this->config['engine_mode']).'.js');
+			$document->addScript($uri->root().'modules/mod_grid_gk5/scripts/engine.jquery.js');
 		}
 		// include main module view
 		require(JModuleHelper::getLayoutPath('mod_grid_gk5', 'default'));
 	}
 	// function to generate the module grid elements
 	public function moduleRender() {
-		$amount = count($this->config["grid_data"]->blocks);		
+		$amount = count($this->config["grid_data"]->blocks);
 		if($amount > 0) {
 			// iterate all grid elements
 			for($i = 0; $i < $amount; $i++) {
@@ -113,18 +94,14 @@ class GridGK5Helper {
 				if(is_array($this->mod_getter) && count($this->mod_getter) > 0) {
 					$iterator = 0;
 					$founded = false;
-					foreach(array_keys($this->mod_getter) as $m) { 
+					foreach(array_keys($this->mod_getter) as $m) {
 						if($iterator == $num - 1) {
-							echo JModuleHelper::renderModule($this->mod_getter[$m]); 
+							echo JModuleHelper::renderModule($this->mod_getter[$m]);
 							$founded = true;
 							break;
 						}
 
 						$iterator++;
-					}
-
-					if(!$founded) {
-						echo '<strong>Error:</strong> Specified module on the used module position doesn\'t exist!';
 					}
 				} else {
 					echo '<strong>Error:</strong> Specified module position doesn\'t exist or is blank!';
@@ -154,7 +131,7 @@ class GridGK5Helper {
 		// define the blocks size and position
 		for($i = 0; $i < count($block_data); $i++) {
 			$el = $block_data[$i];
-			$output_desktop .= $prefix . str_replace(array('[', ']'), array('_', ''), $el->ID) . ' { height: '.($el->SIZE_D_H * (100.0 / $mod_height_desktop)).'%; width: '.($el->SIZE_D_W * (100.0 / 6)).'%; left: '.($el->POS_D_X * (100.0 / 6)).'%; top: '.($el->POS_D_Y * (100.0 / $mod_height_desktop)).'%; z-index: '.($i+1).'; }' . "\n";
+			$output_desktop .= $prefix . str_replace(array('[', ']'), array('_', ''), $el->ID) . ' { height: '.($el->SIZE_D_H * (100.0 / $mod_height_desktop)).'%; width: '.number_format($el->SIZE_D_W * (100.0 / 6), 2).'%; left: '.($el->POS_D_X * (100.0 / 6)).'%; top: '.($el->POS_D_Y * (100.0 / $mod_height_desktop)).'%; z-index: '.($i+1).'; }' . "\n";
 			$output_tablet .= $prefix . str_replace(array('[', ']'), array('_', ''), $el->ID) . ' { height: '.($el->SIZE_T_H * (100.0 / $mod_height_tablet)).'%; width: '.($el->SIZE_T_W * (100.0 / 4)).'%; left: '.($el->POS_T_X * (100.0 / 4)).'%; top: '.($el->POS_T_Y * (100.0 / $mod_height_tablet)).'%; z-index: '.($i+1).'; }' . "\n";
 			$output_mobile .= $prefix . str_replace(array('[', ']'), array('_', ''), $el->ID) . ' { height: '.($el->SIZE_M_H * (100.0 / $mod_height_mobile)).'%; width: '.($el->SIZE_M_W * (100.0 / 2)).'%; left: '.($el->POS_M_X * (100.0 / 2)).'%; top: '.($el->POS_M_Y * (100.0 / $mod_height_mobile)).'%; z-index: '.($i+1).'; }' . "\n";
 		}
@@ -162,7 +139,7 @@ class GridGK5Helper {
 		return $output_desktop . '@media (max-width: '.$this->config['tablet_width'].'px) { ' . "\n" . '.gkGridGK5 .gkImgTablet { display: block; } .gkGridGK5 .gkImgDesktop, .gkGridGK5 .gkImgMobile { display: none; } ' . "\n" . $output_tablet . '} ' . "\n" . '@media (max-width: '.$this->config['mobile_width'].'px) { ' . "\n" . '.gkGridGK5 .gkImgMobile { display: block; } .gkGridGK5 .gkImgDesktop, .gkGridGK5 .gkImgTablet { display: none; } ' . "\n"  . $output_mobile . '} ';
 	}
 	// function to generate blank transparent PNG images
-	public function generateBlankImage($width, $height){ 
+	public function generateBlankImage($width, $height){
 		$image = imagecreatetruecolor($width, $height);
 		imagesavealpha($image, true);
 		$transparent = imagecolorallocatealpha($image, 0, 0, 0, 127);

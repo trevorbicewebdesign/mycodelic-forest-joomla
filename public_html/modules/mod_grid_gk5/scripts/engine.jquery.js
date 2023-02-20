@@ -1,4 +1,4 @@
-jQuery(window).load(function(){
+jQuery(window).on('load', function(){
 	setTimeout(function() {
 		jQuery('.gkGridGK5').each(function(i,el) {
 			el = jQuery(el);

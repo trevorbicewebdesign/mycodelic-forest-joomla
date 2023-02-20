@@ -67,12 +67,8 @@ class NSP_GK5_VideoList {
 				echo '<figure class="gkItem'.($this->get_video($i) != '#' ? ' video' : '').($i < $this->parent->config['portal_mode_video_list_per_page'] ? ' active' : '').'"><div class="gkItemWrap">';
 
 					if ($this->get_video($i) != '#') {
-					echo '<div id="gkVideoWrap-'.$i.'" class="gkVideoWrap">
-					    <iframe width="'.$this->parent->config['portal_mode_video_list_popup_x'].'" height="'.$this->parent->config['portal_mode_video_list_popup_y'].'"
-					    src="'.$this->get_video($i).'" allowfullscreen frameborder="0"></iframe>
-							</div>';
 
-					echo '<a class="modal" rel="{size:{x:'.$this->parent->config['portal_mode_video_list_popup_x'].',y:'.$this->parent->config['portal_mode_video_list_popup_y'].'}}" href="#gkVideoWrap-'.$i.'" title="'.htmlspecialchars(strip_tags($this->parent->content[$i]['title'])).'">';
+					echo '<a id="myvideo-'.$i.'" class="video-btn-'.$i.'" data-toggle="modal" data-src="'.$this->get_video($i).'" data-target="#gkVideoWrap-'.$i.'" rel="{size:{x:'.$this->parent->config['portal_mode_video_list_popup_x'].',y:'.$this->parent->config['portal_mode_video_list_popup_y'].'}}" title="'.htmlspecialchars(strip_tags($this->parent->content[$i]['title'])).'">';
 
 					} else {
 						echo '<a class="gkImageWrap-link" href="'.$this->get_link($i).'" title="'.htmlspecialchars(strip_tags($this->parent->content[$i]['title'])).'">';
@@ -92,6 +88,48 @@ class NSP_GK5_VideoList {
 						}
 					echo '</figcaption>';
 				echo '</div></figure>';
+
+				if ($this->get_video($i) != '#') {
+					echo '<div class="modal fade gkVideoWrap" id="gkVideoWrap-'.$i.'" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true" style="width: calc( '.$this->parent->config['portal_mode_video_list_popup_x'].'px + 40px); height: calc( '.$this->parent->config['portal_mode_video_list_popup_y'].'px + 40px); left: 50%; transform: translateX(-50%); margin: 0; max-width: 100%">
+							    <div class="modal-dialog" role="document">
+							      <div class="modal-content">
+							        <div class="modal-body" style="width: 100%; max-height: unset; padding: 20px;">
+							         <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="position: absolute; top: 0; right: 0; margin: 0; background: none; color: #333; min-width: unset; height: auto; box-shadow: none; line-height: 1; padding: 6px; font-size: 16px;">
+							            <span aria-hidden="true">&times;</span>
+							          </button>
+							          <!-- 16:9 aspect ratio -->
+							          <div class="embed-responsive embed-responsive-16by9">
+							            <iframe class="embed-responsive-item" id="gkVideo-'.$i.'"  allowscriptaccess="always" allow="autoplay" width="'.$this->parent->config['portal_mode_video_list_popup_x'].'" height="'.$this->parent->config['portal_mode_video_list_popup_y'].'" style="max-width: 100%"></iframe>
+							          </div>
+							        </div>
+
+							      </div>
+							    </div>
+							  </div>';
+					echo '<script>
+								(function($){
+									jQuery(document).ready(function($) {
+								    //Popup video
+								    $(document).ready(function() {
+											var $videoSrc;
+											$("#myvideo-'.$i.'").on("click", function(e) {
+											    $videoSrc = $(this).data("src");
+											});
+
+
+											$("#gkVideoWrap-'.$i.'").on("shown.bs.modal", function (e) {
+												$("#gkVideo-'.$i.'").attr("src",$videoSrc + "?autoplay=1&amp;modestbranding=1&amp;showinfo=0" );
+												$(this).appendTo("body");
+											})
+
+											$("#gkVideoWrap-'.$i.'").on("hide.bs.modal", function (e) {
+											    $("#gkVideo-'.$i.'").attr("src",$videoSrc);
+											})
+										});
+									});
+								})(jQuery);
+								</script>';
+				}
 
 				if(($i > 0 && (($i+1) % $this->parent->config['portal_mode_video_list_per_page'] == 0) && $i != count($this->parent->content) - 1) || ($this->parent->config['portal_mode_video_list_per_page'] == 1 && $i != count($this->parent->content) - 1)) {
 					echo '</div>';

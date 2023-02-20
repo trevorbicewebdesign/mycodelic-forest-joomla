@@ -156,8 +156,7 @@ class NSP_GK5_View {
 				$title = $title_html;
 			}
 		}
-
-		if ($config['links_date'] == 1) {
+		if (!empty($config['links_date'])) {
 			$date_html = '<p class="meta">';
 			$date_html .= JHTML::_('date', $item['date'], $config['date_format']);
 			$date_html .= '</p>';

@@ -1,0 +1,9 @@
+{
+	"name": "FIT_1",
+	"full_name": "FIT_1",
+	"support": [
+		"com_content",
+		"com_k2"
+	],
+	"thumbnails": true
+}

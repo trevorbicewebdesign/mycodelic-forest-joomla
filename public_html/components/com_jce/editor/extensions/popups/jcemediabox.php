@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @copyright 	Copyright (c) 2009-2021 Ryan Demmer. All rights reserved
+ * @copyright 	Copyright (c) 2009-2022 Ryan Demmer. All rights reserved
  * @license   	GNU/GPL 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * JCE is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -24,23 +24,6 @@ class WFPopupsExtension_Jcemediabox
 
             $document->addScript('jcemediabox', 'extensions/popups/jcemediabox/js');
             $document->addStyleSheet('jcemediabox', 'extensions/popups/jcemediabox/css');
-
-            jimport('joomla.filesystem.folder');
-            jimport('joomla.filesystem.file');
-
-            $path = JPATH_PLUGINS.'/system/jcemediabox/addons';
-
-            $files = JFolder::files($path, '.js');
-
-            if (!empty($files)) {
-                foreach ($files as $file) {
-                    if (strpos($file, '-src.js') === false) {
-                        $scripts[] = 'plugins/system/jcemediabox/addons/'.JFile::stripExt($file);
-                    }
-                }
-            }
-
-            $document->addScript($scripts, 'joomla');
         }
     }
 

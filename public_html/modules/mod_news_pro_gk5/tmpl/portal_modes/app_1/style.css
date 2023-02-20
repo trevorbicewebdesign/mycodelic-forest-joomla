@@ -1,0 +1,149 @@
+.gkNspPM-App_1 .tleft {
+  text-align: left;
+}
+.gkNspPM-App_1 .tright {
+  text-align: right;
+}
+.gkNspPM-App_1 .tcenter {
+  text-align: center;
+}
+.gkNspPM-App_1 .tjustify {
+  text-align: justify;
+}
+
+.gkNspPM-App_1 .row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.gkNspPM-App_1 .nspArt-inner {
+  border: 1px solid #EDF0F3;
+  border-radius: 8px;
+  box-shadow: 0px 0px 32px rgba(0, 0, 0, 0.05);
+  padding: 48px 32px;
+}
+
+.gkNspPM-App_1 .nspArt img.nspImage {
+  display: inline-block;
+}
+
+.gkNspPM-App_1 .gkResponsive img.nspImage  {
+  width: auto !important;
+}
+
+.gkNspPM-App_1 .nspArt h4.nspHeader {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.78;
+  margin-bottom: 16px;
+  padding: 0;
+}
+
+.gkNspPM-App_1 .nspArt h4.nspHeader a:hover,
+.gkNspPM-App_1 .nspArt h4.nspHeader a:active,
+.gkNspPM-App_1 .nspArt h4.nspHeader a:focus  {
+  text-decoration: underline;
+}
+
+.gkNspPM-App_1 .nspArt .nspInfo {
+  color: #9e9e9e;
+  font-size: 0.7333333rem;
+  line-height: 1.45;
+  margin-bottom: 12px;
+}
+
+.gkNspPM-App_1 .nspArt p.nspText {
+  margin-bottom: 24px;
+}
+
+.gkNspPM-App_1 .nspArt .nspInfo2 {
+  font-size: 0;
+}
+
+.gkNspPM-App_1 .nspArt .readon {
+  border: 1px solid #edf0f3;
+  border-radius: 50%;
+  color: #cbd2d7;
+  display: inline-block;
+  font-size: 0;
+  position: relative;
+  overflow: hidden;
+  text-indent: 100em;
+  transition: border-color .4s, color .4s;
+  height: 32px;
+  width: 32px;
+}
+
+.gkNspPM-App_1 .nspArt .readon:before {
+  content: "\f105";
+  border-radius: 50%;
+  font-family: 'FontAwesome';
+  font-size: 16px;
+  text-align: center;
+  text-indent: 0;
+  line-height: 30px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.gkNspPM-App_1 .nspArt .readon:hover,
+.gkNspPM-App_1 .nspArt .readon:active {
+  border-color: #4a77fe;
+  color: #4a77fe;
+  text-decoration: none;
+}
+
+
+.gkNspPM-App_1 .nspInfo2 a {
+  background: rgba(129,71,255,0.1);
+  border-radius: 0;
+  color: #8147FF;
+  display: inline;
+  font-size: 0.7333333rem;
+  font-weight: 400;
+  line-height: 1.45;
+  margin-right: 2px;
+  padding: 4px 8px;
+  text-shadow: none;
+}
+
+.gkNspPM-App_1 .nspInfo2 a:hover,
+.gkNspPM-App_1 .nspInfo2 a:active,
+.gkNspPM-App_1 .nspInfo2 a:focus  {
+  background: rgba(129,71,255,0.2);
+  text-decoration: none;
+}
+
+
+@media screen and (min-width: 992px) {
+  .gkNspPM-App_1 {
+    overflow: visible;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  .gkNspPM-App_1 .nspArt {
+    width: 50%;
+  }
+
+  .gkNspPM-App_1 .nspCol3 {
+    width: 33.33333333%;
+  }
+
+  .gkNspPM-App_1 .nspArt-inner {
+    box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.05);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .gkNspPM-App_1 .nspArt {
+    width: 100%;
+  }
+
+  .gkNspPM-App_1 .nspArt-inner {
+    padding: 32px 16px;
+  }
+}
