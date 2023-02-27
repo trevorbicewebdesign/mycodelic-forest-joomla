@@ -15,8 +15,12 @@ INSERT IGNORE INTO `#__rsform_config` (`SettingName`, `SettingValue`) VALUES
 ('request_timeout', '0'),
 ('backup.mask', 'backup-{domain}-{date}'),
 ('export.mask', 'export-{formId}-{domain}-{date}'),
+('export.limit', '500'),
 ('allow_unsafe', '0'),
+('use_csrf', '1'),
 ('disposable_domains', ''),
 ('google.api_key', ''),
 ('deleteafter.interval', '10'),
-('deleteafter.last_run', '0');
+('deleteafter.last_run', '0'),
+('logging', '1'),
+('logging_verbose', '0');

@@ -15,7 +15,7 @@ class RSFormProFieldBootstrap3CheckboxGroup extends RSFormProFieldCheckboxGroup
 		// For convenience
 		extract($data);
 		
-		return ($flow != 'HORIZONTAL' ? '<div class="checkbox">' : '').'<label for="'.$this->escape($id).$i.'" class="checkbox'.($flow == 'HORIZONTAL' ? '-inline' : '').'">'.$this->buildInput($data).$item->label.'</label>'.($flow != 'HORIZONTAL' ? '</div>' : '');
+		return ($flow != 'HORIZONTAL' ? '<div class="checkbox">' : '').'<label id="'.$this->escape($id).$i.'-lbl" for="'.$this->escape($id).$i.'" class="checkbox'.($flow == 'HORIZONTAL' ? '-inline' : '').'">'.$this->buildInput($data).$item->label.'</label>'.($flow != 'HORIZONTAL' ? '</div>' : '');
 	}
 	
 	public function buildItem($data) {

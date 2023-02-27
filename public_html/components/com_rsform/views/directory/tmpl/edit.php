@@ -5,9 +5,15 @@
 * @license GPL, http://www.gnu.org/copyleft/gpl.html
 */
 
-defined('_JEXEC') or die('Restricted access'); 
+defined('_JEXEC') or die('Restricted access');
+
+$showDescriptions = $this->params->get('show_descriptions', 0);
 
 JHtml::_('behavior.keepalive');
+JHtml::_('script', 'com_rsform/script.js', array('relative' => true, 'version' => 'auto'));
+JHtml::_('stylesheet', 'com_rsform/front.css', array('relative' => true, 'version' => 'auto'));
+
+eval($this->directory->EditScript);
 ?>
 
 <script type="text/javascript">
@@ -19,27 +25,48 @@ function directorySave(task) {
 </script>
 
 <form action="<?php echo JRoute::_('index.php?option=com_rsform&view=directory&layout=edit&id='.$this->app->input->getInt('id',0)); ?>" method="post" name="adminForm" id="directoryEditForm" enctype="multipart/form-data">
-	<table class="table table-condensed table-striped table-hover table-bordered category">
-		<?php foreach ($this->fields as $field) { ?>
-		<tr>
-			<td width="200" style="width: 200px;">
-				<?php echo $field[0]; ?> <?php echo $field[2]; ?>
-			</td>
-			<td>
-				<?php echo $field[1]; ?>
+	<div class="rsform-dir-edit-container">
+		<?php
+		foreach ($this->fields as $field)
+		{
+			$caption        = $field[RSFORM_DIR_CAPTION] . $field[RSFORM_DIR_REQUIRED];
+			$showTooltip    = $showDescriptions && $field[RSFORM_DIR_DESCRIPTION];
+			?>
+			<div class="rsform-dir-row">
+				<div class="rsform-dir-caption">
+					<?php
+					if ($showTooltip)
+					{
+						echo '<div class="rsform-dir-tooltip">';
+					}
+					echo $caption;
+					if ($showTooltip)
+					{
+						echo '<span class="rsform-dir-tooltiptext">' . $field[RSFORM_DIR_DESCRIPTION] . '</span>';
+						echo '</div>';
+					}
+					?>
+				</div>
+				<div class="rsform-dir-input">
+					<?php
+					echo $field[RSFORM_DIR_INPUT];
 
-				<?php if (!empty($field[4])) { ?>
-					<?php echo $field[4]; ?>
-				<?php } ?>
-			</td>
-		</tr>
-		<?php } ?>
-	</table>
+					if (!empty($field[RSFORM_DIR_VALIDATION]))
+					{
+						echo $field[RSFORM_DIR_VALIDATION];
+					}
+					?>
+				</div>
+			</div>
+		<?php
+		}
+		?>
+	</div>
 	
 	<div class="form-actions">
 		<button type="button" onclick="directorySave('apply');" class="btn btn-primary button"><?php echo JText::_('RSFP_SUBM_DIR_APPLY'); ?></button> 
 		<button type="button" onclick="directorySave('save');" class="btn btn-primary button"><?php echo JText::_('RSFP_SUBM_DIR_SAVE'); ?></button> 
-		<button type="button" onclick="directorySave('back')" class="btn button"><?php echo JText::_('RSFP_SUBM_DIR_BACK'); ?></button>
+		<button type="button" onclick="directorySave('back')" class="btn btn-secondary"><?php echo JText::_('RSFP_SUBM_DIR_BACK'); ?></button>
 	</div>
 	
 	<input type="hidden" name="option" value="com_rsform">

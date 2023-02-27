@@ -70,21 +70,22 @@ class RSFormProXLS
 		foreach ($data as $k => $v) {
 			$this->addRow($v);
 		}
+
+		fwrite($this->file, implode("\n", $this->rows)."\n");
+	}
+
+	public function writeFooter()
+	{
+		// Nothing to write, finish up the Excel file.
+		$footer = array(
+			'</Table>',
+			'</Worksheet>',
+			'</Workbook>'
+		);
+		fwrite($this->file, implode("\n", $footer));
 	}
 	
 	public function close() {
-		// We have items to add, write them to the file.
-		if ($this->rows) {
-			fwrite($this->file, implode("\n", $this->rows)."\n");
-		} else {
-			// Nothing to write, finish up the Excel file.
-			$footer = array(
-				'</Table>',
-				'</Worksheet>',
-				'</Workbook>'
-			);
-			fwrite($this->file, implode("\n", $footer));
-		}
 		return fclose($this->file);
 	}
 	

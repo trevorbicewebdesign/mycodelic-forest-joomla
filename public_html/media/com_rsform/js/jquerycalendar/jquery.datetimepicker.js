@@ -472,6 +472,7 @@
 		onSelectDate: function () {},
 		onSelectTime: function () {},
 		onChangeMonth: function () {},
+		onGetWeekOfYear: function () {},
 		onChangeYear: function () {},
 		onChangeDateTime: function () {},
 		onShow: function () {},
@@ -494,7 +495,7 @@
 
 		scrollMonth: true,
 		scrollTime: true,
-		scrollInput: true,
+		scrollInput: false,
 
 		lazyInit: false,
 		mask: false,
@@ -844,6 +845,10 @@
 
 			datetimepicker.getOptions = function(optionName) {
 				return options[optionName];
+			};
+
+			datetimepicker.getValue = function () {
+				return _xdsoft_datetime.getCurrentTime();
 			};
 
 			datetimepicker.setOptions = function (_options) {
@@ -1287,8 +1292,34 @@
 				};
 
 				_this.getWeekOfYear = function (datetime) {
+					if (options.onGetWeekOfYear && $.isFunction(options.onGetWeekOfYear)) {
+						var week = options.onGetWeekOfYear.call(datetimepicker, datetime);
+						if (typeof week !== 'undefined') {
+							return week;
+						}
+					}
+
 					var onejan = new Date(datetime.getFullYear(), 0, 1);
-					return Math.ceil((((datetime - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+					var day = onejan.getDay() - options.dayOfWeekStart;
+					var daynum = Math.floor((datetime.getTime() - onejan.getTime() - (datetime.getTimezoneOffset()-onejan.getTimezoneOffset()) * 60000) / 86400000) + 1;
+					var weeknum;
+
+					day = (day >= 0 ? day : day + 7);
+					if (day < 4) {
+						weeknum = Math.floor((daynum+day-1)/7) + 1;
+						if (weeknum > 52) {
+							var nYear = new Date(datetime.getFullYear() + 1,0,1);
+							var nday  = nYear.getDay() - options.dayOfWeekStart;
+
+							nday = nday >= 0 ? nday : nday + 7;
+							weeknum = nday < 4 ? 1 : 53;
+						}
+					}
+					else {
+						weeknum = Math.floor((daynum+day-1)/7);
+					}
+
+					return weeknum;
 				};
 
 				_this.strToDateTime = function (sDateTime) {
@@ -1769,6 +1800,11 @@
 					input.val(_xdsoft_datetime.str());
 					if ((timerclick > 1 || (options.closeOnDateSelect === true || (options.closeOnDateSelect === 0 && !options.timepicker))) && !options.inline) {
 						datetimepicker.trigger('close.xdsoft');
+					}
+					
+					// if there is a startDate always set it to the current selection
+					if (options.startDate) {
+						datetimepicker.setOptions({startDate: currentTime});
 					}
 
 					datetimepicker.data('changed', true);

@@ -52,6 +52,11 @@ class RSFormProGridUikit3 extends RSFormProGrid
                 $classes[] = 'uk-form-stacked';
             }
 
+			if (count($this->pages) > 1)
+			{
+				$classes[] = 'formHidden';
+			}
+
 			$html[] = '<!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->';
 			$html[] = '<fieldset class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
 			foreach ($rows as $row_index => $row)
@@ -110,7 +115,7 @@ class RSFormProGridUikit3 extends RSFormProGrid
 		$placeholders = array(
 			'body' 		 	=> '{' . $data->ComponentName . ':body}',
 			'caption'	 	=> '{' . $data->ComponentName . ':caption}',
-			'description' 	=> '{' . $data->ComponentName . ':description}',
+			'description' 	=> '{' . $data->ComponentName . ':descriptionhtml}',
 			'error' 	 	=> '{' . $data->ComponentName . ':errorClass}',
 			'validation' 	=> '{' . $data->ComponentName . ':validation}',
 		);
@@ -119,40 +124,33 @@ class RSFormProGridUikit3 extends RSFormProGrid
 		if ($data->ComponentTypeId == RSFORM_FIELD_FREETEXT)
 		{
 			$block = $this->getBlock($data->ComponentName);
+			$type = $this->getBlock($data->ComponentTypeName);
 
-			$html[] = "\t"."\t"."\t".'<div class="uk-margin rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
+			$html[] = "\t"."\t"."\t".'<div class="uk-margin rsform-block rsform-block-' . $block . ' rsform-type-' . $type . $placeholders['error'] . '">';
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 			$html[] = "\t"."\t"."\t".'</div>';
 		}
-		elseif (in_array($data->ComponentTypeId, array(RSFORM_FIELD_HIDDEN, RSFORM_FIELD_TICKET)))
+		elseif (in_array($data->ComponentTypeId, $this->hiddenComponents))
 		{
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 		}
 		else
 		{
 			$block = $this->getBlock($data->ComponentName);
+			$type = $this->getBlock($data->ComponentTypeName);
 			
-			$html[] = "\t"."\t"."\t".'<div class="uk-margin rsform-block rsform-block-' . $block . '">';
+			$html[] = "\t"."\t"."\t".'<div class="uk-margin rsform-block rsform-block-' . $block . ' rsform-type-' . $type . $placeholders['error'] . '">';
 			if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
 			{
-				$label = "\t"."\t"."\t"."\t".'<label class="uk-form-label formControlLabel"';
-				if (!in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP, RSFORM_FIELD_BIRTHDAY, RSFORM_FIELD_JQUERY_CALENDAR, RSFORM_FIELD_CALENDAR)))
-				{
-					$label .= ' for="' . $data->ComponentName . '"';
-				}
-				elseif ($data->ComponentTypeId == RSFORM_FIELD_JQUERY_CALENDAR)
-				{
-					require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php';
+				$label = '';
 
-					$label .= ' for="txtjQcal' . $this->formId . '_' . RSFormProCalendar::getInstance('jQueryCalendar')->getPosition($this->formId, $data->ComponentId) . '"';
-				}
-				elseif ($data->ComponentTypeId == RSFORM_FIELD_CALENDAR)
+				if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
 				{
-					require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php';
-
-					$label .= ' for="txtcal' . $this->formId . '_' . RSFormProCalendar::getInstance('YUICalendar')->getPosition($this->formId, $data->ComponentId) . '"';
+					$label .= '{if ' . $placeholders['caption'] . '}' . "\n";
 				}
 
+				$label .= "\t"."\t"."\t"."\t".'<label class="uk-form-label formControlLabel"';
+				$label .= $this->generateFor($data);
 				$label .= '{if ' . $placeholders['description'] . '}';
 				$label .= ' data-uk-tooltip="{pos:\'top-left\'}"';
 				$label .= ' title="' . $placeholders['description'] . '"';
@@ -164,10 +162,16 @@ class RSFormProGridUikit3 extends RSFormProGrid
 					$label .= '<strong class="formRequired">' . $this->requiredMarker . '</strong>';
 				}
 				$label .= '</label>';
+
+				if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
+				{
+					$label .= "\n" . '{/if}';
+				}
+
 				$html[] = $label;
 			}
 				
-				$html[] = "\t"."\t"."\t"."\t".'<div class="uk-form-controls formControls">';
+				$html[] = "\t"."\t"."\t"."\t".'<div ' . $this->fieldAttributes($data) . '>';
 					$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 					if (!in_array($data->ComponentTypeId, array(RSFORM_FIELD_FREETEXT, RSFORM_FIELD_PAGEBREAK)))
 					{
@@ -184,5 +188,20 @@ class RSFormProGridUikit3 extends RSFormProGrid
 		}
 		
 		return implode("\n", $html);
+	}
+
+	protected function fieldAttributes($data)
+	{
+		$classes = array('formControls');
+
+		$classes[] = 'uk-form-controls';
+
+		$attr = 'class="' . implode(' ', $classes) . '"';
+		if (in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP)) || in_array($data->ComponentId, $this->checkboxes) || in_array($data->ComponentId, $this->radiogroups))
+		{
+			$attr .= ' role="group" aria-labelledby="' . $data->ComponentName . '-grouplbl"';
+		}
+
+		return $attr;
 	}
 }

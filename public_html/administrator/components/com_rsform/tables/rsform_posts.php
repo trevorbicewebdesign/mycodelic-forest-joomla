@@ -18,10 +18,11 @@ class TableRSForm_Posts extends JTable
 	public $enabled 	= 0;
 	public $method	 	= 1;
 	public $fields		= null;
+	public $headers		= null;
 	public $silent	 	= 1;
-	public $url	 		= 'http://';
+	public $url	 		= 'https://';
 
-	protected $_jsonEncode = array('fields');
+	protected $_jsonEncode = array('fields', 'headers');
 		
 	/**
 	 * Constructor
@@ -33,25 +34,18 @@ class TableRSForm_Posts extends JTable
 		parent::__construct('#__rsform_posts', 'form_id', $db);
 	}
 
-	public function store($updateNulls = false)
+	public function hasPrimaryKey()
 	{
-		$db = JFactory::getDbo();
+		$db 	= $this->getDbo();
+		$key 	= $this->getKeyName();
+		$table	= $this->getTableName();
 
 		$query = $db->getQuery(true)
-			->select($db->qn('form_id'))
-			->from($db->qn('#__rsform_posts'))
-			->where($db->qn('form_id') . ' = ' . $db->q($this->form_id));
+			->select($db->qn($key))
+			->from($db->qn($table))
+			->where($db->qn($key) . ' = ' . $db->q($this->{$key}));
 
-		if (!$db->setQuery($query)->loadResult())
-		{
-			$object = (object) array(
-				'form_id' => $this->form_id
-			);
-
-			$db->insertObject('#__rsform_posts', $object);
-		}
-
-		return parent::store($updateNulls);
+		return $db->setQuery($query)->loadResult() !== null;
 	}
 
 	public function load($keys = null, $reset = true)
@@ -65,6 +59,16 @@ class TableRSForm_Posts extends JTable
 			if (!is_array($this->fields))
 			{
 				$this->fields = array();
+			}
+		}
+
+		if (!empty($this->headers))
+		{
+			$this->headers = json_decode($this->headers);
+
+			if (!is_array($this->headers))
+			{
+				$this->headers = array();
 			}
 		}
 

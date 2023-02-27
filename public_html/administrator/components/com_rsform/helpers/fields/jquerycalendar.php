@@ -60,7 +60,7 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 					$value = RSFormProCalendar::fixValue($value, $format);
 				}
 				// Try to create a date to see if it's valid
-				$date = JFactory::getDate()->createFromFormat($format, $value);
+				$date = DateTime::createFromFormat($format, $value);
 				if ($date !== false)
 				{
 					$hiddenDateFormat = 'm/d/Y';
@@ -84,7 +84,8 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 		
 		// set the calendar script
 		$config = array(
-			'inline' 	 		 => $layout=='FLAT',
+			'offset'			 => $this->getProperty('VALIDATIONCALENDAROFFSET', 1),
+			'inline' 	 		 => $layout == 'FLAT',
 			'timepicker' 	 	 => $this->getProperty('TIMEPICKER', 'NO'),
 			'timepickerformat' 	 => $this->getProperty('TIMEPICKERFORMAT', 'H:i'),
 			'theme' 	 		 => strtolower($this->getProperty('THEME', 'DEFAULT')),
@@ -125,6 +126,11 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 		if ($readonly) {
 			$input .= ' readonly="readonly"';
 		}
+		if ($placeholder = $this->getProperty('PLACEHOLDER', ''))
+		{
+			$input .= ' placeholder="'.$this->escape($placeholder).'"';
+		}
+
 		// Add the value
 		$input .= ' value="'.$this->escape($value).'"';
 		// Additional HTML
@@ -178,7 +184,12 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 
 	protected function getButtonInput($label, $additional)
 	{
-		return '<input id="btnjQ' . $this->customId . '" type="button" value="' . $this->escape($label) . '" ' . $additional . '/>';
+		if (!$this->getProperty('ALLOWHTML'))
+		{
+			$label = $this->escape($label);
+		}
+
+		return '<button id="btnjQ' . $this->customId . '" type="button"' . $additional . '>' . $label . '</button>';
 	}
 	
 	// set the field output - function needed for overwriting in the layout classes
@@ -211,6 +222,8 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 				$attr['class'] .= ' txtCal';
 			}
 		} elseif ($type == 'button') {
+			unset($attr['aria-required'], $attr['aria-invalid'], $attr['aria-describedby']);
+
 			$attr['class'] .= 'btnCal rsform-calendar-button';
 			if (!empty($attr['onclick'])) {
 				$attr['onclick'] .= ' ';
@@ -227,7 +240,7 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 	public function processValidation($validationType = 'form', $submissionId = 0)
 	{
 		$validate 	= $this->getProperty('VALIDATIONDATE', true);
-		$required 	= $this->getProperty('REQUIRED', false);
+		$required 	= $this->isRequired();
 		$format 	= $this->getProperty('DATEFORMAT');
 		$value 		= $this->getValue();
 
@@ -243,7 +256,7 @@ class RSFormProFieldJqueryCalendar extends RSFormProField
 				$value = RSFormProCalendar::fixValue($value, $format);
 			}
 
-			$validDate = JFactory::getDate()->createFromFormat($format, $value);
+			$validDate = DateTime::createFromFormat($format, $value);
 
 			if ($validDate)
 			{

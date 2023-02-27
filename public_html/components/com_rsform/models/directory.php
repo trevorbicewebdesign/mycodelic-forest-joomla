@@ -12,61 +12,70 @@ class RsformModelDirectory extends JModelLegacy
     protected $fields;
     protected $_db;
     protected $_app;
+
+	/* @var $params Joomla\Registry\Registry */
     public $params;
 
     protected $validation;
 
-    /**
-     *    Main constructor
-     */
     public function __construct($config = array())
     {
+	    // Need to set database before calling isValid()
+	    parent::__construct($config);
+
         $this->_app     = JFactory::getApplication();
         $this->_db      = JFactory::getDbo();
         $this->params   = $this->_app->getParams('com_rsform');
         $this->itemid   = $this->getItemid();
         $this->context  = 'com_rsform.directory' . $this->itemid;
 
-        // Check for a valid form
-        if (!$this->isValid())
-        {
-            throw new Exception($this->getError(), 500);
-        }
+		// For legacy menu items
+		$userId	= $this->params->get('userId');
+		if ($userId === '0')
+		{
+			$this->params->set('show_all_submissions', 1);
+		}
+		elseif ($userId == 'login')
+		{
+			$this->params->set('show_logged_in_submissions', 1);
+		}
 
-        $this->getFields();
+	    // Check for a valid form
+	    $this->isValid();
 
-        parent::__construct($config);
+	    $this->getFields();
     }
 
     /**
-     *    Check if we are allowed to show content
+     * Check if we are allowed to show content
+	 *
+	 * @throws Exception
+	 *
      */
     public function isValid()
     {
         if (!$this->params->get('enable_directory', 0))
         {
-            $this->setError(JText::_('RSFP_VIEW_DIRECTORY_NOT_ENABLED_FORGOT'));
-            return false;
+            throw new Exception(JText::_('RSFP_VIEW_DIRECTORY_NOT_ENABLED_FORGOT'));
         }
 
         // Do we have a valid formId
         $formId = $this->params->get('formId', 0);
         if (empty($formId))
         {
-            $this->setError(JText::sprintf('RSFP_VIEW_DIRECTORY_NO_VALID_FORMID', $formId));
-            return false;
+			throw new Exception(JText::sprintf('RSFP_VIEW_DIRECTORY_NO_VALID_FORMID', $formId));
         }
 
         // Check if the directory exists
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('formId'))
-			->from($this->_db->qn('#__rsform_directory'))
-			->where($this->_db->qn('formId') . ' = ' . $this->_db->q($formId));
+	    $db = $this->getDbo();
+		$query = $db->getQuery(true)
+			->select($db->qn('formId'))
+			->from($db->qn('#__rsform_directory'))
+			->where($db->qn('formId') . ' = ' . $db->q($formId));
 
-        if (!$this->_db->setQuery($query)->loadResult())
+        if (!$db->setQuery($query)->loadResult())
         {
-            $this->setError(JText::_('RSFP_VIEW_DIRECTORY_NOT_SAVED_YET'));
-            return false;
+			throw new Exception(JText::_('RSFP_VIEW_DIRECTORY_NOT_SAVED_YET'));
         }
 
         return true;
@@ -91,7 +100,7 @@ class RsformModelDirectory extends JModelLegacy
     public function getListQuery()
     {
         // Get query
-        $db = &$this->_db;
+        $db = $this->getDbo();
         $query = $db->getQuery(true);
 
         // Get headers
@@ -127,36 +136,83 @@ class RsformModelDirectory extends JModelLegacy
             $query->where($db->qn('s.Lang') . '=' . $db->q($lang));
         }
 
-        // Check if we need to show only submissions related to UserId.
-        $userId = $this->params->def('userId', 0);
-        if ($userId == 'login')
-        {
-            // Get only logged in user's submissions
-            $user = JFactory::getUser();
-
-            // Do not continue if he's a guest.
-            if ($user->guest) {
-                return false;
-            }
-
-            $query->where($db->qn('s.UserId') . '=' . $db->q($user->get('id')));
-        }
-        elseif ($userId)
+        if (!$this->params->get('show_all_submissions'))
 		{
-            // Show only the submissions of these users
-            $userIds = explode(',', $userId);
-            $userIds = array_map('intval', $userIds);
+			// Check if we need to show only submissions related to UserId.
+			$userId = $this->params->get('userId');
 
-            $query->where($db->qn('s.UserId') . ' IN (' . implode(',', $userIds) . ')');
-        }
+			if ($this->params->get('show_logged_in_submissions'))
+			{
+				// Get only logged in user's submissions
+				$user = JFactory::getUser();
+
+				// Do not continue if he's a guest.
+				if ($user->guest)
+				{
+					return false;
+				}
+
+				$query->where($db->qn('s.UserId') . '=' . $db->q($user->get('id')));
+			}
+			elseif ($userId)
+			{
+				// Show only the submissions of these users
+				$userIds = explode(',', $userId);
+				$userIds = array_map('intval', $userIds);
+
+				if ($userIds)
+				{
+					$query->where($db->qn('s.UserId') . ' IN (' . implode(',', $userIds) . ')');
+				}
+			}
+		}
 
         $needsSelect = array();
-		if ($filters = $this->params->get('filter_values', array()))
+	    $filters = $this->params->get('filter_values', array());
+		if ($dynamicFilters = $this->getDynamicFilters())
+		{
+			$operators = $this->getDynamicFiltersOperators();
+			if (!is_array($filters))
+			{
+				$filters = array();
+			}
+
+			if (!isset($filters['name']))
+			{
+				$filters['name'] = array();
+			}
+
+			if (!isset($filters['operator']))
+			{
+				$filters['operator'] = array();
+			}
+
+			if (!isset($filters['value']))
+			{
+				$filters['value'] = array();
+			}
+
+			if (!is_array($dynamicFilters))
+			{
+				$dynamicFilters = array();
+			}
+
+			foreach ($dynamicFilters as $fieldName => $fieldValue)
+			{
+				if ((is_string($fieldValue) && strlen($fieldValue)) || (is_array($fieldValue) && count($fieldValue)))
+				{
+					$filters['name'][] = $fieldName;
+					$filters['operator'][] = isset($operators[$fieldName]) ? $operators[$fieldName] : 'is';
+					$filters['value'][] = $fieldValue;
+				}
+			}
+		}
+		if ($filters)
 		{
 			$allHaving = array();
 			$glue = $this->params->get('filter_glue', 'OR');
 
-			if (is_array($filters) && isset($filters['name']) && is_array($filters['name']))
+			if (is_array($filters) && !empty($filters['name']) && is_array($filters['name']))
 			{
 				for ($i = 0; $i < count($filters['name']); $i++)
 				{
@@ -218,6 +274,22 @@ class RsformModelDirectory extends JModelLegacy
 							case 'ends_not':
 								$having .= ' NOT LIKE ' . $db->q('%' . $db->escape($value, true), false);
 								break;
+
+							case 'greater_than':
+								$having .= ' > ' . $db->q($value);
+								break;
+
+							case 'greater_or_equal':
+								$having .= ' >= ' . $db->q($value);
+								break;
+
+							case 'less_than':
+								$having .= ' < ' . $db->q($value);
+								break;
+
+							case 'less_or_equal':
+								$having .= ' <= ' . $db->q($value);
+								break;
 						}
 
 						$allHaving[] = $having;
@@ -249,7 +321,7 @@ class RsformModelDirectory extends JModelLegacy
 							// Make sure we display a text instead of 0 and 1.
 							$query->select('IF(' . $db->qn('s.confirmed') . ' = ' . $db->q(1) . ', ' . $db->q(JText::_('RSFP_YES')) . ', ' . $db->q(JText::_('RSFP_NO')) . ') AS ' . $db->qn('confirmed'));
 						}
-						else
+						elseif ($field->FieldName !== 'SubmissionId')
 						{
 							$query->select($db->qn('s.' . $field->FieldName));
 						}
@@ -281,7 +353,7 @@ class RsformModelDirectory extends JModelLegacy
 			}
 		}
 
-		JFactory::getApplication()->triggerEvent('rsfp_onAfterManageDirectoriesQueryCreated', array(&$query, $this->params->get('formId')));
+		JFactory::getApplication()->triggerEvent('onRsformAfterManageDirectoriesQueryCreated', array(&$query, $this->params->get('formId')));
 
         return $query;
     }
@@ -307,7 +379,7 @@ class RsformModelDirectory extends JModelLegacy
 
     public function setGroupConcatLimit()
     {
-        $this->_db->setQuery("SET SESSION `group_concat_max_len` = 1000000")->execute();
+        $this->getDbo()->setQuery("SET SESSION `group_concat_max_len` = 1000000")->execute();
     }
 
     /**
@@ -321,8 +393,7 @@ class RsformModelDirectory extends JModelLegacy
 
         if ($query = $this->getListQuery())
         {
-            $this->_db->setQuery($query, $this->getStart(), $this->getLimit());
-            $items = $this->_db->loadObjectList();
+            $items = $this->getDbo()->setQuery($query, $this->getStart(), $this->getLimit())->loadObjectList();
         }
         else
         {
@@ -342,9 +413,7 @@ class RsformModelDirectory extends JModelLegacy
             $items[$i] = $newItem;
         }
 
-        $mainframe->triggerEvent('rsfp_onAfterManageDirectoriesQuery', array(&$items, $this->params->get('formId')));
-
-        jimport('joomla.filesystem.file');
+        $mainframe->triggerEvent('onRsformAfterManageDirectoriesQuery', array(&$items, $this->params->get('formId')));
 
         list($multipleSeparator, $uploadFields, $multipleFields, $textareaFields, $secret) = RSFormProHelper::getDirectoryFormProperties($this->params->get('formId'));
 
@@ -364,7 +433,7 @@ class RsformModelDirectory extends JModelLegacy
                     	$values = array();
                     	foreach ($files as $file)
 						{
-							$values[] = '<a href="' . JRoute::_('index.php?option=com_rsform&task=submissions.view.file&hash=' . md5($item->SubmissionId . $secret . $field) . '&file=' . md5($file)) . '">' . RSFormProHelper::htmlEscape(basename($file)) . '</a>';
+							$values[] = '<a href="' . JRoute::_('index.php?option=com_rsform&task=submissions.viewfile&hash=' . md5($item->SubmissionId . $secret . $field) . '&file=' . md5($file)) . '">' . RSFormProHelper::htmlEscape(basename($file)) . '</a>';
 						}
                     	
                         $item->{$field} = implode('<br />', $values);
@@ -388,7 +457,7 @@ class RsformModelDirectory extends JModelLegacy
     {
         $unescapedFields = array();
 
-        JFactory::getApplication()->triggerEvent('rsfp_b_onManageDirectoriesCreateUnescapedFields', array(array('fields' => & $unescapedFields, 'formId' => $this->params->get('formId'))));
+        JFactory::getApplication()->triggerEvent('onRsformBackendManageDirectoriesCreateUnescapedFields', array(array('fields' => & $unescapedFields, 'formId' => $this->params->get('formId'))));
 
         return $unescapedFields;
     }
@@ -414,11 +483,11 @@ class RsformModelDirectory extends JModelLegacy
         $cid 		= $this->_app->input->getInt('id', 0);
         $format 	= $this->_app->input->get('format');
         $user 		= JFactory::getUser();
-        $userId 	= $this->params->def('userId', 0);
+        $userId 	= $this->params->get('userId');
         $directory 	= $this->getDirectory();
         $template 	= $directory->ViewLayout;
 
-        if ($userId != 'login' && $userId != 0)
+        if (!$this->params->get('show_logged_in_submissions') && !$this->params->get('show_all_submissions'))
         {
             $userId = explode(',', $userId);
             $userId = array_map('intval', $userId);
@@ -438,7 +507,7 @@ class RsformModelDirectory extends JModelLegacy
         // Submission doesn't belong to the configured form ID OR
         // can view only own submissions and not his own OR
         // can view only specified user IDs and this doesn't belong to any of the IDs
-        if (($submission->FormId != $this->params->get('formId')) || ($userId == 'login' && $submission->UserId != $user->get('id')) || (is_array($userId) && !in_array($user->get('id'), $userId)))
+        if (($submission->FormId != $this->params->get('formId')) || ($this->params->get('show_logged_in_submissions') && $submission->UserId != $user->get('id')) || (is_array($userId) && !in_array($submission->UserId, $userId)))
         {
             $this->_app->enqueueMessage(JText::sprintf('RSFP_SUBMISSION_NOT_ALLOWED', $cid), 'warning');
             return $this->_app->redirect(JRoute::_('index.php?option=com_rsform&view=directory', false));
@@ -452,10 +521,9 @@ class RsformModelDirectory extends JModelLegacy
 
         $confirmed = $submission->confirmed ? JText::_('RSFP_YES') : JText::_('RSFP_NO');
 
-        list($replace, $with) = RSFormProHelper::getReplacements($cid, true);
-        list($replace2, $with2) = $this->getReplacements($submission->UserId);
-        $replace = array_merge($replace, $replace2, array('{global:userip}', '{global:date_added}', '{global:submissionid}', '{global:submission_id}', '{global:confirmed}', '{global:lang}', '{global:formid}'));
-        $with = array_merge($with, $with2, array($submission->UserIp, RSFormProHelper::getDate($submission->DateSubmitted), $cid, $cid, $confirmed, $submission->Lang, $submission->FormId));
+        list($replace, $with) = RSFormProHelper::getReplacements($cid);
+        $replace = array_merge($replace, array('{global:confirmed}', '{global:lang}'));
+        $with = array_merge($with, array($confirmed, $submission->Lang));
 
         if ($format == 'pdf')
         {
@@ -486,37 +554,6 @@ class RsformModelDirectory extends JModelLegacy
         return $detailsLayout;
     }
 
-    public function getReplacements($user_id)
-    {
-        static $sitename, $siteurl, $mailfrom, $fromname;
-
-        if (is_null($siteurl))
-        {
-            $config = JFactory::getConfig();
-			$siteurl = JUri::root();
-
-            $sitename = $config->get('sitename');
-            $mailfrom = $config->get('mailfrom');
-            $fromname = $config->get('fromname');
-        }
-
-        $user = JFactory::getUser((int)$user_id);
-
-        $placeholders = array(
-			'{global:sitename}' 	=> $sitename,
-			'{global:siteurl}' 		=> $siteurl,
-			'{global:userid}' 		=> $user->id,
-			'{global:username}' 	=> $user->username,
-			'{global:email}' 		=> $user->email,
-			'{global:useremail}' 	=> $user->email,
-			'{global:fullname}' 	=> $user->name,
-			'{global:mailfrom}' 	=> $mailfrom,
-			'{global:fromname}' 	=> $fromname,
-		);
-
-        return array(array_keys($placeholders), array_values($placeholders));
-    }
-
     public function delete($id)
     {
         require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
@@ -526,18 +563,16 @@ class RsformModelDirectory extends JModelLegacy
 
 	public function save()
 	{
-		jimport('joomla.filesystem.file');
-		jimport('joomla.filesystem.folder');
-
 		$app        = JFactory::getApplication();
 		$db         = JFactory::getDbo();
 		$cid    	= $app->input->getInt('id');
-        $formId 	= $app->input->getInt('formId');
+		$formId     = $this->params->get('formId');
         $form       = $app->input->post->get('form', array(), 'array');
         $delete     = $app->input->post->get('delete', array(), 'array');
         $static     = $app->input->post->get('formStatic', array(), 'array');
         $files      = $app->input->files->get('form', array(), 'array');
 		$validation = RSFormProHelper::validateForm($formId, 'directory', $cid);
+		$directory  = $this->getDirectory();
 
 		$this->validation =& $validation;
 
@@ -567,7 +602,7 @@ class RsformModelDirectory extends JModelLegacy
 		}
 
 		//Trigger Event - onBeforeDirectorySave
-		$this->_app->triggerEvent('rsfp_f_onBeforeDirectorySave', array(array('SubmissionId' => &$cid, 'formId' => $formId, 'post' => &$form)));
+		$this->_app->triggerEvent('onRsformFrontendBeforeDirectorySave', array(array('SubmissionId' => &$cid, 'formId' => $formId, 'post' => &$form)));
 
 		require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
 		$submission = RSFormProSubmissionsHelper::getSubmission($cid);
@@ -578,7 +613,9 @@ class RsformModelDirectory extends JModelLegacy
 			return false;
 		}
 
-		list($multipleSeparator, $uploadFields, $multipleFields, $textareaFields, $secret) = RSFormProHelper::getDirectoryFormProperties($this->params->get('formId'));
+		list($multipleSeparator, $uploadFields, $multipleFields, $textareaFields, $secret) = RSFormProHelper::getDirectoryFormProperties($formId);
+
+		eval($directory->SaveScript);
 
 		// Handle file uploads first
 		if ($allowedUploadFields = array_intersect($uploadFields, $allowed))
@@ -633,39 +670,38 @@ class RsformModelDirectory extends JModelLegacy
 		}
 
 		// Update fields
-		foreach ($form as $field => $value)
+		if ($allowed)
 		{
-			if (!in_array($field, $allowed))
+			foreach ($allowed as $field)
 			{
-				continue;
-			}
+				$value = isset($form[$field]) ? $form[$field] : '';
+				if (is_array($value))
+				{
+					$value = implode("\n", $value);
+				}
+				$value = RSFormProHelper::stripJava($value);
 
-			if (is_array($value))
-			{
-				$value = implode("\n", $value);
-			}
+				// Dynamic field - update value.
+				$object = (object) array(
+					'FormId' 		=> $formId,
+					'SubmissionId' 	=> $cid,
+					'FieldName'		=> $field,
+					'FieldValue'	=> $value
+				);
 
-			// Dynamic field - update value.
-			$object = (object) array(
-				'FormId' 		=> $formId,
-				'SubmissionId' 	=> $cid,
-				'FieldName'		=> $field,
-				'FieldValue'	=> $value
-			);
-
-			if (!isset($submission->values[$field]))
-			{
-				$db->insertObject('#__rsform_submission_values', $object);
-			}
-			elseif ($submission->values[$field] !== $value)
-			{
-				// Update only if we've changed something
-				$db->updateObject('#__rsform_submission_values', $object, array('SubmissionId', 'FormId', 'FieldName'));
+				if (!isset($submission->values[$field]))
+				{
+					$db->insertObject('#__rsform_submission_values', $object);
+				}
+				elseif ($submission->values[$field] !== $value)
+				{
+					// Update only if we've changed something
+					$db->updateObject('#__rsform_submission_values', $object, array('SubmissionId', 'FormId', 'FieldName'));
+				}
 			}
 		}
 
-		$offset = JFactory::getConfig()->get('offset');
-
+		$offset = JFactory::getApplication()->get('offset');
 		if ($static && $staticFields)
 		{
 			// Static, update submission
@@ -684,53 +720,10 @@ class RsformModelDirectory extends JModelLegacy
 				{
 					$static[$field] = JFactory::getDate($static[$field], $offset)->toSql();
 				}
+				$value = RSFormProHelper::stripJava($static[$field]);
 
-				$query->set($db->qn($field) . '=' . $db->q($static[$field]));
+				$query->set($db->qn($field) . '=' . $db->q($value));
 			}
-
-			$db->setQuery($query)->execute();
-		}
-
-		// Checkboxes don't send a value if nothing is checked
-		$query = $db->getQuery(true)
-			->select($db->qn('p.PropertyValue'))
-			->from($db->qn('#__rsform_components', 'c'))
-			->join('left', $db->qn('#__rsform_properties', 'p') . ' ON (' . $db->qn('c.ComponentId') . ' = ' . $db->qn('p.ComponentId') . ')')
-			->where($db->qn('c.ComponentTypeId') . ' = ' . $db->q(RSFORM_FIELD_CHECKBOXGROUP))
-			->where($db->qn('p.PropertyName') . ' = ' . $db->q('NAME'))
-			->where($db->qn('c.FormId') . ' = ' . $db->q($formId));
-
-		if ($editFields = $this->getEditFields())
-		{
-			$allowedFields = array();
-
-			foreach ($editFields as $field)
-			{
-				$allowedFields[] = $this->_db->q($field[3]);
-			}
-
-			if (!empty($allowedFields))
-			{
-				$query->where($db->qn('p.PropertyValue') . ' IN (' . implode(',', $db->q($allowedFields)) . ')');
-			}
-		}
-
-		$checkboxes = $this->_db->setQuery($query)->loadColumn();
-
-		foreach ($checkboxes as $checkbox)
-		{
-			$value = isset($form[$checkbox]) ? $form[$checkbox] : '';
-			if (is_array($value))
-			{
-				$value = implode("\n", $value);
-			}
-
-			$query = $db->getQuery(true)
-				->update($db->qn('#__rsform_submission_values'))
-				->set($db->qn('FieldValue') . ' = ' . $db->q($value))
-				->where($db->qn('FieldName') . ' = ' . $db->q($checkbox))
-				->where($db->qn('FormId') . ' = ' . $db->q($formId))
-				->where($db->qn('SubmissionId') . ' = ' . $db->q($cid));
 
 			$db->setQuery($query)->execute();
 		}
@@ -743,41 +736,37 @@ class RsformModelDirectory extends JModelLegacy
 	public function sendEmails($formId, $SubmissionId)
 	{
 		$directory = $this->getDirectory();
+		$db        = $this->getDbo();
 
-		$query = $this->_db->getQuery(true)
-			->select($this->_db->qn('Lang'))
-			->from($this->_db->qn('#__rsform_submissions'))
-			->where($this->_db->qn('FormId') . ' = ' . $this->_db->q($formId))
-			->where($this->_db->qn('SubmissionId') . ' = ' . $this->_db->q($SubmissionId));
+		$query = $db->getQuery(true)
+			->select($db->qn('Lang'))
+			->from($db->qn('#__rsform_submissions'))
+			->where($db->qn('FormId') . ' = ' . $db->q($formId))
+			->where($db->qn('SubmissionId') . ' = ' . $db->q($SubmissionId));
 
-		$lang = $this->_db->setQuery($query)->loadResult();
+		$lang = $db->setQuery($query)->loadResult();
 
 		list($placeholders,$values) = RSFormProHelper::getReplacements($SubmissionId);
 
 		$query->clear()
 			->select('*')
-			->from($this->_db->qn('#__rsform_emails'))
-			->where($this->_db->qn('type') . ' = ' . $this->_db->q('directory'))
-			->where($this->_db->qn('formId') . ' = ' . $this->_db->q($formId))
-			->where($this->_db->qn('from') . ' != ' . $this->_db->q(''));
+			->from($db->qn('#__rsform_emails'))
+			->where($db->qn('type') . ' = ' . $db->q('directory'))
+			->where($db->qn('formId') . ' = ' . $db->q($formId))
+			->where($db->qn('from') . ' != ' . $db->q(''));
 
-		if ($emails = $this->_db->setQuery($query)->loadObjectList())
+		if ($emails = $db->setQuery($query)->loadObjectList())
 		{
 			$etranslations = RSFormProHelper::getTranslations('emails', $formId, $lang);
 
 			foreach ($emails as $email)
 			{
-				if (isset($etranslations[$email->id.'.fromname']))
+				foreach (array('fromname', 'subject', 'message', 'replytoname') as $value)
 				{
-					$email->fromname = $etranslations[$email->id.'.fromname'];
-				}
-				if (isset($etranslations[$email->id.'.subject']))
-				{
-					$email->subject = $etranslations[$email->id.'.subject'];
-				}
-				if (isset($etranslations[$email->id.'.message']))
-				{
-					$email->message = $etranslations[$email->id.'.message'];
+					if (isset($etranslations[$email->id . '.' . $value]))
+					{
+						$email->{$value} = $etranslations[$email->id . '.' . $value];
+					}
 				}
 
 				if (empty($email->fromname) || empty($email->subject) || empty($email->message))
@@ -786,16 +775,17 @@ class RsformModelDirectory extends JModelLegacy
 				}
 
 				$directoryEmail = array(
-					'to' 		=> $email->to,
-					'cc' 		=> $email->cc,
-					'bcc' 		=> $email->bcc,
-					'from' 		=> $email->from,
-					'replyto' 	=> $email->replyto,
-					'fromName' 	=> $email->fromname,
-					'text' 		=> $email->message,
-					'subject' 	=> $email->subject,
-					'mode' 		=> $email->mode,
-					'files' 	=> array()
+					'to' 			=> $email->to,
+					'cc' 			=> $email->cc,
+					'bcc' 			=> $email->bcc,
+					'from' 			=> $email->from,
+					'replyto' 		=> $email->replyto,
+					'replytoName' 	=> $email->replytoname,
+					'fromName' 		=> $email->fromname,
+					'text' 			=> $email->message,
+					'subject' 		=> $email->subject,
+					'mode' 			=> $email->mode,
+					'files' 		=> array()
 				);
 				
 				eval($directory->EmailsCreatedScript);
@@ -808,8 +798,15 @@ class RsformModelDirectory extends JModelLegacy
 					RSFormProScripting::compile($directoryEmail['text'], $placeholders, $values);
 				}
 				
+				// We keep this separate, so we can use str_replace() below. This ensures we can keep backwards compatibility and edit ['files'] in the PHP script above.
+				$directoryEmailFiles = $directoryEmail['files'];
+				unset($directoryEmail['files']);
+
 				// Replace placeholders
 				$directoryEmail = str_replace($placeholders, $values, $directoryEmail);
+
+				// Add the files
+				$directoryEmail['files'] = $directoryEmailFiles;
 
 				// additional cc
 				if (strpos($directoryEmail['cc'], ',') !== false)
@@ -824,7 +821,7 @@ class RsformModelDirectory extends JModelLegacy
 				}
 
 				//Trigger Event - beforeDirectoryEmail
-				$this->_app->triggerEvent('rsfp_beforeDirectoryEmail', array(array('directory' => &$directory, 'placeholders' => &$placeholders, 'values' => &$values, 'submissionId' => $SubmissionId, 'directoryEmail'=>&$directoryEmail)));
+				$this->_app->triggerEvent('onRsformBeforeDirectoryEmail', array(array('directory' => &$directory, 'placeholders' => &$placeholders, 'values' => &$values, 'submissionId' => $SubmissionId, 'directoryEmail'=>&$directoryEmail)));
 
 				eval($directory->EmailsScript);
 
@@ -836,7 +833,7 @@ class RsformModelDirectory extends JModelLegacy
 					{
 						if (!empty($recipient))
 						{
-							RSFormProHelper::sendMail($directoryEmail['from'], $directoryEmail['fromName'], $recipient, $directoryEmail['subject'], $directoryEmail['text'], $directoryEmail['mode'], !empty($directoryEmail['cc']) ? $directoryEmail['cc'] : null, !empty($directoryEmail['bcc']) ? $directoryEmail['bcc'] : null, $directoryEmail['files'], !empty($directoryEmail['replyto']) ? $directoryEmail['replyto'] : '');
+							RSFormProHelper::sendMail($directoryEmail['from'], $directoryEmail['fromName'], $recipient, $directoryEmail['subject'], $directoryEmail['text'], $directoryEmail['mode'], !empty($directoryEmail['cc']) ? $directoryEmail['cc'] : null, !empty($directoryEmail['bcc']) ? $directoryEmail['bcc'] : null, $directoryEmail['files'], !empty($directoryEmail['replyto']) ? $directoryEmail['replyto'] : '', !empty($directoryEmail['replytoName']) ? $directoryEmail['replytoName'] : null, '', $formId);
 						}
 					}
 				}
@@ -858,12 +855,44 @@ class RsformModelDirectory extends JModelLegacy
 	{
 		if ($query = $this->getListQuery())
 		{
-			$this->_db->setQuery($query)->execute();
+			$totalQuery = clone $query;
 
-			return $this->_db->getNumRows();
+			$totalQuery->clear('order');
+
+			if ($totalQuery->having !== null)
+			{
+				$cacheTime = (int) $this->params->get('total_cache', 0);
+				if ($cacheTime > 0)
+				{
+					$cache = JFactory::getCache('com_rsform_directory');
+					$cache->setCaching(true);
+					$cache->setLifeTime($cacheTime * 60);
+					return $cache->get(array('RsformModelDirectory', 'getTotalCache'), array((string) $totalQuery));
+				}
+				else
+				{
+					return static::getTotalCache($totalQuery);
+				}
+			}
+
+			$db = $this->getDbo();
+
+			$totalQuery->clear('select')
+				->select($db->qn('s.SubmissionId'));
+
+			$db->setQuery($totalQuery)->execute();
+			return $db->getNumRows();
 		}
 
 		return 0;
+	}
+
+	public static function getTotalCache($totalQuery)
+	{
+		$db = JFactory::getDbo();
+		$db->setQuery($totalQuery)->execute();
+
+		return $db->getNumRows();
 	}
 
 	public function getPagination()
@@ -898,14 +927,35 @@ class RsformModelDirectory extends JModelLegacy
 		return $this->_app->getUserStateFromRequest($this->context.'.filter.search', 'filter_search', '', 'string');
 	}
 
+	public function getDynamicFiltersOperators()
+	{
+		$filters = $this->params->get('dynamic_filter_values', array());
+		$operators = array();
+
+		if ($filters)
+		{
+			if (isset($filters['name'], $filters['operator']))
+			{
+				$operators = array_combine($filters['name'], $filters['operator']);
+			}
+		}
+
+		return $operators;
+	}
+
+	public function getDynamicFilters()
+	{
+		return $this->_app->getUserStateFromRequest($this->context.'.filter.dynamicfilter', 'filter_dynamicfilter', array(), 'array');
+	}
+
 	public function getListOrder()
 	{
-		return $this->_app->getUserStateFromRequest($this->context.'.filter.filter_order', 'filter_order', 'SubmissionId', '');
+		return $this->_app->getUserStateFromRequest($this->context.'.filter.filter_order', 'filter_order', $this->params->get('default_ordering', 'SubmissionId'), 'string');
 	}
 
 	public function getListDirn()
 	{
-		return $this->_app->getUserStateFromRequest($this->context.'.filter.filter_order_Dir', 'filter_order_Dir', 'desc', 'word');
+		return $this->_app->getUserStateFromRequest($this->context.'.filter.filter_order_Dir', 'filter_order_Dir', $this->params->get('default_direction', 'desc'), 'word');
 	}
 
 	public function getEditFields()
@@ -914,9 +964,7 @@ class RsformModelDirectory extends JModelLegacy
 		$app		= JFactory::getApplication();
 		$return		= array();
 		$values		= $app->input->get('form',array(),'array');
-		$cid		= $this->_app->input->getInt('id');
-
-		jimport('joomla.filesystem.file');
+		$cid		= $app->input->getInt('id');
 
 		// Load submission
 		require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
@@ -956,6 +1004,7 @@ class RsformModelDirectory extends JModelLegacy
 		$query = $db->getQuery(true);
 		$query->select($db->qn('ct.ComponentTypeName', 'type'))
 			->select($db->qn('c.ComponentId'))
+			->select($db->qn('ct.ComponentTypeId'))
 			->from($db->qn('#__rsform_components', 'c'))
 			->join('left', $db->qn('#__rsform_component_types', 'ct').' ON ('.$db->qn('c.ComponentTypeId').'='.$db->qn('ct.ComponentTypeId').')')
 			->where($db->qn('c.FormId').'='.$db->q($submission->FormId))
@@ -997,6 +1046,9 @@ class RsformModelDirectory extends JModelLegacy
 			}
 		}
 
+		$YUICalendars = false;
+		$jQueryCalendars = false;
+
 		foreach ($formFields as $field)
 		{
 			if (!$field->editable) {
@@ -1005,17 +1057,20 @@ class RsformModelDirectory extends JModelLegacy
 
 			$invalid		= !empty($validation) && in_array($field->id,$validation) ? ' rsform-error' : '';
 			$data			= $field->id > 0 ? $properties[$field->id] : array('NAME' => $field->name);
-			$new_field		= array();
-			$new_field[0]	= !empty($data['CAPTION']) ? $data['CAPTION'] : $field->name;
-			$new_field[2]	= isset($data['REQUIRED']) && $data['REQUIRED'] == 'YES' ? '<strong class="formRequired">(*)</strong>' : '';
-			$new_field[3]	= $field->name;
 			$name			= $field->name;
+			$new_field		= array(
+				RSFORM_DIR_CAPTION      => !empty($data['CAPTION']) ? $data['CAPTION'] : $field->name,
+				RSFORM_DIR_INPUT        => '',
+				RSFORM_DIR_REQUIRED     => isset($data['REQUIRED']) && $data['REQUIRED'] == 'YES' ? '<strong class="formRequired">(*)</strong>' : '',
+				RSFORM_DIR_NAME         => $field->name,
+				RSFORM_DIR_DESCRIPTION  => isset($data['DESCRIPTION']) ? $data['DESCRIPTION'] : ''
+			);
 
 			if ($invalid)
 			{
 				if (isset($data['VALIDATIONMESSAGE']))
 				{
-					$new_field[4] = '<div id="component' . $field->id . '" class="dirError">' . $data['VALIDATIONMESSAGE'] . '</span>';
+					$new_field[RSFORM_DIR_VALIDATION] = '<div id="component' . $field->id . '" class="dirError">' . $data['VALIDATIONMESSAGE'] . '</span>';
 				}
 			}
 
@@ -1029,28 +1084,37 @@ class RsformModelDirectory extends JModelLegacy
 				$value = isset($submission->{$field->name}) ? $submission->{$field->name} : '';
 			}
 
+			$placeholder = '';
+			if (isset($data['PLACEHOLDER']))
+			{
+				$placeholder = 'placeholder="' . RSFormProHelper::htmlEscape($data['PLACEHOLDER']) . '"';
+			}
+
 			switch ($field->type)
 			{
 				case 'static':
-					$new_field[0] = JText::_('RSFP_'.$field->name);
+					$new_field[RSFORM_DIR_CAPTION] = JText::_('RSFP_'.$field->name);
 
 					// Show a dropdown for yes/no
-					if ($field->name == 'confirmed') {
+					if ($field->name == 'confirmed')
+					{
 						$options = array(
 							JHtml::_('select.option', 0, JText::_('RSFP_NO')),
 							JHtml::_('select.option', 1, JText::_('RSFP_YES'))
 						);
 
-						$new_field[1] = JHtml::_('select.genericlist', $options, 'formStatic[confirmed]', null, 'value', 'text', $value);
-					} else {
-						$new_field[1] = '<input class="rs_inp rs_80" type="text" name="formStatic['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" />';
+						$new_field[RSFORM_DIR_INPUT] = JHtml::_('select.genericlist', $options, 'formStatic[confirmed]', null, 'value', 'text', $value);
+					}
+					else
+					{
+						$new_field[RSFORM_DIR_INPUT] = '<input class="rs_inp rs_80" type="text" name="formStatic['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" />';
 					}
 					break;
 
 				// skip this field for now, no need to edit it
 				case 'freeText':
-					$new_field[0] = '';
-					$new_field[1] = RSFormProHelper::isCode($data['TEXT']);
+					$new_field[RSFORM_DIR_CAPTION] = '';
+					$new_field[RSFORM_DIR_INPUT] = RSFormProHelper::isCode($data['TEXT']);
 					break;
 
 				default:
@@ -1059,33 +1123,99 @@ class RsformModelDirectory extends JModelLegacy
 						$value = implode($form->MultipleSeparator, $value);
 					}
 
-					if (strpos($value, "\n") !== false || strpos($value, "\r") !== false) {
-						$new_field[1] = '<textarea style="width: 95%" class="rs_textarea'.$invalid.'" rows="10" cols="60" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
-					} else {
-						$new_field[1] = '<input class="rs_inp rs_80'.$invalid.'" type="text" name="form['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" />';
+					if (strpos($value, "\n") !== false || strpos($value, "\r") !== false)
+					{
+						$new_field[RSFORM_DIR_INPUT] = '<textarea ' . $placeholder . ' style="width: 95%" class="rs_textarea'.$invalid.'" rows="10" cols="60" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
+					}
+					else
+					{
+						$new_field[RSFORM_DIR_INPUT] = '<input class="rs_inp rs_80'.$invalid.'" type="text" name="form['.$name.']" value="'.RSFormProHelper::htmlEscape($value).'" ' . $placeholder . ' />';
 					}
 					break;
 
 				case 'textArea':
 					if (isset($data['WYSIWYG']) && $data['WYSIWYG'] == 'YES')
-						$new_field[1] = RSFormProHelper::WYSIWYG('form['.$name.']', RSFormProHelper::htmlEscape($value), '', 600, 100, 60, 10);
+					{
+						$new_field[RSFORM_DIR_INPUT] = RSFormProHelper::WYSIWYG('form['.$name.']', RSFormProHelper::htmlEscape($value), '', 600, 100, 60, 10);
+					}
 					else
-						$new_field[1] = '<textarea style="width: 95%" class="rs_textarea'.$invalid.'" rows="10" cols="60" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
+					{
+						$new_field[RSFORM_DIR_INPUT] = '<textarea ' . $placeholder . ' style="width: 95%" class="rs_textarea'.$invalid.'" rows="10" cols="60" name="form['.$name.']">'.RSFormProHelper::htmlEscape($value).'</textarea>';
+					}
 					break;
 
-				case 'radioGroup':
 				case 'checkboxGroup':
+				case 'radioGroup':
+					$options = array();
+					$value = !empty($values) ? $value : RSFormProHelper::explode($value);
+					$value = (array) $value;
+
+					if ($field->type === 'checkboxGroup')
+					{
+						$htmlType = 'checkbox';
+						$htmlName = 'form[' . RSFormProHelper::htmlEscape($name) . '][]';
+					}
+					else
+					{
+						$htmlName = 'form[' . RSFormProHelper::htmlEscape($name) . ']';
+						$htmlType = 'radio';
+					}
+
+					require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/fields/fielditem.php';
+					require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/fieldmultiple.php';
+					$f = new RSFormProFieldMultiple(array(
+						'formId' 			=> $submission->FormId,
+						'componentId' 		=> $field->id,
+						'data' 				=> $data,
+						'value' 			=> array('formId' => $submission->FormId, $data['NAME'] => $value),
+						'invalid' 			=> in_array($field->id, $validation)
+					));
+
+					if ($items = $f->getItems())
+					{
+						$i = 0;
+						foreach ($items as $item)
+						{
+							$item = new RSFormProFieldItem($item);
+
+							$html = '<label><input type="' . $htmlType . '" ' .
+							' name="' . $htmlName . '"' .
+							' value="' . RSFormProHelper::htmlEscape($item->value) . '"' .
+							' id="' . RSFormProHelper::htmlEscape($name) . $i . '"';
+
+							if ($item->flags['disabled']) {
+								$html .= ' disabled="disabled"';
+							}
+
+							if (in_array($item->value, $value)) {
+								$html .= ' checked="checked"';
+							}
+
+							if ($invalid)
+							{
+								$html .= ' class="' . $invalid . '"';
+							}
+
+							$html .= '> ' . $item->label . '</label>';
+
+							$options[] = $html;
+
+							$i++;
+						}
+					}
+
+					if ($max = (int) $f->getProperty('MAXSELECTIONS'))
+					{
+						$id = $f->getId();
+						RSFormProAssets::addScriptDeclaration("RSFormPro.limitSelections({$submission->FormId}, '{$id}', {$max});");
+					}
+
+					$new_field[RSFORM_DIR_INPUT] = '<p>' . implode('</p><p>', $options) . '</p>';
+
+					break;
+
 				case 'selectList':
 					$options = array();
-					if ($field->type == 'radioGroup') {
-						$data['SIZE'] = 0;
-						$data['MULTIPLE'] = 'NO';
-						$options[] = JHtml::_('select.option', '', JText::_('COM_RSFORM_NO_VALUE'));
-
-					} elseif ($field->type == 'checkboxGroup') {
-						$data['SIZE'] = 5;
-						$data['MULTIPLE'] = 'YES';
-					}
 
 					$value = !empty($values) ? $value : RSFormProHelper::explode($value);
 
@@ -1134,7 +1264,7 @@ class RsformModelDirectory extends JModelLegacy
 
 					$attribs = implode(' ', $attribs);
 
-					$new_field[1] = JHtml::_('select.genericlist', $options, 'form['.$name.'][]', $attribs, 'value', 'text', $value);
+					$new_field[RSFORM_DIR_INPUT] = JHtml::_('select.genericlist', $options, 'form['.$name.'][]', $attribs, 'value', 'text', $value);
 					break;
 
 				case 'fileUpload':
@@ -1147,25 +1277,113 @@ class RsformModelDirectory extends JModelLegacy
 						$files = array();
 					}
 
-					$new_field[1] = '<div>';
+					$new_field[RSFORM_DIR_INPUT] = '<div>';
 
 					foreach ($files as $file)
 					{
-						$new_field[1] .= '<p><button type="button" class="btn btn-small" onclick="RSFormProDirectory.clearUpload(\'' . $name . '\', this, \'' . md5($file) . '\');">' . JText::_('COM_RSFORM_CLEAR') . '</button> <span' . ($invalid ? ' class="' . $invalid . '"' : '') . '>' . RSFormProHelper::htmlEscape(basename($file)) . '</span></p>';
+						$new_field[RSFORM_DIR_INPUT] .= '<p><button type="button" class="btn btn-secondary btn-small btn-sm" onclick="RSFormProDirectory.clearUpload(\'' . $name . '\', this, \'' . md5($file) . '\');">' . JText::_('COM_RSFORM_CLEAR') . '</button> <span' . ($invalid ? ' class="' . $invalid . '"' : '') . '>' . RSFormProHelper::htmlEscape(basename($file)) . '</span></p>';
 					}
 
-					$new_field[1] .= '</div>';
+					$new_field[RSFORM_DIR_INPUT] .= '</div>';
 
 					$multiple =  !empty($data['MULTIPLE']) && $data['MULTIPLE'] == 'YES';
 
-					$new_field[1] .= '<input size="45" type="file" name="form['.$name.']' . ($multiple ? '[]' : '') . '" ' . ($multiple ? 'multiple' : '') . ' />';
+					$new_field[RSFORM_DIR_INPUT] .= '<input size="45" type="file" name="form['.$name.']' . ($multiple ? '[]' : '') . '" ' . ($multiple ? 'multiple' : '') . ' />';
+					break;
+
+				case 'jQueryCalendar':
+				case 'calendar':
+					if ($field->type === 'jQueryCalendar')
+					{
+						$jQueryCalendars = true;
+					}
+
+					if ($field->type === 'calendar')
+					{
+						$YUICalendars = true;
+					}
+
+					$type = (string) preg_replace('/[^A-Z0-9_\.-]/i', '', strtolower($field->type));
+					$type = ltrim($type, '.');
+					// For legacy reasons...
+					$r = array(
+						'ComponentTypeId' => $field->FieldType,
+						'Order'			  => isset($data['Order']) ? $data['Order'] : 0
+					);
+
+					// Emulate variables
+					$out = '';
+					$formId = $submission->FormId;
+					$val = isset($values[$field->name]) ? $values : $submission->values;
+					$data['componentTypeId'] 	= $field->FieldType;
+					$data['ComponentTypeName'] 	= $field->type;
+					$data['Order'] 				= $field->ordering;
+
+					$app->triggerEvent('onRsformBackendBeforeCreateFrontComponentBody', array(array(
+						'out' 			=> &$out,
+						'formId' 		=> $submission->FormId,
+						'componentId' 	=> $field->componentId,
+						'data' 			=> &$data,
+						'value' 		=> &$val
+					)));
+
+					$config = array(
+						'formId' 			=> $formId,
+						'componentId' 		=> $field->componentId,
+						'data' 				=> $data,
+						'value' 			=> $val,
+						'invalid' 			=> $invalid,
+						'errorClass' 		=> '',
+						'fieldErrorClass' 	=> ''
+					);
+
+					require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/fields/' . $type . '.php';
+
+					$class = 'RSFormProField' . $type;
+
+					// Create the field
+					$fieldClass = new $class($config);
+
+					$out .= $fieldClass->output;
+
+					$app->triggerEvent('onRsformBackendAfterCreateFrontComponentBody', array(array(
+						'out' 			=> &$out,
+						'formId' 		=> $formId,
+						'componentId' 	=> $fieldClass->componentId,
+						'data' 			=> $data,
+						'value' 		=> $val,
+						'r'				=> $r,
+						'invalid' 		=> $invalid
+					)));
+
+					$new_field[RSFORM_DIR_INPUT] = $out;
+
 					break;
 			}
 
 			$return[$field->id] = $new_field;
 		}
 
-		JFactory::getApplication()->triggerEvent('rsfp_f_onGetEditFields', array(&$return, $submission));
+		if ($YUICalendars || $jQueryCalendars)
+		{
+			require_once JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/calendar.php';
+
+			// render the YUI Calendars
+			if ($YUICalendars)
+			{
+				$calendar = RSFormProCalendar::getInstance('YUICalendar');
+				RSFormProAssets::addScriptDeclaration($calendar->printInlineScript($formId));
+			}
+
+			// render the jQuery Calendars
+			if ($jQueryCalendars)
+			{
+				$calendar = RSFormProCalendar::getInstance('jQueryCalendar');
+				RSFormProAssets::addScriptDeclaration($calendar->printInlineScript($formId));
+			}
+		}
+
+		JFactory::getApplication()->triggerEvent('onRsformFrontendGetEditFields', array(&$return, $submission));
 
 		return $return;
 	}

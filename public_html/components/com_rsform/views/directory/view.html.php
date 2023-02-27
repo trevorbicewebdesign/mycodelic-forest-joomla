@@ -19,16 +19,16 @@ class RsformViewDirectory extends JViewLegacy
 		$this->directory	= $this->get('Directory');
 		$this->tooltipClass = RSFormProHelper::getTooltipClass();
 		$this->url          = JUri::getInstance();
+		$this->formId       = $this->params->get('formId');
 
-        JHtml::script('com_rsform/directory.js', array('relative' => true, 'version' => 'auto'));
+        JHtml::_('script', 'com_rsform/directory.js', array('relative' => true, 'version' => 'auto'));
 		
 		if ($this->layout == 'view')
 		{
-            JHtml::stylesheet('com_rsform/directory.css', array('relative' => true, 'version' => 'auto'));
+            JHtml::_('stylesheet', 'com_rsform/directory.css', array('relative' => true, 'version' => 'auto'));
 			
 			$this->template  = $this->get('template');
             $this->id		 = $this->app->input->getInt('id',0);
-            $this->formId    = $this->params->get('formId');
 			$this->canEdit	 = RSFormProHelper::canEdit($this->formId, $this->id);
             $this->canDelete = RSFormProHelper::canDelete($this->formId, $this->id);
 			
@@ -48,9 +48,9 @@ class RsformViewDirectory extends JViewLegacy
 		}
 		elseif ($this->layout == 'edit')
 		{
-			if (RSFormProHelper::canEdit($this->params->get('formId'),$this->app->input->getInt('id',0)))
+			if (RSFormProHelper::canEdit($this->formId, $this->app->input->getInt('id',0)))
 			{
-                JHtml::stylesheet('com_rsform/directory.css', array('relative' => true, 'version' => 'auto'));
+                JHtml::_('stylesheet', 'com_rsform/directory.css', array('relative' => true, 'version' => 'auto'));
 				$this->fields		= $this->get('EditFields');
 			}
 			else
@@ -75,11 +75,19 @@ class RsformViewDirectory extends JViewLegacy
 			$this->hasDetailFields     = $this->hasDetailFields();
 			$this->hasSearchFields     = $this->hasSearchFields();
 			$this->viewableFields      = $this->getViewableFields();
+			$this->dynamicFilters      = $this->params->get('dynamic_filter_values', array());
+			$this->dynamicSearch       = $this->get('dynamicFilters');
 			$this->pagination          = $this->get('Pagination');
 
 			$this->filter_search    = $this->get('Search');
 			$this->filter_order     = $this->get('ListOrder');
 			$this->filter_order_Dir = $this->get('ListDirn');
+
+			if ($this->directory->AllowCSVFullDownload)
+			{
+				$this->limit = RSFormProHelper::getConfig('export.limit');
+				$this->total = $this->get('Total');
+			}
 
 			$this->url->delVar('start');
 			
@@ -113,15 +121,15 @@ class RsformViewDirectory extends JViewLegacy
 		$title = $this->params->get('page_title', '');
 		if (empty($title))
 		{
-			$title = JFactory::getConfig()->get('sitename');
+			$title = JFactory::getApplication()->get('sitename');
 		}
-		elseif (JFactory::getConfig()->get('sitename_pagetitles', 0) == 1)
+		elseif (JFactory::getApplication()->get('sitename_pagetitles', 0) == 1)
 		{
-			$title = JText::sprintf('JPAGETITLE', JFactory::getConfig()->get('sitename'), $title);
+			$title = JText::sprintf('JPAGETITLE', JFactory::getApplication()->get('sitename'), $title);
 		}
-		elseif (JFactory::getConfig()->get('sitename_pagetitles', 0) == 2)
+		elseif (JFactory::getApplication()->get('sitename_pagetitles', 0) == 2)
 		{
-			$title = JText::sprintf('JPAGETITLE', $title, JFactory::getConfig()->get('sitename'));
+			$title = JText::sprintf('JPAGETITLE', $title, JFactory::getApplication()->get('sitename'));
 		}
 		
 		$this->document->setTitle($title);
@@ -208,16 +216,6 @@ class RsformViewDirectory extends JViewLegacy
 	
 	public function pdfLink($id)
 	{
-		$has_suffix = JFactory::getConfig()->get('sef') && JFactory::getConfig()->get('sef_suffix');
-
-		$pdf_link = JRoute::_('index.php?option=com_rsform&view=directory&layout=view&id='.$id.'&format=pdf');
-
-		if ($has_suffix)
-		{
-			$pdf_link .= strpos($pdf_link, '?') === false ? '?' : '&';
-			$pdf_link .= 'format=pdf';
-		}
-		
-		return $pdf_link;
+		return JRoute::_('index.php?option=com_rsform&view=directory&layout=view&id=' . $id . '&format=pdf');
 	}
 }

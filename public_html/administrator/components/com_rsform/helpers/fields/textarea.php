@@ -30,13 +30,10 @@ class RSFormProFieldTextarea extends RSFormProField
 	
 	// functions used for rendering in front view
 	protected function getEditor() {
-		jimport('joomla.html.editor');
-		
 		static $editor = null;
 		
 		if (is_null($editor)) {
-			$conf 	= JFactory::getConfig();
-			$editor = $conf->get('editor');
+			$editor = JFactory::getApplication()->get('editor');
 		}
 		
 		return JEditor::getInstance($editor);
@@ -55,10 +52,11 @@ class RSFormProFieldTextarea extends RSFormProField
 		$attr			= $this->getAttributes();
 		$additional 	= '';
 		
-		if ($editor) {
-			$this->addScriptDeclaration('RSFormPro.Editors['.json_encode($name).'] = function() { try { return '.$this->getEditor()->getContent($id).' } catch (e) {} };');
+		if ($editor)
+		{
+			$this->addScriptDeclaration('RSFormPro.Editors[' . json_encode($name) . '] = function() { try { return Joomla.editors.instances[' . json_encode($id) . '].getValue(); } catch (e) { return null; } };');
 
-			return $this->getEditor()->display($name, $this->escape($value), $cols*10, $rows*10, $cols, $rows, $this->getProperty('WYSIWYGBUTTONS', 'NO'), $id, null, null,
+			return $this->getEditor()->display($name, $this->escape($value), ($cols ? $cols * 10 : 0), ($rows ? $rows * 10 : 0), $cols, $rows, $this->getProperty('WYSIWYGBUTTONS', 'NO'), $id, null, null,
 				array('relative_urls' => '0',
 				'cleanup_save' => '0',
 				'cleanup_startup' => '0',

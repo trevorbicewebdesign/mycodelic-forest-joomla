@@ -21,4 +21,18 @@ class TableRSForm_Directory extends JTable
 	public function __construct(& $db) {
 		parent::__construct('#__rsform_directory', 'formId', $db);
 	}
+
+	public function hasPrimaryKey()
+	{
+		$db 	= JFactory::getDbo();
+		$key 	= $this->getKeyName();
+		$table	= $this->getTableName();
+
+		$query = $db->getQuery(true)
+			->select($db->qn($key))
+			->from($db->qn($table))
+			->where($db->qn($key) . ' = ' . $db->q($this->{$key}));
+
+		return $db->setQuery($query)->loadResult() !== null;
+	}
 }

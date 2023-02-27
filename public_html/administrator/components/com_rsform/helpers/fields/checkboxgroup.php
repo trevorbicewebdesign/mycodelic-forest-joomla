@@ -147,6 +147,11 @@ class RSFormProFieldCheckboxGroup extends RSFormProFieldMultiple
         {
             $this->addScriptDeclaration("RSFormPro.limitSelections({$this->formId}, '{$id}', {$max});");
         }
+
+		if ($this->isRequired())
+		{
+			$output = '<div aria-required="true">' . $output . '</div>';
+		}
 		
 		return $output;
 	}
@@ -155,7 +160,7 @@ class RSFormProFieldCheckboxGroup extends RSFormProFieldMultiple
 		// For convenience
 		extract($data);
 		
-		return '<label for="'.$this->escape($id).$i.'">'.$item->label.'</label>';
+		return '<label id="'.$this->escape($id).$i.'-lbl" for="'.$this->escape($id).$i.'">'.$item->label.'</label>';
 	}
 	
 	protected function buildInput($data) {
@@ -206,14 +211,56 @@ class RSFormProFieldCheckboxGroup extends RSFormProFieldMultiple
 		}
 	}
 	
-	// @desc All select lists should have a 'rsform-checkbox' class for easy styling
-	public function getAttributes() {
+	// @desc All checkbox inputs should have a 'rsform-checkbox' class for easy styling
+	public function getAttributes()
+	{
 		$attr = parent::getAttributes();
-		if (strlen($attr['class'])) {
+
+		if (strlen($attr['class']))
+		{
 			$attr['class'] .= ' ';
 		}
 		$attr['class'] .= 'rsform-checkbox';
+
+		if ($this->isRequired())
+		{
+			unset($attr['aria-required']);
+		}
 		
 		return $attr;
+	}
+
+	public function processValidation($validationType = 'form', $submissionId = 0)
+	{
+		$minSelections = (int) $this->getProperty('MINSELECTIONS');
+		$required = $this->isRequired();
+		$values = $this->getValue();
+
+		// Field is required but nothing is selected
+		if ($required && !$values)
+		{
+			return false;
+		}
+
+		// Field has a minimum amount of selections set, is required or has values sent
+		if ($minSelections > 0 && ($required || $values))
+		{
+			try
+			{
+				if (!$values || count($values) < $minSelections)
+				{
+					throw new Exception(JText::sprintf('COM_RSFORM_MINSELECTIONS_REQUIRED', $minSelections));
+				}
+			}
+			catch (Exception $e)
+			{
+				$properties =& RSFormProHelper::getComponentProperties($this->componentId);
+				$properties['VALIDATIONMESSAGE'] = $e->getMessage();
+
+				return false;
+			}
+		}
+
+		return true;
 	}
 }

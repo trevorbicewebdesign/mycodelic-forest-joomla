@@ -27,10 +27,10 @@ class RSFormProFieldFoundationBirthDay extends RSFormProFieldBirthDay
 		}
 		
 		// extra classes for proper alignment
-		$last = count($items) - 1;
-		foreach($items as $i => &$item) {
-			$item = '<div class="medium-3 columns'.($last == $i ? ' end' : '').'">'.$item.'</div>';
+		foreach ($items as &$item)
+		{
+			$item = '<div class="cell auto">'.$item.'</div>';
 		}
-		return '<div class="row">'.implode('', $items).'</div>';
+		return '<div class="grid-x grid-padding-x">'.implode('', $items).'</div>';
 	}
 }

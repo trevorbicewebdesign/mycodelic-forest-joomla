@@ -28,7 +28,14 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
 		foreach ($this->pages as $page_index => $rows)
 		{
 			$html[] = '<!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->';
-			$html[] = '<fieldset class="formContainer" id="rsform_{global:formid}_page_' . $page_index . '">';
+
+			$classes = array('formContainer');
+			if (count($this->pages) > 1)
+			{
+				$classes[] = 'formHidden';
+			}
+
+			$html[] = '<fieldset class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
 			foreach ($rows as $row_index => $row)
 			{
 				// Start a new row
@@ -38,7 +45,7 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
 				{
 					$size = $row['sizes'][$column_index];
 					
-					$html[] = "\t"."\t".'<div class="col-' . (int) $size . '">';
+					$html[] = "\t"."\t".'<div class="col-md-' . (int) $size . '">';
 					
 					foreach ($fields as $field)
 					{
@@ -87,14 +94,26 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
         return '';
     }
 
-    protected function fieldClass()
+    protected function fieldAttributes($data)
     {
+		$classes = array('formControls');
         if ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL)
         {
-            return 'col-sm-9 ';
+			$classes[] = 'col-sm-9';
         }
 
-        return '';
+		if ($data->ComponentTypeId == RSFORM_FIELD_PAGEBREAK)
+		{
+			$classes[] = 'btn-group';
+		}
+
+		$attr = 'class="' . implode(' ', $classes) . '"';
+		if (in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP)) || in_array($data->ComponentId, $this->checkboxes) || in_array($data->ComponentId, $this->radiogroups))
+		{
+			$attr .= ' role="group" aria-labelledby="' . $data->ComponentName . '-grouplbl"';
+		}
+
+		return $attr;
     }
 	
 	protected function generateField($data)
@@ -105,7 +124,7 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
 		$placeholders = array(
 			'body' 		 	=> '{' . $data->ComponentName . ':body}',
 			'caption'	 	=> '{' . $data->ComponentName . ':caption}',
-			'description' 	=> '{' . $data->ComponentName . ':description}',
+			'description' 	=> '{' . $data->ComponentName . ':descriptionhtml}',
 			'error' 	 	=> '{' . $data->ComponentName . ':errorClass}',
 			'validation' 	=> '{' . $data->ComponentName . ':validation}',
 		);
@@ -114,18 +133,20 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
 		if ($data->ComponentTypeId == RSFORM_FIELD_FREETEXT)
 		{
 			$block = $this->getBlock($data->ComponentName);
+			$type = $this->getBlock($data->ComponentTypeName);
 
-			$html[] = "\t"."\t"."\t".'<div class="form-group rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
+			$html[] = "\t"."\t"."\t".'<div class="form-group rsform-block rsform-block-' . $block . ' rsform-type-' . $type . $placeholders['error'] . '">';
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 			$html[] = "\t"."\t"."\t".'</div>';
 		}
-		elseif (in_array($data->ComponentTypeId, array(RSFORM_FIELD_HIDDEN, RSFORM_FIELD_TICKET)))
+		elseif (in_array($data->ComponentTypeId, $this->hiddenComponents))
 		{
 			$html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
 		}
 		else
 		{
 			$block = $this->getBlock($data->ComponentName);
+			$type = $this->getBlock($data->ComponentTypeName);
 
             if ($this->formOptions->FormLayoutFlow == static::FLOW_HORIZONTAL)
             {
@@ -136,27 +157,18 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
                 $class = 'form-group';
             }
 
-			$html[] = "\t"."\t"."\t".'<div class="'. $class .' rsform-block rsform-block-' . $block . $placeholders['error'] . '">';
+			$html[] = "\t"."\t"."\t".'<div class="'. $class .' rsform-block rsform-block-' . $block . ' rsform-type-' . $type . $placeholders['error'] . '">';
 				if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
 				{
-					$label = "\t"."\t"."\t"."\t".'<label class="' . $this->labelClass() . 'control-label formControlLabel" data-toggle="tooltip" title="' . $placeholders['description'] . '"';
-					if (!in_array($data->ComponentTypeId, array(RSFORM_FIELD_CHECKBOXGROUP, RSFORM_FIELD_RADIOGROUP, RSFORM_FIELD_BIRTHDAY, RSFORM_FIELD_JQUERY_CALENDAR, RSFORM_FIELD_CALENDAR)))
-					{
-						$label .= ' for="' . $data->ComponentName . '"';
-					}
-					elseif ($data->ComponentTypeId == RSFORM_FIELD_JQUERY_CALENDAR)
-					{
-						require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php';
+					$label = '';
 
-						$label .= ' for="txtjQcal' . $this->formId . '_' . RSFormProCalendar::getInstance('jQueryCalendar')->getPosition($this->formId, $data->ComponentId) . '"';
-					}
-					elseif ($data->ComponentTypeId == RSFORM_FIELD_CALENDAR)
+					if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
 					{
-						require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/calendar.php';
-
-						$label .= ' for="txtcal' . $this->formId . '_' . RSFormProCalendar::getInstance('YUICalendar')->getPosition($this->formId, $data->ComponentId) . '"';
+						$label .= '{if ' . $placeholders['caption'] . '}' . "\n";
 					}
 
+					$label .= "\t"."\t"."\t"."\t".'<label class="' . $this->labelClass() . 'control-label formControlLabel" data-toggle="tooltip" title="' . $placeholders['description'] . '"';
+					$label .= $this->generateFor($data);
 					$label .= '>';
 					$label .= $placeholders['caption'];
 					if ($data->Required && $this->requiredMarker)
@@ -164,6 +176,12 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
 						$label .= '<strong class="formRequired">' . $this->requiredMarker . '</strong>';
 					}
 					$label .= '</label>';
+
+					if ($this->formOptions->FormLayoutFlow == static::FLOW_VERTICAL)
+					{
+						$label .= "\n" . '{/if}';
+					}
+
 					$html[] = $label;
 				}
 				else
@@ -171,7 +189,7 @@ class RSFormProGridBootstrap4 extends RSFormProGrid
 					$html[] = "\t"."\t"."\t"."\t".'<div class="' . $this->labelClass() .  'control-label formControlLabel"></div>';
 				}
 
-                $html[] = "\t"."\t"."\t"."\t".'<div class="' . $this->fieldClass() .  'formControls' . ($data->ComponentTypeId == RSFORM_FIELD_PAGEBREAK ? ' btn-group' : '') . '">';
+                $html[] = "\t"."\t"."\t"."\t".'<div ' . $this->fieldAttributes($data) . '>';
                     $html[] = "\t"."\t"."\t"."\t"."\t".$placeholders['body'];
                     if ($data->ComponentTypeId != RSFORM_FIELD_PAGEBREAK)
                     {

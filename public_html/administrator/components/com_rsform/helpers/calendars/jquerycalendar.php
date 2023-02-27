@@ -45,12 +45,12 @@ class RSFormProJQueryCalendar
 		}
 
 		// load the jQuery framework 
-		JHtml::_('jquery.framework', true);
+		RSFormProAssets::addJquery();
 		
-		RSFormProAssets::addScript(JHtml::script('com_rsform/jquerycalendar/jquery.datetimepicker.js', array('pathOnly' => true, 'relative' => true)));
-		RSFormProAssets::addScript(JHtml::script('com_rsform/jquerycalendar/moment.js', array('pathOnly' => true, 'relative' => true)));
-		RSFormProAssets::addScript(JHtml::script('com_rsform/jquerycalendar/script.js', array('pathOnly' => true, 'relative' => true)));
-		RSFormProAssets::addStyleSheet(JHtml::stylesheet('com_rsform/jquerycalendar/jquery.datetimepicker.css', array('pathOnly' => true, 'relative' => true)));
+		RSFormProAssets::addScript(JHtml::_('script', 'com_rsform/jquerycalendar/jquery.datetimepicker.js', array('pathOnly' => true, 'relative' => true)));
+		RSFormProAssets::addScript(JHtml::_('script', 'com_rsform/jquerycalendar/moment.js', array('pathOnly' => true, 'relative' => true)));
+		RSFormProAssets::addScript(JHtml::_('script', 'com_rsform/jquerycalendar/script.js', array('pathOnly' => true, 'relative' => true)));
+		RSFormProAssets::addStyleSheet(JHtml::_('stylesheet', 'com_rsform/jquerycalendar/jquery.datetimepicker.css', array('pathOnly' => true, 'relative' => true)));
 		
 		$out = "\n";
 		
@@ -88,6 +88,15 @@ class RSFormProJQueryCalendar
 		for ($i = 0; $i < strlen($dateFormat); $i++)
 		{
 			$current = $dateFormat[$i];
+
+			// get previous char to see if is the dash
+			$previous = isset($dateFormat[($i-1)]) ? $dateFormat[($i-1)] : '';
+
+			if ($current == "\\" || $previous == "\\")
+			{
+				$newFormat .= $current;
+				continue;
+			}
 			
 			if (isset($this->translationTable[$current]))
 			{
@@ -158,6 +167,11 @@ class RSFormProJQueryCalendar
 			$otherCalendarData = RSFormProHelper::getComponentProperties($otherCalendar);
 
 			$extras['rule'] = $rule.'|'.$otherCalendarData['NAME'];
+
+			if (isset($offset) && $offset != 1)
+			{
+				$extras['rule'] .= '|' . (int) $offset;
+			}
 		}
 
 		$extras = $this->parseJSProperties($extras);

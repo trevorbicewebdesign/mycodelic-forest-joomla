@@ -23,9 +23,6 @@ $count = 0;
 				</div>
 				<div class="controls">
 					<?php echo $field->body; ?>
-					<?php if ($field->translatable) { ?>
-						<span class="help-inline"><?php echo $this->translateIcon; ?></span>
-					<?php } ?>
 				</div>
 			</div>
 		<?php } ?>
@@ -41,5 +38,5 @@ $count = 0;
 			</div>
 		</div>
 	<?php } ?>
-	<?php if ($fieldType != 'attributes') { ?>{rsfsep}<?php } ?>
+	<?php if ($fieldType != 'editor') { ?>{rsfsep}<?php } ?>
 <?php } ?>

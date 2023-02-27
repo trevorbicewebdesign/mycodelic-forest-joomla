@@ -39,11 +39,11 @@ class RSFormProYUICalendar
 			return;
 		}
 
-		RSFormProAssets::addScript(JHtml::script('com_rsform/calendar/calendar.js', array('pathOnly' => true, 'relative' => true)));
-		RSFormProAssets::addScript(JHtml::script('com_rsform/calendar/script.js', array('pathOnly' => true, 'relative' => true)));
-		RSFormProAssets::addStyleSheet(JHtml::stylesheet('com_rsform/calendar/calendar.css', array('pathOnly' => true, 'relative' => true)));
+		RSFormProAssets::addScript(JHtml::_('script', 'com_rsform/calendar/calendar.js', array('pathOnly' => true, 'relative' => true)));
+		RSFormProAssets::addScript(JHtml::_('script', 'com_rsform/calendar/script.js', array('pathOnly' => true, 'relative' => true)));
+		RSFormProAssets::addStyleSheet(JHtml::_('stylesheet', 'com_rsform/calendar/calendar.css', array('pathOnly' => true, 'relative' => true)));
 		if (JFactory::getDocument()->direction == 'rtl') {
-			RSFormProAssets::addStyleSheet(JHtml::stylesheet('com_rsform/calendar/calendar-rtl.css', array('pathOnly' => true, 'relative' => true)));
+			RSFormProAssets::addStyleSheet(JHtml::_('stylesheet', 'com_rsform/calendar/calendar-rtl.css', array('pathOnly' => true, 'relative' => true)));
 		}
 		
 		$out = "\n";
@@ -123,6 +123,11 @@ class RSFormProYUICalendar
 			$otherCalendarData =  RSFormProHelper::getComponentProperties($otherCalendar);
 
 			$extras['rule'] = $rule.'|'.$otherCalendarData['NAME'];
+
+			if (isset($offset) && $offset != 1)
+			{
+				$extras['rule'] .= '|' . (int) $offset;
+			}
 		}
 
 		$extras = $this->parseJSProperties($extras);
@@ -164,6 +169,6 @@ class RSFormProYUICalendar
 		$calendarIds = array_keys($this->calendarOptions[$formId]);
 		$calendarIds = json_encode($calendarIds);
 
-		return "RSFormPro.callbacks.addCallback({$formId}, 'changePage', [RSFormPro.YUICalendar.hideAllPopupCalendars, {$formId}, {$calendarIds}]);";
+		return "RSFormPro.callbacks.addCallback({$formId}, 'changePage', [RSFormPro.YUICalendar.hideAllPopupCalendars, {$formId}, {$calendarIds}]); RSFormPro.YUICalendar.hideOnClick({$formId}, {$calendarIds});";
 	}
 }

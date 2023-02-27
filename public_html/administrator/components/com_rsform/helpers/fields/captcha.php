@@ -72,6 +72,15 @@ class RSFormProFieldCaptcha extends RSFormProField
 		// Start building the image HTML
 		// Image source
 		$src = JRoute::_('index.php?option=com_rsform&task=captcha&componentId='.$componentId.'&format=image&sid='.mt_rand());
+
+		require_once JPATH_SITE . '/components/com_rsform/helpers/captcha.php';
+
+		$captcha = new RSFormProCaptcha($componentId);
+
+		$data = base64_encode($captcha->makeCaptcha());
+
+		$src = 'data:image/png;base64,' . $data;
+
 		// Image HTML
 		$image = '<img'.
 				 ' src="'.$src.'"'.
@@ -132,7 +141,9 @@ class RSFormProFieldCaptcha extends RSFormProField
 			'type="text"',
 			'name="'.$word.'"',
 			'value=""',
-			'style="'.$style.'"'
+			'style="'.$style.'"',
+			'aria-hidden="true"',
+			'aria-label="do not use"',
 		);
 		shuffle($properties);
 		
@@ -188,6 +199,12 @@ class RSFormProFieldCaptcha extends RSFormProField
 
 	public function processValidation($validationType = 'form', $submissionId = 0)
 	{
+		// Skip directory editing since it makes no sense
+		if ($validationType == 'directory')
+		{
+			return true;
+		}
+
 		$form 			= RSFormProHelper::getForm($this->formId);
 		$captchaCode 	= JFactory::getSession()->get('com_rsform.captcha.captchaId' . $this->componentId);
 		$value			= $this->getValue();
@@ -227,6 +244,11 @@ class RSFormProFieldCaptcha extends RSFormProField
 			}
 		}
 
+		return true;
+	}
+
+	public function isRequired()
+	{
 		return true;
 	}
 }

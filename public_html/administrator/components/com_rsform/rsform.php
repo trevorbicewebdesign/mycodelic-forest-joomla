@@ -7,17 +7,15 @@
 
 defined('_JEXEC') or die('Restricted access');
 
-if (!defined('DS')) {
-	define('DS', DIRECTORY_SEPARATOR);
-}
-
 // ACL Check
 $user = JFactory::getUser();
-if (!$user->authorise('core.manage', 'com_rsform')) {
+if (!$user->authorise('core.manage', 'com_rsform'))
+{
 	throw new Exception(JText::_('JERROR_ALERTNOAUTHOR'), 404);
 }
 
-require_once JPATH_COMPONENT.'/helpers/rsform.php';
+require_once JPATH_COMPONENT . '/helpers/adapter.php';
+require_once JPATH_COMPONENT . '/helpers/rsform.php';
 
 $mainframe = JFactory::getApplication();
 
@@ -26,7 +24,7 @@ RSFormProHelper::readConfig();
 // See if this is a request for a specific controller
 $controller 		= $mainframe->input->getWord('controller');
 $controller_exists  = false;
-$task				= $mainframe->input->getCmd('task');
+$task				= $mainframe->input->getCmd('task', '');
 
 if (!$controller && strpos($task, '.'))
 {
@@ -60,7 +58,7 @@ else
 }
 
 // Trigger onInit
-$mainframe->triggerEvent('rsfp_bk_onInit');
+$mainframe->triggerEvent('onRsformBackendInit');
 
 // Execute task
 if ($controller_exists && !empty($controller_task))
@@ -69,7 +67,9 @@ if ($controller_exists && !empty($controller_task))
 	$RsformController->execute($controller_task);
 }
 else
+{
 	$RsformController->execute($mainframe->input->getWord('task'));
+}
 
 // Redirect if set
 $RsformController->redirect();

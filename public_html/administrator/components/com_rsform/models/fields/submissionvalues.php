@@ -7,8 +7,6 @@
 
 defined('JPATH_PLATFORM') or die;
 
-JFormHelper::loadFieldClass('list');
-
 class JFormFieldSubmissionvalues extends JFormField
 {
 	public function getInput()
@@ -21,6 +19,10 @@ class JFormFieldSubmissionvalues extends JFormField
 		JText::script('COM_RSFORM_OPERATOR_STARTS_NOT');
 		JText::script('COM_RSFORM_OPERATOR_ENDS');
 		JText::script('COM_RSFORM_OPERATOR_ENDS_NOT');
+		JText::script('COM_RSFORM_OPERATOR_GREATER_THAN');
+		JText::script('COM_RSFORM_OPERATOR_GREATER_OR_EQUAL');
+		JText::script('COM_RSFORM_OPERATOR_LESS_THAN');
+		JText::script('COM_RSFORM_OPERATOR_LESS_OR_EQUAL');
 		JText::script('COM_RSFORM_REMOVE_VALUE');
 		JText::script('COM_RSFORM_REMOVE_VALUE_SURE');
 		JText::script('COM_RSFORM_FIELD_NAME');
@@ -51,7 +53,7 @@ class JFormFieldSubmissionvalues extends JFormField
 	operator.setAttribute('name', '{$this->name}[operator][]');
 	operator.setAttribute('style', 'width: auto;');
 	
-	var options = ['is', 'is_not', 'contains', 'contains_not', 'starts', 'starts_not', 'ends', 'ends_not'];
+	var options = ['is', 'is_not', 'contains', 'contains_not', 'starts', 'starts_not', 'ends', 'ends_not', 'greater_than', 'greater_or_equal', 'less_than', 'less_or_equal'];
 	
 	for (var i = 0; i < options.length; i++)
 	{
@@ -80,7 +82,7 @@ class JFormFieldSubmissionvalues extends JFormField
 	// Create remove button
 	var button = document.createElement('button');
 	button.setAttribute('type', 'button');
-	button.setAttribute('class', 'btn btn-small');
+	button.setAttribute('class', 'btn btn-secondary btn-small btn-sm');
 	button.setAttribute('onclick', 'deleteField(this);');
 	button.innerText = Joomla.JText._('COM_RSFORM_REMOVE_VALUE');
 	

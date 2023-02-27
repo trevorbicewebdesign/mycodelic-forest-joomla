@@ -7,6 +7,8 @@
 
 defined('JPATH_PLATFORM') or die;
 
+require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/rsform.php';
+
 JFormHelper::loadFieldClass('list');
 
 class JFormFieldForms extends JFormFieldList
@@ -65,6 +67,11 @@ class JFormFieldForms extends JFormFieldList
 	public function getInput()
 	{
 		$html = parent::getInput();
+
+		if (!empty($this->element['nobutton']))
+		{
+			return $html;
+		}
 
 		if ($this->value)
 		{

@@ -11,8 +11,6 @@ require_once dirname(__FILE__).'/helper.php';
 require_once dirname(__FILE__).'/xml.php';
 require_once dirname(__FILE__).'/tar.php';
 
-jimport('joomla.filesystem.folder');
-
 class RSFormProBackup
 {
 	// JDatabase instance
@@ -44,7 +42,7 @@ class RSFormProBackup
 	
 	public function __construct($options = array()) {
 		$this->db 			= JFactory::getDbo();
-		$this->tmp 			= JFactory::getConfig()->get('tmp_path');
+		$this->tmp 			= isset($options['tmp']) ? $options['tmp'] : JFactory::getApplication()->get('tmp_path');
 		$this->formIds 		= isset($options['forms']) ? $options['forms'] : array();
 		$this->submissions 	= isset($options['submissions']) ? $options['submissions'] : 0;
 		$this->key 			= isset($options['key']) ? $options['key'] : null;
@@ -109,7 +107,7 @@ class RSFormProBackup
 				->add('php', 		phpversion())
 				->add('os',			PHP_OS)
 				// Website information
-				->add('url', 		JUri::root())
+				->add('url', 		JFactory::getApplication()->isClient('cli') ? 'cli' : JUri::root())
 				->add('root',		JPATH_ROOT)
 				->add('author', 	JFactory::getUser()->get('email'))
 				->add('date', 		JFactory::getDate()->toSql());
@@ -143,7 +141,7 @@ class RSFormProBackup
 	}
 	
 	// Store form structure
-	public function storeForms() {
+	public function storeForms($symfonyStyle = false) {
 		require_once dirname(__FILE__).'/form.php';
 		
 		foreach ($this->formIds as $form) {
@@ -153,6 +151,11 @@ class RSFormProBackup
 			));
 			
 			$part->store();
+
+			if ($symfonyStyle && is_callable($symfonyStyle, 'progressAdvance'))
+			{
+				$symfonyStyle->progressAdvance();
+			}
 		}
 	}
 	
@@ -169,6 +172,15 @@ class RSFormProBackup
 		));
 		return $backupSubmission->store();
 	}
+
+	public function clean()
+	{
+		$tar = $this->getPath();
+		if (file_exists($tar))
+		{
+			@unlink($tar);
+		}
+	}
 	
 	// Download backup contents.
 	public function download($clean = true) {
@@ -176,8 +188,8 @@ class RSFormProBackup
 		$gzip = substr($tar, 0, -3).'tgz';
 		
 		// If there's a .TAR archive, we no longer need it, remove it.
-		if ($clean && file_exists($tar)) {
-			@unlink($tar);
+		if ($clean) {
+			$this->clean();
 		}
 		
 		if (!file_exists($gzip)) {
@@ -192,7 +204,16 @@ class RSFormProBackup
 		} else {
 			$name = 'backup';
 		}
-		RSFormProHelper::readFile($gzip, $name.'.tgz');
+		RSFormProHelper::readFile($gzip, $name.'.tgz', false);
+
+		unlink($gzip);
+
+		if (is_dir($this->path))
+		{
+			JFolder::delete($this->path);
+		}
+
+		exit();
 	}
 	
 	public function getPath() {
@@ -208,7 +229,7 @@ class RSFormProBackup
 	
 	public function getKey() {
 		if (empty($this->key)) {
-			$this->key = md5(mt_rand());
+			$this->key = md5(mt_rand() . uniqid('rsform_backup', true));
 		}
 		
 		return $this->key;

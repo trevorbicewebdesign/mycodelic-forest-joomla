@@ -10,6 +10,10 @@
 	<version>1.0.0</version>
 	<description><![CDATA[PLG_SYSTEM_RSFORMDELETESUBMISSIONS_DESC]]></description>
 
+	<updateservers>
+        <server type="extension" priority="1" name="System - RSForm! Pro Delete Submissions">https://www.rsjoomla.com/updates/com_rsform/Other/plg_rsformdeletesubmissions.xml</server>
+    </updateservers>
+
 	<files>
 		<filename plugin="rsformdeletesubmissions">rsformdeletesubmissions.php</filename>
 		<filename>index.html</filename>

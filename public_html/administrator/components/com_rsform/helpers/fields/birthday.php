@@ -209,6 +209,28 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		// Check for invalid here so that we can add 'rsform-error'
 		if ($this->invalid[$this->processing]) {
 			$attr['class'] .= ' ' . $this->fieldErrorClass;
+			$attr['aria-invalid'] = 'true';
+			$attr['aria-describedby'] = 'component' . $this->componentId;
+		}
+
+		if ($this->isRequired())
+		{
+			$attr['aria-required'] = 'true';
+		}
+
+		switch ($this->processing)
+		{
+			case 'd':
+				$attr['aria-label'] = JText::_('COM_RSFORM_BIRTHDAY_DAY_LABEL');
+				break;
+
+			case 'm':
+				$attr['aria-label'] = JText::_('COM_RSFORM_BIRTHDAY_MONTH_LABEL');
+				break;
+
+			case 'y':
+				$attr['aria-label'] = JText::_('COM_RSFORM_BIRTHDAY_YEAR_LABEL');
+				break;
 		}
 		
 		// Must add an onchange event when we don't allow incorrect dates eg. 31 feb
@@ -246,7 +268,7 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		$items = array();
 		if ($showDay)
 		{
-			if ($storeLeadingZero)
+			if ($storeLeadingZero && strlen($value['d']))
 			{
 				$value['d'] = str_pad($value['d'], 2, '0', STR_PAD_LEFT);
 			}
@@ -254,7 +276,7 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 		}
 		if ($showMonth)
 		{
-			if ($storeLeadingZero)
+			if ($storeLeadingZero && strlen($value['m']))
 			{
 				$value['m'] = str_pad($value['m'], 2, '0', STR_PAD_LEFT);
 			}
@@ -340,7 +362,7 @@ class RSFormProFieldBirthDay extends RSFormProFieldSelectList
 			}
 		}
 
-		if ($this->getProperty('REQUIRED', false))
+		if ($this->isRequired())
 		{
 			if (($showDay && empty($value['d'])) || ($showMonth && empty($value['m'])) || ($showYear && empty($value['y'])))
 			{

@@ -20,7 +20,7 @@ class JFormFieldLang extends JFormFieldList
 		// Initialize variables.
 		$options = array();
 
-		$languages = LanguageHelper::getKnownLanguages();
+		$languages = LanguageHelper::getKnownLanguages(JPATH_SITE);
 
 		if (empty($this->element['nodefault']))
 		{

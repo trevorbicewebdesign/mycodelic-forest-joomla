@@ -68,7 +68,7 @@ class RSFormProBackupForm
 		$this->storeGridLayout();
 		
 		// Allow plugins to add their own data to the backup.
-		JFactory::getApplication()->triggerEvent('rsfp_onFormBackup', array($this->form, $this->xml, $this->fields));
+		JFactory::getApplication()->triggerEvent('onRsformFormBackup', array($this->form, $this->xml, $this->fields));
 		
 		// Close <form> tag
 		$this->xml->add('/form');
@@ -181,6 +181,10 @@ class RSFormProBackupForm
 			if ($translations = $this->getTranslations('properties')) {
 				foreach ($translations as $translation) {
 					list($componentId, $property) = explode('.', $translation->reference_id, 2);
+					if (!isset($fields[$componentId]))
+					{
+						continue;
+					}
 					if (!isset($fields[$componentId]->translations)) {
 						$fields[$componentId]->translations = array();
 					}
@@ -193,6 +197,10 @@ class RSFormProBackupForm
 			}
 		
 			foreach ($properties as $property) {
+				if (!isset($fields[$property->ComponentId]))
+				{
+					continue;
+				}
 				if (!isset($fields[$property->ComponentId]->properties)) {
 					$fields[$property->ComponentId]->properties = array();
 				}
@@ -296,18 +304,24 @@ class RSFormProBackupForm
 	protected function storeConditions() {
 		// Add conditions #__rsform_conditions & #__rsform_condition_details
 		if ($conditions = $this->getConditions()) {
+			require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/conditions.php';
+
 			$this->xml->add('conditions');
 			foreach ($conditions as $condition) {
-				$component_id = $condition->component_id;
+				$component_ids = RSFormProConditions::parseComponentIds($condition->component_id);
 				
 				// No need
 				unset($condition->id, $condition->form_id, $condition->component_id);
-				
-				if (isset($this->fields[$component_id])) {
-					$condition->component_id = $this->fields[$component_id];
-				} else {
-					$condition->component_id = '';
+
+				$json_ids = array();
+				foreach ($component_ids as $component_id)
+				{
+					if (isset($this->fields[$component_id]))
+					{
+						$json_ids[] = $this->fields[$component_id];
+					}
 				}
+				$condition->component_id = json_encode($json_ids);
 				
 				$this->xml->add('condition');
 				foreach ($condition as $property => $value) {					
@@ -334,7 +348,6 @@ class RSFormProBackupForm
 	protected function getConditions() {
 		$db 		= &$this->db;
 		$query		= $db->getQuery(true);
-		$conditions = array();
 		
 		$query->select('*')
 			  ->from($db->qn('#__rsform_conditions'))
@@ -502,7 +515,7 @@ class RSFormProBackupForm
 		// Add Mappings #__rsform_mappings
 		if ($mappings = $this->getMappings()) {
 
-			$prefix = JFactory::getConfig()->get('dbprefix');
+			$prefix = JFactory::getApplication()->get('dbprefix');
 
 			$this->xml->add('mappings');
 			foreach ($mappings as $mapping) {

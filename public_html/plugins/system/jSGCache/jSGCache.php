@@ -108,6 +108,7 @@ class plgSystemjSGCache extends JPlugin
 
 		if ($this->_cacheEnabled)
 		{
+			JResponse::allowCache(true);
 			JResponse::setHeader('X-Cache-Enabled','True',true);
 		}
 
